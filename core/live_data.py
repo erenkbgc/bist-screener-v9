@@ -32,10 +32,25 @@ from __future__ import annotations
 
 import re
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
 import borsapy as bp
+
+# Butun canli fonksiyonlar tek tek, sirali (I/O-bound) ag cagrilari yapar.
+# ~800 tickerlik tam evrende bu, ticker basina saniyeler suren gecikmeyi
+# CARPARAK biriktirir (olcum: sirali ~9sn/ticker sadece ag katmani -> tam
+# evren ~2 saat, run.py'nin DB yazma/skorlama katmaniyla birlikte ~8 saat).
+#
+# ONEMLI OLCUM SONUCU: yuksek concurrency (12) FAYDA SAGLAMADI -- TradingView
+# saglayicisi (fast_info'nun kaynagi) es zamanli istek sayisi arttikca
+# THROTTLE ediyor (4 es zamanli istekte tek istek suresi 5sn'den 11-23sn'ye
+# cikti). 12 worker'la 40 tickerlik test, 15 tickerlik sirali testten (9dk)
+# DAHA UZUN surdu. 4 worker'da net kazanc olculdu (~2.5x). Bu yuzden
+# PREFETCH_MAX_WORKERS BILINCLI OLARAK DUSUK tutuluyor -- "daha fazla worker
+# = daha hizli" varsayimi bu saglayicilar icin GECERSIZ.
+PREFETCH_MAX_WORKERS = 4
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -106,6 +121,33 @@ def _dividends_cached(ticker: str):
 
 
 @lru_cache(maxsize=2048)
+def _history_cached(ticker: str, period: str = "2y"):
+    """live_listing_and_size VE live_prices AYNI 2 yillik fiyat gecmisini
+    kullanir -- tek bir cache anahtari altinda paylasilarak ticker basina
+    fazladan bir ag cagrisi onlenir (bkz. prefetch_all)."""
+    try:
+        return _ticker_obj(ticker).history(period=period)
+    except Exception:
+        return None
+
+
+@lru_cache(maxsize=2048)
+def _news_cached(ticker: str):
+    try:
+        return _ticker_obj(ticker).news
+    except Exception:
+        return None
+
+
+@lru_cache(maxsize=2048)
+def _earnings_dates_cached(ticker: str):
+    try:
+        return _ticker_obj(ticker).earnings_dates
+    except Exception:
+        return None
+
+
+@lru_cache(maxsize=2048)
 def _statements_cached(ticker: str):
     """(balance_sheet, income_stmt, cashflow) DataFrame'lerini dondurur, cekilemezse
     ucu None olan bir tuple doner (banka/sigorta sablon uyumsuzlugu -> unknown basis)."""
@@ -157,10 +199,17 @@ def live_universe(limit: int | None = None) -> list[dict]:
     companies_df = bp.companies()
     if limit:
         companies_df = companies_df.head(int(limit))
+    tickers = companies_df["ticker"].tolist()
+
+    # `info` cekimi (807 ag cagrisina kadar) buradaki tek maliyetli adim;
+    # sirali degil PREFETCH_MAX_WORKERS kadar paralel yapilir.
+    with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
+        list(pool.map(_info_cached, tickers))
+
     seed: list[dict] = []
     for _, r in companies_df.iterrows():
         ticker = r["ticker"]
-        info = _info_cached(ticker)
+        info = _info_cached(ticker)  # yukarida zaten cache'lendi, ag cagrisi yok
         sector = info.get("sector") or info.get("industry")
         ratio_profile, regulator = _classify_sector(sector)
         seed.append({
@@ -169,6 +218,25 @@ def live_universe(limit: int | None = None) -> list[dict]:
             "regulator": regulator,
         })
     return seed
+
+
+def prefetch_all(tickers: list[str]) -> None:
+    """Evrenin geri kalan tum canli fonksiyonlarinin ihtiyac duydugu ag
+    cagrilarini (fast_info, statements, dividends, 2y history, news,
+    earnings_dates) PARALEL olarak onceden cache'ler. run.py, universe
+    build'den sonra (eligible tickers belli olunca) bunu bir kez cagirir;
+    ardindan gelen tum sirali per-ticker dongulari (fundamentals, piotroski,
+    sloan, catalysts, prices, ownership, dividend_sustainability...) sadece
+    lru_cache'ten okur, yeni ag cagrisi yapmaz."""
+    fns = [_fast_info_cached, _info_cached, _statements_cached, _dividends_cached,
+           _news_cached, _earnings_dates_cached]
+    with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
+        futures = []
+        for fn in fns:
+            futures.extend(pool.submit(fn, t) for t in tickers)
+        futures.extend(pool.submit(_history_cached, t, "2y") for t in tickers)
+        for f in futures:
+            f.result()  # istisnalar zaten fonksiyon icinde yutuluyor, sadece bekle
 
 
 # ---------------------------------------------------------------------------
@@ -182,7 +250,7 @@ def live_listing_and_size(ticker: str, as_of_date: str) -> dict:
     avg_volume_tl = None
     listing_days = None
     try:
-        hist = _ticker_obj(ticker).history(period="2y")
+        hist = _history_cached(ticker, "2y")
         if hist is not None and not hist.empty:
             first_date = hist.index[0].date()
             as_of = datetime.strptime(as_of_date, "%Y-%m-%d").date()
@@ -215,11 +283,9 @@ def live_tedbir_level(ticker: str, as_of_date: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def live_prices(ticker: str, as_of_date: str, days: int = 140) -> list[dict]:
-    try:
-        period = "1y" if days > 250 else "6mo"
-        hist = _ticker_obj(ticker).history(period=period)
-    except Exception:
-        return []
+    # live_listing_and_size ile AYNI 2 yillik gecmisi paylasir (_history_cached);
+    # 140 gunluk istek bunun icine rahatca siger, ayri bir ag cagrisi gerekmez.
+    hist = _history_cached(ticker, "2y")
     if hist is None or hist.empty:
         return []
 
@@ -454,10 +520,7 @@ def live_kap_disclosures(tickers: list[str], as_of_date: str, lookback_days: int
     cutoff = as_of - timedelta(days=lookback_days)
     rows: list[dict] = []
     for ticker in tickers:
-        try:
-            news_df = _ticker_obj(ticker).news
-        except Exception:
-            continue
+        news_df = _news_cached(ticker)
         if news_df is None or news_df.empty:
             continue
         for i, r in news_df.iterrows():
@@ -487,10 +550,7 @@ def live_kap_disclosures(tickers: list[str], as_of_date: str, lookback_days: int
 def live_upcoming_events(tickers: list[str], as_of_date: str) -> list[dict]:
     events: list[dict] = []
     for ticker in tickers:
-        try:
-            ed = _ticker_obj(ticker).earnings_dates
-        except Exception:
-            ed = None
+        ed = _earnings_dates_cached(ticker)
         if ed is None or ed.empty:
             continue
         for dt_idx in ed.index:

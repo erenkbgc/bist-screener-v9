@@ -25,7 +25,14 @@ permissions:
 jobs:
   run-screener:
     runs-on: ubuntu-latest
-    timeout-minutes: 120  # ~800 tickerlik canli evren cekimi uzun surebilir
+    # Olcum: ~9sn/ticker (ag) + DB yazma/skorlama; ~800 tickerlik tam evren
+    # sirali halde ~8 saat surer (GitHub Actions'in 360dk/6sa sert sinirini
+    # asar). core/live_data.py::PREFETCH_MAX_WORKERS ile sinirli paralellik
+    # bunu kisaltir ama saglayicilar (Is Yatirim/TradingView/doviz.com)
+    # concurrency arttikca throttle ediyor -- kesin sure ancak gercek bir
+    # tam kosu ile netlesir. 350dk (platform sinirinin hemen alti) guvenlik
+    # payi olarak ayarlandi; repo public oldugu icin dakika kotasi sorun degil.
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 

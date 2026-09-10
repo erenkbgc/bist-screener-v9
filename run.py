@@ -138,6 +138,13 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         _persist_run(run_id, as_of_date, "completed", "NO_ACTION_TODAY", started_at, None)
         return {"status": "no_eligible_universe", "as_of_date": as_of_date}
 
+    # Canli modda: asagida gelen TUM sirali per-ticker dongulerinin (fundamentals,
+    # piotroski, sloan, catalysts, prices, ownership, dividend_sustainability...)
+    # ihtiyac duyacagi ag cagrilarini PARALEL olarak onceden cache'ler (bkz.
+    # core/live_data.py::prefetch_all). Bu adim olmadan ~800 tickerlik tam evren
+    # tamamen sirali agsal I/O nedeniyle saatler surebilir.
+    bist_mcp.prefetch([u["ticker"] for u in eligible])
+
     # --- 4. basis_guard uygulanmis fundamentals ---
     from core import fundamentals as fundamentals_mod
     fundamentals_rows = fundamentals_mod.fetch_and_store_fundamentals(as_of_date, eligible)

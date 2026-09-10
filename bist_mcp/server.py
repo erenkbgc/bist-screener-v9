@@ -108,6 +108,16 @@ def get_ownership(ticker: str, as_of_date: str) -> dict:
     return md.mock_ownership(ticker, as_of_date)
 
 
+def prefetch(tickers: list[str]) -> None:
+    """Canli modda, evrenin ihtiyac duyacagi tum ag cagrilarini PARALEL olarak
+    onceden cache'ler (bkz. core/live_data.py::prefetch_all) -- boylece
+    run.py'deki sirali per-ticker dongulerinin her biri artik cache'ten okur.
+    Mock modda no-op'tur (mock veri zaten anlik/CPU-bound)."""
+    if _live_enabled():
+        from core import live_data as ld
+        ld.prefetch_all(tickers)
+
+
 if HAS_MCP:
     mcp.tool()(get_universe)
     mcp.tool()(get_listing_and_size)
