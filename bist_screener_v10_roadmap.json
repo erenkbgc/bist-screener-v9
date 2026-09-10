@@ -1,0 +1,247 @@
+{
+  "project_name": "Autonomous BIST AI Investment Screener",
+  "version": "10.0.0-roadmap",
+  "base_spec": "bist_screener_v9_prompt.json (v9.0.0) -- BU DOSYA v9'U DEGISTIRMEZ, UZERINE EKLER",
+  "spec_date": "2026-09-11",
+  "origin": "Yatirim analisti perspektifiyle yapilan disaridan bir inceleme (P0/P1/P2/P3 oncelik tablosu) uzerine olusturuldu. v9'un tum execution_rules, ai_role_boundaries, priors_are_disclosed, no_fixed_thresholds, no_historical_ratio_comparison ve banned_claims kurallari BURADA DA GECERLIDIR; hicbiri bu dosyayla iptal edilmez.",
+
+  "design_tensions_flagged": [
+    {
+      "review_suggestion": "Tarihsel carpan bandi analizi (sirketin kendi 5 yillik ortalamasina gore nerede?)",
+      "conflict": "v9.valuation_engine.no_historical_ratio_comparison kuraliyla DOGRUDAN CELISIR (bir metrigin kendi gecmisiyle karsilastirilmasi acikca yasaklanmis, cunku ortalamaya donus varsayimi kanitlanmamis bir onyargidir).",
+      "resolution": "Cekirdek degerleme (valuation_z, hard_filters, final_score) KESITSEL (cross-sectional) kalir, DEGISMEZ. Tarihsel bant yalnizca 'historical_multiple_band_reference' adiyla, gordon_growth_reference ile AYNI statude (deneysel, final_score'a asla girmez, ayri bir bilgi bloku olarak) eklenebilir."
+    },
+    {
+      "review_suggestion": "Walk-forward validation, Monte Carlo, 'stratejinin edge'i kanitlanmali'",
+      "conflict": "v9.evaluate_past_predictions_clarification'in butun amaci bunun TAM TERSI: 'bu bir backtest degildir' ilkesi bilinclidir, kanitlanmamis bir stratejiyi kanitlanmis gibi gostermeyi ONLEMEK icin vardir. banned_claims listesi ('backtest edilmis', 'kanitlanmis edge') bunu ac,ikca yasaklar.",
+      "resolution": "walk_forward_diagnostic EKLENIR ama 'backtest' veya 'edge kanit' olarak ADLANDIRILMAZ/SUNULMAZ; yalnizca 'tanimlayici, ortusen-olmayan pencereli izleme metrigi' olarak, ayni banned_claims kisitiyla, kullanicinin ACIK ONAYI olmadan devreye alinmaz (asagida feature_flag: disabled_by_default)."
+    },
+    {
+      "review_suggestion": "Portfoy optimizasyonu (Markowitz, risk parity, Black-Litterman), pozisyon boyutlandirma",
+      "conflict": "v9.ai_role_boundaries: sistem 'yatirim danismanligi degildir, alim satim tavsiyesi icermez'. Somut agirlik/tutar onerisi vermek bu siniri asar.",
+      "resolution": "position_sizing_diagnostics adiyla, EMIR DEGIL yalnizca 'concentration_check/correlation_diagnostic'in devami olan TESHIS bilgisi (ornegin 'bu paftaki toplam korelasyon-agirlikli yogunlasma X' seklinde) olarak eklenir. Hicbir yerde 'su kadar TL/oran al' ciktisi YOKTUR."
+    }
+  ],
+
+  "priority_roadmap": [
+    {
+      "priority": "P0",
+      "module": "xu100_benchmark_integration",
+      "effort_estimate": "1-2 gun",
+      "impact": "evaluate_past_predictions'daki xu100_return_pct yer tutucusu (0.0) gercek gostergeye baglanir; goreli getiri/excess_vs_index_pct dogru hesaplanir.",
+      "status": "todo"
+    },
+    {
+      "priority": "P0",
+      "module": "financial_institution_data_source",
+      "effort_estimate": "3-5 gun",
+      "impact": "BIST'in banka/sigorta/finansal kiralama kismi (basis_guard tarafindan su an 'unknown' -> elenen) Piotroski/Sloan/valuation_z'ye dahil olur.",
+      "status": "todo"
+    },
+    {
+      "priority": "P0",
+      "module": "valuation_engine_v2_dcf_addon",
+      "effort_estimate": "5-7 gun",
+      "impact": "Kesitsel degerlemeye ek olarak DCF referansi; yatirim tezi icin gerekli derinlik.",
+      "status": "todo"
+    },
+    {
+      "priority": "P1",
+      "module": "position_sizing_diagnostics",
+      "effort_estimate": "3-4 gun",
+      "impact": "Portfoy yogunlasma/korelasyon teshisi genisler (emir DEGIL, teshis).",
+      "status": "todo"
+    },
+    {
+      "priority": "P1",
+      "module": "walk_forward_diagnostic",
+      "effort_estimate": "3-4 gun",
+      "impact": "Tanimlayici, ortusmeyen-pencereli takip metrigi (banned_claims kisitiyla, varsayilan KAPALI).",
+      "status": "todo"
+    },
+    {
+      "priority": "P1",
+      "module": "transaction_cost_model",
+      "effort_estimate": "2-3 gun",
+      "impact": "expected_roi_pct'ye spread+komisyon+kayma dusulerek daha gercekci net getiri.",
+      "status": "todo"
+    },
+    {
+      "priority": "P2",
+      "module": "investment_memo_generator",
+      "effort_estimate": "3-4 gun",
+      "impact": "thesis_card + payload'dan sablon-tabanli (LLM serbest metni DEGIL) PDF/HTML yatirim notu.",
+      "status": "todo"
+    },
+    {
+      "priority": "P2",
+      "module": "qualitative_governance_score",
+      "effort_estimate": "3-5 gun",
+      "impact": "Ortaklik yapisi/bagimsiz uye orani/KAP bildirim sikligindan kural-tabanli kurumsal yonetim skoru (final_score'a girmeden once ayri bilgi alani olarak baslar).",
+      "status": "todo"
+    },
+    {
+      "priority": "P3",
+      "module": "point_in_time_dataset",
+      "effort_estimate": "5+ gun",
+      "impact": "Restatement/delisting/M&A log'u; look-ahead bias riskini azaltir.",
+      "status": "todo"
+    }
+  ],
+
+  "modules": {
+    "xu100_benchmark_integration": {
+      "name": "xu100_benchmark_integration",
+      "status": "planlanan, henuz uygulanmadi",
+      "problem": "core/evaluate.py icinde xu100_return_pct su an sabit 0.0 yer tutucu; excess_vs_index_pct bu yuzden anlamsiz.",
+      "data_source": "borsapy: bp.Index('XU100').history(...) -- gunluk kapanis serisi (ayni saglayici zaten macro_mcp icin kullaniliyor).",
+      "inputs": {
+        "entry_date_close": "Tahminin girildigi tarihteki XU100 kapanisi",
+        "exit_date_close": "Ufuk sonundaki (T+5/T+20/T+60) XU100 kapanisi"
+      },
+      "formula": "xu100_return_pct = (exit_close / entry_close - 1) * 100",
+      "output_format": "evaluate_past_predictions.summarize_outcomes() ciktisina excess_vs_index_pct olarak eklenir (mevcut alan, artik gercek deger tasir).",
+      "hard_constraints": [
+        "evaluate_past_predictions_clarification'daki 'bu bir backtest degildir' kurali GECERLI kalir",
+        "final_score'a girmez, yalnizca canli takip ozetinde gorunur"
+      ],
+      "acceptance_test": "iki farkli tarih araligi icin excess_vs_index_pct'nin 0.0'dan farkli, gercek XU100 hareketini yansitan bir deger dondurdugu dogrulanir."
+    },
+
+    "financial_institution_data_source": {
+      "name": "financial_institution_data_source",
+      "status": "planlanan, arastirma gerekiyor",
+      "problem": "core/live_data.py::_statements_cached, Is Yatirim'in banka/sigorta/finansal kiralama (BDDK-tipi konsolide) sablonlarini desteklemiyor (dogrulandi: GARAN icin DataNotAvailableError). Bu tickerlar reporting_basis='unknown' ile Piotroski/Sloan/valuation_z'den otomatik elenir.",
+      "candidate_sources": [
+        "KAP XBRL finansal tablo indirmeleri (dogrudan parse, ek gelistirme gerektirir)",
+        "TBB (Turkiye Bankalar Birligi) kamuya acik banka rasyolari",
+        "Alternatif bir borsapy surumu/fork'u veya baska bir Is Yatirim endpoint sablonu"
+      ],
+      "hard_constraints": [
+        "basis_guard.UNKNOWN_RATIO_HALT_THRESHOLD kurali DEGISMEZ -- bu modul unknown oranini AZALTMAYA calisir, kuralin kendisini gevsetmez",
+        "Banka/sigorta icin ratio_profiles.bank/insurance ZATEN tanimli (core/ranking.py) -- yalnizca veri girdisi eksik, formul degil"
+      ],
+      "acceptance_test": "en az 10 banka/sigorta tickerinda reporting_basis != 'unknown' ve piotroski_scores.criteria_computable > 0 olmali."
+    },
+
+    "valuation_engine_v2_dcf_addon": {
+      "name": "valuation_engine_v2_dcf_addon",
+      "status": "planlanan",
+      "relationship_to_v9": "core/gordon.py (temettu iskonto modeli) ile AYNI mimari desende: deneysel, final_score'a ve hard_filters'a GIRMEZ, aralik olarak sunulur.",
+      "inputs": {
+        "fcf_ttm": "core/live_data.py::live_fundamentals -> fcf_ttm (zaten gercek veri)",
+        "revenue_growth_scenarios": "duşuk/orta/yuksek 3 senaryo, KEYFI VARSAYIM oldugu acikca etiketlenir",
+        "wacc": "core/beta_hurdle.py::calculate_beta + config/equity_risk_premium.yaml + borclanma maliyeti (yeni: net_debt/faiz gideri oranindan proxy)",
+        "terminal_growth_g": "TCMB uzun donem enflasyon hedefi (gordon.py ile ayni kaynak, tutarlilik icin)"
+      },
+      "output_format": "3 senaryolu (dusuk/baz/yuksek) adil deger araligi + mevcut fiyata gore prim/iskonto yuzdesi. Tek sayi ASLA gosterilmez (gordon_growth_reference ile ayni kural).",
+      "historical_multiple_band_reference": {
+        "status": "AYRI, opsiyonel bilgi bloku (bkz design_tensions_flagged) -- valuation_z'nin bir parcasi DEGIL",
+        "output": "Sirketin kendi F/K veya PD/DD'sinin son 5 yillik gozlemlenen araligi icinde nerede oldugu (persentil), acik 'gecmis performans gelecegin garantisi degildir' notuyla"
+      },
+      "hard_constraints": [
+        "final_score formulune hicbir bicimde girmez",
+        "hard_filters'a hicbir bicimde girmez",
+        "wacc - g <= 0 ise hesaplanmaz, null_reason='unstable_denominator' (gordon.py ile ayni kural)",
+        "priors_are_disclosed: revenue_growth_scenarios ve wacc bilesenleri rapor altbilgisinde 'DENENMEMIS VARSAYIM' olarak listelenir"
+      ],
+      "acceptance_test": "gordon.py testleriyle ayni desende: eligible olmayan sirket icin None+null_reason, eligible sirket icin 3 senaryolu aralik doner."
+    },
+
+    "position_sizing_diagnostics": {
+      "name": "position_sizing_diagnostics",
+      "status": "planlanan",
+      "relationship_to_v9": "core/concentration.py + core/correlation.py'nin GENISLETILMESI, yeni bir emir-verici modul DEGIL.",
+      "output_format": "Sadece TESHIS metrikleri: korelasyon-agirlikli sektor yogunlasmasi, en yuksek N pozisyonun portfoy varyansina katki yuzdesi.",
+      "hard_constraints": [
+        "AI_ROLE_BOUNDARIES: hicbir ciktida 'X TL/oraninda al/azalt' bicimli bir talimat OLAMAZ",
+        "concentration_check gibi bu da otomatik eleme yapmaz, yalnizca bilgi/uyari"
+      ],
+      "acceptance_test": "ciktida herhangi bir tutar/oran-emri kelimesi (al, sat, artir, azalt + sayisal miktar) GECMEMELI (validate.py'ye benzer bir banned-phrase taramasi)."
+    },
+
+    "walk_forward_diagnostic": {
+      "name": "walk_forward_diagnostic",
+      "status": "planlanan, VARSAYILAN OLARAK KAPALI (feature_flag)",
+      "feature_flag": "WALK_FORWARD_DIAGNOSTIC_ENABLED (varsayilan: false) -- yalnizca kullanici ACIKCA talep ederse acilir",
+      "relationship_to_v9": "evaluate_past_predictions ile AYNI 'backtest degildir' kisitina tabi; ortusmeyen (non-overlapping) zaman pencereleri kullanarak evaluate_past_predictions'in bagimliligi (T+5/T+20/T+60 ufuklarinin ortusmesi) sorununu KISMEN azaltir, ama YINE DE bir strateji kaniti OLARAK SUNULMAZ.",
+      "banned_claims_additional": [
+        "walk-forward ile dogrulanmis",
+        "out-of-sample basari",
+        "monte carlo ile onaylanmis"
+      ],
+      "output_format": "Yalnizca tanimlayici: pencere basina hit_rate ve ortalama fazla getiri, HER pencerenin ayri ayri gosterilmesi zorunlu (tek bir birlesik 'basari orani' ASLA verilmez).",
+      "acceptance_test": "banned_claims_additional listesindeki hicbir ifade uretilen ciktida gecmemeli (validate.py'nin banned_claims taramasina eklenir)."
+    },
+
+    "transaction_cost_model": {
+      "name": "transaction_cost_model",
+      "status": "planlanan",
+      "inputs": {
+        "bid_ask_spread_bps": "core/live_data.py fast_info bid/ask alanlarindan (zaten cekiliyor, kullanilmiyor)",
+        "commission_bps": "config/transaction_costs.yaml -- ACIKCA 'DENENMEMIS VARSAYIM' etiketli, kullanicinin kendi aracı kurum komisyon oranini girebilecegi bir alan",
+        "slippage_bps": "volume_ratio_20d'ye bagli basit bir fonksiyon (dusuk hacimde daha yuksek varsayilan kayma)"
+      },
+      "formula": "net_expected_roi_pct = expected_roi_pct - (bid_ask_spread_bps + commission_bps + slippage_bps) / 100",
+      "output_format": "hurdle_engine ciktisina net_expected_roi_pct ve net_excess_over_hurdle_pct olarak eklenir; MEVCUT excess_over_hurdle_pct (brut) hard_filter olarak KALIR, net versiyon ek bilgi alanidir.",
+      "hard_constraints": [
+        "priors_are_disclosed: commission_bps/slippage_bps varsayimlari acikca etiketlenir",
+        "mevcut hard_filter (excess_over_hurdle_pct > 0, brut) DEGISMEZ -- net versiyon onu YERINE KOYMAZ, yanina eklenir"
+      ],
+      "acceptance_test": "net_expected_roi_pct her zaman expected_roi_pct'den kucuk veya esit olmali (maliyet asla negatif katki yapmamali)."
+    },
+
+    "investment_memo_generator": {
+      "name": "investment_memo_generator",
+      "status": "planlanan",
+      "relationship_to_v9": "core/thesis.py + report/render.py ile AYNI desen: SABLON TABANLI, LLM serbest metni YOK.",
+      "output_format": "Her STRONG_OPPORTUNITY/OPPORTUNITY adayi icin ayri bir PDF/HTML sayfa: guclu/zayif yonler (mevcut thesis bullet'lari), katalizorler (catalyst_engine ciktisi), riskler (invalidation conditions), hedef fiyat + hurdle karsilastirmasi.",
+      "hard_constraints": [
+        "core/payload.py::format_number ile AYNI sayi formati kullanilir (validation_gate'in gecerliligi korunur)",
+        "'Al/Sat/Tut' gibi bir tavsiye ETIKETI KOYULMAZ (ai_role_boundaries) -- yalnizca candidate_state (STRONG_OPPORTUNITY/OPPORTUNITY/WATCHLIST) mevcut terminolojiyle gosterilir"
+      ],
+      "acceptance_test": "uretilen memo, mevcut validation_gate'ten (orphan_numbers + banned_claims) GECMELI -- ayni HTML rapor gibi."
+    },
+
+    "qualitative_governance_score": {
+      "name": "qualitative_governance_score",
+      "status": "planlanan, veri kaynagi arastirmasi gerekiyor",
+      "inputs": {
+        "ownership_concentration": "core/ownership.py -- zaten mevcut (free_float_pct, foreign_pct)",
+        "kap_disclosure_frequency": "core/catalysts.py -- kategori bazinda bildirim sikligi (zaten cekiliyor, yeni bir kullanim)",
+        "independent_board_ratio": "YENI veri kaynagi gerekir (KAP kurumsal yonetim uyum raporlari -- arastirma gerekiyor, garanti edilemez)"
+      },
+      "scoring_impact": "BASLANGICTA final_score'a GIRMEZ (piotroski/sloan'in ilk tanitildigi gibi -- once informational, testler ve gozlemle olgunlastiktan sonra scoring.py'ye dahil edilmesi AYRI bir karar gerektirir)",
+      "hard_constraints": [
+        "kural-tabanli/sayisal olmali, LLM'in 'yonetim kalitesi iyi/kotu' seklinde serbest yorumu OLAMAZ (no_free_text_interpretation ilkesiyle tutarli)"
+      ],
+      "acceptance_test": "independent_board_ratio veri kaynagi bulunamazsa modul devre disi kalir (null_reason='veri_kaynagi_yok'), CALISMAYAN bir alanla halt ETMEZ."
+    },
+
+    "point_in_time_dataset": {
+      "name": "point_in_time_dataset",
+      "status": "planlanan, en dusuk oncelik",
+      "problem": "Mevcut point_in_time_fields (effective_at <= as_of_date_cutoff) yalnizca YAYIN TARIHI icin PIT saglar; restatement (donem sonrasi duzeltme), delisting, M&A gibi olaylarin GECMISE DONUK etkisini izlemez.",
+      "new_table": "point_in_time_events (as_of_date, ticker, event_type[restatement|delisting|merger|spinoff], event_date, description, source_url)",
+      "hard_constraints": [
+        "Bu tablo YALNIZCA loglama/bilgi amaclidir; mevcut fundamentals/scores tablolarinin semasini DEGISTIRMEZ"
+      ],
+      "acceptance_test": "delisting_event iceren bir ticker, universe_snapshot.exclusion_reason='delisted' ile o tarihten sonra evrenden dusmeli."
+    }
+  },
+
+  "testing_additions_required": [
+    "xu100_benchmark_integration testi: excess_vs_index_pct 0.0 sabit DEGIL, gercek XU100 hareketini yansitmali",
+    "walk_forward_diagnostic banned_claims testi: 'walk-forward ile dogrulanmis' vb ifadeler validate.py tarafindan yakalanmali",
+    "position_sizing_diagnostics testi: ciktida al/sat/artir/azalt + sayisal miktar bicimli hicbir ifade OLMAMALI",
+    "transaction_cost_model testi: net_expected_roi_pct <= expected_roi_pct HER ZAMAN",
+    "investment_memo_generator testi: uretilen memo validation_gate'ten (orphan_numbers=[], banned_claims_found=[]) GECMELI",
+    "financial_institution_data_source testi: en az N banka/sigorta tickerinda reporting_basis != 'unknown'"
+  ],
+
+  "explicit_non_goals": [
+    "Bu roadmap sistemi 'yatirim danismanligi' konumuna TASIMAZ -- ai_role_boundaries v9'da tanimlandigi gibi kalir.",
+    "walk_forward_diagnostic hicbir zaman 'kanitlanmis strateji/edge' iddiasi icin kullanilamaz -- yalnizca tanimlayici izleme.",
+    "position_sizing_diagnostics hicbir zaman somut TL/oran onerisi vermez."
+  ]
+}
