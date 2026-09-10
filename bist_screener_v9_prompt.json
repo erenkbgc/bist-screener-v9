@@ -1,0 +1,544 @@
+{
+  "project_name": "Autonomous BIST AI Investment Screener",
+  "version": "9.0.0",
+  "usage_scope": "personal_single_user",
+  "target_market": "Borsa Istanbul (BIST)",
+  "spec_date": "2026-09-08",
+  "spec_validity_note": "Bu spec 2026 Eylul piyasa rejimini varsayar. regime_monitor modulu bu varsayimlari her kosuda yeniden dogrular.",
+
+  "changelog_v8_to_v9": {
+    "principle": "v9 iki turden gelen elestiriyi isler: (1) BIST'e ozgu gercek boslugu tespit eden ama once veri kaynagi veya form duzeltmesi gereken oneriler, (2) spec'in sahte kesinlik iddiasi yapip yapmadigini sorgulayan bir kalite denetimi. Hicbiri ana skorlama mantigini (0.55/0.30/0.15, hurdle, hard_filters) degistirmiyor, hepsi ya bilgi katmani ya da mevcut kapiyi siklastiran bir ek kosul.",
+    "added": [
+      "beta_adjusted_hurdle: excess_over_beta_hurdle_pct, bilgi amacli, hard filter degil",
+      "earnings_quality_sloan: tahakkuk orani, PEER GRUBU ICINDE kesitsel persentil olarak (mutlak esik degil), uyari bayragi",
+      "event_calendar_engine: BIST rebalans/VIOP vade/lock-up gibi ONCEDEN BILINEN takvim olaylari, bilanco tarihi icin dusuk kapsam uyarisiyla",
+      "dividend_sustainability_engine: Gordon'un mevcut 3/5 yil kapisini FCF karsilama ve payout trendiyle sikilastirir",
+      "fcf_yield_usd: bilgi alani, skora girmez",
+      "thesis_invalidation_monitor: invalidation_condition'i makine-okunabilir kurala cevirir, evaluate_past_predictions icinde kontrol edilir",
+      "regime_taxonomy: real_rate_regime/inflation_trend/fx_regime ETIKETLEME, otomatik agirlik onyargisi YOK",
+      "priors_disclosure: agirliklarin ve esiklerin denenmemis baslangic varsayimi oldugunu acikca beyan eden zorunlu metin",
+      "evaluate_past_predictions_clarification: bunun bir backtest OLMADIGI, canli takip oldugu acikca ayristirildi, yasakli iddia listesi eklendi"
+    ],
+    "deferred_pending_data_source": [
+      {"idea": "broker_concentration_guard (aracı kurum yogunlasmasi)", "reason": "Gunluk aracı kurum bazli hacim dagilimi mevcut ucretsiz kaynaklarda (TradingView/Is Yatirim/yfinance) yok. KAP resmi API'sindeki ayni kisitla ayni kategoride: once kaynak dogrulanmali, spec'e sonra girmeli."}
+    ],
+    "rejected": [
+      {"idea": "Beneish M-Score", "reason": "8 degiskeninin cogu mevcut fundamentals semasinda yok (SG&A endeksi, amortisman endeksi vb), tam mali tablo satir kalemi cekmek kapsam sicramasi. Ustelik 1999 ABD GAAP icin tasarlandi, TMS 29 enflasyon duzeltmeli TFRS tablolarinda dogrulanmadi."},
+      {"idea": "Surekli eq_multiplier [0.7-1.0] carpani", "reason": "Kalibrasyonsuz bir katsayi uydurmak, reddedilen composite confidence formuluyle ayni hastalik. Sloan orani yerine yalnizca kesitsel persentil bayragi olarak eklendi, skora carpan olarak girmiyor."},
+      {"idea": "Rejime gore otomatik sektor agirlik onyargisi (regime_taxonomy'nin ikinci yarisi)", "reason": "v7'de reddedilen 'dinamik skor agirliklandirma'nin yumusatilmis hali. Hicbir gecmis veriyle test edilmemis bir varsayimi otomatik skora sizdirmak, 'agirlik degisikligi manuel onayla yapilir' kuralini cignuyor. Yalnizca ETIKETLEME (raporlama) alindi, otomatik onyargi alinmadi."},
+      {"idea": "estimate_revision_tracker (KAP metninden NLP ile kar tahmini cikarimi + beat/miss serisi)", "reason": "Iki bacaği da sorunlu: (a) KAP metnini LLM'e serbest yorumlatmak, 'KAP bildirimi once kategoriye indirilir, LLM'e serbest metin verilmez' kuralini dogrudan ihlal eder, (b) BIST genisliginde guvenilir analist konsensus verisi sahsi butcede erisilebilir degil, konsensus olmadan sürpriz hesaplamak sistemin kendi varsayimina karsi kendini test etmesi demektir."},
+      {"idea": "2018-2026 tam walk-forward backtest", "reason": "Uc bagimsiz sebep: (1) point-in-time tarihsel veri mevcut ucretsiz kaynaklarda yok, yeniden insa etmek screener'dan buyuk bir veri muhendisligi projesi; (2) 2018-2022 verisi farkli enflasyon muhasebesi rejiminde, bunu 2023 sonrasiyla ayni persentile sokmak basis_guard'in kendi kuralini ihlal eder; (3) 2018-2026 arasi ardisik yapisal kirilmalar (kur krizi, hiperenflasyon, deprem, secim, savas sonrasi yasak) dizisi, bulunacak bir 'edge' rejime ozgu artefakt olabilir. v7'de gerekceyle ertelendi, burada basis_guard celismesiyle gerekce guclendirildi."},
+      {"idea": "Tam DCF", "reason": "v6'dan beri gecerli: yuksek enflasyon/faiz ortaminda iskonto orani varsayimina asiri duyarlilik. Gordon buyume modeli zaten en dar, en guvenlikli versiyonu."}
+    ],
+    "optional_future_work": [
+      {"idea": "Dar kapsamli, basis-tutarli 2024-2026 stress-test", "scope": "Performans/Sharpe iddiasi DEGIL, yalnizca 'filtreler mantikli davraniyor mu' kontrolu (ornek: hurdle filtresi kotu donemlerde adayi gercekten eledi mi). BDDK banka baz degisiminden (2025) sonrasina sinirli, kisa pencerede istatistiksel anlamlilik iddia edilmez.", "status": "v9 kapsaminda ZORUNLU degil, ayri bir arastirma gorevi olarak ileride ele alinabilir, acceptance_criteria'ya girmez."}
+    ]
+  },
+
+  "language": {"code_and_identifiers": "en", "report_and_ui": "tr", "commit_messages": "en"},
+
+  "execution_rules": {
+    "no_hardcoded_tickers": true,
+    "no_fixed_thresholds": "Sabit F/K, PD/DD, FD/FAVOK esikleri yasaktir. Yalnizca esler grubu ici kesitsel persentil ve medyan sapmasi kullanilir.",
+    "no_historical_ratio_comparison": "Bir metrik kendi tarihsel ortalamasiyla KARSILASTIRILAMAZ.",
+    "no_em_dash": true,
+    "no_number_without_source": "Rapordaki ve dashboard'daki her sayi payload/veritabani icinde bulunmak zorundadir.",
+    "fail_closed": "Veri hatasi, eksik rasyo, rejim ihlali veya dogrulama kapisi ihlalinde rapor uretilmez.",
+    "deterministic_math": "Tum hesaplar Python tarafinda. LLM yalnizca sentez ve metin uretir. Dashboard hicbir hesaplama yapmaz.",
+    "long_only": "Sistem yalnizca long yon uretir.",
+    "silence_is_valid_output": "Hicbir aday hard_filters'i gecmezse sistem NO_ACTION durumunu acikca raporlar.",
+    "speculative_models_are_labeled": "DCF/Gordon gibi varsayima asiri duyarli modeller ana karara giremez, her zaman deneysel etiketiyle ve aralik olarak sunulur.",
+    "no_free_text_interpretation_of_kap": "KAP bildirimleri LLM'e serbest metin olarak asla verilmez, once deterministik kategoriye indirilir.",
+    "priors_are_disclosed": "final_score agirliklari (0.55/0.30/0.15), piotroski esigi, equity risk premium sabiti ve benzeri butun parametreler DENENMEMIS BASLANGIC VARSAYIMIDIR. Bu, methodology bolumunde ve her raporun altbilgisinde acikca belirtilir.",
+    "no_proof_of_edge_claims": "evaluate_past_predictions bir backtest degildir, canli takiptir. Rapor veya dashboard hicbir zaman 'kanitlanmis', 'istatistiksel olarak anlamli', 'backtest edilmis', 'edge dogrulandi' gibi ifadeler kullanamaz. Yalnizca tanimlayici izleme metrikleri (hit_rate, ortalama fazla getiri) gosterilir, bunlarin yaninda ortusen ufuklar nedeniyle bagimsiz gozlem sayisinin dusuk oldugu notu bulunur.",
+    "agentic_workflow": true
+  },
+
+  "ai_role_boundaries": {
+    "allowed": ["explain", "summarize", "challenge", "communicate"],
+    "forbidden": ["fiyat hesaplamak", "ROI hesaplamak", "ranking hesaplamak", "target uretmek", "eksik veriyi tahminle doldurmak", "kaynagi olmayan sayi uretmek", "esik degistirmek", "confidence sayisini kendi basina uretmek", "iskonto orani veya buyume orani varsaymak", "KAP metnini serbest yorumlayip tahmin/sürpriz cikarmak", "kanitlanmis edge veya istatistiksel anlamlilik iddia etmek"]
+  },
+
+  "optional_valuation_addon": {
+    "name": "gordon_growth_reference",
+    "status": "deneysel, ana karara girmez",
+    "eligibility": {
+      "history_rule": "Son 5 yilin en az 3'unde temettu odemis olmali.",
+      "sustainability_rule": "dividend_sustainability_engine'i de gecmeli (asagida). Yalnizca gecmis odeme gecmisi yeterli degildir."
+    },
+    "inputs": {
+      "dividend_per_share": "Son 12 ayin gerceklesen temettu odemesi",
+      "discount_rate_base": "hurdle_engine.risk_free_source + config/equity_risk_premium.yaml'daki sabit prim",
+      "growth_rate_g": "Uzun donem TCMB enflasyon hedefi, tahmin veya keyfi varsayim DEGIL"
+    },
+    "formula": "fair_value = dividend_per_share * (1 + g) / (discount_rate - g)",
+    "output_format": "Tek sayi asla gosterilmez. En az 3 iskonto senaryosu (base, base-100bp, base+100bp) ile aralik.",
+    "hard_constraints": [
+      "final_score formulune hicbir bicimde girmez",
+      "hard_filters'a hicbir bicimde girmez",
+      "discount_rate - g <= 0 ise hesaplanmaz, null_reason='unstable_denominator'"
+    ]
+  },
+
+  "dividend_sustainability_engine": {
+    "purpose": "Gordon'un 'gecmiste temettu odedi' kapisini 'bu temettu surdurulebilir mi' sorusuyla siklastirir.",
+    "checks": {
+      "fcf_payout_coverage": "dividend_paid_ttm / fcf_ttm. Negatif FCF veya coverage < 1 ise dikkat bayragi.",
+      "dividend_streak_years": "Kesintisiz odeme yapilan yil sayisi",
+      "payout_ratio_trend_3p": "Son 3 donemin payout ratio yonu (artiyor/azaliyor/stabil)",
+      "leverage_context": "net_debt/ebitda ile birlikte degerlendirilir, yuksek kaldiracla yuksek payout riskli sayilir"
+    },
+    "gate": "Bu kontrolleri gecemeyen sirket icin gordon_growth_reference hesaplanmaz, null_reason='dividend_not_sustainable'.",
+    "note": "Bu bir hard_filter DEGIL, yalnizca gordon_growth_reference'in bir on-kosuludur. Ana skoru etkilemez cunku gordon zaten ana skora girmiyor."
+  },
+
+  "earnings_quality_sloan": {
+    "purpose": "Ucuz ama tahakkuk yoluyla kar sisiren sirketleri (value trap'in Piotroski'nin kismen yakaladigi bir alt kumesi) ek olarak isaretlemek.",
+    "formula": "sloan_accrual_ratio = (net_income_ttm - operating_cashflow_ttm) / average_total_assets",
+    "basis_guard_integration": "Baz kirigi (basis_break) olan donemler icin hesaplanmaz, null_reason='basis_break'.",
+    "method": "MUTLAK ESIK KULLANILMAZ. Ayni ratio_profile ve reporting_basis icindeki esler grubu icinde kesitsel persentil hesaplanir, valuation_engine ile ayni yontem.",
+    "flag": "Persentilin ust ondalik diliminde (en yuksek tahakkuk, yani en supheli) olan sirketler icin 'elevated_earnings_quality_risk' bayragi thesis_card.main_risk alanina eklenir.",
+    "scoring_impact": "final_score'a girmez, hard_filter degildir. Yalnizca rapor/dashboard'da uyari olarak gorunur."
+  },
+
+  "event_calendar_engine": {
+    "purpose": "Onceden bilinen, tahmin gerektirmeyen takvim olaylarini adayin ufku icinde isaretlemek.",
+    "event_types": [
+      {"type": "bist_index_rebalance", "source": "Borsa Istanbul'un onceden yayinladigi endeks revizyon takvimi", "coverage": "yuksek"},
+      {"type": "viop_expiry", "source": "VIOP sabit vade takvimi", "coverage": "yuksek"},
+      {"type": "ipo_lockup_expiry", "source": "listing_date + halka arz izahnamesindeki kilit sure", "coverage": "orta, izahname verisi eksikse hesaplanamaz"},
+      {"type": "genel_kurul_temettu_kesim", "source": "KAP'ta ilan edildiginde", "coverage": "yalnizca KAP'ta resmen aciklanmissa doldurulur"},
+      {"type": "bilanco_aciklama_tarihi", "source": "KAP", "coverage": "DUSUK: BIST sirketleri ABD sirketlerinin aksine kesin bilanco tarihini onceden ilan etmek zorunda degil. Bu alan yalnizca sirket acikca ilan etmisse doldurulur, tahmin uretilmez, bos birakilir."}
+    ],
+    "output_field": "upcoming_events: thesis_card icinde liste, skora girmez",
+    "rule": "Hicbir tarih tahmin edilmez. Yalnizca resmi kaynaktan (Borsa Istanbul takvimi, KAP ilani, izahname) dogrudan cekilen tarihler gosterilir."
+  },
+
+  "beta_adjusted_hurdle": {
+    "purpose": "Yuksek beta'li hisseleri ayni hurdle ile degerlendirmenin sistematik olarak onlari odullendirmesini gostermek.",
+    "beta_calculation": "60-120 gunluk gunluk getiri serisi, XU100'e karsi regresyon egimi. Zaten cekilen prices verisinden, yeni veri kaynagi gerekmez.",
+    "formula": "hurdle_rate_beta_adjusted_pct = risk_free_annual + beta * equity_risk_premium (config/equity_risk_premium.yaml)",
+    "output_field": "excess_over_beta_hurdle_pct = expected_roi_pct - hurdle_rate_beta_adjusted_pct",
+    "usage": "hard_filter DEGIL. excess_over_hurdle_pct'in yaninda ek bilgi olarak gosterilir. Iki deger arasinda buyuk fark varsa ('bu hisse sadece yuksek beta yuzunden cazip gorunuyor') rapor bunu bir uyari cumlesiyle belirtir."
+  },
+
+  "fcf_yield_usd": {
+    "formula": "fcf_ttm / (market_cap / usdtry_spot)",
+    "purpose": "TRY bazli reel getiri yaniltici olabilecegi icin dolar bazinda bakan (yabanci) yatirimci perspektifini ek bilgi olarak sunar.",
+    "scoring_impact": "final_score'a girmez, yalnizca rapor/dashboard'da gosterilir."
+  },
+
+  "regime_taxonomy": {
+    "purpose": "Makro rejimi okunabilir etiketlere cevirmek, otomatik skor degisikligi YAPMAZ.",
+    "axes": {
+      "real_rate_regime": "policy_rate_pct - cpi_yoy_pct degerine gore: negative | low_positive | high_positive",
+      "inflation_trend": "Son 3 ayin TUFE yon degisimi: rising | plateau | falling",
+      "fx_regime": "USD/TRY'nin son 90 gunluk oynakligi ve trendine gore: stable | depreciating_gradual | depreciating_fast"
+    },
+    "output": "Rapor basliginda ve dashboard'da bir etiket seti olarak gosterilir, ornek: 'high_positive_real_rate + falling_inflation + depreciating_gradual'.",
+    "explicit_non_action": "Bu etiketler final_score, weights.yaml veya herhangi bir hard_filter icin GIRDI DEGILDIR. Kodda regime_taxonomy ciktisindan scoring.py'ye hicbir veri akisi olmamalidir, bu statik taramayla test edilir."
+  },
+
+  "thesis_invalidation_monitor": {
+    "purpose": "thesis_card.invalidation_condition serbest metin olarak yazilip hic kontrol edilmemesini onlemek.",
+    "condition_schema": {"field": "kontrol edilecek zaten var olan alan (ornek: excess_over_hurdle_pct, piotroski_normalized_score, confidence, reporting_basis, tedbir_level)", "operator": "<, >, ==, changed_to", "value": "esik veya hedef deger"},
+    "examples": [
+      {"ticker_context": "ornek", "condition": "excess_over_hurdle_pct < 0", "meaning": "Hurdle avantaji kayboldu"},
+      {"condition": "piotroski_normalized_score < config_threshold", "meaning": "Kalite bozuldu"},
+      {"condition": "confidence changed_to 'insufficient_peers'", "meaning": "Karsilastirma guvenilirligi dustu"},
+      {"condition": "reporting_basis changed_to 'unknown'", "meaning": "Baz belirsizlesti"},
+      {"condition": "tedbir_level >= 2", "meaning": "Tedbir uygulandi"}
+    ],
+    "execution": "evaluate_past_predictions calisirken her acik tahmin icin bu kosullar kontrol edilir. Tetiklenen bir kosul rapora 'Bozulan Tezler' bolumune yazilir.",
+    "language_rule": "Bu bir SATIS SINYALI degildir, bir UYARIDIR. Rapor dilinde emir cumlesi kullanilmaz, yalnizca durum bildirilir."
+  },
+
+  "evaluate_past_predictions_clarification": {
+    "is_not_a_backtest": "Bu modul SADECE canli kosu sonrasi ne oldugunu takip eder (ex-post tracking). Gecmis kurallarin gecmiste nasil calisacagini simule eden bir walk-forward backtest DEGILDIR. Bu ikisi karistirilmamalidir.",
+    "independence_caveat": "T+5/T+20/T+60 ufuklari gunluk secilen adaylarda ORTUSUR. Ortusen ufuklar arasinda guclu otokorelasyon vardir, yani N gunluk takip N bagimsiz gozlem anlamina gelmez. Rapor bu notu her ozet tabloda tekrarlar.",
+    "banned_claims": ["kanitlanmis edge", "istatistiksel olarak anlamli", "backtest edilmis", "dogrulanmis strateji", "sharpe orani X" ],
+    "allowed_claims": ["tanimlayici izleme metrigi (hit_rate, ortalama fazla getiri) belirtilen donem icin", "bu bir canli takip ozetidir, gecmis performans garantisi degildir"]
+  },
+
+  "market_regime_assumptions_2026Q3": {
+    "policy_rate_pct": 37.0, "bond_2y_pct": 39.6, "bond_10y_pct": 34.2, "cpi_yoy_pct": 31.5,
+    "cpi_yearend_expectation_pct": 29.4, "usdtry_spot": 48.4, "usdtry_12m_expectation": 57.4,
+    "xu100_level": 14000, "xu100_pe": 13.6, "foreign_ownership_pct": 32.6,
+    "short_selling_ban_active": true, "individual_investor_count_millions": 6.76, "ytd_ipo_count": 26
+  },
+
+  "known_pitfalls_must_handle": [
+    {"id": "P1_reporting_basis_split", "requirement": "reporting_basis sirket-donem bazli. Persentil yalnizca ayni baz icinde."},
+    {"id": "P2_bank_timeseries_break", "requirement": "basis_guard, farkli baza sahip donemler arasi buyume/sloan/piotroski hesabini bloke eder."},
+    {"id": "P3_historical_multiple_trap", "requirement": "Kodda tarihsel ortalama carpan karsilastirmasi yapan hicbir fonksiyon olmayacak."},
+    {"id": "P4_small_sample", "requirement": "MIN_PEER_N ve hiyerarsik geri dusus zorunlu."},
+    {"id": "P5_sector_ratio_mismatch", "requirement": "ratio_profile ayrimi zorunlu."},
+    {"id": "P6_layered_vbts", "requirement": "tedbir_level 0-5, seviye 2 ve ustu elenir."},
+    {"id": "P7_no_hurdle_rate", "requirement": "hurdle_engine zorunlu, beta_adjusted_hurdle ek bilgi olarak."},
+    {"id": "P8_long_only_regime", "requirement": "regime_monitor aciga satis yasagini takip eder."},
+    {"id": "P9_retail_concentration", "requirement": "ownership_quality skorlamaya girer."},
+    {"id": "P10_ipo_wave", "requirement": "90 gunden yeni sirketler elenir."},
+    {"id": "P11_lookahead_bias", "requirement": "point_in_time_fields, effective_at kurali."},
+    {"id": "P12_dcf_false_precision", "requirement": "optional_valuation_addon hicbir zaman tek sayi uretmez, ana skora girmez."},
+    {
+      "id": "P13_undemonstrated_priors_presented_as_fact",
+      "problem": "final_score agirliklari, piotroski esigi ve equity risk premium gibi parametreler hicbir gecmis veriyle kalibre edilmedi. Bunlari sessizce sabit deger gibi sunmak, sistemin gercekte sahip olmadigi bir kesinlik izlenimi verir.",
+      "requirement": "priors_are_disclosed kurali: bu parametreler her raporun altbilgisinde ve methodology bolumunde acikca 'denenmemis baslangic varsayimi' olarak etiketlenir."
+    },
+    {
+      "id": "P14_tracking_presented_as_backtest",
+      "problem": "evaluate_past_predictions bir backtest degil canli takiptir, ortusen ufuklar bagimsiz gozlem sayisini dusurur. Bunu bir 'kanitlanmis strateji' gibi sunmak yaniltici olur.",
+      "requirement": "no_proof_of_edge_claims kurali ve banned_claims listesi uygulanir."
+    }
+  ],
+
+  "point_in_time_fields": {
+    "fields": {"period_end": "Donem bitis tarihi", "published_at": "Kamuya acilma zamani", "available_at": "Sistem dogrulama zamani", "effective_at": "Kullanilabilir ilk kosu zamani", "ingested_at": "Yazilma zamani"},
+    "enforcement_rule": "build_report_payload ve evaluate_past_predictions, WHERE effective_at <= as_of_date_cutoff filtresini her sorguya uygulamak zorundadir."
+  },
+
+  "architecture": {
+    "principle": "MCP veriyi getirir, Skill yontemi tasir, hesap motorlari sayiyi uretir, Agent yalnizca sentezler, Dashboard yalnizca gosterir.",
+    "execution_order": ["regime_monitor", "regime_taxonomy", "universe", "basis_guard", "ranking", "earnings_quality_sloan", "catalysts", "event_calendar_engine", "ownership_quality", "target_price_engine", "hurdle_engine", "beta_adjusted_hurdle", "dividend_sustainability_engine", "optional_valuation_addon", "concentration_check", "correlation_diagnostic", "decision_diff_engine", "payload", "thesis_card", "validate", "dispatch", "evaluate_past_predictions", "thesis_invalidation_monitor"],
+    "hard_stop_gates": [
+      "regime_monitor kritik sapma bildirirse akis durur",
+      "basis_guard unknown oranini yuzde 30 uzerinde bulursa akis durur",
+      "validation_gate orphan sayi bulursa gonderim durur",
+      "hicbir aday hard_filters'i gecmezse akis durmaz, NO_ACTION raporu uretilir"
+    ]
+  },
+
+  "mcp_servers": {
+    "mcpServers": {
+      "bist-data": {"command": "python", "args": ["-m", "bist_mcp.server"], "description": "Fiyat, hacim, rasyo, tedbir, sahiplik, temettu gecmisi."},
+      "kap-web": {"command": "python", "args": ["-m", "kap_web_mcp.server"], "description": "kap.org.tr kamuya acik bildirim listesini parse eder. Resmi KAP REST API kurumsal sozlesme gerektirdigi icin sahsi kullanimda erisilebilir degildir."},
+      "macro": {"command": "python", "args": ["-m", "macro_mcp.server"], "description": "TCMB politika faizi, tahvil getirileri, TUFE, USD/TRY, enflasyon hedefi."},
+      "sqlite": {"command": "uvx", "args": ["mcp-server-sqlite", "--db-path", "./data/bist_history.db"]}
+    },
+    "verification_note": "Kurulum oncesi her paketin mevcut oldugu dogrulanacak."
+  },
+
+  "regime_monitor": {
+    "tracked_fields": ["short_selling_ban_active", "short_selling_ban_end_date", "vbts_stock_count", "policy_rate_pct", "bond_2y_pct", "cpi_yoy_pct", "usdtry_spot", "xu100_level"],
+    "rules": [
+      {"condition": "short_selling_ban_active degisti", "action": "Rapora rejim degisikligi uyarisi ekle, kisa vade kovasini 5 islem gunu askiya al"},
+      {"condition": "vbts_stock_count 60 gunluk ortalamanin 2 katini asti", "action": "Kisa vade kovasi top_n degerini yariya indir"},
+      {"condition": "bond_2y_pct son kosuya gore 300 baz puandan fazla degisti", "action": "Hurdle, beta_adjusted_hurdle ve gordon_growth_reference'i yeniden hesapla"},
+      {"condition": "makro veri cekilemedi", "action": "Kosuyu iptal et"}
+    ]
+  },
+
+  "hurdle_engine": {
+    "risk_free_source": "2 yillik gosterge tahvil getirisi",
+    "computations": {
+      "hurdle_rate_pct": "risk_free_annual * (horizon_days / 365)",
+      "expected_roi_pct": "((target_price - entry_price) / entry_price) * 100",
+      "excess_over_hurdle_pct": "expected_roi_pct - hurdle_rate_pct",
+      "real_return_pct": "((1 + roi/100) / (1 + expected_cpi_for_horizon/100) - 1) * 100",
+      "usd_return_pct": "((target_price / expected_usdtry_at_horizon) / (entry_price / usdtry_spot) - 1) * 100"
+    },
+    "sensitivity_table": {"shocks_bps": [-100, 0, 100, 200, 300], "output": "Her sok icin kac adayin excess_over_hurdle_pct > 0 kaldigini sayar."},
+    "gate": "excess_over_hurdle_pct <= 0 olan aday raporda gosterilmez."
+  },
+
+  "basis_guard": {
+    "regulator_mapping": {"BDDK": ["bankacilik", "finansal kiralama", "faktoring", "finansman", "tasarruf finansman", "varlik yonetim"], "SPK_TFRS": ["diger tum sektorler"]},
+    "rules": ["BDDK kapsamindakiler 2025 sonrasi nominal", "SPK_TFRS kapsamindakiler TMS 29 uygulandigi surece adjusted", "Baz farkli donemler arasi buyume/sloan/piotroski hesabi bloke edilir", "unknown bazli satirlar skorlanmaz"]
+  },
+
+  "universe_filters": {
+    "min_volume_tl_default": 10000000, "min_listing_days": 90, "min_reported_quarters": 2, "max_tedbir_level": 1,
+    "tedbir_level_scale": {"0": "tedbir yok", "1": "aciga satis/kredili islem yasagi", "2": "brut takas", "3": "emir paketi", "4": "tek fiyat", "5": "islem durdurma"}
+  },
+
+  "sector_taxonomy": {
+    "supersectors": ["XUSIN", "XUHIZ", "XUMAL", "XUTEK"],
+    "subsectors_to_profile": {
+      "XBANK": "bank", "XFINK": "bank", "XSGRT": "insurance", "XHOLD": "holding", "XYORT": "holding",
+      "XGMYO": "reit", "XGIDA": "industrial", "XTEKS": "industrial", "XKMYA": "industrial", "XTAST": "industrial",
+      "XMANA": "industrial", "XMESY": "industrial", "XKAGT": "industrial", "XILTM": "industrial", "XULAS": "industrial",
+      "XTRZM": "industrial", "XTCRT": "industrial", "XELKT": "industrial", "XINSA": "industrial", "XMADN": "industrial",
+      "XBLSM": "industrial", "XSPOR": "industrial"
+    }
+  },
+
+  "ratio_profiles": {
+    "industrial": {"metrics": ["pe", "pb", "ev_ebitda", "ev_sales", "roe", "net_debt_ebitda", "fcf_yield"], "direction": {"pe": "lower_better", "pb": "lower_better", "ev_ebitda": "lower_better", "ev_sales": "lower_better", "roe": "higher_better", "net_debt_ebitda": "lower_better", "fcf_yield": "higher_better"}},
+    "bank": {"metrics": ["pe", "pb", "roe", "roa", "nim", "npl_ratio", "car"], "forbidden_metrics": ["ev_ebitda", "ev_sales", "net_debt_ebitda"]},
+    "insurance": {"metrics": ["pe", "pb", "roe", "combined_ratio"], "forbidden_metrics": ["ev_ebitda", "ev_sales"]},
+    "holding": {"metrics": ["nav_discount", "pb", "roe"], "note": "NAV hesaplanamiyorsa skorlanmaz."},
+    "reit": {"metrics": ["pb", "nav_discount", "ffo_yield"], "forbidden_metrics": ["ev_ebitda"]}
+  },
+
+  "valuation_engine": {
+    "min_peer_n": 8,
+    "fallback_chain": ["sector", "supersector", "market"],
+    "grouping_keys": ["peer_level", "reporting_basis", "ratio_profile"],
+    "outlier_handling": "1 ve 99 persentil winsorize.",
+    "confidence_mapping": {"sector": "high", "supersector": "degraded", "market": "low", "none": "insufficient_peers"}
+  },
+
+  "quality_filter_piotroski": {
+    "criteria_count": 9,
+    "basis_guard_integration": "Baz kirigi olan kriterler null sayilir, skor hesaplanabilen kriter sayisina orantilanir.",
+    "threshold_note": "Esik degeri config/weights.yaml icinde, DENENMEMIS bir baslangic varsayimidir (priors_are_disclosed kuralina tabi).",
+    "gate": "Normalize F-Score esigin altinda kalan sirket elenir, filtered_by='piotroski'."
+  },
+
+  "correlation_diagnostic": {
+    "method": "Pearson korelasyon matrisi, son 60 gunluk kapanis",
+    "rule": "0.85 ustu korelasyon rapora uyari olarak eklenir.",
+    "explicit_non_action": "Otomatik eleme veya degistirme YAPILMAZ."
+  },
+
+  "volume_confirmed_breakout": {
+    "rule": "SMA20 yukari kesildiginde volume_ratio_20d >= 1.5 olmali.",
+    "integration": "short_term hard_filters listesine eklenir."
+  },
+
+  "ownership_quality": {
+    "source": "MKK aylik yatirimci verisi",
+    "risk_rules": [
+      {"condition": "retail_pct > 80 ve 20 gunluk getiri > 30", "action": "Kisa vade adayligini reddet"},
+      {"condition": "free_float_pct < 15", "action": "Aday listesinden cikar"},
+      {"condition": "investor_count_change_1m > 50 ve retail_pct > 70", "action": "Skoru yuzde 30 cezalandir"}
+    ]
+  },
+
+  "catalyst_engine": {
+    "lookback_days": 14,
+    "decay_model": {
+      "formula": "effective_weight = base_weight * 0.5 ** (days_since_published / half_life_days)",
+      "half_life_days_by_category": {
+        "financial_report": 75, "new_business_or_tender": 20, "share_buyback": 45, "rights_issue": 30,
+        "bonus_issue": 15, "insider_buy": 30, "insider_sell": 30, "vbts_measure_applied": 10,
+        "vbts_measure_expiring": 5, "secondary_offering": 30, "management_change": 60, "material_event_other": 20
+      }
+    },
+    "categories": [
+      {"key": "financial_report", "weight": 3, "sign": "by_surprise"},
+      {"key": "new_business_or_tender", "weight": 2, "sign": "positive"},
+      {"key": "share_buyback", "weight": 2, "sign": "positive"},
+      {"key": "rights_issue", "weight": 2, "sign": "negative"},
+      {"key": "bonus_issue", "weight": 1, "sign": "neutral"},
+      {"key": "insider_buy", "weight": 2, "sign": "positive"},
+      {"key": "insider_sell", "weight": 2, "sign": "negative"},
+      {"key": "vbts_measure_applied", "weight": 3, "sign": "negative"},
+      {"key": "vbts_measure_expiring", "weight": 2, "sign": "volatility_event"},
+      {"key": "secondary_offering", "weight": 2, "sign": "negative"},
+      {"key": "management_change", "weight": 1, "sign": "neutral"},
+      {"key": "material_event_other", "weight": 1, "sign": "neutral"}
+    ],
+    "score_formula": "Agirlik x isaret x effective_weight carpimlarinin toplami -1 ile +1 arasina normalize edilir."
+  },
+
+  "target_price_engine": {
+    "long_term": {
+      "leg_1": "Sektor medyan F/K x sirketin TTM hisse basina kari",
+      "leg_2": "Sektor medyan FD/FAVOK x sirketin TTM FAVOK, eksi net borc",
+      "combination": "Iki bacagin ortalamasi.",
+      "profile_exceptions": "Bankada leg_2 kullanilmaz. Holdingde NAV iskontosu medyani kullanilir.",
+      "horizon_days": 180
+    },
+    "short_term": {
+      "target": "current_price + 2.5 * ATR20",
+      "stop_loss": "current_price - 1.2 * ATR20",
+      "entry": "SMA20 veya kirilim seviyesi",
+      "horizon_days": 20,
+      "regime_dependency": "Aciga satis yasagi degisirse bu kova 5 islem gunu askiya alinir."
+    },
+    "mandatory_downstream": "Her hedef hurdle_engine'den gecmeden rapora giremez.",
+    "reference_addon": "gordon_growth_reference ve beta_adjusted_hurdle, uygunsa hedefin yaninda ayri bilgi olarak gosterilir."
+  },
+
+  "concentration_check": {
+    "checks": [
+      {"dimension": "ratio_profile", "rule": "Tek profil yuzde 50 ustundeyse uyari"},
+      {"dimension": "sector", "rule": "Tek alt sektor yuzde 50 ustundeyse uyari"}
+    ],
+    "output_field": "concentration_warnings"
+  },
+
+  "decision_diff_engine": {
+    "outputs": {"regime_status": "unchanged | changed", "entered": "Yeni giren adaylar ve gerekce", "exited": "Cikan adaylar ve gerekce", "catalyst_deltas": "Yeni KAP olaylari", "macro_deltas": "Anlamli makro degisim"}
+  },
+
+  "output_status_states": {
+    "candidate_states": {
+      "STRONG_OPPORTUNITY": "hard_filters gecti, pozitif marj, ust dilim, confidence=high, piotroski gecti",
+      "OPPORTUNITY": "hard_filters gecti, pozitif marj ama ust dilimde degil veya confidence=degraded",
+      "WATCHLIST": "hard_filters gecti ama marj dusuk veya confidence=low",
+      "NO_ACTION": "hard_filters'tan en az biri basarisiz",
+      "QUARANTINE": "capraz kaynak sapmasi nedeniyle skorlanmadi"
+    },
+    "run_level_state": "Hicbir STRONG_OPPORTUNITY/OPPORTUNITY yoksa rapor NO_ACTION_TODAY gosterir."
+  },
+
+  "scoring": {
+    "final_score": "0.55 * valuation_z + 0.30 * catalyst_score + 0.15 * ownership_quality_z",
+    "weights_are_priors": "Bu katsayilar priors_are_disclosed kuraliyla denenmemis baslangic varsayimi olarak isaretlenir.",
+    "weights_location": "config/weights.yaml",
+    "hard_filters_all_buckets": ["tedbir_level <= 1", "reporting_basis != 'unknown'", "confidence != 'insufficient_peers'", "listing_days >= 90", "free_float_pct >= 15", "excess_over_hurdle_pct > 0", "effective_at <= as_of_date_cutoff", "piotroski_score_normalized >= config_threshold"],
+    "short_term_extra_filter": "volume_ratio_20d >= 1.5",
+    "top_n_per_bucket": 4,
+    "explicit_exclusions": ["gordon_growth_reference", "beta_adjusted_hurdle/excess_over_beta_hurdle_pct", "earnings_quality_sloan flag", "fcf_yield_usd", "regime_taxonomy etiketleri", "upcoming_events"]
+  },
+
+  "database_schema": {
+    "engine": "sqlite",
+    "tables": {
+      "regime_log": ["as_of_date", "short_selling_ban_active", "ban_end_date", "vbts_stock_count", "policy_rate_pct", "bond_2y_pct", "cpi_yoy_pct", "usdtry_spot", "xu100_level", "regime_change_flag", "real_rate_regime", "inflation_trend", "fx_regime"],
+      "universe_snapshot": ["as_of_date", "ticker", "name", "sector", "supersector", "ratio_profile", "regulator", "market_cap", "avg_volume_tl_20d", "tedbir_level", "tedbir_end_date", "listing_days", "exclusion_reason", "ingested_at"],
+      "fundamentals": ["as_of_date", "ticker", "period_end", "reporting_basis", "pe", "pb", "ev_ebitda", "ev_sales", "roe", "eps_ttm", "ebitda_ttm", "net_debt", "nav_discount", "dividend_per_share_ttm", "payout_ratio", "fcf_ttm", "fcf_yield_usd", "null_reason", "source", "published_at", "available_at", "effective_at", "ingested_at"],
+      "piotroski_scores": ["as_of_date", "ticker", "criteria_met", "criteria_computable", "normalized_score", "null_reason"],
+      "earnings_quality": ["as_of_date", "ticker", "sloan_accrual_ratio", "peer_percentile", "elevated_risk_flag", "null_reason"],
+      "dividend_sustainability": ["as_of_date", "ticker", "fcf_payout_coverage", "dividend_streak_years", "payout_ratio_trend_3p", "passes_sustainability", "null_reason"],
+      "beta_metrics": ["as_of_date", "ticker", "beta_60_120d", "hurdle_rate_beta_adjusted_pct", "excess_over_beta_hurdle_pct"],
+      "upcoming_events": ["ticker", "event_type", "event_date", "source", "coverage_note"],
+      "ownership": ["as_of_date", "ticker", "investor_count", "investor_count_change_1m", "retail_pct", "institutional_pct", "free_float_pct", "foreign_pct"],
+      "prices": ["date", "ticker", "open", "high", "low", "close", "volume", "atr20", "sma20", "sma50", "volume_ratio_20d"],
+      "kap_disclosures": ["ticker", "disclosure_id", "category", "title", "summary", "impact_sign", "weight", "url", "published_at", "available_at", "effective_at"],
+      "scores": ["as_of_date", "ticker", "bucket", "candidate_state", "valuation_z", "catalyst_score", "ownership_z", "final_score", "peer_group_used", "peer_n", "confidence", "filtered_by"],
+      "gordon_reference": ["as_of_date", "ticker", "dividend_per_share", "discount_rate_low", "discount_rate_base", "discount_rate_high", "fair_value_low", "fair_value_high", "null_reason"],
+      "correlation_flags": ["as_of_date", "ticker_a", "ticker_b", "correlation_60d"],
+      "predictions": ["as_of_date", "ticker", "bucket", "entry_price", "target_price", "stop_loss", "horizon_days", "expected_roi_pct", "hurdle_rate_pct", "excess_over_hurdle_pct", "real_return_pct", "usd_return_pct", "rationale_hash"],
+      "invalidation_checks": ["as_of_date", "ticker", "condition_field", "condition_operator", "condition_value", "triggered_at", "resolved"],
+      "outcomes": ["as_of_date", "ticker", "horizon_days", "return_pct", "xu100_return_pct", "deposit_return_pct", "usd_return_pct", "excess_vs_index_pct", "excess_vs_deposit_pct", "evaluated_at"],
+      "quarantine": ["as_of_date", "ticker", "field", "value_a", "value_b", "source_a", "source_b", "deviation_pct"],
+      "runs": ["run_id", "as_of_date", "status", "run_level_state", "started_at", "finished_at", "email_sent", "error_message"]
+    },
+    "constraints": ["(as_of_date, ticker) unique on universe_snapshot, fundamentals, ownership, piotroski_scores, gordon_reference, earnings_quality, dividend_sustainability, beta_metrics", "as_of_date unique on runs"]
+  },
+
+  "tools": [
+    {"name": "check_market_regime", "parameters": {"type": "object", "properties": {"as_of_date": {"type": "string"}}, "required": []}},
+    {"name": "discover_and_rank_bist", "parameters": {"type": "object", "properties": {"as_of_date": {"type": "string"}, "min_volume_tl": {"type": "number", "default": 10000000}, "top_n_per_bucket": {"type": "integer", "default": 4}}, "required": []}},
+    {"name": "fetch_kap_catalysts", "parameters": {"type": "object", "properties": {"tickers": {"type": "array", "items": {"type": "string"}}, "lookback_days": {"type": "integer", "default": 14}}, "required": ["tickers"]}},
+    {"name": "calculate_piotroski_scores", "parameters": {"type": "object", "properties": {"tickers": {"type": "array", "items": {"type": "string"}}}, "required": ["tickers"]}},
+    {"name": "calculate_earnings_quality", "description": "Sloan tahakkuk orani ve kesitsel persentil bayragi hesaplar.", "parameters": {"type": "object", "properties": {"tickers": {"type": "array", "items": {"type": "string"}}}, "required": ["tickers"]}},
+    {"name": "calculate_targets_and_returns", "parameters": {"type": "object", "properties": {"tickers": {"type": "array", "items": {"type": "string"}}}, "required": ["tickers"]}},
+    {"name": "calculate_beta_adjusted_hurdle", "description": "Beta hesaplar, hurdle_rate_beta_adjusted_pct ve excess_over_beta_hurdle_pct uretir.", "parameters": {"type": "object", "properties": {"tickers": {"type": "array", "items": {"type": "string"}}}, "required": ["tickers"]}},
+    {"name": "check_dividend_sustainability", "parameters": {"type": "object", "properties": {"tickers": {"type": "array", "items": {"type": "string"}}}, "required": ["tickers"]}},
+    {"name": "calculate_gordon_reference", "parameters": {"type": "object", "properties": {"tickers": {"type": "array", "items": {"type": "string"}}}, "required": ["tickers"]}},
+    {"name": "fetch_upcoming_events", "description": "BIST rebalans, VIOP vade, lock-up ve KAP'ta ilan edilmis genel kurul/temettu tarihlerini ceker.", "parameters": {"type": "object", "properties": {"tickers": {"type": "array", "items": {"type": "string"}}}, "required": ["tickers"]}},
+    {"name": "check_concentration", "parameters": {"type": "object", "properties": {"as_of_date": {"type": "string"}}, "required": ["as_of_date"]}},
+    {"name": "diff_against_previous_run", "parameters": {"type": "object", "properties": {"as_of_date": {"type": "string"}}, "required": ["as_of_date"]}},
+    {"name": "build_report_payload", "parameters": {"type": "object", "properties": {"as_of_date": {"type": "string"}}, "required": ["as_of_date"]}},
+    {"name": "validate_and_dispatch", "parameters": {"type": "object", "properties": {"subject": {"type": "string"}, "html_content": {"type": "string"}, "payload_ref": {"type": "string"}}, "required": ["subject", "html_content", "payload_ref"]}},
+    {"name": "evaluate_past_predictions", "description": "Bu bir backtest degildir, canli takiptir. banned_claims listesine uyar.", "parameters": {"type": "object", "properties": {"lookback_months": {"type": "integer", "default": 6}}, "required": []}},
+    {"name": "check_thesis_invalidation", "description": "Acik tahminlerin invalidation_condition'ini kontrol eder, tetiklenenleri isaretler.", "parameters": {"type": "object", "properties": {"as_of_date": {"type": "string"}}, "required": ["as_of_date"]}}
+  ],
+
+  "skills": [
+    {"name": "bist-relative-valuation", "files": ["SKILL.md", "scripts/rank.py", "scripts/basis_guard.py", "config/weights.yaml"]},
+    {"name": "bist-quality-filter", "files": ["SKILL.md", "scripts/piotroski.py", "scripts/sloan.py"]},
+    {"name": "bist-catalyst-scoring", "files": ["SKILL.md", "scripts/categorize.py", "scripts/decay.py", "reference/kap_category_map.json", "config/catalyst_decay.yaml"]},
+    {"name": "bist-regime-monitor", "files": ["SKILL.md", "scripts/regime.py", "scripts/regime_taxonomy.py", "reference/regime_rules.yaml"]},
+    {"name": "bist-valuation-addon", "files": ["SKILL.md", "scripts/gordon.py", "scripts/dividend_sustainability.py", "scripts/beta_hurdle.py", "config/equity_risk_premium.yaml"]},
+    {"name": "bist-event-calendar", "files": ["SKILL.md", "scripts/events.py"]},
+    {"name": "bist-thesis-card", "files": ["SKILL.md", "templates/thesis_card.md.j2", "scripts/invalidation.py"]},
+    {"name": "bist-report", "files": ["SKILL.md", "templates/newsletter.html.j2", "scripts/validate.py"]}
+  ],
+
+  "report": {
+    "format": "responsive HTML, inline CSS, mobil oncelikli",
+    "sections": [
+      "Baslik, as_of_date, rejim ozeti ve regime_taxonomy etiketleri",
+      "Ne degisti (decision_diff_engine)",
+      "Yogunlasma uyarisi (varsa)",
+      "Uzun vade adaylari: Investment Thesis Card (upcoming_events dahil), rasyo tablosu, F-Score, Sloan bayragi (varsa), hurdle detaylari + beta-duzeltmeli hurdle, durum etiketi, gordon_growth_reference varsa ayri deneysel kutuda, fcf_yield_usd bilgi satiri",
+      "Kisa vade adaylari: giris, ATR hedefi, stop-loss, hacim teyidi, hurdle uzeri fazla, katalizor, durum etiketi",
+      "Hurdle/rejim/piotroski filtresine takilan adaylar",
+      "Skorlanamayan hisseler, sayi olarak",
+      "NO_ACTION_TODAY (uygunsa)",
+      "Bozulan Tezler (thesis_invalidation_monitor ciktisi, varsa)",
+      "Gecmis tahmin izleme ozeti (evaluate_past_predictions_clarification kurallarina tabi, backtest degildir notu her zaman gorunur)",
+      "Metodoloji notu: priors_are_disclosed beyani ve sorumluluk reddi"
+    ],
+    "thesis_card_fields": ["thesis_bullets", "why_now", "main_risk (elevated_earnings_quality_risk dahil edilebilir)", "invalidation_condition (makine-okunabilir formda)", "upcoming_events"],
+    "must_display_per_candidate": ["candidate_state", "entry_price", "target_price", "expected_roi_pct", "hurdle_rate_pct", "excess_over_hurdle_pct", "excess_over_beta_hurdle_pct", "peer_group_used", "peer_n", "confidence", "reporting_basis", "tedbir_level", "retail_pct", "piotroski_normalized_score"],
+    "tone_rules": [
+      "Kesinlik ifadesi kullanilmaz",
+      "Her tez icin karsi argüman zorunlu",
+      "'Ucuz' yalnizca sektor ici goreli anlamda",
+      "Tarihsel carpan ortalamasina atif yapilmaz",
+      "Confidence yalnizca high/degraded/low",
+      "Gordon referansi her zaman aralik olarak sunulur",
+      "banned_claims listesindeki hicbir ifade kullanilmaz",
+      "Bozulan tez bolumu emir cumlesi icermez, yalnizca durum bildirir"
+    ],
+    "validation_gate": {"rule": "HTML icindeki tum sayisal token'lar payload degerler kumesinde bulunmalidir.", "on_orphan": "Gonderim iptal."}
+  },
+
+  "delivery": {"channel": "SMTP", "required_env": ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "MAIL_TO", "MAIL_FROM"], "subject_template": "BIST Tarama Bulteni - {as_of_date}", "attachments": ["payload.json"]},
+
+  "evaluation_loop": {
+    "horizons_days": [5, 20, 60],
+    "benchmarks": ["XU100", "mevduat veya 2 yillik tahvil getirisi", "USD/TRY"],
+    "metrics": ["hit_rate", "median_excess_vs_index", "median_excess_vs_deposit", "candidate_state kirilimi"],
+    "point_in_time_rule": "Yalnizca effective_at <= degerlendirme tarihi olan satirlar kullanilir.",
+    "is_not_a_backtest": "evaluate_past_predictions_clarification kurallarina tabidir."
+  },
+
+  "scheduling": {"run_time": "18:30 Europe/Istanbul", "idempotency": "Ayni as_of_date icin ikinci kosu e-posta atmaz.", "retry_policy": "3 deneme, ustel bekleme."},
+
+  "repo_structure": [
+    "bist_mcp/server.py", "kap_web_mcp/server.py", "macro_mcp/server.py",
+    "core/regime.py", "core/regime_taxonomy.py", "core/universe.py", "core/basis_guard.py", "core/fundamentals.py",
+    "core/ranking.py", "core/piotroski.py", "core/sloan.py", "core/catalysts.py", "core/decay.py", "core/events.py", "core/ownership.py",
+    "core/targets.py", "core/hurdle.py", "core/beta_hurdle.py", "core/dividend_sustainability.py", "core/gordon.py",
+    "core/concentration.py", "core/correlation.py", "core/decision_diff.py",
+    "core/scoring.py", "core/payload.py", "core/evaluate.py", "core/invalidation.py",
+    "report/render.py", "report/validate.py", "report/templates/newsletter.html.j2", "report/templates/thesis_card.md.j2",
+    "dashboard.py",
+    "skills/", "config/weights.yaml", "config/regime_rules.yaml", "config/catalyst_decay.yaml", "config/equity_risk_premium.yaml", "config/mcp.json",
+    "data/bist_history.db", "tests/", "run.py", "requirements.txt", ".env.example", "README.md"
+  ],
+
+  "testing": {
+    "required": [
+      "min_peer_n geri dusus testi", "ratio_profile testi", "basis_guard testi", "hurdle testi",
+      "tedbir_level testi", "ownership testi", "ipo testi", "regime testi", "point_in_time testi", "decay testi",
+      "concentration testi", "no_action testi", "decision_diff testi", "validation_gate testi", "idempotency testi",
+      "piotroski testi", "piotroski gate testi",
+      "gordon eligibility testi", "gordon sustainability testi: fcf_payout_coverage < 1 olan sirket icin gordon hesaplanmamali", "gordon output testi (aralik)",
+      "volume breakout testi", "correlation diagnostic testi (otomatik eleme YAPMAMALI)",
+      "dashboard read-only testi", "dashboard tutarlilik testi",
+      "sloan basis_guard testi: basis_break olan donem icin sloan null olmali",
+      "sloan cross-sectional testi: sloan bayragi MUTLAK esik degil peer grubu ici persentil ile hesaplanmali",
+      "beta hurdle testi: excess_over_beta_hurdle_pct hard_filters listesinde OLMAMALI, yalnizca bilgi alani olmali",
+      "event calendar testi: bilanco_aciklama_tarihi alani yalnizca KAP'ta acikca ilan edildiginde dolu olmali, aksi halde bos donmeli, tahmin uretilmemeli",
+      "regime_taxonomy statik taramasi: regime_taxonomy ciktisindan scoring.py'ye hicbir import/veri akisi olmamali",
+      "invalidation monitor testi: excess_over_hurdle_pct negatife dondugunde ilgili tahmin invalidation_checks tablosuna triggered olarak yazilmali",
+      "banned_claims testi: uretilen HTML raporunda 'kanitlanmis', 'istatistiksel olarak anlamli', 'backtest edilmis' ifadelerinden hicbiri gecmemeli",
+      "priors_disclosure testi: methodology bolumunde agirliklarin denenmemis varsayim oldugunu belirten metin bulunmali"
+    ]
+  },
+
+  "acceptance_criteria": [
+    "Kod tabaninda hicbir hisse sembolu ve hicbir sabit carpan esigi yok",
+    "Kod tabaninda tarihsel ortalama carpan karsilastirmasi yapan fonksiyon yok",
+    "Her aday icin candidate_state, reporting_basis, peer_group_used, peer_n, confidence, tedbir_level, retail_pct, piotroski_normalized_score raporda gorunuyor",
+    "Hicbir aday hard_filters'i gecmediginde sistem NO_ACTION_TODAY raporu uretiyor",
+    "point_in_time alanlari dolu ve enforcement_rule uygulaniyor",
+    "gordon_growth_reference final_score'a girmiyor, sustainability testini gecmeyen sirkette hesaplanmiyor",
+    "beta_adjusted_hurdle ve excess_over_beta_hurdle_pct hard_filter degil, yalnizca bilgi alani",
+    "sloan tahakkuk bayragi mutlak esik degil kesitsel persentil ile hesaplaniyor",
+    "event_calendar_engine hicbir tarihi tahmin etmiyor, yalnizca resmi kaynaktan gelen tarihleri gosteriyor",
+    "regime_taxonomy etiketleri scoring.py'ye hicbir sekilde baglanmiyor",
+    "thesis_invalidation_monitor acik tahminleri kontrol ediyor ve bozulan tezleri raporluyor",
+    "Rapor ve dashboard banned_claims listesindeki hicbir ifadeyi kullanmiyor",
+    "Methodology bolumu agirliklarin/esiklerin denenmemis oldugunu acikca belirtiyor",
+    "dashboard.py veritabanina yalnizca salt-okunur erisiyor ve rapordakiyle birebir ayni sayilari gosteriyor",
+    "Dogrulama kapisi sahte sayi gonderimini engelliyor",
+    "Tum testler geciyor"
+  ],
+
+  "disclaimer_text_tr": "Bu bulten ve dashboard kisisel kullanim icin otomatik olarak uretilmistir. Yatirim danismanligi degildir, alim satim tavsiyesi icermez. Skorlama agirliklari ve esikleri (0.55/0.30/0.15, Piotroski esigi, equity risk premium) denenmemis baslangic varsayimlaridir, gecmis veriyle kalibre edilmemistir. Gecmis tahmin izleme ozeti bir backtest degildir, canli takiptir; ortusen zaman ufuklari nedeniyle bagimsiz gozlem sayisi dusuktur. Hedef fiyatlar sektor ici goreli degerleme ve teknik hesaplamalardan turetilmistir. Gordon buyume referansi deneysel bir modeldir ve ana karara girmez. Veriler ucuncu taraf kaynaklardan alinmistir ve hatali olabilir.",
+
+  "email_body_status_note": {
+    "clarification": "Bu JSON, e-posta govdesinin (HTML) icerecegi butun bolumleri, alanlari, sira ve dil kurallarini (report.sections, thesis_card_fields, must_display_per_candidate, tone_rules, validation_gate, banned_claims) tam olarak tanimliyor. Ancak asil HTML sablon dosyasi (report/templates/newsletter.html.j2) bu spec icinde ONCEDEN YAZILMIS DEGIL, coder tarafindan bu kurallara gore insa edilecek bir teslimattir. Yani govde 'hazir' degil, govdenin ICERIK SOZLESMESI hazir. validation_gate, coder'in yazdigi sablonun bu sozlesmeyi ihlal edip etmedigini otomatik kontrol eder."
+  },
+
+  "prompt_for_ai_coder": "Yukaridaki v9 spesifikasyonunu eksiksiz uygula. v8'den farki: beta_adjusted_hurdle, earnings_quality_sloan (kesitsel persentil, mutlak esik degil), event_calendar_engine (yalnizca resmi kaynaktan gelen tarihler), dividend_sustainability_engine, fcf_yield_usd, thesis_invalidation_monitor, regime_taxonomy (yalnizca ETIKETLEME, otomatik onyargi YOK) ve priors_disclosure + evaluate_past_predictions_clarification eklendi. En kritik alti kural: (1) hicbir metrik kendi tarihsel ortalamasiyla karsilastirilmayacak, (2) hicbir hedef hurdle_engine'den gecmeden rapora girmeyecek, (3) regime_taxonomy etiketlerinden scoring.py'ye hicbir veri akisi olmayacak (statik taramayla test edilecek), (4) evaluate_past_predictions asla bir backtest veya kanitlanmis edge olarak sunulmayacak, banned_claims listesi HTML ciktisinda taranacak, (5) methodology bolumu agirliklarin denenmemis varsayim oldugunu acikca belirtecek, (6) dashboard hicbir INSERT/UPDATE/DELETE calistirmayacak. Insa sirasi: veritabani semasi (yeni tablolar dahil), macro/regime/regime_taxonomy, bist_mcp/kap_web_mcp, basis_guard, ranking, piotroski+sloan, ownership, catalysts+decay, event_calendar, targets+hurdle+beta_hurdle+dividend_sustainability+gordon, concentration+correlation, decision_diff, rapor+thesis_card+invalidation, en son dashboard.py. Kurulum oncesi MCP paket adlarini dogrula."
+}

@@ -1,0 +1,11 @@
+# beta_adjusted_hurdle ve gordon_growth_reference icin sabit equity risk premium.
+# priors_are_disclosed kurali: bu DENENMEMIS bir baslangic varsayimidir, gecmis
+# veriyle kalibre edilmemistir. Degistirilmesi manuel onay gerektirir
+# (execution_rules: esik/agirlik degisikligi manuel onayla yapilir).
+equity_risk_premium_pct: 5.0
+
+# gordon_growth_reference.inputs.growth_rate_g: "Uzun donem TCMB enflasyon
+# hedefi, tahmin veya keyfi varsayim DEGIL." TCMB'nin resmi orta/uzun vadeli
+# enflasyon hedefi (guncel yayimlanmis hedef), piyasa beklentisi DEGILDIR.
+tcmb_long_term_inflation_target_pct: 5.0
+

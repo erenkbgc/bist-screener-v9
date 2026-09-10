@@ -1,0 +1,29 @@
+# bist-regime-monitor skill'i ve core/regime.py tarafindan kullanilan
+# rejim izleme kurallarinin insan-okunabilir referansi.
+# Gercek esik degerleri core/regime.py icinde koda gomulu sabitlerdir; bu
+# dosya yalnizca dokumantasyon amaclidir (skills/bist-regime-monitor/SKILL.md
+# tarafindan referans verilir).
+
+vbts_spike_multiplier: 2.0  # 60 gunluk ortalamanin kac kati asilirsa "spike" sayilir
+bond_2y_shock_bps_threshold: 300
+short_selling_ban_suspend_days: 5
+
+market_regime_assumptions_2026Q3:
+  spec_date: "2026-09-08"
+  note: >
+    Bu varsayimlar spec_validity_note geregi HER KOSUDA regime_monitor
+    tarafindan yeniden dogrulanir (macro_mcp'den canli cekilen degerlerle
+    karsilastirilir); burada yalnizca spec anindaki referans deger olarak durur.
+  policy_rate_pct: 37.0
+  bond_2y_pct: 39.6
+  bond_10y_pct: 34.2
+  cpi_yoy_pct: 31.5
+  cpi_yearend_expectation_pct: 29.4
+  usdtry_spot: 48.4
+  usdtry_12m_expectation: 57.4
+  xu100_level: 14000
+  xu100_pe: 13.6
+  foreign_ownership_pct: 32.6
+  short_selling_ban_active: true
+  individual_investor_count_millions: 6.76
+  ytd_ipo_count: 26

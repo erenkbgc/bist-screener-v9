@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIST Tarama Bulteni - {{ as_of_date }}</title>
+<style>
+  body { margin:0; padding:0; background:#f4f5f7; font-family:Arial, Helvetica, sans-serif; color:#1a1a1a; }
+  .wrap { max-width:680px; margin:0 auto; padding:16px; }
+  .card { background:#ffffff; border:1px solid #e2e4e8; border-radius:10px; padding:16px; margin-bottom:16px; }
+  h1 { font-size:20px; margin:0 0 6px; }
+  h2 { font-size:16px; margin:0 0 10px; border-bottom:2px solid #eee; padding-bottom:6px; }
+  h3 { font-size:14px; margin:14px 0 6px; }
+  .tag { display:inline-block; background:#eef1f6; color:#333; border-radius:6px; padding:2px 8px; font-size:11px; margin:2px 4px 2px 0; }
+  .state-STRONG_OPPORTUNITY { background:#d9f2df; color:#12602c; }
+  .state-OPPORTUNITY { background:#e7f0fb; color:#144a91; }
+  .state-WATCHLIST { background:#fff3d6; color:#8a5a00; }
+  .state-NO_ACTION { background:#f1f1f1; color:#666; }
+  .state-QUARANTINE { background:#fbe1e1; color:#8a1f1f; }
+  table { width:100%; border-collapse:collapse; font-size:12px; margin:8px 0; }
+  th, td { text-align:left; padding:5px 6px; border-bottom:1px solid #edEDED; }
+  th { color:#666; font-weight:600; }
+  .muted { color:#666; font-size:12px; }
+  .warn { color:#8a5a00; }
+  .small { font-size:11px; color:#777; }
+  .exp-box { border:1px dashed #b8b8b8; border-radius:8px; padding:10px; margin-top:8px; background:#fafafa; }
+  .risk { color:#8a1f1f; }
+  ul { margin:6px 0; padding-left:18px; }
+  .footer { font-size:11px; color:#777; line-height:1.5; }
+  @media (max-width:480px) { table, thead, tbody, th, td, tr { display:block; } th { display:none; }
+    td { border:none; padding:2px 0; } td:before { content: attr(data-label) ": "; font-weight:600; color:#666; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. Baslik, as_of_date, rejim ozeti ve regime_taxonomy etiketleri -->
+  <div class="card">
+    <h1>BIST Tarama Bulteni</h1>
+    <div class="muted">{{ as_of_date }}</div>
+    {% if regime %}
+    <div style="margin-top:8px;">
+      <span class="tag">Politika Faizi: %{{ regime.policy_rate_pct | fmt }}</span>
+      <span class="tag">2Y Tahvil: %{{ regime.bond_2y_pct | fmt }}</span>
+      <span class="tag">TUFE (yillik): %{{ regime.cpi_yoy_pct | fmt }}</span>
+      <span class="tag">USD/TRY: {{ regime.usdtry_spot | fmt }}</span>
+      <span class="tag">XU100: {{ regime.xu100_level | fmt }}</span>
+      {% if regime.short_selling_ban_active %}<span class="tag warn">Aciga satis yasagi aktif</span>{% endif %}
+    </div>
+    {% if regime_taxonomy_tag %}
+    <div style="margin-top:6px;"><span class="tag">{{ regime_taxonomy_tag }}</span></div>
+    {% endif %}
+    {% endif %}
+  </div>
+
+  <!-- 2. Ne degisti (decision_diff_engine) -->
+  <div class="card">
+    <h2>Ne Degisti</h2>
+    <div class="muted">Rejim durumu: {{ decision_diff.regime_status }}</div>
+    {% if decision_diff.entered %}
+    <h3>Yeni giren adaylar</h3>
+    <ul>{% for t in decision_diff.entered %}<li>{{ t }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if decision_diff.exited %}
+    <h3>Cikan adaylar</h3>
+    <ul>{% for t in decision_diff.exited %}<li>{{ t }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if decision_diff.catalyst_deltas %}
+    <h3>Yeni KAP olaylari</h3>
+    <ul>{% for e in decision_diff.catalyst_deltas %}<li>{{ e.ticker }} - {{ e.category }} ({{ e.published_at }})</li>{% endfor %}</ul>
+    {% endif %}
+    {% if decision_diff.macro_deltas %}
+    <h3>Anlamli makro degisim</h3>
+    <ul>{% for m in decision_diff.macro_deltas %}<li>{{ m.field }}: {{ m.from | fmt }} &rarr; {{ m.to | fmt }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if not decision_diff.entered and not decision_diff.exited and not decision_diff.catalyst_deltas and not decision_diff.macro_deltas %}
+    <div class="muted">Onceki kosuya gore anlamli bir degisim bulunmuyor.</div>
+    {% endif %}
+  </div>
+
+  <!-- 3. Yogunlasma uyarisi (varsa) -->
+  {% if concentration_warnings %}
+  <div class="card">
+    <h2>Yogunlasma Uyarisi</h2>
+    <ul>{% for w in concentration_warnings %}<li class="warn">{{ w.message }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  <!-- 4. Uzun vade adaylari -->
+  {% if long_term_candidates %}
+  <div class="card">
+    <h2>Uzun Vade Adaylari</h2>
+    {% for c in long_term_candidates %}
+    <div style="margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid #eee;">
+      <div><strong>{{ c.ticker }}</strong> <span class="tag state-{{ c.candidate_state }}">{{ c.candidate_state }}</span></div>
+
+      <h3>Yatirim Tezi</h3>
+      <ul>{% for b in c.thesis_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+      <div class="muted"><strong>Neden simdi:</strong> {{ c.why_now }}</div>
+      <div class="muted risk"><strong>Ana risk:</strong> {{ c.main_risk }}</div>
+      <div class="small"><strong>Bozulma kosulu:</strong> {{ c.invalidation_condition_display }}</div>
+
+      {% if c.upcoming_events %}
+      <div class="small"><strong>Yaklasan olaylar:</strong>
+        {% for ev in c.upcoming_events %}{{ ev.event_type }} ({{ ev.event_date }}, kaynak: {{ ev.source }}){% if not loop.last %}; {% endif %}{% endfor %}
+      </div>
+      {% endif %}
+
+      <table>
+        <thead><tr><th>Metrik</th><th>Deger</th></tr></thead>
+        <tbody>
+          <tr data-label="row"><td data-label="Metrik">Giris fiyati</td><td data-label="Deger">{{ c.entry_price | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Hedef fiyat</td><td data-label="Deger">{{ c.target_price | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Beklenen getiri</td><td data-label="Deger">%{{ c.expected_roi_pct | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%{{ c.hurdle_rate_pct | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Beta-duzeltmeli hurdle uzeri fazla</td><td data-label="Deger">%{{ c.excess_over_beta_hurdle_pct | fmt }}</td></tr>
+          <tr><td data-label="Metrik">F-Score (normalize)</td><td data-label="Deger">{{ c.piotroski_normalized_score | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">{{ c.peer_group_used }} (n={{ c.peer_n | fmt }})</td></tr>
+          <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
+          <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">{{ c.reporting_basis }}</td></tr>
+          <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">{{ c.tedbir_level | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%{{ c.retail_pct | fmt }}</td></tr>
+        </tbody>
+      </table>
+
+      {% if c.sloan_flag %}
+      <div class="small risk">Uyari: elevated_earnings_quality_risk (peer_percentile: {{ c.sloan_peer_percentile | fmt }})</div>
+      {% endif %}
+
+      <div class="small">FCF getirisi (USD bazli, bilgi amacli): %{{ c.fcf_yield_usd | fmt }}</div>
+
+      {% if c.gordon %}
+      <div class="exp-box">
+        <div class="small"><strong>Gordon buyume referansi (DENEYSEL, ana karara girmez)</strong></div>
+        {% if c.gordon.null_reason %}
+        <div class="small muted">Hesaplanamadi: {{ c.gordon.null_reason }}</div>
+        {% else %}
+        <div class="small">Adil deger araligi: {{ c.gordon.fair_value_low | fmt }} - {{ c.gordon.fair_value_high | fmt }}
+          (iskonto senaryolari: %{{ c.gordon.discount_rate_low | fmt }} / %{{ c.gordon.discount_rate_base | fmt }} / %{{ c.gordon.discount_rate_high | fmt }})</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- 5. Kisa vade adaylari -->
+  {% if short_term_candidates %}
+  <div class="card">
+    <h2>Kisa Vade Adaylari</h2>
+    {% for c in short_term_candidates %}
+    <div style="margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #eee;">
+      <div><strong>{{ c.ticker }}</strong> <span class="tag state-{{ c.candidate_state }}">{{ c.candidate_state }}</span></div>
+      <table>
+        <tbody>
+          <tr><td data-label="Metrik">Giris</td><td data-label="Deger">{{ c.entry_price | fmt }}</td></tr>
+          <tr><td data-label="Metrik">ATR hedefi</td><td data-label="Deger">{{ c.target_price | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Stop-loss</td><td data-label="Deger">{{ c.stop_loss | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Hacim teyidi (20g orani)</td><td data-label="Deger">{{ c.volume_ratio_20d | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Hurdle uzeri fazla</td><td data-label="Deger">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Katalizor skoru</td><td data-label="Deger">{{ c.catalyst_score | fmt }}</td></tr>
+          <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- 6. Hurdle/rejim/piotroski filtresine takilan adaylar -->
+  {% if filtered_candidates %}
+  <div class="card">
+    <h2>Filtreye Takilan Adaylar</h2>
+    <table>
+      <thead><tr><th>Ticker</th><th>Neden</th></tr></thead>
+      <tbody>
+        {% for c in filtered_candidates %}
+        <tr><td data-label="Ticker">{{ c.ticker }}</td><td data-label="Neden">{{ c.filtered_by }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- 7. Skorlanamayan hisseler -->
+  <div class="card">
+    <h2>Skorlanamayan Hisseler</h2>
+    <div class="muted">{{ unscored_count }} hisse bu kosuda skorlanamadi (eksik veri, baz belirsizligi veya karsilastirma icin yetersiz esler grubu).</div>
+  </div>
+
+  <!-- 8. NO_ACTION_TODAY -->
+  {% if no_action_today %}
+  <div class="card">
+    <h2>NO_ACTION_TODAY</h2>
+    <div class="muted">Bugun hard_filters'i gecen hicbir aday bulunmuyor. Bu, sistemin bilerek sessiz kaldigi gecerli bir sonuctur.</div>
+  </div>
+  {% endif %}
+
+  <!-- 9. Bozulan Tezler -->
+  {% if invalidation_triggered %}
+  <div class="card">
+    <h2>Bozulan Tezler</h2>
+    <div class="small muted">Asagidakiler bir SATIS SINYALI degildir, yalnizca durum bildirimidir.</div>
+    <ul>
+    {% for t in invalidation_triggered %}
+      <li>{{ t.ticker }}: {{ t.condition_field }} {{ t.condition_operator }} {{ t.condition_value }} kosulu tetiklendi (guncel deger: {{ t.current_value }})</li>
+    {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- 10. Gecmis tahmin izleme ozeti -->
+  {% if evaluation_summary %}
+  <div class="card">
+    <h2>Gecmis Tahmin Izleme Ozeti</h2>
+    <div class="small muted">Bu bir backtest degildir, canli takip ozetidir. Gecmis performans garantisi vermez.
+      {{ evaluation_summary.independence_caveat }}</div>
+    <table>
+      <thead><tr><th>Ufuk (gun)</th><th>Gozlem</th><th>Isabet orani</th><th>Medyan fazla getiri (endekse gore)</th></tr></thead>
+      <tbody>
+      {% for horizon, s in evaluation_summary.by_horizon.items() %}
+        {% if s %}
+        <tr>
+          <td data-label="Ufuk">{{ horizon }}</td>
+          <td data-label="Gozlem">{{ s.n_observations | fmt }}</td>
+          <td data-label="Isabet">%{{ s.hit_rate_pct | fmt }}</td>
+          <td data-label="Fazla getiri">%{{ s.median_excess_vs_index | fmt }}</td>
+        </tr>
+        {% endif %}
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- 11. Metodoloji notu -->
+  <div class="card footer">
+    <h2>Metodoloji</h2>
+    <p>final_score = {{ weights.valuation_z | fmt }} x valuation_z + {{ weights.catalyst_score | fmt }} x catalyst_score
+       + {{ weights.ownership_quality_z | fmt }} x ownership_quality_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }},
+       equity risk premium: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC
+       VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p>{{ disclaimer_text }}</p>
+  </div>
+
+</div>
+</body>
+</html>

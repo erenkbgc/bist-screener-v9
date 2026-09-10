@@ -1,0 +1,33 @@
+# catalyst_engine parametreleri (spec: catalyst_engine)
+# Bu dosyadaki agirliklar ve yari omurler de priors_are_disclosed kapsamindadir:
+# gecmis veriyle kalibre edilmemis, DENENMEMIS baslangic varsayimlaridir.
+
+lookback_days: 14
+
+half_life_days:
+  financial_report: 75
+  new_business_or_tender: 20
+  share_buyback: 45
+  rights_issue: 30
+  bonus_issue: 15
+  insider_buy: 30
+  insider_sell: 30
+  vbts_measure_applied: 10
+  vbts_measure_expiring: 5
+  secondary_offering: 30
+  management_change: 60
+  material_event_other: 20
+
+categories:
+  financial_report: {weight: 3, sign: by_surprise}
+  new_business_or_tender: {weight: 2, sign: positive}
+  share_buyback: {weight: 2, sign: positive}
+  rights_issue: {weight: 2, sign: negative}
+  bonus_issue: {weight: 1, sign: neutral}
+  insider_buy: {weight: 2, sign: positive}
+  insider_sell: {weight: 2, sign: negative}
+  vbts_measure_applied: {weight: 3, sign: negative}
+  vbts_measure_expiring: {weight: 2, sign: volatility_event}
+  secondary_offering: {weight: 2, sign: negative}
+  management_change: {weight: 1, sign: neutral}
+  material_event_other: {weight: 1, sign: neutral}

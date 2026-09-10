@@ -1,0 +1,64 @@
+name: BIST gunluk tarama
+
+# Spec: delivery.schedule = 18:30 Europe/Istanbul. Turkiye yaz saati
+# uygulamadigi icin (2016'dan beri sabit UTC+3) bu her zaman 15:30 UTC'dir.
+# GitHub Actions'in zamanlanmis cron'lari yogun saatlerde birkac dakika
+# gecikebilir (GitHub'in belgelenmis bir sinirlamasi) -- bu normaldir.
+on:
+  schedule:
+    - cron: "30 15 * * *"
+  workflow_dispatch: {}  # Actions sekmesinden manuel calistirma/test icin
+
+# Ayni anda iki kosunun ayni SQLite dosyasina yazip cakismasini engeller.
+concurrency:
+  group: bist-daily-screener
+  cancel-in-progress: false
+
+permissions:
+  contents: write  # data/bist_history.db + data/reports/ geri commit'lemek icin
+
+jobs:
+  run-screener:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120  # ~800 tickerlik canli evren cekimi uzun surebilir
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bagimliliklari kur
+        run: pip install -r requirements.txt
+
+      - name: Istanbul tarihini hesapla
+        id: today
+        run: echo "date=$(TZ=Europe/Istanbul date +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Tarama calistir (BIST_DATA_MODE=live)
+        env:
+          BIST_DATA_MODE: live
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: python run.py --as-of-date ${{ steps.today.outputs.date }}
+
+      - name: HTML raporu ve payload'i is ciktisi olarak yukle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bist-report-${{ steps.today.outputs.date }}
+          path: data/reports/
+          retention-days: 90
+
+      - name: Veritabani + raporlari repoya geri commit'le
+        if: always()
+        run: |
+          git config user.name "bist-screener-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/bist_history.db data/reports/
+          git diff --cached --quiet || git commit -m "chore: ${{ steps.today.outputs.date }} tarama sonuclari"
+          git push

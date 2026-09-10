@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "bist-data": {
+      "command": "python",
+      "args": ["-m", "bist_mcp.server"],
+      "description": "Fiyat, hacim, rasyo, tedbir, sahiplik, temettu gecmisi. Su an mock veri katmani (core/mock_data.py) kullaniyor."
+    },
+    "kap-web": {
+      "command": "python",
+      "args": ["-m", "kap_web_mcp.server"],
+      "description": "kap.org.tr kamuya acik bildirim listesini parse eder. Resmi KAP REST API kurumsal sozlesme gerektirdigi icin sahsi kullanimda erisilebilir degil. Su an mock veri katmani kullaniyor."
+    },
+    "macro": {
+      "command": "python",
+      "args": ["-m", "macro_mcp.server"],
+      "description": "TCMB politika faizi, tahvil getirileri, TUFE, USD/TRY, enflasyon hedefi. Su an mock veri katmani kullaniyor."
+    },
+    "sqlite": {
+      "command": "uvx",
+      "args": ["mcp-server-sqlite", "--db-path", "./data/bist_history.db"]
+    }
+  },
+  "verification_note": "Kurulum oncesi her paketin (mcp, mcp-server-sqlite) mevcut oldugu dogrulanmalidir: `pip show mcp`, `uvx mcp-server-sqlite --help`."
+}

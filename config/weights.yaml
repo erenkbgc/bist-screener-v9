@@ -1,0 +1,15 @@
+# final_score agirliklari ve esikleri.
+# priors_are_disclosed (execution_rules): bu katsayilar ve esik degerleri
+# hicbir gecmis veriyle kalibre edilmemis, DENENMEMIS BASLANGIC VARSAYIMLARIDIR.
+# Degistirmek isteyen biri bu dosyayi manuel duzenlemelidir; kod hicbir zaman
+# bu degerleri kendi basina ogrenmez/degistirmez.
+
+scoring_weights:
+  valuation_z: 0.55
+  catalyst_score: 0.30
+  ownership_quality_z: 0.15
+
+piotroski:
+  normalized_score_threshold: 0.55  # 9 kriterin normalize edilmis skorunda gecme esigi
+
+top_n_per_bucket: 4

@@ -1,0 +1,15 @@
+{
+  "note": "Gercek KAP entegrasyonunda bildirim basligi/turu buradaki anahtar kelime/kural eslesmesiyle deterministik olarak asagidaki kategorilerden birine indirgenir. LLM tabanli siniflandirma KULLANILMAZ (no_free_text_interpretation_of_kap).",
+  "categories": [
+    "financial_report", "new_business_or_tender", "share_buyback", "rights_issue",
+    "bonus_issue", "insider_buy", "insider_sell", "vbts_measure_applied",
+    "vbts_measure_expiring", "secondary_offering", "management_change", "material_event_other"
+  ],
+  "example_rules": [
+    {"if_title_contains": ["Finansal Rapor", "Bagimsiz Denetim"], "category": "financial_report"},
+    {"if_title_contains": ["Pay Geri Alim"], "category": "share_buyback"},
+    {"if_title_contains": ["Bedelli Sermaye Artirimi"], "category": "rights_issue"},
+    {"if_title_contains": ["Bedelsiz Sermaye Artirimi"], "category": "bonus_issue"},
+    {"if_title_contains": ["Tedbir", "Brut Takas", "Acığa Satış Yasağı"], "category": "vbts_measure_applied"}
+  ]
+}

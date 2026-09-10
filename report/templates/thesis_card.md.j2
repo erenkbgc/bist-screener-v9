@@ -1,0 +1,17 @@
+## {{ ticker }} — {{ candidate_state }}
+
+**Tez maddeleri**
+{% for b in thesis_bullets %}- {{ b }}
+{% endfor %}
+
+**Neden simdi:** {{ why_now }}
+
+**Ana risk:** {{ main_risk }}
+
+**Bozulma kosulu (makine-okunabilir):** `{{ invalidation_condition_display }}`
+
+{% if upcoming_events %}
+**Yaklasan olaylar:**
+{% for ev in upcoming_events %}- {{ ev.event_type }} ({{ ev.event_date }}, kaynak: {{ ev.source }})
+{% endfor %}
+{% endif %}

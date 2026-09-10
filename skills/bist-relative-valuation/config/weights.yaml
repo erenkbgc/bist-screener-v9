@@ -1,0 +1,5 @@
+# Bu dosya bir kopya DEGILDIR. Tek gecerli kaynak proje kokundeki
+# config/weights.yaml'dir (core/scoring.py oradan okur). Bu dosya yalnizca
+# skill paketinin dokumantasyon sozlesmesini (spec.skills listesi) tamamlamak
+# icin var; calisma zamaninda OKUNMAZ.
+canonical_source: "../../../config/weights.yaml"
