@@ -7,7 +7,12 @@ name: BIST gunluk tarama
 on:
   schedule:
     - cron: "30 15 * * *"
-  workflow_dispatch: {}  # Actions sekmesinden manuel calistirma/test icin
+  workflow_dispatch:  # Actions sekmesinden manuel calistirma/test icin
+    inputs:
+      universe_limit:
+        description: "Test icin evreni ilk N tickerla sinirla (bos = tam ~800 hisse, production)"
+        required: false
+        default: ""
 
 # Ayni anda iki kosunun ayni SQLite dosyasina yazip cakismasini engeller.
 concurrency:
@@ -38,6 +43,7 @@ jobs:
       - name: Tarama calistir (BIST_DATA_MODE=live)
         env:
           BIST_DATA_MODE: live
+          BIST_LIVE_UNIVERSE_LIMIT: ${{ inputs.universe_limit }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
