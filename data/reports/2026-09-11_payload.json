@@ -357,10 +357,10 @@
     {
       "as_of_date": "2026-09-11",
       "ticker": "AGHOL",
-      "sloan_accrual_ratio": -0.09084703196593356,
-      "peer_percentile": 0.0,
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
       "elevated_risk_flag": 0,
-      "null_reason": null
+      "null_reason": "not_computable"
     },
     {
       "as_of_date": "2026-09-11",
@@ -373,60 +373,60 @@
     {
       "as_of_date": "2026-09-11",
       "ticker": "AHGAZ",
-      "sloan_accrual_ratio": -0.06858135665872847,
-      "peer_percentile": 0.5,
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
       "elevated_risk_flag": 0,
-      "null_reason": null
+      "null_reason": "not_computable"
     },
     {
       "as_of_date": "2026-09-11",
       "ticker": "AHSGY",
-      "sloan_accrual_ratio": 0.29571997400090066,
-      "peer_percentile": 1.0,
-      "elevated_risk_flag": 1,
-      "null_reason": null
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
+      "elevated_risk_flag": 0,
+      "null_reason": "not_computable"
     }
   ],
   "piotroski_scores": [
     {
       "as_of_date": "2026-09-11",
       "ticker": "ACSEL",
-      "criteria_met": 4,
-      "criteria_computable": 9,
-      "normalized_score": 0.4444444444444444,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     },
     {
       "as_of_date": "2026-09-11",
       "ticker": "ADEL",
-      "criteria_met": 3,
-      "criteria_computable": 9,
-      "normalized_score": 0.3333333333333333,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     },
     {
       "as_of_date": "2026-09-11",
       "ticker": "ADESE",
-      "criteria_met": 6,
-      "criteria_computable": 9,
-      "normalized_score": 0.6666666666666666,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     },
     {
       "as_of_date": "2026-09-11",
       "ticker": "ADGYO",
-      "criteria_met": 3,
-      "criteria_computable": 9,
-      "normalized_score": 0.3333333333333333,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     },
     {
       "as_of_date": "2026-09-11",
       "ticker": "AFYON",
-      "criteria_met": 5,
-      "criteria_computable": 9,
-      "normalized_score": 0.5555555555555556,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     },
     {
       "as_of_date": "2026-09-11",
@@ -439,34 +439,34 @@
     {
       "as_of_date": "2026-09-11",
       "ticker": "AGHOL",
-      "criteria_met": 4,
-      "criteria_computable": 9,
-      "normalized_score": 0.4444444444444444,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     },
     {
       "as_of_date": "2026-09-11",
       "ticker": "AGROT",
-      "criteria_met": 3,
-      "criteria_computable": 9,
-      "normalized_score": 0.3333333333333333,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     },
     {
       "as_of_date": "2026-09-11",
       "ticker": "AHGAZ",
-      "criteria_met": 6,
-      "criteria_computable": 9,
-      "normalized_score": 0.6666666666666666,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     },
     {
       "as_of_date": "2026-09-11",
       "ticker": "AHSGY",
-      "criteria_met": 5,
-      "criteria_computable": 9,
-      "normalized_score": 0.5555555555555556,
-      "null_reason": null
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
     }
   ],
   "ownership": [
@@ -477,8 +477,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 48.3,
-      "foreign_pct": 2.14
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -487,8 +487,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 27.6,
-      "foreign_pct": 0.08
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -497,8 +497,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 92.8,
-      "foreign_pct": 13.35
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -507,8 +507,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 11.9,
-      "foreign_pct": 0.82
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -517,8 +517,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 49.0,
-      "foreign_pct": 2.43
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -527,8 +527,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 19.9,
-      "foreign_pct": 65.55
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -537,8 +537,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 36.5,
-      "foreign_pct": 29.51
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -547,8 +547,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 47.0,
-      "foreign_pct": 3.84
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -557,8 +557,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 15.5,
-      "foreign_pct": 14.63
+      "free_float_pct": null,
+      "foreign_pct": null
     },
     {
       "as_of_date": "2026-09-11",
@@ -567,8 +567,8 @@
       "investor_count_change_1m": null,
       "retail_pct": null,
       "institutional_pct": null,
-      "free_float_pct": 15.4,
-      "foreign_pct": 11.65
+      "free_float_pct": null,
+      "foreign_pct": null
     }
   ],
   "fundamentals": [
@@ -578,10 +578,10 @@
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
       "pe": null,
-      "pb": 1.8,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": -11.6821210188859,
+      "roe": null,
       "eps_ttm": -7.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -589,8 +589,8 @@
       "dividend_per_share_ttm": 0.0,
       "payout_ratio": 0.0,
       "fcf_ttm": 146522597.0,
-      "fcf_yield_usd": 5.841163027645567,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -603,10 +603,10 @@
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
       "pe": null,
-      "pb": 6.0,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": -41.32464993980905,
+      "roe": null,
       "eps_ttm": -2.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -614,8 +614,8 @@
       "dividend_per_share_ttm": 0.5773,
       "payout_ratio": null,
       "fcf_ttm": -411092468.0,
-      "fcf_yield_usd": -2.404819619170305,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -628,10 +628,10 @@
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
       "pe": null,
-      "pb": 0.3,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": 3.1218548298438433,
+      "roe": null,
       "eps_ttm": 0.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -639,8 +639,8 @@
       "dividend_per_share_ttm": 0.0,
       "payout_ratio": 0.0,
       "fcf_ttm": 579823871.0,
-      "fcf_yield_usd": 6.495448020000208,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -653,10 +653,10 @@
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
       "pe": null,
-      "pb": 1.9,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": -4.160501738782584,
+      "roe": null,
       "eps_ttm": 0.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -664,8 +664,8 @@
       "dividend_per_share_ttm": 0.0,
       "payout_ratio": 0.0,
       "fcf_ttm": 331581571.0,
-      "fcf_yield_usd": 0.4915909171031043,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -678,10 +678,10 @@
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
       "pe": null,
-      "pb": 0.6,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": 3.180318273335165,
+      "roe": null,
       "eps_ttm": 1.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -689,8 +689,8 @@
       "dividend_per_share_ttm": 1.5,
       "payout_ratio": 1.5,
       "fcf_ttm": 13327512.0,
-      "fcf_yield_usd": 0.12942586798416,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -702,8 +702,8 @@
       "ticker": "AGESA",
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
-      "pe": 7.0,
-      "pb": 3.8,
+      "pe": null,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
       "roe": null,
@@ -727,11 +727,11 @@
       "ticker": "AGHOL",
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
-      "pe": 17.4,
-      "pb": 0.6,
+      "pe": null,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": 6.168021040576607,
+      "roe": null,
       "eps_ttm": 1.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -739,8 +739,8 @@
       "dividend_per_share_ttm": 0.6981,
       "payout_ratio": 0.6981,
       "fcf_ttm": -2844819745.0,
-      "fcf_yield_usd": -1.6682360755424768,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -753,10 +753,10 @@
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
       "pe": null,
-      "pb": 0.6,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": -8.69415332852469,
+      "roe": null,
       "eps_ttm": 0.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -764,8 +764,8 @@
       "dividend_per_share_ttm": 0.0,
       "payout_ratio": 0.0,
       "fcf_ttm": 2210383.0,
-      "fcf_yield_usd": 0.022933148698653847,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -777,11 +777,11 @@
       "ticker": "AHGAZ",
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
-      "pe": 18.0,
-      "pb": 1.7,
+      "pe": null,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": 6.633859827221188,
+      "roe": null,
       "eps_ttm": 1.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -789,8 +789,8 @@
       "dividend_per_share_ttm": 0.0577,
       "payout_ratio": 0.0577,
       "fcf_ttm": 14348554144.0,
-      "fcf_yield_usd": 6.828853604648413,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -802,11 +802,11 @@
       "ticker": "AHSGY",
       "period_end": "2026-06-30",
       "reporting_basis": "adjusted",
-      "pe": 3.2,
-      "pb": 1.1,
+      "pe": null,
+      "pb": null,
       "ev_ebitda": null,
       "ev_sales": null,
-      "roe": 34.02711108898078,
+      "roe": null,
       "eps_ttm": 5.0,
       "ebitda_ttm": null,
       "net_debt": null,
@@ -814,8 +814,8 @@
       "dividend_per_share_ttm": 0.0762,
       "payout_ratio": 0.01524,
       "fcf_ttm": -113797114.0,
-      "fcf_yield_usd": -0.49281769585292673,
-      "null_reason": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
       "source": "bist-data (mock)",
       "published_at": "2026-06-30",
       "available_at": "2026-06-30",
@@ -832,7 +832,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 8419000000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 96345123.857,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -848,7 +848,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 1218000000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 15619549.420000002,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -864,7 +864,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 8300400000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 192419999.92399997,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -880,7 +880,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 4334400000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 106779938.88000001,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -896,7 +896,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 32751300000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 66448244.2275,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -928,7 +928,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 5000000000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 20651225.971,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -944,7 +944,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 46260000000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 59908567.870000005,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -960,7 +960,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 82801700000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 177641343.667,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -976,7 +976,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 4680000000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 281962858.3115,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -992,7 +992,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 102024000000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 202225885.481,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -1008,7 +1008,7 @@
       "supersector": "XUSIN",
       "ratio_profile": "industrial",
       "regulator": "SPK_TFRS",
-      "market_cap": 11212100000.0,
+      "market_cap": null,
       "avg_volume_tl_20d": 53386752.6055,
       "tedbir_level": 0,
       "tedbir_end_date": null,
@@ -1066,6 +1066,118 @@
     }
   ],
   "upcoming_events": [
+    {
+      "ticker": "ACSEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ACSEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADESE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AFYON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AFYON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGROT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
     {
       "ticker": "ACSEL",
       "event_type": "bilanco_aciklama_tarihi",
