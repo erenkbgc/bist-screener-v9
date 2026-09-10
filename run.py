@@ -290,7 +290,15 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
     email_sent = False
     error_message = None
     if validation["is_valid"]:
-        email_sent = _dispatch(as_of_date, html_content, payload)
+        try:
+            email_sent = _dispatch(as_of_date, html_content, payload)
+        except Exception as exc:  # noqa: BLE001 - SMTP/ag hatasi tum kosuyu DUSURMEMELI
+            # HTML/payload zaten _dispatch icinde diske yazildi (SMTP denemesinden
+            # ONCE); yalnizca teslimat basarisiz oldu. Kosu yine de "completed"
+            # sayilir, email_sent=False kalir -- bir sonraki kosuda tekrar denenir.
+            email_sent = False
+            error_message = f"dispatch (e-posta) basarisiz: {exc}"
+            print(f"[dispatch] HATA: {exc}")
     else:
         error_message = f"validation_gate basarisiz: orphan={validation['orphan_numbers'][:10]} banned={validation['banned_claims_found']}"
 
