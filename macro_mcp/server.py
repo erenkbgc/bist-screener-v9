@@ -38,8 +38,20 @@ def get_macro_snapshot(as_of_date: str) -> dict:
     return md.mock_macro_snapshot(as_of_date)
 
 
+def get_index_return_pct(index_name: str, start_date: str, end_date: str) -> float | None:
+    """v10 roadmap: xu100_benchmark_integration. start_date -> end_date arasi
+    endeks (ör. 'XU100') getirisi (%); core/evaluate.py'nin excess_vs_index_pct
+    hesabinda kullanilir. Canli modda gercek veri cekilemezse None doner
+    (durustluk kurali -- sahte 0.0 UYDURULMAZ, bkz. core/live_data.py)."""
+    if _live_enabled():
+        from core import live_data as ld
+        return ld.live_index_return_pct(index_name, start_date, end_date)
+    return md.mock_index_return_pct(index_name, start_date, end_date)
+
+
 if HAS_MCP:
     mcp.tool()(get_macro_snapshot)
+    mcp.tool()(get_index_return_pct)
 
 
 if __name__ == "__main__":

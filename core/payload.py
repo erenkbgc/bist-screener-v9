@@ -40,6 +40,12 @@ def build_report_payload(as_of_date: str) -> dict:
         "SELECT COUNT(DISTINCT ticker) AS n FROM scores WHERE as_of_date=?", (as_of_date,)
     )[0]["n"]
     unscored_count = max(0, eligible_count - scored_ticker_count)
+    # report/render.py "hicbir hesap yapmaz" kuralina uymak icin: sablonda
+    # {{ filtered_candidates | length }} gibi bir Jinja hesabi YAPILMAZ (bu,
+    # report/validate.py::find_orphan_numbers'in yakalamasi gereken tam da
+    # boyle bir "orphan" sayi uretirdi) -- sayim burada, payload'in kendisinde
+    # yapilir.
+    no_action_count = sum(1 for s in scores if s["candidate_state"] == "NO_ACTION")
     events = db.query("SELECT * FROM upcoming_events")
     correlation_flags = db.query("SELECT * FROM correlation_flags WHERE as_of_date=?", (as_of_date,))
     dividend_sustainability = db.query(
@@ -79,6 +85,7 @@ def build_report_payload(as_of_date: str) -> dict:
         "invalidation_triggered": as_dicts(invalidation_triggered),
         "no_action_today": not any(s["candidate_state"] in ("STRONG_OPPORTUNITY", "OPPORTUNITY") for s in scores),
         "unscored_count": unscored_count,
+        "no_action_count": no_action_count,
         "evaluation_summary": summarize_outcomes(as_of_date),
         "decision_diff": diff_against_previous_run(as_of_date),
     }

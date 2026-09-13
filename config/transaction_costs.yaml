@@ -1,0 +1,15 @@
+# transaction_cost_model (v10 roadmap): net_expected_roi_pct/net_excess_over_hurdle_pct
+# icin varsayilan maliyet parametreleri. Bu dosya priors_are_disclosed kuralina
+# tabidir: asagidaki degerler DENENMEMIS VARSAYIMLARDIR, hicbir gecmis veriyle
+# kalibre edilmemistir. Kendi aracı kurumunuzun gercek komisyon oranini biliyorsaniz
+# commission_bps'i onunla degistirin.
+#
+# net_expected_roi_pct = expected_roi_pct - (bid_ask_spread_bps + commission_bps + slippage_bps) / 100
+# Mevcut brut excess_over_hurdle_pct hard-filter olarak DEGISMEZ; net alanlar
+# yalnizca BILGI amaclidir (core/hurdle.py::compute_all).
+
+commission_bps: 15  # yon basi ~%0.075 (BSMV dahil) varsayimi, ROUND-TRIP (al+sat) toplami
+
+# slippage_bps = base_slippage_bps / volume_ratio_20d (dusuk hacimde daha yuksek
+# varsayilan kayma; volume_ratio_20d=1.0 -> tam base_slippage_bps).
+base_slippage_bps: 20

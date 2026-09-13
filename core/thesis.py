@@ -36,15 +36,21 @@ def build_thesis_card(candidate: dict) -> dict:
         risk_parts.append("elevated_earnings_quality_risk (tahakkuk orani esler grubunun ust ondalik diliminde)")
     if candidate.get("confidence") != "high":
         risk_parts.append(f"esler grubu guveni '{candidate.get('confidence')}' seviyesinde, yorum temkinli okunmali")
-    if candidate.get("retail_pct", 0) > 60:
-        risk_parts.append(f"perakende yatirimci payi yuksek (%{format_number(candidate.get('retail_pct'))})")
+    # NOT: canli veri modunda retail_pct MKK/TSPB kaynagi olmadigi icin None
+    # olabilir (bkz. core/live_data.py::live_ownership) -- `.get(key, 0)`
+    # yalnizca ANAHTAR YOKSA varsayilana duser, deger None ise duşmez; bu
+    # yuzden acikca None kontrolu yapilir.
+    retail_pct = candidate.get("retail_pct")
+    if retail_pct is not None and retail_pct > 60:
+        risk_parts.append(f"perakende yatirimci payi yuksek (%{format_number(retail_pct)})")
     if not risk_parts:
         risk_parts.append("Peer grubu goreceli degerlemesi ve katalizor skoru zamanla tersine donebilir; "
                            "bu bir kesinlik iddiasi degildir.")
     main_risk = "; ".join(risk_parts)
 
+    catalyst_score = candidate.get("catalyst_score")
     why_now = "Katalizor penceresi (son 14 gun) ve pozitif hurdle marji ayni anda gecerli." \
-        if candidate.get("catalyst_score", 0) > 0 else \
+        if (catalyst_score is not None and catalyst_score > 0) else \
         "Hurdle marji pozitif; yakin donemde belirgin bir katalizor bulunmuyor."
 
     invalidation_condition_display = "excess_over_hurdle_pct < 0"

@@ -6,6 +6,12 @@ def test_second_run_skipped_when_already_email_sent(temp_db, monkeypatch):
     # ilk kosu: gercek pipeline calisir (mock veri ile), SMTP yok -> email_sent=False
     result1 = run_mod.run("2026-09-10")
     assert result1["status"] == "completed"
+    # regression: validation_gate her zaman gecmeli (bkz. volume_ratio_20d'nin
+    # hicbir tabloya persist edilmedigi icin orphan-number sayilip e-postayi
+    # SESSIZCE dusuren gecmis bug -- canli veriyle bulundu, bkz. core/db.py::
+    # predictions.volume_ratio_20d). Bu assert olmadan boyle bir regresyon
+    # status=="completed" kalirken email_sent=False'a sessizce duserdi.
+    assert result1["validation"]["is_valid"] is True, result1["validation"]
 
     # e-posta gonderilmis gibi isaretle
     from core import db

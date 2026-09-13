@@ -86,7 +86,7 @@ def _ticker_obj(ticker: str):
 
 
 _FAST_INFO_FIELDS = ["last_price", "market_cap", "shares", "pe_ratio", "pb_ratio",
-                     "free_float", "foreign_ratio"]
+                     "free_float", "foreign_ratio", "bid", "ask"]
 
 
 @lru_cache(maxsize=2048)
@@ -124,9 +124,20 @@ def _dividends_cached(ticker: str):
 def _history_cached(ticker: str, period: str = "2y"):
     """live_listing_and_size VE live_prices AYNI 2 yillik fiyat gecmisini
     kullanir -- tek bir cache anahtari altinda paylasilarak ticker basina
-    fazladan bir ag cagrisi onlenir (bkz. prefetch_all)."""
+    fazladan bir ag cagrisi onlenir (bkz. prefetch_all).
+
+    KRITIK: borsapy.Ticker.history()'nin VARSAYILANI adjust=True (bonus/bedelsiz
+    pay ihraci gibi olaylar icin GERIYE DONUK SPLIT-DUZELTMELI kapanis fiyati
+    dondurur). fast_info.last_price ISE HER ZAMAN HAM/guncel piyasa fiyatidir.
+    Sik bedelsiz cikaran hisselerde (orn. ASELS) bu ikisi %20-40 gibi buyuk
+    bir farka yol acar -- canli fiyat "supheli sapma" sanilip yanlislikla
+    reddedilir ve SMA20/ATR20/entry_price gibi TUM turevler de gercek piyasa
+    olceginden kopuk (dusuk) cikar (canli test: ASELS ~394 TRY iken adjust=True
+    gecmis kapanisi ~289 TRY donduruyordu). adjust=False ile HAM (duzeltmesiz)
+    fiyat istenir -- boylece gecmis seri fast_info.last_price ile AYNI olcekte
+    kalir."""
     try:
-        return _ticker_obj(ticker).history(period=period)
+        return _ticker_obj(ticker).history(period=period, adjust=False)
     except Exception:
         return None
 
@@ -281,6 +292,52 @@ def live_tedbir_level(ticker: str, as_of_date: str) -> dict:
 # ---------------------------------------------------------------------------
 # prices
 # ---------------------------------------------------------------------------
+
+_LAST_PRICE_MAX_DEVIATION_PCT = 20.0  # son kapanistan bu orandan fazla sapan last_price supheli sayilir
+_VWAP_FALLBACK_WINDOW = 3  # last_price guvenilmezse son N gunun hacim-agirlikli ortalamasina dus
+
+
+def live_bid_ask(ticker: str) -> dict:
+    """v10 roadmap: transaction_cost_model girdisi. fast_info bid/ask
+    borsapy'de desteklenmiyorsa (veya kotasyon yoksa) sessizce None doner --
+    core/hurdle.py::bid_ask_spread_bps bu durumda net_* alanlarini None birakir."""
+    fi = _fast_info_cached(ticker)
+    return {"bid": fi.get("bid") if fi else None, "ask": fi.get("ask") if fi else None}
+
+
+def live_current_price(ticker: str, price_rows: list[dict]) -> dict:
+    """"Anlik" fiyati mumkun oldugunca gercege yakin dondurur.
+
+    Sira: (1) borsapy fast_info.last_price (gercek zamanli son islem fiyati);
+    bu deger yoksa/sifir-negatifse/son gunun hacmi 0 ise (islem gormeyen/askidaki
+    sembol belirtisi) ya da son kapanistan mantiksiz uzaksa (>%20, muhtemelen
+    hatali/gecikmis veri) GUVENILMEZ sayilir. (2) Bu durumda son
+    _VWAP_FALLBACK_WINDOW gunun hacim-agirlikli ortalama fiyatina (VWAP) dusulur
+    -- bu, son islem fiyati yerine "piyasanin gercekte hangi fiyat seviyelerinde
+    islem gordugunu" hacimle agirliklandirarak yansitan daha saglam bir vekildir.
+    (3) O da hesaplanamazsa son kapanis fiyati kullanilir. Hicbiri yoksa None."""
+    fi = _fast_info_cached(ticker)
+    last_price = fi.get("last_price") if fi else None
+    last_close = price_rows[-1]["close"] if price_rows else None
+    last_volume = price_rows[-1]["volume"] if price_rows else None
+
+    if last_price is not None and last_price > 0 and last_volume:
+        deviation_ok = True
+        if last_close:
+            deviation_ok = abs(last_price - last_close) / last_close * 100 <= _LAST_PRICE_MAX_DEVIATION_PCT
+        if deviation_ok:
+            return {"price": float(last_price), "source": "live"}
+
+    recent = [r for r in price_rows[-_VWAP_FALLBACK_WINDOW:] if r.get("volume")]
+    total_volume = sum(r["volume"] for r in recent)
+    if total_volume:
+        vwap = sum(r["close"] * r["volume"] for r in recent) / total_volume
+        return {"price": vwap, "source": "vwap_fallback"}
+
+    if last_close is not None:
+        return {"price": last_close, "source": "last_close"}
+    return {"price": None, "source": None}
+
 
 def live_prices(ticker: str, as_of_date: str, days: int = 140) -> list[dict]:
     # live_listing_and_size ile AYNI 2 yillik gecmisi paylasir (_history_cached);
@@ -572,6 +629,40 @@ def live_upcoming_events(tickers: list[str], as_of_date: str) -> list[dict]:
 # ---------------------------------------------------------------------------
 # macro
 # ---------------------------------------------------------------------------
+
+def live_index_return_pct(index_name: str, start_date: str, end_date: str) -> float | None:
+    """start_date -> end_date arasi endeks (ör. XU100) getirisini (%) dondurur;
+    evaluate_past_predictions'in excess_vs_index_pct hesabinda kullanilir
+    (v10 roadmap: xu100_benchmark_integration -- eskiden 0.0 sabit yer tutucu).
+
+    point_in_time: start_date/end_date TAM o gunku islem gunu olmayabilir
+    (hafta sonu/tatil) -- bu yuzden her iki tarih icin de "o tarihe kadarki
+    (dahil) EN SON kapanis" alinir, ileriye bakis (look-ahead) yapilmaz.
+    Herhangi bir nedenle veri cekilemezse (agsal hata, bos seri) UYDURULMAZ,
+    None doner -- cagiran taraf (core/evaluate.py) bu durumda o satiri
+    ATLAR (bir sonraki kosuda tekrar denenir), sahte 0.0 yazmaz."""
+    try:
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
+        # start_dt tam bir islem gunune denk gelmeyebilir diye birkac gunluk
+        # tampon ile geriden cekiyoruz (yine de yalnizca <= start_dt kullanilacak).
+        fetch_start = start_dt - timedelta(days=10)
+        hist = bp.Index(index_name).history(start=fetch_start.isoformat(), end=end_dt.isoformat())
+        if hist is None or hist.empty:
+            return None
+        closes = [(idx.date(), float(row["Close"])) for idx, row in hist.iterrows()]
+        closes.sort(key=lambda x: x[0])
+        start_candidates = [c for d, c in closes if d <= start_dt]
+        end_candidates = [c for d, c in closes if d <= end_dt]
+        if not start_candidates or not end_candidates:
+            return None
+        start_close, end_close = start_candidates[-1], end_candidates[-1]
+        if not start_close:
+            return None
+        return (end_close - start_close) / start_close * 100
+    except Exception:
+        return None
+
 
 def live_macro_snapshot(as_of_date: str) -> dict:
     result: dict = {

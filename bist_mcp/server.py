@@ -108,6 +108,30 @@ def get_ownership(ticker: str, as_of_date: str) -> dict:
     return md.mock_ownership(ticker, as_of_date)
 
 
+def get_bid_ask(ticker: str) -> dict:
+    """{'bid': float|None, 'ask': float|None} -- v10 roadmap: transaction_cost_model.
+    Mock modda bid/ask kavrami yok (mock veri zaten spread-siz varsayilir),
+    ikisi de None doner -- core/hurdle.py bu durumda net_* alanlarini None birakir."""
+    if _live_enabled():
+        from core import live_data as ld
+        return ld.live_bid_ask(ticker)
+    return {"bid": None, "ask": None}
+
+
+def get_current_price(ticker: str, price_rows: list[dict]) -> dict:
+    """{'price': float|None, 'source': 'live'|'vwap_fallback'|'last_close'|None} dondurur.
+
+    Canli modda core/live_data.py::live_current_price (fast_info.last_price +
+    hacim-agirlikli VWAP fallback zinciri) kullanilir. Mock modda mock veri zaten
+    deterministik/anlik oldugu icin dogrudan son kapanis donulur -- ayrica bir
+    "canli" kavrami mock katmaninda anlamli degildir."""
+    if _live_enabled():
+        from core import live_data as ld
+        return ld.live_current_price(ticker, price_rows)
+    last_close = price_rows[-1]["close"] if price_rows else None
+    return {"price": last_close, "source": "last_close"}
+
+
 def prefetch(tickers: list[str]) -> None:
     """Canli modda, evrenin ihtiyac duyacagi tum ag cagrilarini PARALEL olarak
     onceden cache'ler (bkz. core/live_data.py::prefetch_all) -- boylece
@@ -128,6 +152,8 @@ if HAS_MCP:
     mcp.tool()(get_cashflow_for_sloan)
     mcp.tool()(get_dividend_history)
     mcp.tool()(get_ownership)
+    mcp.tool()(get_current_price)
+    mcp.tool()(get_bid_ask)
 
 
 if __name__ == "__main__":

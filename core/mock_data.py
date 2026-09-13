@@ -283,6 +283,19 @@ def mock_upcoming_events(ticker: str, as_of_date: str) -> list[dict]:
     return events
 
 
+def mock_index_return_pct(index_name: str, start_date: str, end_date: str) -> float:
+    """core/live_data.py::live_index_return_pct'in mock karsiligi -- deterministik,
+    mock_macro_snapshot'taki xu100_level ile AYNI jitter formulunu iki tarih
+    icin ayri ayri uygulayip yuzde degisimini dondurur (testler/gelistirme icin)."""
+    def _level(d: str) -> float:
+        rng = _rng(index_name, d, "index_level")
+        jitter_days = (datetime.strptime(d, "%Y-%m-%d").date() - date(2026, 9, 8)).days
+        return 14000.0 * (1 + rng.uniform(-0.01, 0.015) * max(1, abs(jitter_days)))
+
+    start_level, end_level = _level(start_date), _level(end_date)
+    return (end_level - start_level) / start_level * 100
+
+
 def mock_macro_snapshot(as_of_date: str) -> dict:
     rng = _rng("MACRO", as_of_date, "macro")
     base = {

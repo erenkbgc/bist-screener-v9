@@ -22,6 +22,14 @@ import hashlib
 import sys
 import uuid
 from datetime import date, datetime, timezone
+from pathlib import Path
+
+# core/db.py::DB_PATH ile ayni desen: testler (tests/conftest.py::temp_db)
+# bunu tmp_path altina yonlendirir, boylece pytest kosulari gercek
+# data/reports/ klasorunu mock veriyle KIRLETMEZ (bkz. 2026-09-13'te ASELS
+# fiyati "yanlis" sanilan yanlis alarm -- kok neden, DB_PATH mock'lansa bile
+# _dispatch'in reports_dir'i hep gercek proje klasorune hardcode etmesiydi).
+REPORTS_DIR = Path(__file__).resolve().parent / "data" / "reports"
 
 try:
     from dotenv import load_dotenv
@@ -192,16 +200,25 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         if not price_rows:
             continue
         last = price_rows[-1]
-        current_price = last["close"]
+        live_price = bist_mcp.get_current_price(t, price_rows)
+        # "anlik" fiyat cekilemediyse (canli fastinfo hatasi/VWAP icin hacimsiz
+        # gecmis) son kapanisa duser -- current_price hicbir zaman None kalmaz.
+        current_price = live_price["price"] if live_price["price"] is not None else last["close"]
+        price_source = live_price["source"] or "last_close"
+        bid_ask = bist_mcp.get_bid_ask(t)  # v10 roadmap: transaction_cost_model girdisi
 
         # --- uzun vade: target_price_engine ---
         lt = dict(base)
         lt["entry_price"] = current_price
+        lt["current_price"] = current_price
+        lt["price_source"] = price_source
         lt_target = targets_mod.compute_long_term_target(lt, all_lt_for_peers)
         lt["target_price"] = lt_target["target_price"]
         if lt["target_price"] is None:
             continue
-        hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro)
+        hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro,
+                                           bid=bid_ask["bid"], ask=bid_ask["ask"],
+                                           volume_ratio_20d=last.get("volume_ratio_20d"))
         lt.update(hurdle_lt)
         lt["horizon_days"] = 180
         lt["stop_loss"] = None
@@ -229,8 +246,12 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         st = dict(base)
         short_target = targets_mod.compute_short_term_target(current_price, atr20, sma20)
         st.update(short_target)
+        st["current_price"] = current_price
+        st["price_source"] = price_source
         st["volume_ratio_20d"] = last.get("volume_ratio_20d")
-        hurdle_st = hurdle_mod.compute_all(short_target["entry_price"], short_target["target_price"], 20, macro)
+        hurdle_st = hurdle_mod.compute_all(short_target["entry_price"], short_target["target_price"], 20, macro,
+                                           bid=bid_ask["bid"], ask=bid_ask["ask"],
+                                           volume_ratio_20d=last.get("volume_ratio_20d"))
         st.update(hurdle_st)
         # beta_metrics tablosunda (as_of_date, ticker) TEK bir satir vardir (spec:
         # database_schema.constraints); hurdle_rate_beta_adjusted_pct zaten ufuktan
@@ -285,6 +306,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         "short_term_candidates": [c for c in short_term_candidates if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")],
         "filtered_candidates": filtered_candidates,
         "unscored_count": payload["unscored_count"],
+        "no_action_count": payload["no_action_count"],
         "no_action_today": payload["no_action_today"],
         "invalidation_triggered": payload["invalidation_triggered"],
         "evaluation_summary": evaluation_summary,
@@ -339,6 +361,11 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
             "expected_roi_pct": c["expected_roi_pct"], "hurdle_rate_pct": c["hurdle_rate_pct"],
             "excess_over_hurdle_pct": c["excess_over_hurdle_pct"], "real_return_pct": c["real_return_pct"],
             "usd_return_pct": c["usd_return_pct"], "rationale_hash": rationale_hash,
+            "current_price": c.get("current_price"), "price_source": c.get("price_source"),
+            "net_expected_roi_pct": c.get("net_expected_roi_pct"),
+            "net_excess_over_hurdle_pct": c.get("net_excess_over_hurdle_pct"),
+            "transaction_cost_pct": c.get("transaction_cost_pct"),
+            "volume_ratio_20d": c.get("volume_ratio_20d"),
         })
         invalidation_mod.create_invalidation_condition(as_of_date, c["ticker"], "excess_over_hurdle_pct", "<", 0)
         if c.get("piotroski_normalized_score") is not None:
@@ -352,10 +379,12 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
             conn.executemany(
                 """INSERT INTO predictions (as_of_date, ticker, bucket, entry_price, target_price,
                    stop_loss, horizon_days, expected_roi_pct, hurdle_rate_pct, excess_over_hurdle_pct,
-                   real_return_pct, usd_return_pct, rationale_hash)
+                   real_return_pct, usd_return_pct, rationale_hash, current_price, price_source,
+                   net_expected_roi_pct, net_excess_over_hurdle_pct, transaction_cost_pct, volume_ratio_20d)
                    VALUES (:as_of_date, :ticker, :bucket, :entry_price, :target_price, :stop_loss,
                            :horizon_days, :expected_roi_pct, :hurdle_rate_pct, :excess_over_hurdle_pct,
-                           :real_return_pct, :usd_return_pct, :rationale_hash)""",
+                           :real_return_pct, :usd_return_pct, :rationale_hash, :current_price, :price_source,
+                           :net_expected_roi_pct, :net_excess_over_hurdle_pct, :transaction_cost_pct, :volume_ratio_20d)""",
                 rows,
             )
             conn.commit()
@@ -368,9 +397,8 @@ def _dispatch(as_of_date: str, html_content: str, payload: dict) -> bool:
     import json
     import os
     import re
-    from pathlib import Path
 
-    reports_dir = Path(__file__).resolve().parent / "data" / "reports"
+    reports_dir = REPORTS_DIR
     reports_dir.mkdir(parents=True, exist_ok=True)
     html_path = reports_dir / f"{as_of_date}.html"
     payload_path = reports_dir / f"{as_of_date}_payload.json"

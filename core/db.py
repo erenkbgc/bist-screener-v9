@@ -114,7 +114,22 @@ CREATE TABLE IF NOT EXISTS predictions (
     as_of_date TEXT, ticker TEXT, bucket TEXT, entry_price REAL, target_price REAL,
     stop_loss REAL, horizon_days INTEGER, expected_roi_pct REAL, hurdle_rate_pct REAL,
     excess_over_hurdle_pct REAL, real_return_pct REAL, usd_return_pct REAL,
-    rationale_hash TEXT
+    rationale_hash TEXT,
+    -- current_price: bist_mcp.get_current_price()'in dondurdugu "anlik" fiyat
+    -- (entry_price'tan farkli olabilir -- kisa vadede entry_price bilincli bir
+    -- pullback seviyesidir, SMA20; current_price ise raporun uretildigi andaki
+    -- gercek/en-guncel fiyattir). price_source: 'live' | 'vwap_fallback' | 'last_close'.
+    current_price REAL, price_source TEXT,
+    -- transaction_cost_model (v10 roadmap): bilgi amacli, hard_filter DEGISTIRMEZ
+    -- (core/hurdle.py::net_expected_roi_pct/net_excess_over_hurdle_pct).
+    net_expected_roi_pct REAL, net_excess_over_hurdle_pct REAL, transaction_cost_pct REAL,
+    -- volume_ratio_20d: report/templates/newsletter.html.j2 kisa vade kartinda
+    -- gosterilir ("Hacim teyidi") ama HICBIR yerde persist edilmiyordu -- bu,
+    -- report/validate.py::find_orphan_numbers'in HER kisa vade STRONG_OPPORTUNITY/
+    -- OPPORTUNITY adayinda (coğu zaman baska hicbir alanla CAKISMAYAN bir deger
+    -- oldugu icin) orphan-number hatasi vermesine ve e-postanin SESSIZCE
+    -- GONDERILMEMESINE yol aciyordu (canli testte dogrulandi: orphan_numbers=['3.31']).
+    volume_ratio_20d REAL
 );
 
 CREATE TABLE IF NOT EXISTS invalidation_checks (

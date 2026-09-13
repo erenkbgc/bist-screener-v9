@@ -14,10 +14,14 @@ Kaynak: Bir yatirim analisti perspektifinden yapilan disaridan inceleme
 
 ## P0 — Kritik (kisa vadede yatirim tezi icin gerekli)
 
-- [ ] **xu100_benchmark_integration** (1-2 gun) — `core/evaluate.py`'deki
-  `xu100_return_pct` yer tutucusunu (0.0) `bp.Index("XU100").history(...)`
-  ile gercek gostergeye bagla. Etki: goreli getiri/`excess_vs_index_pct`
-  anlamli hale gelir.
+- [x] **xu100_benchmark_integration** — TAMAMLANDI (2026-09-13). `core/evaluate.py`'deki
+  `xu100_return_pct = 0.0` yer tutucusu kaldirildi; `core/live_data.py::live_index_return_pct`
+  (`bp.Index("XU100").history(...)`, point-in-time: her iki tarih icin de o tarihe
+  kadarki en son kapanis) + `macro_mcp.get_index_return_pct` + mock karsiligi
+  (`core/mock_data.py::mock_index_return_pct`) eklendi. Cekilemezse (agsal hata)
+  durustluk kurali geregi 0.0 UYDURULMAZ, satir o kosuda atlanir ve bir sonraki
+  kosuda tekrar denenir. Test: `tests/test_evaluate.py` (yeni dosya, evaluate.py
+  daha once hic test edilmiyordu).
 - [ ] **financial_institution_data_source** (3-5 gun) — Banka/sigorta/
   finansal kiralama sirketleri icin bilanco/gelir tablosu kaynagi arastir
   (KAP XBRL, TBB, alternatif saglayici). Etki: su an `reporting_basis=
@@ -38,9 +42,15 @@ Kaynak: Bir yatirim analisti perspektifinden yapilan disaridan inceleme
   (`WALK_FORWARD_DIAGNOSTIC_ENABLED=false`). Ortusmeyen pencereli tanimlayici
   takip metrigi; "backtest edilmis/kanitlanmis edge" gibi ifadeler
   `banned_claims` listesine eklenmeli.
-- [ ] **transaction_cost_model** (2-3 gun) — `hurdle_engine`'e
-  `net_expected_roi_pct` (spread+komisyon+kayma dusulmus) ekle. Mevcut
-  brut `excess_over_hurdle_pct` hard-filter olarak DEGISMEZ.
+- [x] **transaction_cost_model** (tamamlandi, 2026-09-13) — `core/hurdle.py`'ye
+  `net_expected_roi_pct`/`net_excess_over_hurdle_pct`/`transaction_cost_pct`
+  eklendi (bid/ask spread + `config/transaction_costs.yaml`'daki
+  DENENMEMIS komisyon/kayma varsayimlari). Brut `excess_over_hurdle_pct`
+  hard-filter olarak DEGISMEDI, yeni alanlar yalnizca bilgi amacli
+  (rapor: "Net Getiri (Maliyet Sonrasi)"). bid/ask verisi yoksa (mock modu,
+  ya da canli veride spread cekilemezse) net alanlar `None` kalir ve
+  raporda gosterilmez. Test: `tests/test_hurdle.py` (net_expected_roi asla
+  brutu asmaz, dusuk likiditede net getiri kotulesir, bid/ask yoksa None).
 
 ## P2 — Faydali (raporlama/derinlik)
 

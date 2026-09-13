@@ -47,6 +47,16 @@ def check_market_regime(as_of_date: str) -> dict:
     if not snapshot:
         raise RegimeHaltError("makro veri cekilemedi (bos yanit)")
 
+    # bond_2y_pct (risksiz oran) core/hurdle.py::compute_all icinde HER hesap
+    # icin zorunlu bir carpandir ("HER ZAMAN dolu gelir" varsayimiyla yazilmis,
+    # bkz. hurdle.compute_all docstring); canli modda saglayici (doviz.com)
+    # gecici olarak basarisiz olursa None kalabilir (bkz. live_macro_snapshot).
+    # Bu durumda saatler suren bir kosunun ortasinda TypeError ile COKMEK
+    # yerine burada TEMIZ bir sekilde durulur (regime_monitor'un zaten var
+    # olan hard_stop_gate gorevi).
+    if snapshot.get("bond_2y_pct") is None:
+        raise RegimeHaltError("makro veri cekilemedi: bond_2y_pct (risksiz oran) alinamadi")
+
     prev = _previous_regime_row(as_of_date)
     alerts: list[dict] = []
     severity = OK

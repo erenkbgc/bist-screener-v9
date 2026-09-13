@@ -32,7 +32,10 @@ def hard_filters_passed(candidate: dict, piotroski_threshold: float, as_of_date_
         (candidate["reporting_basis"] != "unknown", "reporting_basis"),
         (candidate["confidence"] != "insufficient_peers", "confidence"),
         (candidate["listing_days"] >= 90, "listing_days"),
-        (candidate["free_float_pct"] >= 15, "free_float_pct"),
+        # canli veri modunda free_float_pct None olabilir (fast_info cekilemedi,
+        # bkz. core/live_data.py); dogrulanamayan halka aciklik guvenlik icin
+        # elenir (sahte bir "gecti" varsayimi yapilmaz).
+        (candidate["free_float_pct"] is not None and candidate["free_float_pct"] >= 15, "free_float_pct"),
         (candidate["excess_over_hurdle_pct"] is not None and candidate["excess_over_hurdle_pct"] > 0, "hurdle"),
         (candidate["effective_at"] <= as_of_date_cutoff, "point_in_time"),
         (candidate["piotroski_normalized_score"] is not None

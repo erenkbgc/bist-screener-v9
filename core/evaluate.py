@@ -69,7 +69,18 @@ def evaluate_past_predictions(as_of_date: str, lookback_months: int = 6) -> dict
         entry, exit_price = p["entry_price"], prices[-1]["close"]
         return_pct = (exit_price - entry) / entry * 100
 
-        xu100_return_pct = 0.0  # mock XU100 icin yer tutucu, gercek entegrasyonda indeks serisi kullanilir
+        # v10 roadmap: xu100_benchmark_integration -- gercek XU100 serisiyle
+        # kiyaslar (bkz. macro_mcp.get_index_return_pct / core/live_data.py::
+        # live_index_return_pct). Cekilemezse (agsal hata, bos seri) UYDURMA
+        # bir 0.0 YAZMAZ -- bu satiri atlar, _already_evaluated onu "islendi"
+        # olarak isaretlemedigi icin bir sonraki kosuda tekrar denenir.
+        xu100_return_pct = macro_mcp.get_index_return_pct("XU100", p["as_of_date"], eval_date.isoformat())
+        # policy_rate_pct/usdtry_spot canli modda gecici olarak None gelebilir
+        # (bkz. core/live_data.py::live_macro_snapshot); bu durumda da satir
+        # sessizce atlanir (bir sonraki kosuda tekrar denenir), 0 UYDURULMAZ.
+        if xu100_return_pct is None or macro_now.get("policy_rate_pct") is None \
+                or not macro_now.get("usdtry_spot"):
+            continue
         deposit_return_pct = macro_now["policy_rate_pct"] * (horizon / 365)
         usd_return_pct = ((exit_price / macro_now["usdtry_spot"]) / (entry / macro_now["usdtry_spot"]) - 1) * 100
 
