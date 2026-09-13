@@ -1,0 +1,6378 @@
+{
+  "as_of_date": "2026-09-13",
+  "weights": {
+    "valuation_z": 0.55,
+    "catalyst_score": 0.3,
+    "ownership_quality_z": 0.15,
+    "piotroski_normalized_score_threshold": 0.55,
+    "equity_risk_premium_pct": 5.0
+  },
+  "regime": {
+    "as_of_date": "2026-09-13",
+    "short_selling_ban_active": 0,
+    "ban_end_date": null,
+    "vbts_stock_count": 0,
+    "policy_rate_pct": null,
+    "bond_2y_pct": 39.89,
+    "cpi_yoy_pct": null,
+    "usdtry_spot": 48.6598,
+    "xu100_level": 14467.25,
+    "regime_change_flag": 0,
+    "real_rate_regime": "unknown",
+    "inflation_trend": "plateau",
+    "fx_regime": "stable"
+  },
+  "scores": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "bucket": "long_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": 0.29207860697692173,
+      "catalyst_score": 0.0,
+      "ownership_z": 1.1896628403910634,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "bucket": "long_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": -1.7303225173638666,
+      "catalyst_score": 0.0,
+      "ownership_z": -0.31959277530423874,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "bucket": "long_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": 0.19367986416670965,
+      "catalyst_score": 0.0,
+      "ownership_z": 1.2115361101837494,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "bucket": "long_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": -0.10268271223688884,
+      "catalyst_score": 0.0,
+      "ownership_z": 0.3293142285454323,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "bucket": "long_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": 0.2774437764579281,
+      "catalyst_score": 0.07836960544442002,
+      "ownership_z": -1.2018146569425558,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "bucket": "long_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": 0.7370764484938204,
+      "catalyst_score": 0.0,
+      "ownership_z": -1.209105746873451,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "bucket": "short_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": 0.29207860697692173,
+      "catalyst_score": 0.0,
+      "ownership_z": 1.1896628403910634,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "bucket": "short_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": -1.7303225173638666,
+      "catalyst_score": 0.0,
+      "ownership_z": -0.31959277530423874,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "bucket": "short_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": 0.19367986416670965,
+      "catalyst_score": 0.0,
+      "ownership_z": 1.2115361101837494,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "bucket": "short_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": -0.10268271223688884,
+      "catalyst_score": 0.0,
+      "ownership_z": 0.3293142285454323,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "bucket": "short_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": 0.2774437764579281,
+      "catalyst_score": 0.07836960544442002,
+      "ownership_z": -1.2018146569425558,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "bucket": "short_term",
+      "candidate_state": "NO_ACTION",
+      "valuation_z": 0.7370764484938204,
+      "catalyst_score": 0.0,
+      "ownership_z": -1.209105746873451,
+      "final_score": null,
+      "peer_group_used": "none",
+      "peer_n": 6,
+      "confidence": "insufficient_peers",
+      "filtered_by": "confidence"
+    }
+  ],
+  "predictions": [],
+  "gordon_reference": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "dividend_per_share": 0.0,
+      "discount_rate_low": null,
+      "discount_rate_base": null,
+      "discount_rate_high": null,
+      "fair_value_low": null,
+      "fair_value_high": null,
+      "null_reason": "dividend_history_insufficient"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "dividend_per_share": 0.5773,
+      "discount_rate_low": null,
+      "discount_rate_base": null,
+      "discount_rate_high": null,
+      "fair_value_low": null,
+      "fair_value_high": null,
+      "null_reason": "dividend_not_sustainable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "dividend_per_share": 1.5,
+      "discount_rate_low": null,
+      "discount_rate_base": null,
+      "discount_rate_high": null,
+      "fair_value_low": null,
+      "fair_value_high": null,
+      "null_reason": "dividend_not_sustainable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "dividend_per_share": 0.6981,
+      "discount_rate_low": null,
+      "discount_rate_base": null,
+      "discount_rate_high": null,
+      "fair_value_low": null,
+      "fair_value_high": null,
+      "null_reason": "dividend_not_sustainable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "dividend_per_share": 0.0577,
+      "discount_rate_low": null,
+      "discount_rate_base": null,
+      "discount_rate_high": null,
+      "fair_value_low": null,
+      "fair_value_high": null,
+      "null_reason": "dividend_history_insufficient"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "dividend_per_share": 0.0762,
+      "discount_rate_low": null,
+      "discount_rate_base": null,
+      "discount_rate_high": null,
+      "fair_value_low": null,
+      "fair_value_high": null,
+      "null_reason": "dividend_history_insufficient"
+    }
+  ],
+  "beta_metrics": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "beta_60_120d": -0.21029644788002375,
+      "hurdle_rate_beta_adjusted_pct": 38.838517760599885,
+      "excess_over_beta_hurdle_pct": -215.3618152516393
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "beta_60_120d": -0.03075883404132725,
+      "hurdle_rate_beta_adjusted_pct": 39.73620582979336,
+      "excess_over_beta_hurdle_pct": -215.65406519507027
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "beta_60_120d": -0.044951541004327675,
+      "hurdle_rate_beta_adjusted_pct": 39.66524229497836,
+      "excess_over_beta_hurdle_pct": -42.221152838109354
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "beta_60_120d": -0.09239664534634773,
+      "hurdle_rate_beta_adjusted_pct": 39.42801677326826,
+      "excess_over_beta_hurdle_pct": -103.75550215338524
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "beta_60_120d": -0.030791676918160163,
+      "hurdle_rate_beta_adjusted_pct": 39.7360416154092,
+      "excess_over_beta_hurdle_pct": -109.64230703228142
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "beta_60_120d": -0.19659605156871654,
+      "hurdle_rate_beta_adjusted_pct": 38.907019742156415,
+      "excess_over_beta_hurdle_pct": 218.02685971951706
+    }
+  ],
+  "earnings_quality": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
+      "elevated_risk_flag": 0,
+      "null_reason": "not_computable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
+      "elevated_risk_flag": 0,
+      "null_reason": "not_computable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADESE",
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
+      "elevated_risk_flag": 0,
+      "null_reason": "not_computable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADGYO",
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
+      "elevated_risk_flag": 0,
+      "null_reason": "not_computable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
+      "elevated_risk_flag": 0,
+      "null_reason": "not_computable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGESA",
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
+      "elevated_risk_flag": 0,
+      "null_reason": "not_computable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "sloan_accrual_ratio": -0.09084618563548247,
+      "peer_percentile": 0.0,
+      "elevated_risk_flag": 0,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGROT",
+      "sloan_accrual_ratio": null,
+      "peer_percentile": null,
+      "elevated_risk_flag": 0,
+      "null_reason": "not_computable"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "sloan_accrual_ratio": -0.06858717936321396,
+      "peer_percentile": 0.5,
+      "elevated_risk_flag": 0,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "sloan_accrual_ratio": 0.2975567372907157,
+      "peer_percentile": 1.0,
+      "elevated_risk_flag": 1,
+      "null_reason": null
+    }
+  ],
+  "piotroski_scores": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "criteria_met": 4,
+      "criteria_computable": 9,
+      "normalized_score": 0.4444444444444444,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "criteria_met": 3,
+      "criteria_computable": 9,
+      "normalized_score": 0.3333333333333333,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADESE",
+      "criteria_met": 6,
+      "criteria_computable": 9,
+      "normalized_score": 0.6666666666666666,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADGYO",
+      "criteria_met": 3,
+      "criteria_computable": 9,
+      "normalized_score": 0.3333333333333333,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "criteria_met": 5,
+      "criteria_computable": 9,
+      "normalized_score": 0.5555555555555556,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGESA",
+      "criteria_met": 0,
+      "criteria_computable": 0,
+      "normalized_score": null,
+      "null_reason": "no_computable_criteria"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "criteria_met": 4,
+      "criteria_computable": 9,
+      "normalized_score": 0.4444444444444444,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGROT",
+      "criteria_met": 3,
+      "criteria_computable": 9,
+      "normalized_score": 0.3333333333333333,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "criteria_met": 6,
+      "criteria_computable": 9,
+      "normalized_score": 0.6666666666666666,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "criteria_met": 5,
+      "criteria_computable": 9,
+      "normalized_score": 0.5555555555555556,
+      "null_reason": null
+    }
+  ],
+  "ownership": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 48.3,
+      "foreign_pct": 2.33
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 27.6,
+      "foreign_pct": 0.04
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADESE",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 92.8,
+      "foreign_pct": 13.86
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADGYO",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 11.9,
+      "foreign_pct": 0.82
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 48.6,
+      "foreign_pct": 2.46
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGESA",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 19.9,
+      "foreign_pct": 65.45
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 36.5,
+      "foreign_pct": 29.46
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGROT",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 47.0,
+      "foreign_pct": 3.93
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 15.5,
+      "foreign_pct": 14.72
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "investor_count": null,
+      "investor_count_change_1m": null,
+      "retail_pct": null,
+      "institutional_pct": null,
+      "free_float_pct": 15.4,
+      "foreign_pct": 11.87
+    }
+  ],
+  "fundamentals": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": null,
+      "pb": 1.8,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": -11.6821210188859,
+      "eps_ttm": -7.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 0.0,
+      "payout_ratio": 0.0,
+      "fcf_ttm": 146522597.0,
+      "fcf_yield_usd": 5.958846857919431,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": null,
+      "pb": 6.1,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": -41.32464993980905,
+      "eps_ttm": -2.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 0.5773,
+      "payout_ratio": null,
+      "fcf_ttm": -411092468.0,
+      "fcf_yield_usd": -2.3949616007837746,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADESE",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": null,
+      "pb": 0.3,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": 3.1218548298438433,
+      "eps_ttm": 0.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 0.0,
+      "payout_ratio": 0.0,
+      "fcf_ttm": 579823871.0,
+      "fcf_yield_usd": 6.585927543904249,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADGYO",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": null,
+      "pb": 1.9,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": -4.160501738782584,
+      "eps_ttm": 0.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 0.0,
+      "payout_ratio": 0.0,
+      "fcf_ttm": 331581571.0,
+      "fcf_yield_usd": 0.493465485157395,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": null,
+      "pb": 0.6,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": 3.180318273335165,
+      "eps_ttm": 1.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 1.5,
+      "payout_ratio": 1.5,
+      "fcf_ttm": 13327512.0,
+      "fcf_yield_usd": 0.12949562069041531,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGESA",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": 6.9,
+      "pb": 3.8,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": null,
+      "eps_ttm": null,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 6.9444,
+      "payout_ratio": null,
+      "fcf_ttm": null,
+      "fcf_yield_usd": null,
+      "null_reason": "missing_fcf",
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": 17.5,
+      "pb": 0.6,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": 6.168021040576607,
+      "eps_ttm": 1.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 0.6981,
+      "payout_ratio": 0.6981,
+      "fcf_ttm": -2844819745.0,
+      "fcf_yield_usd": -1.6620285059666005,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGROT",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": null,
+      "pb": 0.5,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": -8.69415332852469,
+      "eps_ttm": 0.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 0.0,
+      "payout_ratio": 0.0,
+      "fcf_ttm": 2210383.0,
+      "fcf_yield_usd": 0.023100686147637457,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": 18.6,
+      "pb": 1.8,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": 6.633859827221188,
+      "eps_ttm": 1.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 0.0577,
+      "payout_ratio": 0.0577,
+      "fcf_ttm": 14348554144.0,
+      "fcf_yield_usd": 6.624015928581564,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "period_end": "2026-06-30",
+      "reporting_basis": "adjusted",
+      "pe": 3.5,
+      "pb": 1.2,
+      "ev_ebitda": null,
+      "ev_sales": null,
+      "roe": 34.02711108898078,
+      "eps_ttm": 5.0,
+      "ebitda_ttm": null,
+      "net_debt": null,
+      "nav_discount": null,
+      "dividend_per_share_ttm": 0.0762,
+      "payout_ratio": 0.01524,
+      "fcf_ttm": -113797114.0,
+      "fcf_yield_usd": -0.4490807117220203,
+      "null_reason": null,
+      "source": "bist-data (mock)",
+      "published_at": "2026-06-30",
+      "available_at": "2026-06-30",
+      "effective_at": "2026-06-30",
+      "ingested_at": "2026-09-13T13:22:40.390461+00:00"
+    }
+  ],
+  "universe": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AAGYO",
+      "name": "AĞAOĞLU AVRASYA GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 8454100000.0,
+      "avg_volume_tl_20d": 94337693.573,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 157,
+      "exclusion_reason": "min_reported_quarters",
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "name": "ACISELSAN ACIPAYAM SELÜLOZ SANAYİ VE TİCARET A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 1196500000.0,
+      "avg_volume_tl_20d": 15406819.170000002,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1066,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "name": "ADEL KALEMCİLİK TİCARET VE SANAYİ A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 8352400000.0,
+      "avg_volume_tl_20d": 185801520.19399995,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1066,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADESE",
+      "name": "ADESE GAYRİMENKUL YATIRIM A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 4284000000.0,
+      "avg_volume_tl_20d": 108989847.324,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1066,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADGYO",
+      "name": "ADRA GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 32696700000.0,
+      "avg_volume_tl_20d": 65317293.9525,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1066,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADLVY",
+      "name": "ADİL VARLIK YÖNETİM A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": null,
+      "avg_volume_tl_20d": null,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 9999,
+      "exclusion_reason": "min_volume_tl",
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "name": "AFYON ÇİMENTO SANAYİ T.A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 5008000000.0,
+      "avg_volume_tl_20d": 20696036.401,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1066,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGESA",
+      "name": "AGESA HAYAT VE EMEKLİLİK A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 45720000000.0,
+      "avg_volume_tl_20d": 57714095.295,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1066,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "name": "AG ANADOLU GRUBU HOLDİNG A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 83288800000.0,
+      "avg_volume_tl_20d": 172566583.43499997,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1066,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGROT",
+      "name": "AGROTECH YÜKSEK TEKNOLOJİ VE YATIRIM A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 4656000000.0,
+      "avg_volume_tl_20d": 284241227.7155,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1025,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "name": "AHLATCI DOĞAL GAZ DAĞITIM ENERJİ VE YATIRIM A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 105404000000.0,
+      "avg_volume_tl_20d": 206805443.26399997,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 1066,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "name": "AHES GAYRİMENKUL YATIRIM ORTAKLIĞI A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": 12330400000.0,
+      "avg_volume_tl_20d": 53543008.371,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 745,
+      "exclusion_reason": null,
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AKFK",
+      "name": "AK FİNANSAL KİRALAMA A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": null,
+      "avg_volume_tl_20d": null,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 9999,
+      "exclusion_reason": "min_volume_tl",
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AKM",
+      "name": "AK YATIRIM MENKUL DEĞERLER A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": null,
+      "avg_volume_tl_20d": null,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 9999,
+      "exclusion_reason": "min_volume_tl",
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AKSFA",
+      "name": "AK FAKTORİNG A.Ş.",
+      "sector": "BILINMIYOR",
+      "supersector": "XUSIN",
+      "ratio_profile": "industrial",
+      "regulator": "SPK_TFRS",
+      "market_cap": null,
+      "avg_volume_tl_20d": null,
+      "tedbir_level": 0,
+      "tedbir_end_date": null,
+      "listing_days": 9999,
+      "exclusion_reason": "min_volume_tl",
+      "ingested_at": "2026-09-13T13:21:03.256854+00:00"
+    }
+  ],
+  "upcoming_events": [
+    {
+      "ticker": "A1CAP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "A1YEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ACSEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ACSEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADESE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AEFES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AFYON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AFYON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGROT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKBNK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKBNK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKCNS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKCNS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKENR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFIS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKGRT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKGRT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKHAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSUE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSUE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALARK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALBRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALBRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALCAR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALCAR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALCTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALCTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALFAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKLC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALTNY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALVES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANELE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANHYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANHYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANHYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANHYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANSGR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANSGR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANSGR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANSGR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARASE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARCLK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARDYZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARENA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARENA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARFYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARFYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARMGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARSAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARTMS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARTMS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARZUM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASELS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASTOR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASUZU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATAKP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATAKP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATATP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATATR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVOD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVPGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVPGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYCES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYCES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYDEM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AZTEK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAGFS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAHKM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAHKM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAKAB",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BALSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BALSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BANVT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BANVT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BARMA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BASGZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BASGZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAYRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAYRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BEGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BEGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BERA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BESLR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BESTE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BEYAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BFREN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BFREN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIENY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGCH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGTK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIMAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BINBN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BINHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BINHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIOEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BJKAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-12",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BJKAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-01-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BLCYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BLUME",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BMSCH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BMSTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BNTAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BNTAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BOBET",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BORLS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BORSK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BORSK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BOSSA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BOSSA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRISA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRKVY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRKVY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRLSM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KOTON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRDMA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRDMB",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRDMD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRONT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRPLS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRPLS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRSTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRVGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KTLEV",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KTSKR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KTSKR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUTPO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUVVA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUYAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUYAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-17",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZBGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZBGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LIDER",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LIDER",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LIDFA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LILAK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LINK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LINK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LKMNH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LMKDC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LMKDC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LOGO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LRSHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LXGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LXGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LYDHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LYDYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LYDYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAALT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAALT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MACKO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAKIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAKTK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MANAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARBL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARMR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARMR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARTI",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARTI",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAVI",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-09-21",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAVI",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-12-10",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MCARD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEGMT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEKAG",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERCN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERIT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERKO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERKO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "METRO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "METRO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEYSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MGROS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MHRGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MHRGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MIATK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MNDRS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MNDTR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOBTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOGAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOPAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MPARK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MRGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MRGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MRSHL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MRSHL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MSGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MSGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MTRKS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NATEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NETAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NETCD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NETCD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NIBAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NIBAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NTGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NTHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NUGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NUGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NUHCM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OBAMS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OBASE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ODAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ODINE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OFSYM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ONCSM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ONRYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-09-18",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ONRYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ORGE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OSMEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OSTIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OTKAR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OTTO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-09-18",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OTTO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OYAKC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OYYAT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZATD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZATD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZSUB",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZYSR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAMEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAPIL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PARSN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PARSN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PASEU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PATEK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PCILT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PEKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PEKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PENGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PENTA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PETKM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PETUN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PETUN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PGSUS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PINSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PINSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "A1CAP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "A1CAP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "A1YEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "A1YEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ACSEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ACSEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADESE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADESE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AEFES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AEFES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AFYON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AFYON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGROT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGROT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKBNK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKBNK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKBNK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKBNK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKCNS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKCNS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKENR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKENR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFIS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFIS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKFYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKGRT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKGRT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKHAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKHAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSUE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AKSUE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALARK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALARK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALBRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALBRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALBRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALBRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALCAR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALCAR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALCTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALCTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALFAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALFAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKLC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALKLC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALTNY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALTNY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALVES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ALVES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANELE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANELE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANHYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANHYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANHYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANHYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANSGR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANSGR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANSGR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ANSGR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARASE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARASE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARCLK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARCLK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARDYZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARDYZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARENA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARENA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARFYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARFYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARMGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARMGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARSAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARSAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARTMS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARTMS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARZUM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ARZUM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASELS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASELS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASTOR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASTOR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASUZU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ASUZU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATAKP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATAKP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATATP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATATP",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATATR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ATATR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVOD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVOD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVPGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AVPGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYCES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYCES",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYDEM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYDEM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AYGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AZTEK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AZTEK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAGFS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAGFS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAHKM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAHKM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAKAB",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAKAB",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BALSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BALSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BANVT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BANVT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BARMA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BARMA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BASGZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BASGZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAYRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BAYRK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BEGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BEGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BERA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BERA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BESLR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BESLR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BESTE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BESTE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BEYAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BEYAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BFREN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BFREN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIENY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIENY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGCH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGCH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGTK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIGTK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIMAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIMAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BINBN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BINBN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BINHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BINHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIOEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BIOEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BJKAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-12",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BJKAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-01-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BLCYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BLCYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BLUME",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BLUME",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BMSCH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BMSCH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BMSTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BMSTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BNTAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BNTAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BOBET",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BOBET",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BORLS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BORLS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BORSK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BORSK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BOSSA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BOSSA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRISA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRISA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRKVY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRKVY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRLSM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "BRLSM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRDMD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRDMD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRONT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRONT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRPLS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRPLS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRSTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRSTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRVGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KRVGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KTLEV",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KTLEV",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KTSKR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KTSKR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUTPO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUTPO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUVVA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUVVA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUYAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUYAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-17",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KUYAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZBGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZBGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZBGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZBGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "KZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LIDER",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LIDER",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LIDFA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LIDFA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LILAK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LILAK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LINK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LINK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LKMNH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LKMNH",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LMKDC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LMKDC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LOGO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LOGO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LRSHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LRSHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LXGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LXGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LXGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LXGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LYDHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LYDHO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LYDYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "LYDYE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAALT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAALT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MACKO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MACKO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAGEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAKIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAKIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAKTK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAKTK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MANAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MANAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARBL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARBL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARMR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARMR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARTI",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-19",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MARTI",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAVI",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-09-21",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MAVI",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-12-10",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MCARD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MCARD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEGMT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEGMT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEKAG",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEKAG",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERCN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERCN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERIT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERIT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERKO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MERKO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "METRO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "METRO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEYSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MEYSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MGROS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MGROS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MHRGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MHRGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MIATK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MIATK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MNDRS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MNDRS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MNDTR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MNDTR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOBTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOBTL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOGAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOGAN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOPAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MOPAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MPARK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MPARK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MRGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MRGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-02-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MRSHL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MRSHL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MSGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MSGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MTRKS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "MTRKS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NATEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NATEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NETAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NETAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NETCD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NETCD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NIBAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NIBAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NTGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NTGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NTHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NTHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NUGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NUGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NUHCM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "NUHCM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OBAMS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OBAMS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OBASE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OBASE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ODAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ODAS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ODINE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ODINE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OFSYM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OFSYM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ONCSM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ONCSM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ONRYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-09-18",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ONRYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ONRYT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ORGE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ORGE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OSMEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OSMEN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OSTIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OSTIM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OTKAR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OTKAR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OTTO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-09-18",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OTTO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OTTO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OYAKC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OYAKC",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OYYAT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OYYAT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZATD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZATD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZSUB",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZSUB",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZYSR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "OZYSR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAMEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAMEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAPIL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PAPIL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PARSN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PARSN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PASEU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PASEU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PATEK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PATEK",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PCILT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PCILT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PEKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PEKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PEKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PEKGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PENGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PENGD",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PENTA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PENTA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PETKM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PETKM",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PETUN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PETUN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PGSUS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PGSUS",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PINSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PINSU",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PKART",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PKART",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PLTUR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PLTUR",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PNLSN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "PNLSN",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ACSEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ACSEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADEL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADESE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADESE",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "ADGYO",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AFYON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AFYON",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGESA",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGHOL",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGROT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AGROT",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-11-09",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHGAZ",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-11",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2026-10-30",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    },
+    {
+      "ticker": "AHSGY",
+      "event_type": "bilanco_aciklama_tarihi",
+      "event_date": "2027-03-01",
+      "source": "Is Yatirim finansal takvim (KAP kaynakli)",
+      "coverage_note": "resmi"
+    }
+  ],
+  "correlation_flags": [],
+  "dividend_sustainability": [
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ACSEL",
+      "fcf_payout_coverage": 0.0,
+      "dividend_streak_years": 0,
+      "payout_ratio_trend_3p": "stabil",
+      "passes_sustainability": 0,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "ADEL",
+      "fcf_payout_coverage": null,
+      "dividend_streak_years": 5,
+      "payout_ratio_trend_3p": "stabil",
+      "passes_sustainability": 0,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AFYON",
+      "fcf_payout_coverage": 0.0,
+      "dividend_streak_years": 4,
+      "payout_ratio_trend_3p": "stabil",
+      "passes_sustainability": 0,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AGHOL",
+      "fcf_payout_coverage": null,
+      "dividend_streak_years": 5,
+      "payout_ratio_trend_3p": "stabil",
+      "passes_sustainability": 0,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHGAZ",
+      "fcf_payout_coverage": 0.022788294345709177,
+      "dividend_streak_years": 0,
+      "payout_ratio_trend_3p": "stabil",
+      "passes_sustainability": 0,
+      "null_reason": null
+    },
+    {
+      "as_of_date": "2026-09-13",
+      "ticker": "AHSGY",
+      "fcf_payout_coverage": null,
+      "dividend_streak_years": 0,
+      "payout_ratio_trend_3p": "stabil",
+      "passes_sustainability": 0,
+      "null_reason": null
+    }
+  ],
+  "invalidation_triggered": [],
+  "no_action_today": true,
+  "unscored_count": 4,
+  "no_action_count": 12,
+  "evaluation_summary": {
+    "is_not_a_backtest": true,
+    "independence_caveat": "T+5/T+20/T+60 ufuklari gunluk secilen adaylarda ortusur; N gunluk takip N bagimsiz gozlem anlamina gelmez.",
+    "by_horizon": {
+      "5": null,
+      "20": null,
+      "60": null
+    },
+    "allowed_claims": [
+      "tanimlayici izleme metrigi (hit_rate, ortalama fazla getiri) belirtilen donem icin",
+      "bu bir canli takip ozetidir, gecmis performans garantisi degildir"
+    ],
+    "banned_claims": [
+      "kanitlanmis edge",
+      "istatistiksel olarak anlamli",
+      "backtest edilmis",
+      "dogrulanmis strateji",
+      "sharpe orani"
+    ]
+  },
+  "decision_diff": {
+    "regime_status": "unchanged",
+    "entered": [],
+    "exited": [
+      "A1CAP",
+      "AHGAZ",
+      "AHSGY",
+      "ALCAR",
+      "ASELS",
+      "AYEN",
+      "BASGZ",
+      "BRYAT",
+      "CATES",
+      "DUNYH",
+      "DZGYO",
+      "ECILC",
+      "EGEGY",
+      "ENERY",
+      "ESCOM",
+      "FORTE",
+      "FROTO",
+      "GEDIK",
+      "GENIL",
+      "GLRYH",
+      "GLYHO",
+      "GOZDE",
+      "GRSEL",
+      "IEYHO",
+      "IHLGM",
+      "ISGSY",
+      "KONYA",
+      "KRPLS",
+      "KRSTL",
+      "KZBGY",
+      "LILAK",
+      "LKMNH",
+      "LOGO",
+      "MEGMT",
+      "MERCN",
+      "MERIT",
+      "METRO",
+      "NTGAZ",
+      "PAGYO",
+      "PATEK",
+      "PGSUS",
+      "PLTUR",
+      "POLTK",
+      "RGYAS",
+      "RTALB",
+      "RYGYO",
+      "SISE",
+      "SRVGY",
+      "SURGY",
+      "TERA",
+      "TMSN",
+      "ULKER"
+    ],
+    "catalyst_deltas": [],
+    "macro_deltas": [],
+    "previous_as_of_date": "2026-09-12"
+  }
+}
