@@ -14,7 +14,7 @@ from core.evaluate import summarize_outcomes
 from core.decision_diff import diff_against_previous_run
 
 
-def build_report_payload(as_of_date: str) -> dict:
+def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | None = None) -> dict:
     as_of_date_cutoff = as_of_date
 
     regime = db.query("SELECT * FROM regime_log WHERE as_of_date=?", (as_of_date,))
@@ -83,6 +83,11 @@ def build_report_payload(as_of_date: str) -> dict:
         "correlation_flags": as_dicts(correlation_flags),
         "dividend_sustainability": as_dicts(dividend_sustainability),
         "invalidation_triggered": as_dicts(invalidation_triggered),
+        # concentration_check (core/concentration.py) DB'ye yazilmaz, run.py
+        # icinde transient hesaplanir -- yine de mesaj metnine gomdugu `pct`
+        # sayisi report/validate.py::find_orphan_numbers'in gorebilmesi icin
+        # payload'a acikca eklenir (no_number_without_source kurali).
+        "concentration_warnings": concentration_warnings or [],
         "no_action_today": not any(s["candidate_state"] in ("STRONG_OPPORTUNITY", "OPPORTUNITY") for s in scores),
         "unscored_count": unscored_count,
         "no_action_count": no_action_count,
