@@ -31,12 +31,24 @@ UNKNOWN_RATIO_HALT_THRESHOLD=0.30 ustunde kalirsa kosu zaten durur).
 from __future__ import annotations
 
 import re
+import socket
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
 import borsapy as bp
+
+# borsapy'nin altindaki HTTP cagrilarinin HICBIRINDE acik bir `timeout=`
+# yok (2026-09-13 olcumu: tek bir istek, saglayici rate-limit/throttle
+# uyguladiginda SONSUZA KADAR askida kalabiliyor -- 1 ticker'lik bir kosu
+# bile 17+ dakika hicbir DB yazisi olmadan takili kaldi, GitHub Actions
+# job'unun timeout-minutes:350 sinirina kadar hic bitmeyebilirdi). Global
+# socket zaman asimi, ucuncu taraf kutuphaneye dokunmadan TUM canli agsal
+# cagrilari sinirlar -- takilan istek artik `socket.timeout` firlatir,
+# ilgili try/except Exception bloklari (live_macro_snapshot vb.) bunu zaten
+# yakalayip None/varsayilana duser (durustluk kurali ile tutarli).
+socket.setdefaulttimeout(25)
 
 # Butun canli fonksiyonlar tek tek, sirali (I/O-bound) ag cagrilari yapar.
 # ~800 tickerlik tam evrende bu, ticker basina saniyeler suren gecikmeyi

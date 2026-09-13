@@ -20,7 +20,7 @@
 
   /* Makro Etiketler (Pills) */
   .pillrow { margin-top:20px; display:flex; flex-wrap:wrap; gap:10px; }
-  .pill { display:inline-flex; align-items:center; background-color:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#ffffff; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; letter-spacing:0.02em; }
+  .pill { display:inline-flex; align-items:center; background-color:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#ffffff; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; letter-spacing:0.02em; backdrop-filter:blur(4px); }
   .pill.alert { background-color:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.4); color:#fca5a5; }
 
   /* Bolum Basliklari */
@@ -41,7 +41,7 @@
   .badge-NO_ACTION { background:#f3f4f6; color:#4b5563; }
   .badge-QUARANTINE { background:#fee2e2; color:#7f1d1d; }
 
-  /* Veri Izgarasi */
+  /* Veri Izgarasi (Terminal Stili) */
   .price-row { display:flex; flex-wrap:wrap; margin:0 0 20px; background:#f8fafc; border-radius:8px; border:1px solid #f1f5f9; padding:16px; }
   .price-box { flex:1; min-width:100px; border-right:1px solid #e2e8f0; padding-right:16px; margin-right:16px; }
   .price-box:last-child { border-right:none; padding-right:0; margin-right:0; }
@@ -86,7 +86,7 @@
   /* Footer */
   .footer { font-size:11px; color:#94a3b8; line-height:1.7; background:transparent; border:none; box-shadow:none; padding:0 12px; text-align:justify; margin-top:8px; }
 
-  /* Mobil Duzenlemeler */
+  /* Mobil Düzenlemeler */
   @media (max-width:540px) {
     .wrap { padding:12px; }
     .card, .hero { padding:20px; }
@@ -103,7 +103,7 @@
 <body>
 <div class="wrap">
 
-  <!-- 1. Baslik Alani -->
+  <!-- 1. Baslik Alanı -->
   <div class="hero">
     <h1>BIST Tarama Bulteni</h1>
     <div class="date">{{ as_of_date }}</div>
@@ -111,9 +111,9 @@
       {% if no_action_today %}
         Bugun hard-filter'lardan gecen bir aday yok - sistem bilerek sessiz kaliyor, aksiyon onerilmiyor.
       {% elif regime_taxonomy_tag %}
-        Rejim durumu: <span style="color:#ffffff; font-weight:700;">{{ regime_taxonomy_tag }}</span>. Asagida kisa ve uzun vade adaylarin ozeti yer almaktadir, teknik detaylar her kartin altindaki "Teknik detaylar" bolumundedir.
+        Rejim durumu: <span style="color:#ffffff; font-weight:700;">{{ regime_taxonomy_tag }}</span>. Asagida kisa ve uzun vade adaylarin ozeti yer almaktadir, teknik analiz detaylari hisse kartlarindaki "Detaylari Incele" bolumundedir.
       {% else %}
-        Asagida kisa ve uzun vade adaylarin ozeti yer almaktadir, teknik detaylar her kartin altindaki "Teknik detaylar" bolumundedir.
+        Asagida kisa ve uzun vade adaylarin ozeti yer almaktadir, teknik analiz detaylari hisse kartlarindaki "Detaylari Incele" bolumundedir.
       {% endif %}
     </div>
 
@@ -129,7 +129,7 @@
     {% endif %}
   </div>
 
-  {% set price_source_label = {'live': 'Anlik fiyat', 'vwap_fallback': 'Hacim ort. (VWAP)', 'last_close': 'Gecikmeli kapanis'} %}
+  {% set price_source_label = {'live': 'Anlik', 'vwap_fallback': 'Hacim Ort. (VWAP)', 'last_close': 'Kapanis'} %}
 
   <!-- 2. Uzun Vade Adaylari -->
   <div class="card">
@@ -175,7 +175,7 @@
         {% endif %}
 
         <details>
-          <summary>Teknik detaylar</summary>
+          <summary>Detaylari Incele</summary>
           <ul style="margin-top:12px;">{% for b in c.thesis_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
           <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
             <span class="highlight">Bozulma Kosulu:</span> {{ c.invalidation_condition_display }}
@@ -187,7 +187,7 @@
               <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
               <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%{{ c.excess_over_beta_hurdle_pct | fmt }}</td></tr>
               <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">{{ c.piotroski_normalized_score | fmt }}</td></tr>
-              <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">{{ c.peer_group_used }} (n={{ c.peer_n | fmt }})</td></tr>
+              <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">{{ c.peer_group_used }} (n={{ c.peer_n }})</td></tr>
               <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
               <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">{{ c.reporting_basis }}</td></tr>
               <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">{{ c.tedbir_level | fmt }}</td></tr>
@@ -229,7 +229,7 @@
   <!-- 3. Kisa Vade Adaylari -->
   <div class="card">
     <h2 class="section-title">Kisa Vade Onerileri</h2>
-    <div class="section-sub">~20 gunluk ufuk, hacim teyitli teknik kirilim. "Giris seviyesi" 20 gunluk ortalamaya cekilme bazalidir, guncel fiyatla karistirilmamali.</div>
+    <div class="section-sub">~20 gunluk ufuk, hacim teyitli teknik kirilim. "Giris seviyesi" 20 gunluk ortalamaya cekilme bazalidir.</div>
 
     {% if short_term_candidates %}
     {% for c in short_term_candidates %}
@@ -262,7 +262,7 @@
         </div>
 
         <details>
-          <summary>Teknik detaylar</summary>
+          <summary>Detaylari Incele</summary>
           <table>
             <tbody>
               <tr><td data-label="Metrik">Hacim teyidi (20g orani)</td><td data-label="Deger">{{ c.volume_ratio_20d | fmt }}</td></tr>
@@ -369,7 +369,7 @@
   <div class="card" style="padding:20px 28px;">
     <details style="margin:0; border:none; padding:0;">
       <summary style="font-size:14px; font-weight:700;">Filtreye takilan / Skorlanamayan Hisseler ({{ no_action_count | fmt }} + {{ unscored_count | fmt }})</summary>
-      <div class="muted small" style="margin:12px 0 16px;">{{ unscored_count }} hisse bu kosuda skorlanamadi (eksik veri, baz belirsizligi veya karsilastirma icin yetersiz esler grubu).</div>
+      <div class="muted small" style="margin:12px 0 16px;">{{ unscored_count }} adet hisse bu kosuda skorlanamadi (eksik veri, baz belirsizligi veya yetersiz esler grubu).</div>
       {% if filtered_candidates %}
       <table>
         <thead><tr><th>Ticker</th><th>Filtrelenme Nedeni</th></tr></thead>
@@ -385,7 +385,7 @@
 
   <!-- 8. Metodoloji & Yasal Uyari (Footer) -->
   <div class="footer">
-    <p>final_score = {{ weights.valuation_z | fmt }} x valuation_z + {{ weights.catalyst_score | fmt }} x catalyst_score + {{ weights.ownership_quality_z | fmt }} x ownership_quality_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, equity risk premium: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p>final_score = {{ weights.valuation_z | fmt }} x valuation_z + {{ weights.catalyst_score | fmt }} x catalyst_score + {{ weights.ownership_quality_z | fmt }} x ownership_quality_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP (Equity Risk Premium): %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
     <div style="border-top:1px solid #cbd5e1; margin:16px 0 12px; width:40px;"></div>
     <p>{{ disclaimer_text }}</p>
   </div>
