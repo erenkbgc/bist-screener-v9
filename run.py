@@ -282,7 +282,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
     _persist_predictions_and_invalidation(as_of_date, passing)
 
     # --- payload (decision_diff_engine dahil, bkz. core/payload.py) ---
-    payload = payload_mod.build_report_payload(as_of_date)
+    payload = payload_mod.build_report_payload(as_of_date, concentration_warnings=concentration_warnings)
     decision_diff = payload["decision_diff"]
 
     # --- thesis_card ---
@@ -330,6 +330,26 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
             print(f"[dispatch] HATA: {exc}")
     else:
         error_message = f"validation_gate basarisiz: orphan={validation['orphan_numbers'][:10]} banned={validation['banned_claims_found']}"
+        # validation_gate reddettigi icin _dispatch hic cagrilmiyor, yani
+        # HTML/payload normalde HICBIR YERE yazilmiyor -- bir orphan_number
+        # hatasi cikinca kok nedeni gostermenin tek yolu process bitmeden
+        # ONCE bu ciktiyi diske dokmek olur (bkz. 2026-09-13 120-stock
+        # diagnostic: is_valid=False donen kosu, process kapaninca hicbir
+        # iz birakmadi, kok neden bulunamadi). "_INVALID" son eki, gercekten
+        # gonderilmis bir bultenle KARISTIRILMASIN diye.
+        try:
+            import json as _json
+            debug_html_path = REPORTS_DIR / f"{as_of_date}_INVALID.html"
+            debug_payload_path = REPORTS_DIR / f"{as_of_date}_INVALID_payload.json"
+            REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+            debug_html_path.write_text(html_content, encoding="utf-8")
+            debug_payload_path.write_text(
+                _json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
+            )
+            print(f"[validation_gate] HATA teshisi icin HTML/payload kaydedildi: "
+                  f"{debug_html_path}, {debug_payload_path}")
+        except Exception as debug_exc:  # noqa: BLE001 - debug yazimi ASLA ana kosuyu dusurmemeli
+            print(f"[validation_gate] debug dump basarisiz (yok sayildi): {debug_exc}")
 
     # --- evaluate_past_predictions + thesis_invalidation_monitor (kosunun sonunda) ---
     # Bu, BIR SONRAKI kosunun payload'unun okuyacagi outcomes/invalidation_checks

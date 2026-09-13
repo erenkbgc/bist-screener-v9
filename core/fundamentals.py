@@ -20,6 +20,12 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
     effective_at = published_at
     ingested_at = datetime.now(timezone.utc).isoformat()
 
+    # bist_mcp.server._live_enabled() ile AYNI kural: "source" alani sabit
+    # "bist-data (mock)" olarak yaziliyordu -- BIST_DATA_MODE=live'de bile.
+    # Bu, DB'de gercek/canli veriyi mock sanip yanlis kok-neden aramasina
+    # yol acabilir (bkz. 2026-09-13 hedef fiyat anomalisi teshisi).
+    source_label = "bist-data (live)" if bist_mcp._live_enabled() else "bist-data (mock)"
+
     rows = []
     for u in universe_rows:
         ticker = u["ticker"]
@@ -44,7 +50,7 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
             "net_debt": f["net_debt"], "nav_discount": f["nav_discount"],
             "dividend_per_share_ttm": f["dividend_per_share_ttm"], "payout_ratio": f["payout_ratio"],
             "fcf_ttm": f["fcf_ttm"], "fcf_yield_usd": fcf_yield_usd, "null_reason": null_reason,
-            "source": "bist-data (mock)", "published_at": published_at, "available_at": available_at,
+            "source": source_label, "published_at": published_at, "available_at": available_at,
             "effective_at": effective_at, "ingested_at": ingested_at,
             # skorlama disi ham alanlar, sonraki motorlar icin bellekte tasinir (DB'ye yazilmaz)
             "_raw": f,

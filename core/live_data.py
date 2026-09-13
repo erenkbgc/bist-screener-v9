@@ -408,9 +408,22 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     ev_sales = ((market_cap + net_debt) / revenue) if (market_cap and net_debt is not None and revenue) else None
     roe = (net_income / equity * 100) if (net_income is not None and equity) else None
 
-    eps_ttm = _val(_row(inc, "Hisse Başına Kazanç"))
-    if eps_ttm is None and net_income is not None and shares_outstanding:
+    # OLCUM SONUCU (2026-09-13): "Hisse Basina Kazanc" tablo satiri, sirketin
+    # gecmiste yaptigi bedelsiz sermaye artisi/bolunme sonrasi GUNCEL pay
+    # sayisina gore duzeltilmemis (split-adjusted degil) -- oysa
+    # shares_outstanding (fast_info) GUNCEL/duzeltilmis pay sayisidir. Bu
+    # tutarsizlik ASELS'te eps_ttm'i ~100x, AYEN'de ~8x sisirdi (net_income/
+    # shares_outstanding ile karsilastirmali olculdu), ve core/targets.py'nin
+    # P/E bacagini (leg1) EV/EBITDA bacagiyla (leg2, zaten shares_outstanding
+    # kullanir) TUTARSIZ bir pay-sayisi bazina oturttu -> hedef fiyatlar
+    # gercek disi sekilde sisti (orn. ASELS icin ~22x). Bu yuzden GUNCEL pay
+    # sayisina gore hesaplanan net_income/shares_outstanding BIRINCIL kaynak;
+    # ham tablo satiri yalnizca net_income/shares_outstanding hesaplanamazsa
+    # (biri eksikse) yedek olarak kullanilir.
+    if net_income is not None and shares_outstanding:
         eps_ttm = net_income / shares_outstanding
+    else:
+        eps_ttm = _val(_row(inc, "Hisse Başına Kazanç"))
 
     fcf_ttm = _val(_row(cf, "Serbest Nakit Akım"))
     dividend_per_share_ttm = _dividend_ttm(ticker)
