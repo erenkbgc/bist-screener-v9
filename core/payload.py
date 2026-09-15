@@ -66,6 +66,7 @@ def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | N
             "valuation_z": weights["scoring_weights"]["valuation_z"],
             "catalyst_score": weights["scoring_weights"]["catalyst_score"],
             "ownership_quality_z": weights["scoring_weights"]["ownership_quality_z"],
+            "low_vol_z": weights["scoring_weights"]["low_vol_z"],
             "piotroski_normalized_score_threshold": weights["piotroski"]["normalized_score_threshold"],
             "equity_risk_premium_pct": load_equity_risk_premium_pct(),
         },

@@ -385,7 +385,7 @@
 
   <!-- 8. Metodoloji & Yasal Uyari (Footer) -->
   <div class="footer">
-    <p>final_score = {{ weights.valuation_z | fmt }} x valuation_z + {{ weights.catalyst_score | fmt }} x catalyst_score + {{ weights.ownership_quality_z | fmt }} x ownership_quality_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP (Equity Risk Premium): %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p>final_score = {{ weights.valuation_z | fmt }} x valuation_z + {{ weights.catalyst_score | fmt }} x catalyst_score + {{ weights.ownership_quality_z | fmt }} x ownership_quality_z + {{ weights.low_vol_z | fmt }} x low_vol_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP (Equity Risk Premium): %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
     <div style="border-top:1px solid #cbd5e1; margin:16px 0 12px; width:40px;"></div>
     <p>{{ disclaimer_text }}</p>
   </div>

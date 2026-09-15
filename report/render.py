@@ -16,7 +16,7 @@ _TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 DISCLAIMER_TEXT_TR = (
     "Bu bulten ve dashboard kisisel kullanim icin otomatik olarak uretilmistir. "
     "Yatirim danismanligi degildir, alim satim tavsiyesi icermez. Skorlama agirliklari "
-    "ve esikleri (0.55/0.30/0.15, Piotroski esigi, equity risk premium) denenmemis "
+    "ve esikleri (0.50/0.25/0.15/0.10, Piotroski esigi, equity risk premium) denenmemis "
     "baslangic varsayimlaridir, gecmis veriyle kalibre edilmemistir. Gecmis tahmin "
     "izleme ozeti bir backtest degildir, canli takiptir; ortusen zaman ufuklari "
     "nedeniyle bagimsiz gozlem sayisi dusuktur. Hedef fiyatlar sektor ici goreli "

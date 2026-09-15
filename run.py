@@ -47,6 +47,7 @@ from core import sloan as sloan_mod
 from core import catalysts as catalysts_mod
 from core import events as events_mod
 from core import ownership as ownership_mod
+from core import volatility as volatility_mod
 from core import targets as targets_mod
 from core import hurdle as hurdle_mod
 from core import beta_hurdle as beta_hurdle_mod
@@ -96,6 +97,7 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
         "ratio_profile": u["ratio_profile"], "regulator": u["regulator"],
         "reporting_basis": fnd["reporting_basis"], "tedbir_level": u["tedbir_level"],
         "listing_days": u["listing_days"], "market_cap": u["market_cap"],
+        "avg_volume_tl_20d": u.get("avg_volume_tl_20d"),
         "effective_at": fnd["effective_at"],
         "pe": raw.get("pe"), "pb": raw.get("pb"), "ev_ebitda": raw.get("ev_ebitda"),
         "ev_sales": raw.get("ev_sales"), "roe": raw.get("roe"), "roa": raw.get("roa"),
@@ -212,6 +214,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         lt["entry_price"] = current_price
         lt["current_price"] = current_price
         lt["price_source"] = price_source
+        lt["volatility_60d"] = last.get("volatility_60d")
         lt_target = targets_mod.compute_long_term_target(lt, all_lt_for_peers)
         lt["target_price"] = lt_target["target_price"]
         if lt["target_price"] is None:
@@ -244,11 +247,13 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         if base.get("_short_term_rejected") or not atr20 or not sma20:
             continue
         st = dict(base)
-        short_target = targets_mod.compute_short_term_target(current_price, atr20, sma20)
+        short_target = targets_mod.compute_short_term_target(
+            current_price, atr20, sma20, base.get("avg_volume_tl_20d"))
         st.update(short_target)
         st["current_price"] = current_price
         st["price_source"] = price_source
         st["volume_ratio_20d"] = last.get("volume_ratio_20d")
+        st["volatility_60d"] = last.get("volatility_60d")
         hurdle_st = hurdle_mod.compute_all(short_target["entry_price"], short_target["target_price"], 20, macro,
                                            bid=bid_ask["bid"], ask=bid_ask["ask"],
                                            volume_ratio_20d=last.get("volume_ratio_20d"))
@@ -264,10 +269,11 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
 
     all_candidates = long_term_candidates + short_term_candidates
 
-    # --- ownership_z (kesitsel, bucket ici) ---
+    # --- ownership_z + low_vol_z (kesitsel, bucket ici) ---
     for bucket_list in (long_term_candidates, short_term_candidates):
         for c in bucket_list:
             c["ownership_z"] = ownership_mod.compute_ownership_z(c, bucket_list)
+            c["low_vol_z"] = volatility_mod.compute_low_vol_z(c, bucket_list)
 
     # --- scoring (hard_filters + final_score + candidate_state) ---
     as_of_date_cutoff = as_of_date

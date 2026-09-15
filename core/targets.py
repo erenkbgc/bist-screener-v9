@@ -10,10 +10,34 @@ from statistics import median
 
 from core.ranking import build_peer_group
 
+# core/universe.py::MIN_VOLUME_TL_DEFAULT ile ayni taban: evrenin en ince ucundaki
+# hisseler (hacim tabanina yakin) burada baslar.
+LIQUIDITY_FLOOR_TL = 10_000_000
+# Bu hacmin ustunde ek genisletme uygulanmaz (yeterince derin kabul edilir).
+LIQUIDITY_CEILING_TL = 50_000_000
+# Tabanin hemen ustundeki hisselerde stop/hedef mesafesi en fazla bu kadar genisler.
+MAX_LIQUIDITY_BUFFER = 1.3
+
 
 def _peer_median(peers: list[dict], metric: str) -> float | None:
     values = [p[metric] for p in peers if p.get(metric) is not None]
     return median(values) if values else None
+
+
+def _liquidity_buffer_multiplier(avg_volume_tl_20d: float | None) -> float:
+    """Hisse defteri ince oldukca (evrenin hacim tabanina yakin) stop ve hedef
+    mesafesini genisletir. Amac ek getiri degil: ince kitapta spread/kayma
+    gurultusu daha buyuk, ayni ATR mesafesi gercek trendden once spread
+    sicramasiyla tetiklenebilir. avg_volume_tl_20d None ise (veri yok)
+    genisletme uygulanmaz -- eksik veriyle iyimser/kotumser varsayim
+    uretilmez, taban davranis (1.0x) korunur."""
+    if not avg_volume_tl_20d or avg_volume_tl_20d >= LIQUIDITY_CEILING_TL:
+        return 1.0
+    if avg_volume_tl_20d <= LIQUIDITY_FLOOR_TL:
+        return MAX_LIQUIDITY_BUFFER
+    span = LIQUIDITY_CEILING_TL - LIQUIDITY_FLOOR_TL
+    frac = (avg_volume_tl_20d - LIQUIDITY_FLOOR_TL) / span
+    return MAX_LIQUIDITY_BUFFER - frac * (MAX_LIQUIDITY_BUFFER - 1.0)
 
 
 def compute_long_term_target(candidate: dict, all_candidates: list[dict]) -> dict:
@@ -53,10 +77,13 @@ def compute_long_term_target(candidate: dict, all_candidates: list[dict]) -> dic
     }
 
 
-def compute_short_term_target(current_price: float, atr20: float, sma20: float) -> dict:
+def compute_short_term_target(current_price: float, atr20: float, sma20: float,
+                              avg_volume_tl_20d: float | None = None) -> dict:
+    buffer_mult = _liquidity_buffer_multiplier(avg_volume_tl_20d)
     return {
         "entry_price": sma20 if sma20 else current_price,
-        "target_price": current_price + 2.5 * atr20,
-        "stop_loss": current_price - 1.2 * atr20,
+        "target_price": current_price + 2.5 * buffer_mult * atr20,
+        "stop_loss": current_price - 1.2 * buffer_mult * atr20,
         "horizon_days": 20,
+        "liquidity_buffer_multiplier": buffer_mult,
     }

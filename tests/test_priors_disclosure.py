@@ -11,7 +11,8 @@ def _base_context():
         "concentration_warnings": [], "long_term_candidates": [], "short_term_candidates": [],
         "filtered_candidates": [], "unscored_count": 0, "no_action_today": True,
         "invalidation_triggered": [], "evaluation_summary": None,
-        "weights": {"valuation_z": 0.55, "catalyst_score": 0.30, "ownership_quality_z": 0.15,
+        "weights": {"valuation_z": 0.50, "catalyst_score": 0.25, "ownership_quality_z": 0.15,
+                    "low_vol_z": 0.10,
                     "piotroski_normalized_score_threshold": 0.55, "equity_risk_premium_pct": 5.0},
     }
 
@@ -19,7 +20,7 @@ def _base_context():
 def test_methodology_declares_undemonstrated_priors():
     html = render_newsletter(_base_context())
     assert "DENENMEMIS" in html
-    assert "0.55" in html and "0.30" in html and "0.15" in html
+    assert "0.50" in html and "0.25" in html and "0.15" in html and "0.10" in html
 
 
 def test_disclaimer_present():

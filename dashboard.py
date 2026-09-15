@@ -93,7 +93,7 @@ def main() -> None:
     st.dataframe(correlation_flags, use_container_width=True)
 
     st.caption(
-        "Skorlama agirliklari (0.55/0.30/0.15), Piotroski esigi ve equity risk premium "
+        "Skorlama agirliklari (0.50/0.25/0.15/0.10), Piotroski esigi ve equity risk premium "
         "denenmemis baslangic varsayimlaridir. Bu dashboard yatirim tavsiyesi degildir."
     )
 

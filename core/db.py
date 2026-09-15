@@ -84,6 +84,7 @@ CREATE TABLE IF NOT EXISTS ownership (
 CREATE TABLE IF NOT EXISTS prices (
     date TEXT, ticker TEXT, open REAL, high REAL, low REAL, close REAL,
     volume REAL, atr20 REAL, sma20 REAL, sma50 REAL, volume_ratio_20d REAL,
+    volatility_60d REAL,
     PRIMARY KEY (date, ticker)
 );
 
@@ -95,7 +96,8 @@ CREATE TABLE IF NOT EXISTS kap_disclosures (
 
 CREATE TABLE IF NOT EXISTS scores (
     as_of_date TEXT, ticker TEXT, bucket TEXT, candidate_state TEXT,
-    valuation_z REAL, catalyst_score REAL, ownership_z REAL, final_score REAL,
+    valuation_z REAL, catalyst_score REAL, ownership_z REAL, low_vol_z REAL,
+    final_score REAL,
     peer_group_used TEXT, peer_n INTEGER, confidence TEXT, filtered_by TEXT
 );
 
@@ -169,26 +171,35 @@ def get_connection(read_only: bool = False) -> sqlite3.Connection:
     return conn
 
 
-# predictions tablosuna sema evrimi sirasinda eklenen kolonlar. "CREATE TABLE
-# IF NOT EXISTS" zaten var olan (repoya commit'li) bir veritabani dosyasini
-# ASLA degistirmez -- bu yuzden 2026-09-14 production run'inda "table
-# predictions has no column named current_price" hatasiyla 3+ saatlik taramanin
-# sonunda cokmustu. Yeni bir kolon eklendiginde buraya da eklenmeli.
-_PREDICTIONS_MIGRATIONS = [
-    ("current_price", "REAL"),
-    ("price_source", "TEXT"),
-    ("net_expected_roi_pct", "REAL"),
-    ("net_excess_over_hurdle_pct", "REAL"),
-    ("transaction_cost_pct", "REAL"),
-    ("volume_ratio_20d", "REAL"),
-]
+# Tablolara sema evrimi sirasinda eklenen kolonlar. "CREATE TABLE IF NOT
+# EXISTS" zaten var olan (repoya commit'li) bir veritabani dosyasini ASLA
+# degistirmez -- bu yuzden 2026-09-14 production run'inda "table predictions
+# has no column named current_price" hatasiyla 3+ saatlik taramanin sonunda
+# cokmustu. Herhangi bir tabloya yeni kolon eklendiginde buraya da eklenmeli.
+_TABLE_MIGRATIONS = {
+    "predictions": [
+        ("current_price", "REAL"),
+        ("price_source", "TEXT"),
+        ("net_expected_roi_pct", "REAL"),
+        ("net_excess_over_hurdle_pct", "REAL"),
+        ("transaction_cost_pct", "REAL"),
+        ("volume_ratio_20d", "REAL"),
+    ],
+    "prices": [
+        ("volatility_60d", "REAL"),
+    ],
+    "scores": [
+        ("low_vol_z", "REAL"),
+    ],
+}
 
 
 def _migrate_existing_tables(conn: sqlite3.Connection) -> None:
-    existing_cols = {row[1] for row in conn.execute("PRAGMA table_info(predictions)").fetchall()}
-    for col_name, col_type in _PREDICTIONS_MIGRATIONS:
-        if col_name not in existing_cols:
-            conn.execute(f"ALTER TABLE predictions ADD COLUMN {col_name} {col_type}")
+    for table, migrations in _TABLE_MIGRATIONS.items():
+        existing_cols = {row[1] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+        for col_name, col_type in migrations:
+            if col_name not in existing_cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}")
 
 
 def init_db() -> None:

@@ -5,9 +5,16 @@
 # bu degerleri kendi basina ogrenmez/degistirmez.
 
 scoring_weights:
-  valuation_z: 0.55
-  catalyst_score: 0.30
+  valuation_z: 0.50
+  catalyst_score: 0.25
   ownership_quality_z: 0.15
+  # low_vol_z (2026-09-16 eklendi): BIST literaturunde gozlenen "dusuk risk
+  # anomalisi"ne (dusuk volatiliteli hisselerin risk-ayarli olarak yuksek
+  # volatiliteli hisseleri gecmesi) dayanan bir baslangic varsayimi. Diger
+  # ucu gibi HENUZ bu projenin kendi outcomes verisiyle kalibre edilmedi;
+  # en kucuk agirlikla (yeni/dogrulanmamis) baslatildi, digerlerinden
+  # oransal olarak dusuldu (valuation 0.55->0.50, catalyst 0.30->0.25).
+  low_vol_z: 0.10
 
 piotroski:
   normalized_score_threshold: 0.55  # 9 kriterin normalize edilmis skorunda gecme esigi

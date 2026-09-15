@@ -87,7 +87,8 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
 
         final_score = (w["valuation_z"] * (c["valuation_z"] or 0)
                        + w["catalyst_score"] * (c["catalyst_score"] or 0)
-                       + w["ownership_quality_z"] * (c["ownership_z"] or 0))
+                       + w["ownership_quality_z"] * (c["ownership_z"] or 0)
+                       + w["low_vol_z"] * (c.get("low_vol_z") or 0))
         c["final_score"] = final_score
         c["filtered_by"] = None
         c["candidate_state"] = "WATCHLIST"  # asagidaki dilim/confidence mantigiyla kesinlestirilecek gecici deger
@@ -127,6 +128,7 @@ def _persist(as_of_date: str, scored: list[dict]) -> None:
         "as_of_date": as_of_date, "ticker": c["ticker"], "bucket": c["bucket"],
         "candidate_state": c["candidate_state"], "valuation_z": c.get("valuation_z"),
         "catalyst_score": c.get("catalyst_score"), "ownership_z": c.get("ownership_z"),
+        "low_vol_z": c.get("low_vol_z"),
         "final_score": c.get("final_score"), "peer_group_used": c.get("peer_group_used"),
         "peer_n": c.get("peer_n"), "confidence": c.get("confidence"), "filtered_by": c.get("filtered_by"),
     } for c in scored]
@@ -134,9 +136,11 @@ def _persist(as_of_date: str, scored: list[dict]) -> None:
     try:
         conn.executemany(
             """INSERT INTO scores (as_of_date, ticker, bucket, candidate_state, valuation_z,
-               catalyst_score, ownership_z, final_score, peer_group_used, peer_n, confidence, filtered_by)
+               catalyst_score, ownership_z, low_vol_z, final_score, peer_group_used, peer_n,
+               confidence, filtered_by)
                VALUES (:as_of_date, :ticker, :bucket, :candidate_state, :valuation_z, :catalyst_score,
-                       :ownership_z, :final_score, :peer_group_used, :peer_n, :confidence, :filtered_by)""",
+                       :ownership_z, :low_vol_z, :final_score, :peer_group_used, :peer_n, :confidence,
+                       :filtered_by)""",
             rows,
         )
         conn.commit()

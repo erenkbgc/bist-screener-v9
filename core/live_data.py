@@ -36,6 +36,7 @@ import warnings
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
+from statistics import pstdev
 
 import borsapy as bp
 
@@ -387,10 +388,17 @@ def live_prices(ticker: str, as_of_date: str, days: int = 140) -> list[dict]:
         atr20 = sum(trs) / len(trs) if trs else 0.0
         vol20 = [x["volume"] for x in window20]
         avg_vol20 = sum(vol20) / len(vol20)
+        window60 = rows[max(0, i - 59):i + 1]
+        daily_returns60 = [window60[k]["close"] / window60[k - 1]["close"] - 1
+                            for k in range(1, len(window60)) if window60[k - 1]["close"]]
+        # az sayida gozlemle stdev anlamsiz gurultu uretir; en az 30 gozlem sartiyla
+        # hesaplanir, aksi halde None (uydurma/duyarsiz bir deger uretilmez).
+        volatility_60d = pstdev(daily_returns60) if len(daily_returns60) >= 30 else None
         r["sma20"] = sma20
         r["sma50"] = sma50
         r["atr20"] = atr20
         r["volume_ratio_20d"] = r["volume"] / avg_vol20 if avg_vol20 else None
+        r["volatility_60d"] = volatility_60d
     return rows
 
 
