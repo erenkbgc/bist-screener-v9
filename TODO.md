@@ -1,8 +1,37 @@
-# BIST Screener — v10 Yol Haritasi (To-Do)
+# BIST Screener — v10/v11 Yol Haritasi (To-Do)
 
 Kaynak: Bir yatirim analisti perspektifinden yapilan disaridan inceleme
 (2026-09-11). Tam spec: `bist_screener_v10_roadmap.json` (v9 spec'i
 `bist_screener_v9_prompt.json`'u DEGISTIRMEZ, uzerine ekler).
+
+## v11 (2026-09-16) — akademik dogrulama + likidite/dusuk-volatilite
+
+Kaynak: iki disaridan "arastirma raporu" + bunlarin GERCEK web aramasiyla
+bagimsiz dogrulanmasi. Tam spec: `bist_screener_v11_roadmap.json`
+(`verified_claims_log`: hangi iddia gercek/dogrulandi, hangisi uydurma/atif
+hatali -- ozetle BIST dusuk volatilite anomalisi ve deger primi Gokcen (2026,
+SSRN #4588551) ile dogrulandi; "Karaomer/Gumushane 6-faktor" atfi hatali
+cikti, tekrar kullanilmamali).
+
+- [x] **liquidity_aware_dynamic_targets** — TAMAMLANDI (2026-09-16).
+  `core/targets.py`: kisa vade stop/hedef ATR carpanlari `avg_volume_tl_20d`'ye
+  gore genisliyor (taban hacimde 1.3x, 50M TL ustunde 1.0x).
+- [x] **low_vol_factor** — TAMAMLANDI (2026-09-16). `core/volatility.py`,
+  `weights.yaml`'da 0.10 agirlik (valuation 0.55->0.50, catalyst 0.30->0.25
+  ile dengelendi). Akademik dayanak dogrulandi (bkz. v11 JSON).
+- [ ] **momentum_factor_short_window** (1-2 gun, P0) — 6ay-1ay momentum,
+  mevcut 140 gunluk fiyat penceresiyle simdi yapilabilir. Klasik 12ay-1ay
+  icin pencere genisletmek borsapy throttle/hang riskini artirir, ERTELENDI.
+- [ ] **entry_price_support_resistance** (2-3 gun, P2) — pivot kumelenmesiyle
+  giris fiyati iyilestirme, skoru degistirmez.
+- [ ] **trailing_stop_and_staged_exit** (2-3 gun, P2) — kademeli kar
+  realizasyonu + ATR trailing stop.
+- **parked**: `foreign_ownership_delta_factor` (veri kaynagi yok).
+- **rejected**: `regime_conditional_scoring` (mimari invariant ihlali),
+  `session_based_atr` (gunluk batch mimariyle uyumsuz).
+- **zaten mevcut** (disaridan raporlar yanlislikla "eksik" isaretlemisti):
+  sektor bazli degerleme normalizasyonu (`core/ranking.py`), TMS 29
+  enflasyon bayragi (`core/basis_guard.py`).
 
 > **Onemli**: Bazi oneriler (tarihsel carpan bandi, walk-forward "backtest",
 > portfoy optimizasyonu/pozisyon boyutlandirma) v9'un temel ilkeleriyle

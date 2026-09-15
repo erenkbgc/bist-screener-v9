@@ -1,0 +1,153 @@
+{
+  "project_name": "Autonomous BIST AI Investment Screener",
+  "version": "11.0.0-roadmap",
+  "base_spec": "bist_screener_v10_roadmap.json (v10.0.0-roadmap) -- BU DOSYA v9'U ve v10'U DEGISTIRMEZ, UZERINE EKLER",
+  "spec_date": "2026-09-16",
+  "origin": "Iki ayri disaridan 'arastirma raporu' (baska bir AI aracindan, kaynak gosterilmeden yapistirildi) BIST faktor yatirimciligi ve alis-satis fiyat tespiti hakkinda oneriler getirdi. Bu oneriler (a) mevcut kod tabaniyla karsilastirilip zaten-yapilmis/mimariye-aykiri/gercekten-eksik olarak siniflandirildi, (b) en kritik akademik iddia (BIST dusuk volatilite anomalisi) GERCEK web aramasiyla bagimsiz dogrulandi (bkz. verified_claims_log). v9'un tum execution_rules, ai_role_boundaries, priors_are_disclosed, no_fixed_thresholds, no_historical_ratio_comparison ve banned_claims kurallari BURADA DA GECERLIDIR.",
+
+  "verified_claims_log": [
+    {
+      "claim": "BIST'te dusuk volatilite anomalisi (dusuk riskli hisseler risk-ayarli olarak yuksek riskli hisseleri geciyor)",
+      "verdict": "dogrulandi",
+      "source": "Umut Gokcen (Ozyegin Universitesi), 'Factor Investing in the Turkish Equity Market', SSRN #4588551 (2026) / ScienceDirect",
+      "detail": "1994-2024, 171-513 firma/yil, survivorship-bias-free. 'Dusuk riskli hisseler HERHANGI bir risk olcutunde yuksek riskli hisseleri geciyor' -- kesitte negatif risk-getiri iliskisi. low_vol_z fakt orunun (core/volatility.py) dayanagi.",
+      "used_for": "low_vol_factor (bu roadmap'te P0, tamamlandi)"
+    },
+    {
+      "claim": "BIST'te deger faktoru (value) yillik >%17 risk primi ile en guclu faktor",
+      "verdict": "dogrulandi",
+      "source": "ayni Gokcen calismasi",
+      "detail": "valuation_z agirliginin (0.50, hala en yuksek) BIST literaturuyle tutarli oldugunu destekler.",
+      "used_for": "config/weights.yaml valuation_z agirlik gerekcesi (henuz bu projenin KENDI verisiyle kalibre edilmedi, sadece literatur destegi)"
+    },
+    {
+      "claim": "BIST'te momentum faktoru 2005 sonrasi (IFRS gecisi sonrasi) anlamli",
+      "verdict": "dogrulandi",
+      "source": "ayni Gokcen calismasi: 'size, profitability, momentum -- ama sadece 2005'ten sonra'",
+      "detail": "momentum_factor_short_window modulunun (asagida P0) dayanagi.",
+      "used_for": "momentum_factor_short_window (bu roadmap'te P0, todo)"
+    },
+    {
+      "claim": "Fama-French 6-faktor modeli (momentum dahil) BIST'te digerlerinden ustun (atif: Yunus Karaomer, Gumushane Universitesi, 2005-2023)",
+      "verdict": "kismen dogru, atif hatali",
+      "source": "gercek bir Yunus Karaomer var ama Mustafa Kemal Universitesi'nde (Gumushane degil); bulunan calismasi 6-faktor degil Fama-French 3/5-faktor modelinin BIST'te gecerliligi uzerine (2005-2016)",
+      "detail": "Bu SPESIFIK iddiayi (6-faktor ustunlugu) kaynak gostermeden tekrar KULLANMAYIN. Momentum icin dayanak olarak yukaridaki Gokcen bulgusu kullanilmali.",
+      "used_for": "hicbir modulun dogrudan dayanagi degil -- sadece kayit altina alindi ki tekrar arastirilmasin"
+    },
+    {
+      "claim": "BIST'te yabanci yatirimcilar momentum, yerli yatirimcilar contrarian davraniyor",
+      "verdict": "dogrulandi",
+      "source": "coklu akademik calisma, orn. 'The interaction between foreigners' trading and emerging stock returns: Evidence from Turkey'",
+      "detail": "foreign_ownership_delta_factor'un (asagida, parked) teorik dayanagi var ama veri kaynagi yok (bkz. asagida).",
+      "used_for": "foreign_ownership_delta_factor (bu roadmap'te parked)"
+    },
+    {
+      "claim": "Statech Portfoy gercek bir kantitatif/istatistiksel arbitraj fon yoneticisi, LPH fonu ~3.77 milyar TL",
+      "verdict": "dogrulandi (rakam guncel degil ama uydurma degil)",
+      "source": "KAP fon sayfasi (kap.org.tr), fonanaliz.marbas.com.tr",
+      "detail": "KAP'ta kayitli gercek fon, ~3.89 milyar TL (farkli tarihli anlik deger). Sadece baglamsal bilgi, hicbir modulun dogrudan girdisi degil.",
+      "used_for": "hicbiri -- baglamsal dogrulama"
+    }
+  ],
+
+  "priority_roadmap": [
+    {
+      "priority": "P0",
+      "module": "liquidity_aware_dynamic_targets",
+      "effort_estimate": "tamamlandi",
+      "impact": "core/targets.py::compute_short_term_target artik avg_volume_tl_20d'ye gore ATR stop/hedef mesafesini genisletiyor (evrenin 10M TL tabanina yakin hisselerde en fazla 1.3x, 50M TL ustunde 1.0x). Amac ek getiri degil, ince kitapta spread/kayma gurultusuyle erken stop'lanmayi azaltmak.",
+      "status": "tamamlandi (2026-09-16)"
+    },
+    {
+      "priority": "P0",
+      "module": "low_vol_factor",
+      "effort_estimate": "tamamlandi",
+      "impact": "core/volatility.py::compute_low_vol_z, final_score'a low_vol_z agirligi (0.10) olarak girdi (valuation_z 0.55->0.50, catalyst_score 0.30->0.25 ile dengelendi). Gokcen (2026) calismasiyla dogrulandi (bkz. verified_claims_log).",
+      "status": "tamamlandi (2026-09-16)"
+    },
+    {
+      "priority": "P0",
+      "module": "momentum_factor_short_window",
+      "effort_estimate": "1-2 gun",
+      "impact": "Klasik '12 ay eksi son 1 ay' icin run.py:180'deki fiyat penceresi (140 gun) yetersiz (~252 gun gerekir); pencereyi genisletmek ~800 tickerlik evrende zaten dokumante edilmis borsapy throttle/hang riskini artirir. Bunun yerine '6 ay eksi son 1 ay' (mevcut 140 gunluk pencereyle hesaplanabilir) versiyonuyla baslanmali. Gokcen (2026) bulgusuyla (2005 sonrasi anlamli) dogrulandi.",
+      "status": "todo",
+      "note": "ownership_z/low_vol_z ile ayni desende (kesitsel z-skor, bucket ici) core/momentum.py olarak eklenmeli; weights.yaml'a yeni agirlik + diger uclerden orantili dusus gerekir."
+    },
+    {
+      "priority": "P2",
+      "module": "entry_price_support_resistance",
+      "effort_estimate": "2-3 gun",
+      "impact": "core/targets.py::compute_short_term_target'daki duz SMA20 giris fiyati yerine pivot swing kumelenmesiyle (fraktal high/low + ATR mesafeli kumeleme) daha isabetli bir giris seviyesi. Skorlamayi DEGISTIRMEZ, sadece entry_price hesabini iyilestirir -- dusuk riskli bir degisiklik.",
+      "status": "todo",
+      "note": "Kanita dayali bir BIST-ozel calisma bulunamadi; bu genel teknik-analiz muhendislik iyilestirmesidir, faktor onceligi degil."
+    },
+    {
+      "priority": "P2",
+      "module": "trailing_stop_and_staged_exit",
+      "effort_estimate": "2-3 gun",
+      "impact": "Kisa vade pozisyonlar icin kademeli kar realizasyonu (%33/%33/%34) + ATR bazli trailing stop. Mevcut tek-hedef/tek-stop yapisini genisletir.",
+      "status": "todo",
+      "note": "Yine kanita dayali degil, risk-yonetimi muhendislik iyilestirmesi. investment_memo_generator (v10 P2) ile ayni raporlama katmaninda sunulmali."
+    },
+    {
+      "priority": "parked",
+      "module": "foreign_ownership_delta_factor",
+      "effort_estimate": "belirsiz (veri kaynagi yok)",
+      "impact": "Teorik dayanak var (bkz. verified_claims_log) ama core/ownership.py'de canli modda retail_pct/investor_count_change_1m zaten cogunlukla None donuyor (ucretsiz MKK API yok, kod bunu zaten belgeliyor). foreign_pct'nin ZAMAN ICINDE degisimini izlemek icin veri kaynagi yok.",
+      "status": "parked",
+      "note": "Ucretsiz/erisilebilir bir MKK/TSPB veri kaynagi bulunursa yeniden degerlendirilmeli."
+    },
+    {
+      "priority": "rejected",
+      "module": "regime_conditional_scoring",
+      "effort_estimate": "n/a",
+      "impact": "core/regime_taxonomy.py'nin basindaki kural (explicit_non_action) rejim etiketlerinin ASLA scoring.py'ye girmemesini tests/test_regime_taxonomy_static.py ile statik olarak garanti ediyor. Rejim etiketlerini skora baglamak bilincli bir mimari karari bozar.",
+      "status": "rejected",
+      "note": "Bir sonraki disaridan inceleme bunu tekrar onerirse: bu KASITLI bir tasarim karari, eksiklik degil."
+    },
+    {
+      "priority": "rejected",
+      "module": "session_based_atr",
+      "effort_estimate": "n/a",
+      "impact": "Tarama gunde bir kez, kapanis sonrasi kosuyor (cron 15:30 UTC). BIST'in sabah/ogleden sonra seans ayrimina gore ATR carpani degistirmek, gunluk batch mimariyle uyumsuz -- intraday yurutme sistemi icin anlamli, bu proje icin degil.",
+      "status": "rejected",
+      "note": "financial_institution_data_source/DCF gibi P0'larin aksine, bu bir efor sirasi degil -- mimari uyumsuzluk."
+    },
+    {
+      "priority": "n/a (zaten mevcut)",
+      "module": "sector_valuation_normalization",
+      "effort_estimate": "n/a",
+      "impact": "core/ranking.py zaten (sector -> supersector -> market) fallback zinciriyle peer-relative z-skor kullaniyor, sabit esik yok. Disaridan gelen raporlarin bunu 'eksik' olarak isaretlemesi yanlis.",
+      "status": "already_implemented"
+    },
+    {
+      "priority": "n/a (zaten mevcut)",
+      "module": "inflation_accounting_flag",
+      "effort_estimate": "n/a",
+      "impact": "core/basis_guard.py (resolve_reporting_basis, basis_break, is_scorable) TMS 29 ayrimini zaten yapiyor.",
+      "status": "already_implemented"
+    }
+  ],
+
+  "carried_forward_from_v10_unchanged": [
+    "financial_institution_data_source (P0, 3-5 gun, todo)",
+    "valuation_engine_v2_dcf_addon (P0, 5-7 gun, todo)",
+    "position_sizing_diagnostics (P1, 3-4 gun, todo)",
+    "walk_forward_diagnostic (P1, 3-4 gun, todo, varsayilan KAPALI)",
+    "investment_memo_generator (P2, 3-4 gun, todo)",
+    "qualitative_governance_score (P2, 3-5 gun, todo)",
+    "point_in_time_dataset (P3, 5+ gun, todo)"
+  ],
+
+  "testing_additions_required": [
+    "momentum_factor_short_window testi: core/momentum.py'de compute_momentum_z, ownership_z/low_vol_z ile ayni desende (None-safe, havuzdan disarida birakma) -- tests/test_momentum.py",
+    "entry_price_support_resistance testi: yeni entry_price hesabi eski SMA20'den farkli olabilir ama hard_filters/final_score'u ETKILEMEMELI",
+    "trailing_stop_and_staged_exit testi: kademeli cikis toplami her zaman %100 pozisyonu kapsamali, trailing stop asla ilk stop_loss'tan daha kotu (daha asagida) olmamali"
+  ],
+
+  "explicit_non_goals": [
+    "Bu roadmap sistemi 'yatirim danismanligi' konumuna TASIMAZ -- ai_role_boundaries v9'da tanimlandigi gibi kalir.",
+    "verified_claims_log akademik literatur dogrulamasidir, BU PROJENIN KENDI outcomes verisiyle yapilan bir kalibrasyon DEGILDIR -- weights.yaml'daki 'denenmemis baslangic varsayimi' notu gecerliligini korur.",
+    "momentum_factor_short_window ve digerleri hicbir zaman 'kanitlanmis edge' olarak sunulmaz -- banned_claims listesi gecerli kalir."
+  ]
+}
