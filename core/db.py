@@ -169,11 +169,34 @@ def get_connection(read_only: bool = False) -> sqlite3.Connection:
     return conn
 
 
+# predictions tablosuna sema evrimi sirasinda eklenen kolonlar. "CREATE TABLE
+# IF NOT EXISTS" zaten var olan (repoya commit'li) bir veritabani dosyasini
+# ASLA degistirmez -- bu yuzden 2026-09-14 production run'inda "table
+# predictions has no column named current_price" hatasiyla 3+ saatlik taramanin
+# sonunda cokmustu. Yeni bir kolon eklendiginde buraya da eklenmeli.
+_PREDICTIONS_MIGRATIONS = [
+    ("current_price", "REAL"),
+    ("price_source", "TEXT"),
+    ("net_expected_roi_pct", "REAL"),
+    ("net_excess_over_hurdle_pct", "REAL"),
+    ("transaction_cost_pct", "REAL"),
+    ("volume_ratio_20d", "REAL"),
+]
+
+
+def _migrate_existing_tables(conn: sqlite3.Connection) -> None:
+    existing_cols = {row[1] for row in conn.execute("PRAGMA table_info(predictions)").fetchall()}
+    for col_name, col_type in _PREDICTIONS_MIGRATIONS:
+        if col_name not in existing_cols:
+            conn.execute(f"ALTER TABLE predictions ADD COLUMN {col_name} {col_type}")
+
+
 def init_db() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(DB_PATH))
     try:
         conn.executescript(SCHEMA)
+        _migrate_existing_tables(conn)
         conn.commit()
     finally:
         conn.close()
