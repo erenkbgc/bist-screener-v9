@@ -1,170 +1,551 @@
-# Autonomous BIST AI Investment Screener (v9)
+<div align="center">
 
-Kisisel kullanim icin gunluk calisan bir BIST (Borsa Istanbul) tarama sistemi.
-Spec: `bist_screener_v9_prompt.json`. Bu README, bu spec'in uygulanmis halinin
-nasil calistirilacagini ve nerede durdugunu anlatir.
+# Autonomous BIST AI Screener
 
-## Veri katmani: mock (varsayilan) vs. live (gercek)
+**A deterministic, data-driven, multi-factor equity screening system for Borsa İstanbul.**
 
-`BIST_DATA_MODE` ortam degiskeni (`.env`) veri kaynagini secer:
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
+![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
+![Tests](https://img.shields.io/badge/tests-92%20passing-brightgreen)
+![Status](https://img.shields.io/badge/status-personal%20research%20project-orange)
 
-- **`mock`** (varsayilan, testlerde de budur): `core/mock_data.py` -- ayni
-  `as_of_date` icin her zaman ayni sayilari ureten deterministik sahte veri.
-  Gercek piyasa verisi DEGILDIR, yalnizca gelistirme/test icindir.
-- **`live`**: `core/live_data.py` -- [borsapy](https://github.com/saidsurucu/borsapy)
-  kutuphanesi uzerinden Is Yatirim + doviz.com kaynakli **GERCEK, canli** veri.
-  Resmi KAP REST API kurumsal sozlesme gerektirdigi ve bunu bu ortamda
-  edinmek mumkun olmadigi icin borsapy, arastirma sonucu bulunan en genis
-  kapsamli ucretsiz alternatif olarak secildi (807 sirketlik tam BIST
-  evrenini, fiyat/hacim/bilanco/gelir tablosu/nakit akis/temettu/KAP
-  bildirim basliklarini ve 2Y devlet tahvili getirisini kapsiyor).
+</div>
+
+---
+
+> **Disclaimer**
+> This project is intended for research and decision-support purposes only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns produced by the system are model outputs, not guarantees of future performance.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Analysis Layers](#analysis-layers)
+  - [Market Regime](#market-regime)
+  - [Universe Construction](#universe-construction)
+  - [Cross-Sectional Ranking](#cross-sectional-ranking)
+  - [Financial Quality](#financial-quality)
+  - [Valuation](#valuation)
+  - [Hurdle Rate](#hurdle-rate)
+  - [Catalysts & KAP](#catalysts--kap)
+  - [Dividend Sustainability](#dividend-sustainability)
+  - [Ownership Analysis](#ownership-analysis)
+- [Data Quality Philosophy](#data-quality-philosophy)
+- [Validation Gate](#validation-gate)
+- [Execution Pipeline](#execution-pipeline)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Operating Modes](#operating-modes)
+  - [Mock Mode](#mock-mode)
+  - [Live Mode](#live-mode)
+- [Running the Screener](#running-the-screener)
+- [Dashboard](#dashboard)
+- [Automated Daily Execution](#automated-daily-execution)
+- [MCP Servers](#mcp-servers)
+- [Testing](#testing)
+- [Reproducibility](#reproducibility)
+- [Configuration](#configuration)
+- [Known Limitations](#known-limitations)
+- [Design Principles](#design-principles)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Overview
+
+`bist-screener-v9` evaluates BIST-listed companies across multiple dimensions simultaneously — market regime, financial quality, valuation, catalysts, ownership structure, dividend sustainability, risk, and expected return — rather than relying on any single metric.
+
+The system runs as a daily pipeline and produces:
+
+| Output | Description |
+|---|---|
+| HTML Report | Human-readable daily screening report |
+| JSON Payload | Structured, machine-readable results |
+| Streamlit Dashboard | Read-only visualization layer |
+
+**Core commitments:**
+
+- Deterministic calculations — same input, same output
+- Explicit data provenance — model output is never disguised as external consensus
+- Peer-relative analysis instead of universal fixed thresholds
+- Conservative, explicit handling of missing data (no silent estimation)
+- Strict separation between data acquisition and analytical logic
+- Mandatory validation before any report is dispatched
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph SRC["Data Sources"]
+        A1[BIST Market Data]
+        A2[KAP Disclosures]
+        A3[Macro Data]
+    end
+
+    SRC --> B[Universe Construction]
+    B --> C[Data Quality & Basis Guard]
+    C --> D[Cross-Sectional Ranking]
+    D --> E1[Piotroski F-Score]
+    D --> E2[Sloan Accrual]
+    E1 --> F[Catalysts & Event Classification]
+    E2 --> F
+    F --> G[Ownership & Dividend Analysis]
+    G --> H[Valuation Engine]
+    H --> I[Beta-Adjusted Hurdle Rate]
+    I --> J[Risk & Concentration Diagnostics]
+    J --> K[Decision Diff]
+    K --> L[Thesis Card]
+    L --> M{Validation Gate}
+    M -- valid --> N[JSON Payload]
+    M -- valid --> O[HTML Report]
+    O --> P[Read-Only Dashboard]
+    M -- invalid --> Q[Halt — Not Dispatched]
+```
+
+---
+
+## Analysis Layers
+
+### Market Regime
+
+A dedicated market-regime layer tracks prevailing macro and market conditions. This information provides **context** for the screening process and is used in reporting — it is deliberately **not** fed back into the core ranking score. This isolation between regime taxonomy and scoring is intentional and covered by dedicated tests.
+
+### Universe Construction
+
+In live mode, the BIST universe is built dynamically rather than from a hardcoded ticker list. Filtering criteria include:
+
+- Minimum trading volume
+- Minimum listing history
+- Data quality and completeness
+- Trading restrictions (tedbir / VBTS)
+- Peer-group eligibility
+- Reporting basis compatibility
+
+### Cross-Sectional Ranking
+
+Rather than applying fixed universal thresholds (e.g. *"P/E < 10 = attractive"*), the system ranks companies **within their peer group**:
+
+```mermaid
+flowchart LR
+    A[Raw Metric] --> B[Peer Group]
+    B --> C[Percentile / Z-Score]
+    C --> D[Normalized Signal]
+    D --> E[Composite Ranking]
+```
+
+This accounts for the fact that different sectors naturally carry different valuation multiples and financial characteristics.
+
+### Financial Quality
+
+**Piotroski F-Score** — a 9-criteria assessment covering profitability, cash flow, leverage, liquidity, and operational efficiency.
+
+**Sloan Accrual** — measures the extent to which reported earnings are backed by actual cash generation, surfacing divergence between accounting earnings and cash flow.
+
+### Valuation
+
+The system does **not** source target prices from external analyst consensus. Instead, it computes its own peer-relative valuation:
+
+```mermaid
+flowchart LR
+    A[Company Metrics] --> D[Model Target Price]
+    B[Peer Group] --> D
+    C[Relative Valuation] --> D
+```
+
+The resulting figure is explicitly a **model-generated estimate**, not analyst consensus, not a broker target, and not a guarantee.
+
+### Hurdle Rate
+
+Expected return is never assessed in isolation — it is compared against a required-return benchmark built from:
+
+- Risk-free rate / government bond yield
+- Equity risk premium
+- Beta
+- Beta-adjusted hurdle rate
+
+```
+Expected Return   vs.   Required Return
+```
+
+### Catalysts & KAP
+
+KAP (Public Disclosure Platform) filings are classified using a **rule-based / regex** approach — not an LLM-based prediction model. This choice prioritizes deterministic, reproducible, and transparent classification over probabilistic inference.
+
+### Dividend Sustainability
+
+Dividend distributions are evaluated for sustainability using available financial data, feeding into the broader company-quality assessment rather than acting as a standalone ranking signal.
+
+### Ownership Analysis
+
+An ownership-quality layer incorporates available shareholder-structure information where data permits. Missing ownership data is never treated as an implicit positive or negative signal.
+
+---
+
+## Data Quality Philosophy
+
+> **Missing data is not positive data.**
+
+When a value cannot be reliably sourced:
+
+```python
+if data_is_missing:
+    value = None
+```
+
+...rather than being estimated or inferred. This is especially relevant for banks, insurers, and leasing companies, whose financial statement formats differ structurally and may cause certain metrics to be non-computable. Such companies can be flagged with `reporting_basis = "unknown"` and are automatically excluded by the relevant guard mechanisms.
+
+```mermaid
+flowchart LR
+    A[Missing Data] --> B[None]
+    B --> C[Guard / Filter]
+    C --> D[Controlled Exclusion from Scoring]
+```
+
+---
+
+## Validation Gate
+
+Every report passes through a validation stage before dispatch. Numerical values in the HTML report are cross-checked against the underlying JSON payload:
+
+```mermaid
+flowchart TD
+    A[HTML Report] --> B{Validation Gate}
+    B -- "Value exists in payload" --> C[Dispatch]
+    B -- "Value not found / inconsistent" --> D[Halt]
+```
+
+This prevents unsourced or inconsistent figures from ever being published.
+
+---
+
+## Execution Pipeline
+
+`run.py` executes the analysis in a fixed, ordered sequence:
+
+```mermaid
+flowchart TD
+    A[regime_monitor] --> B[regime_taxonomy]
+    B --> C[universe]
+    C --> D[basis_guard]
+    D --> E[ranking]
+    E --> F[earnings_quality_sloan]
+    F --> G[catalysts]
+    G --> H[event_calendar_engine]
+    H --> I[ownership_quality]
+    I --> J[target_price_engine]
+    J --> K[hurdle_engine]
+    K --> L[beta_adjusted_hurdle]
+    L --> M[dividend_sustainability_engine]
+    M --> N[optional_valuation_addon]
+    N --> O[concentration_check]
+    O --> P[correlation_diagnostic]
+    P --> Q[decision_diff_engine]
+    Q --> R[payload]
+    R --> S[thesis_card]
+    S --> T[validate]
+    T --> U[dispatch]
+    U --> V[evaluate_past_predictions]
+    V --> W[thesis_invalidation_monitor]
+```
+
+---
+
+## Project Structure
+
+```text
+bist-screener-v9/
+│
+├── bist_mcp/                 # BIST data MCP server
+├── kap_web_mcp/               # KAP data MCP server
+├── macro_mcp/                 # Macro data MCP server
+│
+├── core/                      # Core deterministic calculation engines
+│   ├── ranking.py
+│   ├── scoring.py
+│   ├── targets.py
+│   ├── evaluate.py
+│   └── ...
+│
+├── config/                    # Configuration and model assumptions
+│
+├── data/                      # SQLite database and generated reports
+│   ├── bist_history.db
+│   └── reports/
+│
+├── report/                    # HTML templates and validation logic
+├── skills/                    # CLI / methodology packages
+├── tests/                     # Automated test suite
+│
+├── dashboard.py                # Streamlit dashboard
+├── run.py                      # Daily orchestrator
+├── requirements.txt
+├── .env.example
+│
+├── bist_screener_v9_prompt.json
+├── bist_screener_v10_roadmap.json
+└── README.md
+```
+
+---
+
+## Installation
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/erenkbgc/bist-screener-v9.git
+cd bist-screener-v9
+```
+
+**2. Create a virtual environment**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+```
+
+**3. Install dependencies**
+
+```bash
+pip install -r requirements.txt
+```
+
+**4. Configure environment variables**
+
+```bash
+cp .env.example .env
+```
+
+Fill in the relevant variables in `.env` — including SMTP settings if you want reports delivered by email.
+
+---
+
+## Operating Modes
+
+### Mock Mode
+
+The default mode. Fully deterministic and safe for development.
+
+```bash
+BIST_DATA_MODE=mock
+```
+
+- Produces identical output for a given `as_of_date`
+- Does **not** reflect real market conditions
+- Ideal for local development, CI, and testing
+
+### Live Mode
 
 ```bash
 export BIST_DATA_MODE=live
-python run.py --as-of-date $(date +%F)
+python run.py --as-of-date 2026-09-10
 ```
 
-Bu modda **evrende hicbir hardcoded ticker yoktur**: `core/live_data.py::live_universe()`
-her kosuda `bp.companies()` ile TUM BIST'i (~800 sirket) dinamik olarak ceker;
-tarama, universe_filters (min_volume/min_listing_days/tedbir) ve peer-group
-mantigi bu tam evren uzerinde calisir. "Giris fiyati" (`entry_price`) satirdaki
-en son gercek kapanis fiyatidir, "Hedef fiyat" ise `core/targets.py`'nin KENDI
-kesitsel/peer-relative modelinden (analist konsensusu DEGIL, spec'in
-gerektirdigi sekilde kendi hesaplanan degerleme) turetilir.
+The live data layer sources price, OHLCV, financial statements, dividends, and KAP headline data via `borsapy`. The BIST universe is constructed dynamically — there is no hardcoded ticker list.
 
-**Live modda gercek olan alanlar:** fiyat/OHLCV (`Ticker.history`), F/K, PD/DD,
-piyasa degeri, halka aciklik orani, yabanci payi (`fast_info`), bilanco/gelir
-tablosu/nakit akis kalemleri (Piotroski 9 kriteri ve Sloan tahakkuk orani
-GERCEK, 2 donem karsilastirmali hesaplanir), temettu gecmisi, KAP bildirim
-basliklari (kural-tabanli/regex siniflandirici ile kategorize edilir, LLM
-DEGIL), 2 yillik gosterge tahvil getirisi (hurdle_engine'in tek sert-gecit
-girdisi), USD/TRY spot, XU100 seviyesi.
+> Depending on provider coverage, some fields may be unavailable. The system leaves these fields empty rather than fabricating values.
 
-**Live modda GERCEK KAYNAGI OLMADIGI ICIN uydurulmayan, `None` birakilan
-alanlar** (ilgili `core/*.py` modulleri bunlari None-guard ile ele alir, sahte
-sayi uretilmez): yatirimci sayisi ve retail/kurumsal kirilimi (MKK/TSPB
-kaynakli, ucretsiz API yok), tedbir/VBTS listesi, TCMB anket bazli TUFE
-yil-sonu beklentisi ve USD/TRY 12 aylik beklentisi, acik satis yasagi durumu,
-yillik IPO adedi, GYO/holding NAV degeri, banka/sigorta rasyolari (roa/nim/
-npl_ratio/car/combined_ratio -- bkz. asagidaki sablon sinirlamasi). Bu, projenin
-"asla uydurma sayi yok" ilkesiyle bilincli bir tercihtir.
+---
 
-**Bilinen sablon sinirlamasi:** Is Yatirim'in bilanco/gelir tablosu endpoint'i
-banka/sigorta/finansal kiralama gibi BDDK-tipi konsolide sablonlari
-desteklemiyor (canli testte GARAN icin `DataNotAvailableError`). Bu tickerlar
-icin Piotroski/Sloan hesaplanamaz; `reporting_basis='unknown'` olur ve
-`basis_guard.is_scorable()` bunlari otomatik eler -- zaten var olan bir
-guvenlik mekanizmasi (bkz. `UNKNOWN_RATIO_HALT_THRESHOLD=0.30`).
+## Running the Screener
 
-Butun skorlama/filtre/rapor mantigi (`core/*.py`) her iki modda da AYNI
-kod yolundan gecer; degisen tek sey `bist_mcp/server.py`, `kap_web_mcp/server.py`,
-`macro_mcp/server.py` icindeki veri kaynagi secimidir (imzalar ve donus
-semalari sabit).
-
-## Kurulum
-
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env   # SMTP bilgilerinizi doldurun (opsiyonel)
-```
-
-## Calistirma
-
-Tek seferlik bir kosu:
+**Single run for a specific date:**
 
 ```bash
 python run.py --as-of-date 2026-09-10
 ```
 
-`--as-of-date` verilmezse bugunun tarihi kullanilir. SMTP degiskenleri
-(`.env`) doldurulmadiysa e-posta gonderilmez, HTML rapor ve payload.json
-`data/reports/` altina yazilir.
+**Run using the current date:**
 
-Dashboard (salt-okunur):
+```bash
+python run.py
+```
+
+---
+
+## Dashboard
 
 ```bash
 streamlit run dashboard.py
 ```
 
-Zamanlamak icin (spec: 18:30 Europe/Istanbul, cron):
+The Streamlit dashboard is strictly **read-only** — it has no write access to the underlying database.
 
-```cron
-30 18 * * * cd /path/to/bist_project && .venv/bin/python run.py >> logs/run.log 2>&1
+```mermaid
+flowchart LR
+    A[Dashboard] -->|read only| B[(SQLite)]
 ```
 
-## Testler
+---
+
+## Automated Daily Execution
+
+Example `cron` entry:
+
+```cron
+30 18 * * * cd /path/to/bist-screener-v9 && .venv/bin/python run.py >> logs/run.log 2>&1
+```
+
+Default intended execution time: **18:30, Europe/Istanbul**.
+
+---
+
+## MCP Servers
+
+The project includes three independent MCP data-access layers:
+
+```text
+bist_mcp/       BIST market data
+kap_web_mcp/    KAP disclosures
+macro_mcp/      Macroeconomic data
+```
+
+Each can be run independently, e.g.:
+
+```bash
+python -m bist_mcp.server
+```
+
+---
+
+## Testing
 
 ```bash
 pytest tests/ -v
 ```
 
-92 test, spec'in `testing.required` listesindeki her maddeyi kapsar (basis_guard,
-hurdle, piotroski, sloan cross-sectional, beta hurdle bilgi-alani kontrolu,
-event calendar tahmin-yasagi, regime_taxonomy statik izolasyon taramasi,
-invalidation monitor, validation_gate/banned_claims, idempotency, dashboard
-salt-okunurluk, vb.)
+The suite (92 tests) covers:
 
-## Mimari
+<details>
+<summary>Test coverage areas</summary>
+
+- Basis guard
+- Hurdle engine
+- Piotroski F-Score
+- Sloan accrual cross-sectional calculations
+- Beta-adjusted hurdle
+- Event calendar
+- Regime taxonomy isolation
+- Invalidation monitor
+- Validation gate
+- Banned claims / unsupported statements
+- Idempotency
+- Dashboard read-only behavior
+
+</details>
+
+---
+
+## Reproducibility
+
+For a fixed dataset and configuration, the system guarantees:
 
 ```
-bist_mcp/, kap_web_mcp/, macro_mcp/   MCP sunuculari (su an mock veri)
-core/                                  deterministik hesap motorlari (tek gercek kaynak)
-report/                                Jinja2 sablon + validation_gate
-skills/                                yontem paketleri (ince CLI sarmalayicilar)
-config/                                weights.yaml, equity_risk_premium.yaml, ... (DENENMEMIS varsayimlar)
-run.py                                 gunluk orkestratör (execution_order'i uygular)
-dashboard.py                           salt-okunur Streamlit goruntuleme
-data/bist_history.db                   SQLite (spec: database_schema)
+Same Input  →  Same Calculation  →  Same Output
 ```
 
-`run.py`, spec'in `architecture.execution_order` listesini birebir uygular:
-regime_monitor → regime_taxonomy → universe → basis_guard → ranking →
-earnings_quality_sloan → catalysts → event_calendar_engine → ownership_quality
-→ target_price_engine → hurdle_engine → beta_adjusted_hurdle →
-dividend_sustainability_engine → optional_valuation_addon → concentration_check
-→ correlation_diagnostic → decision_diff_engine → payload → thesis_card →
-validate → dispatch → evaluate_past_predictions → thesis_invalidation_monitor.
+Prediction tracking is **not** presented as a classical backtest — it evaluates prior thesis outcomes against subsequent data, which is a distinct methodology.
 
-## Kritik tasarim kurallari (kodda uygulanir, testlerle korunur)
+---
 
-- **Sabit esik yok**: `core/ranking.py` yalnizca esler grubu ici kesitsel
-  persentil/z-skor kullanir; hicbir yerde sabit F/K, PD/DD, FD/FAVOK esigi yoktur.
-- **regime_taxonomy → scoring.py izolasyonu**: `core/regime_taxonomy.py`
-  etiketleri yalnizca raporlamada gorunur, `core/scoring.py`'ye hicbir
-  import/veri akisi yoktur (`tests/test_regime_taxonomy_static.py`).
-- **validation_gate**: `report/validate.py`, uretilen HTML'deki her sayisal
-  degerin `core/payload.py::build_report_payload` ciktisinda bulunmasini
-  zorunlu kilar; aksi halde gonderim iptal edilir.
-- **priors_are_disclosed**: `config/weights.yaml`, `config/equity_risk_premium.yaml`
-  ve rapor altbilgisi, tum agirlik/esiklerin DENENMEMIS baslangic varsayimi
-  oldugunu acikca belirtir.
-- **evaluate_past_predictions bir backtest degildir**: `core/evaluate.py` ve
-  rapor, bunu her zaman canli takip olarak etiketler; `banned_claims` listesi
-  (`kanitlanmis edge`, `istatistiksel olarak anlamli`, ...) hem kod hem
-  validation_gate tarafindan taranir.
-- **dashboard.py salt-okunur**: yalnizca `core.db.get_connection(read_only=True)`
-  kullanir, hicbir INSERT/UPDATE/DELETE icermez.
+## Configuration
 
-## Bilinen sinirlamalar
+Model assumptions live outside the calculation layer, e.g.:
 
-- `broker_concentration_guard` spec'te `deferred_pending_data_source` olarak
-  isaretlendi (veri kaynagi yok) — uygulanmadi.
-- MCP sunuculari (`bist_mcp`, `kap_web_mcp`, `macro_mcp`) `BIST_DATA_MODE`'a
-  gore mock veya live veri dondurur; `mcp` paketi kuruluysa
-  `python -m bist_mcp.server` gibi bagimsiz MCP sunuculari olarak da
-  calistirilabilirler (Claude Desktop / baska bir MCP istemcisiyle).
-- `XU100` endeks getirisi `core/evaluate.py` icinde su an yer tutucu (0.0)
-  olarak birakildi; gercek entegrasyonda `bp.Index("XU100").history(...)`
-  ile gunluk kapanis serisi eklenmeli.
-- Live modda yatirimci sayisi/retail-kurumsal kirilimi, TCMB anket bazli
-  makro beklentiler, acik satis yasagi durumu, tedbir/VBTS listesi ve
-  banka/sigorta rasyolari icin ucretsiz, guvenilir bir kaynak dogrulanamadi
-  (bkz. yukaridaki "Veri katmani" bolumu) -- bu alanlar `None` birakilir.
-- Banka/sigorta/finansal kiralama sirketleri icin Is Yatirim'in bilanco
-  endpoint'i (borsapy uzerinden) veri dondurmuyor -- bu tickerlar
-  `reporting_basis='unknown'` ile Piotroski/Sloan'dan otomatik elenir.
-- `core/live_data.py`'nin listing_days/avg_volume_tl_20d hesaplari ve KAP
-  kategorizasyon regex'leri makul varsayimlar/proxy'lerdir, resmi bir
-  referansla dogrulanmamistir; ilk canli kosularda `data/reports/*_payload.json`
-  uzerinden gozden gecirilmesi onerilir.
+```text
+config/weights.yaml
+config/equity_risk_premium.yaml
+```
+
+These are **starting assumptions**, not empirically validated optimal parameters — changing them can materially change screening results.
+
+---
+
+## Known Limitations
+
+| Area | Status |
+|---|---|
+| Broker concentration guard | Not yet implemented |
+| XU100 historical benchmark series | Integration incomplete |
+| Investor count / retail-institutional split | No reliable free data source |
+| TCMB expectation data | Partially unavailable |
+| Tedbir / VBTS data (live mode) | May be incomplete |
+| GYO / holding NAV calculation | Not implemented |
+| Bank & insurance sector ratios | Some sector-specific ratios not computable |
+| Listing-day, volume, KAP classification | Some fields rely on proxy assumptions |
+
+These gaps are represented explicitly as `None` / `unknown` rather than being silently filled in.
+
+---
+
+## Design Principles
+
+1. **Deterministic calculation** — same data always produces the same result.
+2. **No fabrication for missing data** — absent a reliable source, the field is `None`.
+3. **Avoid fixed thresholds** — peer-relative ranking is preferred over absolute cutoffs.
+4. **No hidden assumptions** — weights and parameters in config files are documented starting assumptions, not proven constants.
+5. **Backtest ≠ prediction tracking** — these are treated as distinct concepts.
+6. **Read-only dashboard** — the visualization layer cannot alter underlying data.
+7. **Validate before dispatch** — no report is sent without passing the validation gate.
+
+---
+
+## Roadmap
+
+Planned for v10: expanded data coverage, completion of currently missing data sources, and further pipeline refinement.
+
+Full detail: [`bist_screener_v10_roadmap.json`](./bist_screener_v10_roadmap.json)
+
+---
+
+## Disclaimer
+
+This project is developed for educational, research, and personal decision-support purposes.
+
+None of the following should be interpreted as investment advice, a buy/sell recommendation, or a guarantee of future performance:
+
+- Scores
+- Rankings
+- Target prices
+- Expected returns
+- Financial metrics
+- Analyses
+
+Past performance in financial markets does not guarantee future results. Investment decisions should be made based on independent research and, where appropriate, professional financial advice.
+
+---
+
+## Contributing
+
+This repository is developed primarily for personal use, but contributions are welcome via GitHub Issues and Pull Requests:
+
+- Bug reports
+- Feature requests
+- Data source suggestions
+- Architectural improvements
+- Test contributions
+
+---
+
+## License
+
+See the repository for applicable license information.
+
+---
+
+<div align="center">
+
+**Autonomous BIST AI Screener — v9**
+
+Data · Fundamentals · Relative Ranking · Risk · Valuation · Catalysts · Validation → Research Output
+
+[Repository](https://github.com/erenkbgc/bist-screener-v9)
+
+</div>
