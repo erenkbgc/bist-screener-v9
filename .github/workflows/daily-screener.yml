@@ -69,9 +69,33 @@ jobs:
 
       - name: Veritabani + raporlari repoya geri commit'le
         if: always()
+        # Kosu saatler surdugu icin origin/master bu arada lokalden ilerlemis
+        # olabilir (bkz. 2026-09-15: "! [rejected] master -> master (fetch
+        # first)" -- gunun tum DB/rapor guncellemesi hic remote'a gitmeden
+        # kayboldu). git add/commit sadece data/bist_history.db ve
+        # data/reports/ dokunuyor, insan commit'leri neredeyse hep baska
+        # dosyalara dokunuyor; fetch+rebase ile birkac deneme bu cakismayi
+        # guvenle cozer.
         run: |
           git config user.name "bist-screener-bot"
           git config user.email "actions@users.noreply.github.com"
           git add data/bist_history.db data/reports/
-          git diff --cached --quiet || git commit -m "chore: ${{ steps.today.outputs.date }} tarama sonuclari"
-          git push
+          if git diff --cached --quiet; then
+            echo "commit edilecek degisiklik yok"
+            exit 0
+          fi
+          git commit -m "chore: ${{ steps.today.outputs.date }} tarama sonuclari"
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+            echo "push reddedildi (deneme $attempt/5), origin/master ile rebase deneniyor"
+            git fetch origin master
+            if ! git rebase origin/master; then
+              git rebase --abort
+              echo "rebase basarisiz, cakisma var -- manuel mudahale gerekiyor"
+              exit 1
+            fi
+          done
+          echo "5 denemeden sonra push basarisiz oldu"
+          exit 1

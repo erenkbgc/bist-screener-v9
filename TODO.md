@@ -19,6 +19,21 @@ cikti, tekrar kullanilmamali).
 - [x] **low_vol_factor** — TAMAMLANDI (2026-09-16). `core/volatility.py`,
   `weights.yaml`'da 0.10 agirlik (valuation 0.55->0.50, catalyst 0.30->0.25
   ile dengelendi). Akademik dayanak dogrulandi (bkz. v11 JSON).
+- [x] **validation_gate_orphan_precision_bugfix** — TAMAMLANDI (2026-09-16).
+  `report/validate.py::find_orphan_numbers` X.00'a yuvarlanan payload
+  degerlerini (43.00, 622.00 gibi) float round-trip yuzunden yanlislikla
+  orphan isaretliyordu; 2026-09-15 kosusunda bu yuzden `validation_gate` FAIL
+  verdi ve mail hic gitmedi. Fix + regresyon testi eklendi, gercek
+  2026-09-15 INVALID payload/HTML ciftiyle dogrulandi.
+- [x] **ci_push_race_condition_fix** — TAMAMLANDI (2026-09-16).
+  `.github/workflows/daily-screener.yml` push adimina fetch+rebase retry
+  eklendi; kosu surerken lokalden master'a push yapilirsa artik gunun
+  DB/rapor guncellemesi kaybolmuyor (2026-09-15'te oldugu gibi).
+- [ ] **long_term_target_price_outlier_cap** (1-2 gun, P1) — 2026-09-15
+  kosusunda bazi dusuk likiditeli hisselerde (GLRYH %2838, A1CAP %972,
+  IHLGM %443) peer-relative hedef fiyat asiri uc deger uretti. Veri gercek
+  ama gerceki degil; winsorization/cap veya dusuk peer_n'de guven
+  seviyesini dusurme onerisi degerlendirilmeli.
 - [ ] **momentum_factor_short_window** (1-2 gun, P0) — 6ay-1ay momentum,
   mevcut 140 gunluk fiyat penceresiyle simdi yapilabilir. Klasik 12ay-1ay
   icin pencere genisletmek borsapy throttle/hang riskini artirir, ERTELENDI.
@@ -26,6 +41,14 @@ cikti, tekrar kullanilmamali).
   giris fiyati iyilestirme, skoru degistirmez.
 - [ ] **trailing_stop_and_staged_exit** (2-3 gun, P2) — kademeli kar
   realizasyonu + ATR trailing stop.
+- [ ] **kap_direct_api_alternative** (1-2 gun + kullanici onayi, P1) —
+  `core/live_data.py::live_kap_disclosures` su an borsapy/Is Yatirim mirror'i
+  kullaniyor (ticker basina 1 istek, throttle riski). kap.org.tr'nin kendi
+  dokumante-edilmemis JSON API'si (`POST /tr/api/disclosure/list/main`)
+  2026-09-16'da canli test edildi, calisiyor: tek bulk sorguyla TUM evrenin
+  gunluk bildirimleri geliyor. UYARI: resmi olmayan, SLA'siz bir endpoint --
+  uygulamadan once bu riski bilerek onaylamak gerekir. Detay: v11 JSON,
+  `kap_direct_api_alternative`.
 - **parked**: `foreign_ownership_delta_factor` (veri kaynagi yok).
 - **rejected**: `regime_conditional_scoring` (mimari invariant ihlali),
   `session_based_atr` (gunluk batch mimariyle uyumsuz).

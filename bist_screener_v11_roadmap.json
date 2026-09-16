@@ -98,6 +98,16 @@
       "note": "Ucretsiz/erisilebilir bir MKK/TSPB veri kaynagi bulunursa yeniden degerlendirilmeli."
     },
     {
+      "priority": "P1 (karar bekliyor)",
+      "module": "kap_direct_api_alternative",
+      "effort_estimate": "1-2 gun (kod), + karar: resmi olmayan endpoint riski kabul edilecek mi",
+      "impact": "core/live_data.py::live_kap_disclosures su an borsapy uzerinden Ticker.news (Is Yatirim mirror) kullaniyor -- ticker basina 1 istek (~800 ticker'lik evrende throttle/hang riskine katkida bulunuyor) ve bildirim sikligi dusuk sirketlerde (test: ASELS) 40+ gun eski gorunebiliyor (gercekte KAP'in kendisiyle CAPRAZ DOGRULANDI: sirket gercekten uzun suredir bildirim yapmamis, veri 'bozuk' degil ama kapsam kirilgan).",
+      "finding": "kap.org.tr'nin kendi bildirim sayfasinin ARKASINDAKI, dokumante edilmemis dahili JSON API'si (User-Agent + Referer header'iyla) 2026-09-16'da CANLI test edildi ve calisiyor: POST https://www.kap.org.tr/tr/api/disclosure/list/main ({fromDate, toDate, memberTypes:['IGS'], mkkMemberOid}) -> 200 OK, DUNUN (bir gun onceki) gercek bildirimlerini donduruyor. Sirket->oid eslemesi: GET https://www.kap.org.tr/tr/api/member/filter/{TICKER}. TEK bir bulk sorguyla (tarih araligi + memberTypes=IGS) TUM BIST evreninin gunluk bildirimleri gelir -- 800 ayri istek yerine 1. Ayni endpoint'i kullanan acik kaynak projeler de var: enciyo/kap-tr-sdk (github), kap-client (PyPI), cemsinano/pykap.",
+      "caveat": "DOKUMANTE EDILMEMIS, resmi olmayan bir ic API -- SLA/garanti yok, haber vermeden degisebilir/engellenebilir. kap.org.tr/robots.txt su an hata donuyor (WAF/erisim sorunu, icerigi netlestirilemedi). Uygulamadan once KULLANICI bu resmi-olmayan-API riskini bilerek onaylamali.",
+      "status": "arastirildi, uygulama bekliyor (kullanici onayi gerekli)",
+      "note": "Uygulanirsa: mevcut _categorize_kap_title kural-tabanli siniflandiricisi DEGISMEDEN kullanilir (no_free_text_interpretation_of_kap kuralini bozmaz), sadece veri kaynagi degisir. Mock katmaniyla (core/mock_data.py) paralellik korunmali."
+    },
+    {
       "priority": "rejected",
       "module": "regime_conditional_scoring",
       "effort_estimate": "n/a",
@@ -126,6 +136,27 @@
       "effort_estimate": "n/a",
       "impact": "core/basis_guard.py (resolve_reporting_basis, basis_break, is_scorable) TMS 29 ayrimini zaten yapiyor.",
       "status": "already_implemented"
+    },
+    {
+      "priority": "P0",
+      "module": "validation_gate_orphan_precision_bugfix",
+      "effort_estimate": "tamamlandi",
+      "impact": "report/validate.py::find_orphan_numbers, HTML'de X.00'a yuvarlanan (ornegin excess_over_hurdle_pct=43.00146) payload-kaynakli degerleri float(raw) -> format_number(f) round-trip'i yuzunden yanlislikla orphan isaretliyordu (float(\"43.00\").is_integer()==True oldugundan format_number \"43\" donuyor, \"43.00\" tokeniyle eslesmiyordu). 2026-09-15 canli kosusunda FROTO (43.00) ve ISGSY (622.00) bu yuzden validation_gate FAIL verdi, is_valid=False, email_sent=False oldu -- rapor gonderilmedi. Fix: raw metin format_number'dan tekrar gecirilmeden dogrudan valid_tokens ile karsilastiriliyor. Gercek 2026-09-15_INVALID payload/HTML ciftiyle dogrulandi (is_valid artik True), yeni regresyon testi eklendi (tests/test_validate.py::test_payload_value_rounding_to_whole_number_is_not_false_orphan). Bu bug 2026-09-13'te tesbit edilmisti (ayni mekanizma, BASGZ 49.00 ornegi) ama o zaman duzeltilmemisti.",
+      "status": "tamamlandi (2026-09-16)"
+    },
+    {
+      "priority": "P0",
+      "module": "ci_push_race_condition_fix",
+      "effort_estimate": "tamamlandi",
+      "impact": ".github/workflows/daily-screener.yml: kosu 2-3 saat surdugu icin lokalden ayni pencerede master'a dogrudan push yapilirsa (2026-09-15'te oldugu gibi) workflow'un kendi commit'i 'fetch first' ile reddediliyor ve o gunun DB/rapor guncellemesi hic remote'a gitmeden kayboluyordu (yalnizca ephemeral runner + upload-artifact ciktisinda kaliyordu). Fix: push adimina fetch+rebase ile 5 denemelik retry eklendi.",
+      "status": "tamamlandi (2026-09-16)"
+    },
+    {
+      "priority": "P1",
+      "module": "long_term_target_price_outlier_cap",
+      "effort_estimate": "1-2 gun",
+      "impact": "2026-09-15 canli kosusunda peer-relative degerleme bazi dusuk likiditeli/mikro-cap hisselerde asiri uc hedef fiyat/beklenen getiri uretiyor (GLRYH %2838, A1CAP %972, IHLGM %443 -- STRONG_OPPORTUNITY listesinde). Degerler payload'dan gercek (uydurma degil) ama peer carpaninin ince/kucuk esler grubunda kontrolsuz buyumesinden kaynaklaniyor gibi gorunuyor. Henuz kok neden analizi yapilmadi; oneri: peer multiple/hedef fiyat farkina bir winsorization/cap uygulamak veya n kucukken (peer_n dusuk) guven seviyesini dusurmek.",
+      "status": "todo"
     }
   ],
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 
-from core.payload import all_numeric_tokens, format_number
+from core.payload import all_numeric_tokens
 
 BANNED_CLAIMS = [
     "kanitlanmis edge", "kanıtlanmış edge",
@@ -56,16 +56,22 @@ def _strip_html_for_scan(html: str) -> str:
 
 
 def find_orphan_numbers(html_content: str, payload: dict) -> list[str]:
+    # HTML'deki her sayi format_number()'in ciktisidir (bkz. core/payload.py::format_number
+    # docstring'i). Bu yuzden raw metni DOGRUDAN valid_tokens ile karsilastiriyoruz;
+    # raw'i float()'a cevirip format_number ile yeniden bicimlendirmek "43.00" gibi
+    # ondalikli ama tam sayiya yuvarlanan degerlerin ondalik bilgisini kaybeder
+    # (float("43.00").is_integer() True oldugundan format_number "43" doner) ve
+    # gercek payload kaynakli degerleri yanlislikla orphan olarak isaretler.
     valid_tokens = all_numeric_tokens(payload) | _ALLOWED_STANDALONE_NUMBERS
     text = _strip_html_for_scan(html_content)
     orphans = []
     for match in _NUMBER_RE.finditer(text):
         raw = match.group().replace(",", ".")
         try:
-            f = float(raw)
+            float(raw)
         except ValueError:
             continue
-        if format_number(f) in valid_tokens or format_number(abs(f)) in valid_tokens:
+        if raw in valid_tokens or raw.lstrip("-") in valid_tokens:
             continue
         orphans.append(raw)
     return orphans

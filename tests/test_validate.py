@@ -48,3 +48,21 @@ def test_report_with_orphan_and_banned_claim_invalid():
     assert result["is_valid"] is False
     assert result["orphan_numbers"]
     assert result["banned_claims_found"]
+
+
+def test_payload_value_rounding_to_whole_number_is_not_false_orphan():
+    # 2026-09-15 CI kosusunda FROTO/ISGSY icin gorulen gercek regresyon:
+    # excess_over_hurdle_pct=43.00146... format_number ile "43.00" olarak
+    # render edilir; eskiden tarayici bunu float(43.0)'a cevirip yeniden
+    # format_number'dan gecirince "43" donuyordu ve payload kaynakli gecerli
+    # bir deger yanlislikla orphan sayiliyordu.
+    payload = {"predictions": [
+        {"ticker": "FROTO", "excess_over_hurdle_pct": 43.00146492486155},
+        {"ticker": "ISGSY", "excess_over_beta_hurdle_pct": 621.9997900179557},
+    ]}
+    html = (
+        "<div>Beklenen getiri, hurdle oranini 43.00 puan asiyor.</div>"
+        "<div>Beta-duzeltmeli fazla: %622.00</div>"
+    )
+    orphans = find_orphan_numbers(html, payload)
+    assert orphans == []
