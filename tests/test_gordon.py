@@ -70,3 +70,16 @@ def test_gordon_unstable_denominator(temp_db):
         dividend_streak_years=5, passes_sustainability=True,
     )
     assert result["null_reason"] == "unstable_denominator"
+
+
+def test_gordon_small_positive_spread_is_also_unstable(temp_db):
+    """Outlier guard: spread sifirin UZERINDE ama equity_risk_premium_pct'nin
+    ALTINDA kalirsa (orn. %0.5) da null -- aksi halde absurd (fiyatin onlarca
+    kati) bir fair_value 'gecerli' gibi donerdi. equity_risk_premium=5, g=5
+    (config); risk_free=0.5 -> discount_base=5.5, spread=0.5 < erp(5)."""
+    result = calculate_gordon_reference(
+        "2026-09-10", "DDD", dividend_per_share=5.0, risk_free_annual_pct=0.5,
+        dividend_streak_years=5, passes_sustainability=True,
+    )
+    assert result["null_reason"] == "unstable_denominator"
+    assert result["fair_value_low"] is None

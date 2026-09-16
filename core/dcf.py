@@ -75,12 +75,13 @@ def calculate_wacc_pct(beta: float, erp: float, risk_free_annual_pct: float,
     return weight_equity * cost_of_equity + weight_debt * cost_of_debt * (1 - tax_rate_pct / 100)
 
 
-def _fair_value_per_share(fcf_per_share: float, growth_pct: float, g: float, wacc_pct: float) -> float | None:
-    denom = (wacc_pct - g) / 100
-    if denom <= 0:
+def _fair_value_per_share(fcf_per_share: float, growth_pct: float, g: float, wacc_pct: float,
+                           min_spread_pct: float) -> float | None:
+    spread_pct = wacc_pct - g
+    if spread_pct < min_spread_pct:
         return None
     fcf_next = fcf_per_share * (1 + growth_pct / 100)
-    return fcf_next * (1 + g / 100) / denom
+    return fcf_next * (1 + g / 100) / (spread_pct / 100)
 
 
 def calculate_dcf_reference(as_of_date: str, ticker: str, fcf_ttm: float | None,
@@ -105,7 +106,11 @@ def calculate_dcf_reference(as_of_date: str, ticker: str, fcf_ttm: float | None,
                                    financial_expenses_ttm, tax_rate_pct)
         fcf_per_share = fcf_ttm / shares_outstanding
 
-        if wacc - g <= 0:
+        # OUTLIER GUARD: bkz. core/gordon.py ayni desen -- wacc-g sadece <=0
+        # degil, erp'nin ALTINDA da kalirsa null (Gordon/DCF tekillik sorunu,
+        # kucuk-pozitif spread'lerde absurd -- fiyatin onlarca kati -- ama
+        # "gecerli" gorunumlu bir deger uretir).
+        if wacc - g < erp:
             row = {"as_of_date": as_of_date, "ticker": ticker, "fcf_per_share": fcf_per_share,
                    "wacc_pct": wacc, "growth_low_pct": GROWTH_LOW_PCT, "growth_base_pct": GROWTH_BASE_PCT,
                    "growth_high_pct": GROWTH_HIGH_PCT, "terminal_growth_pct": g,
@@ -113,9 +118,9 @@ def calculate_dcf_reference(as_of_date: str, ticker: str, fcf_ttm: float | None,
                    "premium_discount_low_pct": None, "premium_discount_high_pct": None,
                    "null_reason": "unstable_denominator"}
         else:
-            fv_low = _fair_value_per_share(fcf_per_share, GROWTH_LOW_PCT, g, wacc)
-            fv_base = _fair_value_per_share(fcf_per_share, GROWTH_BASE_PCT, g, wacc)
-            fv_high = _fair_value_per_share(fcf_per_share, GROWTH_HIGH_PCT, g, wacc)
+            fv_low = _fair_value_per_share(fcf_per_share, GROWTH_LOW_PCT, g, wacc, erp)
+            fv_base = _fair_value_per_share(fcf_per_share, GROWTH_BASE_PCT, g, wacc, erp)
+            fv_high = _fair_value_per_share(fcf_per_share, GROWTH_HIGH_PCT, g, wacc, erp)
             scenarios = [v for v in (fv_low, fv_base, fv_high) if v is not None]
             fair_value_low, fair_value_high = min(scenarios), max(scenarios)
             premium_low = ((fair_value_low / current_price) - 1) * 100 if current_price else None

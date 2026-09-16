@@ -88,3 +88,18 @@ def test_dcf_unstable_denominator(temp_db):
     )
     assert result["null_reason"] == "unstable_denominator"
     assert result["fair_value_low"] is None
+
+
+def test_dcf_small_positive_spread_is_also_unstable(temp_db):
+    """Outlier guard: wacc-g sifirin UZERINDE ama equity_risk_premium_pct'nin
+    ALTINDA kalirsa (orn. %0.5) da null -- aksi halde absurd (fiyatin onlarca
+    kati) bir fair_value 'gecerli' gibi donerdi. equity_risk_premium=5, g=5
+    (config); risk_free=0.5, beta=1, borcsuz -> wacc=cost_of_equity=5.5,
+    wacc-g=0.5 < erp(5)."""
+    result = calculate_dcf_reference(
+        "2026-09-10", "EEE", fcf_ttm=1e9, shares_outstanding=1e8, current_price=50.0,
+        beta=1.0, risk_free_annual_pct=0.5, market_cap=5e9, net_debt=0.0,
+        financial_expenses_ttm=None,
+    )
+    assert result["null_reason"] == "unstable_denominator"
+    assert result["fair_value_low"] is None

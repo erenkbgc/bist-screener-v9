@@ -1,9 +1,19 @@
 """gordon_growth_reference: deneysel, ana karara girmeyen temettu iskonto modeli.
 
 hard_constraints (spec): final_score'a ve hard_filters'a hicbir bicimde girmez;
-discount_rate - g <= 0 ise hesaplanmaz, null_reason='unstable_denominator'.
+discount_rate - g < equity_risk_premium_pct ise hesaplanmaz, null_reason='unstable_denominator'.
 output_format: Tek sayi asla gosterilmez, en az 3 senaryoli aralik.
-"""
+
+OUTLIER GUARD: denom sadece <=0 iken degil, equity_risk_premium_pct'nin ALTINDA
+kaldiginda da null birakilir. NEDEN: denom sifira yaklastikca (orn. spread=%0.5)
+fair_value matematiksel olarak SONSUZA ISKALAR (Gordon modelinin bilinen
+tekillik sorunu) -- discount_rate-g<=0 koruması bunu YALNIZCA tam negatif/sifir
+durumda yakalar, kucuk-pozitif spread'lerde absurd (orn. fiyatin 20-50 kati)
+"gecerli" gorunumlu bir deger uretmeye devam eder. Esik olarak ayrica bir sabit
+UYDURULMAZ: discount_rate zaten risk_free + equity_risk_premium_pct olarak
+kuruluyor, o yuzden discount_rate'in g'yi equity_risk_premium_pct KADAR asmasi
+istenmesi, modelin kendi ic tutarliligi (ayni ERP varsayimi) disinda YENI bir
+varsayim eklemez."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -30,11 +40,12 @@ def is_eligible(dividend_streak_years: int, passes_sustainability: bool) -> tupl
     return True, None
 
 
-def _fair_value(dividend_per_share: float, g: float, discount_rate_pct: float) -> float | None:
-    denom = (discount_rate_pct - g) / 100
-    if denom <= 0:
+def _fair_value(dividend_per_share: float, g: float, discount_rate_pct: float,
+                 min_spread_pct: float) -> float | None:
+    spread_pct = discount_rate_pct - g
+    if spread_pct < min_spread_pct:
         return None
-    return dividend_per_share * (1 + g / 100) / denom
+    return dividend_per_share * (1 + g / 100) / (spread_pct / 100)
 
 
 def calculate_gordon_reference(as_of_date: str, ticker: str, dividend_per_share: float | None,
@@ -49,14 +60,15 @@ def calculate_gordon_reference(as_of_date: str, ticker: str, dividend_per_share:
                "fair_value_low": None, "fair_value_high": None,
                "null_reason": reason or "no_dividend"}
     else:
+        erp = cfg["equity_risk_premium_pct"]
         g = cfg["tcmb_long_term_inflation_target_pct"]
-        discount_base = risk_free_annual_pct + cfg["equity_risk_premium_pct"]
+        discount_base = risk_free_annual_pct + erp
         discount_low = discount_base - DISCOUNT_SHOCK_PCT
         discount_high = discount_base + DISCOUNT_SHOCK_PCT
 
-        fv_low_scenario = _fair_value(dividend_per_share, g, discount_high)  # yuksek iskonto -> dusuk deger
-        fv_base_scenario = _fair_value(dividend_per_share, g, discount_base)
-        fv_high_scenario = _fair_value(dividend_per_share, g, discount_low)  # dusuk iskonto -> yuksek deger
+        fv_low_scenario = _fair_value(dividend_per_share, g, discount_high, erp)  # yuksek iskonto -> dusuk deger
+        fv_base_scenario = _fair_value(dividend_per_share, g, discount_base, erp)
+        fv_high_scenario = _fair_value(dividend_per_share, g, discount_low, erp)  # dusuk iskonto -> yuksek deger
 
         scenarios = [v for v in (fv_low_scenario, fv_base_scenario, fv_high_scenario) if v is not None]
         if not scenarios:
