@@ -1,0 +1,2546 @@
+[
+  {
+    "ticker": "A1CAP",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "A1YEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "AAGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "ACSEL",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "ADEL",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "ADESE",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "ADGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "AEFES",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "AFYON",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "AGESA",
+    "sektor": "Emeklilik"
+  },
+  {
+    "ticker": "AGHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "AGROT",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "AGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "AHGAZ",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "AHSGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "AKBNK",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "AKCNS",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "AKENR",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "AKFGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "AKFIS",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "AKFYE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "AKGRT",
+    "sektor": "Sigorta"
+  },
+  {
+    "ticker": "AKHAN",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "AKMGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "AKSA",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "AKSEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "AKSGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "AKSUE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "AKYHO",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "ALARK",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ALBRK",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "ALBTN",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "ALCAR",
+    "sektor": "Dayanıklı Tüketim Ürünleri"
+  },
+  {
+    "ticker": "ALCTL",
+    "sektor": "Haberleşme"
+  },
+  {
+    "ticker": "ALFAS",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "ALGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "ALKA",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "ALKIM",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "ALKLC",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ALTNY",
+    "sektor": "Savunma"
+  },
+  {
+    "ticker": "ALVES",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "ANELE",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "ANGEN",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "ANHYT",
+    "sektor": "Emeklilik"
+  },
+  {
+    "ticker": "ANSGR",
+    "sektor": "Sigorta"
+  },
+  {
+    "ticker": "ARASE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ARCLK",
+    "sektor": "Dayanıklı Tüketim Ürünleri"
+  },
+  {
+    "ticker": "ARDYZ",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "ARENA",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "ARFYE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ARMGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ARSAN",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "ARTMS",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "ARZUM",
+    "sektor": "Dayanıklı Tüketim Ürünleri"
+  },
+  {
+    "ticker": "ASELS",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "ASGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "ASTOR",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "ASUZU",
+    "sektor": "Otomotiv"
+  },
+  {
+    "ticker": "ATAGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "ATAKP",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ATATP",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "ATATR",
+    "sektor": "Madencilik ve Taş Ocakçılığı"
+  },
+  {
+    "ticker": "ATEKS",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "ATLAS",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "ATSYH",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "AVGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "AVHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "AVOD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "AVPGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "AVTUR",
+    "sektor": "Toptan ve Perakende Ticaret"
+  },
+  {
+    "ticker": "AYCES",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "AYDEM",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "AYEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "AYES",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "AYGAZ",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "AZTEK",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "BAGFS",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "BAHKM",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "BAKAB",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "BALAT",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BALSU",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "BANVT",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "BARMA",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "BASCM",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "BASGZ",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "BAYRK",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BEGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "BERA",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "BESLR",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "BESTE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "BETAE",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "BEYAZ",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "BFREN",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BIENY",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "BIGCH",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "BIGEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "BIGTK",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "BIMAS",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "BINBN",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "BINHO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "BIOEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "BIZIM",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "BJKAS",
+    "sektor": "Spor"
+  },
+  {
+    "ticker": "BKRGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "BLCYT",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "BLUME",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BMSCH",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "BMSTL",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "BNTAS",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "BOBET",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "BORLS",
+    "sektor": "Servis Taşımacılığı ve Araç Kiralama"
+  },
+  {
+    "ticker": "BORSK",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "BOSSA",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BRISA",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BRKO",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BRKSN",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "BRKVY",
+    "sektor": "Varlık Yönetimi"
+  },
+  {
+    "ticker": "BRLSM",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "BRMEN",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BRSAN",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "BRYAT",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "BSOKE",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "BTCIM",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "BUCIM",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "BULGS",
+    "sektor": "Girişim Sermayesi Yat. Ort."
+  },
+  {
+    "ticker": "BURCE",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "BURVA",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "BVSAN",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "BYDNR",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "CANTE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "CASA",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "CATES",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "CCOLA",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "CELHA",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "CEMAS",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "CEMTS",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "CEMZY",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "CEOEM",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "CGCAM",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "CIMSA",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "CITAS",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "CLEBI",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "CMBTN",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "CMENT",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "CONSE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "COSMO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "CRDFA",
+    "sektor": "Faktoring"
+  },
+  {
+    "ticker": "CRFSA",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "CUSAN",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "CVKMD",
+    "sektor": "Madencilik ve Taş Ocakçılığı"
+  },
+  {
+    "ticker": "CWENE",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "DAGHL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "DAGI",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "DAPGM",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "DARDL",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "DCTTR",
+    "sektor": "Tarım, Hayvancılık, Balıkçılık"
+  },
+  {
+    "ticker": "DENGE",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "DERHL",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "DERIM",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "DESA",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "DESPC",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "DEVA",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "DGATE",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "DGGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "DGNMO",
+    "sektor": "Mobilya ve Dekorasyon"
+  },
+  {
+    "ticker": "DIRIT",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "DITAS",
+    "sektor": "Otomotiv Yan Sanayi"
+  },
+  {
+    "ticker": "DMRGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "DMSAS",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "DNISI",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "DOAS",
+    "sektor": "Otomotiv"
+  },
+  {
+    "ticker": "DOCO",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "DOFER",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "DOFRB",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "DOGUB",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "DOHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "DOKTA",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "DSTKF",
+    "sektor": "Faktoring"
+  },
+  {
+    "ticker": "DUNYH",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "DURDO",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "DURKN",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "DYOBY",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "DZGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "EBEBK",
+    "sektor": "Toptan ve Perakende Ticaret"
+  },
+  {
+    "ticker": "ECILC",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "ECOGR",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "ECZYT",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "EDATA",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "EDIP",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "EFOR",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "EGEEN",
+    "sektor": "Otomotiv Yan Sanayi"
+  },
+  {
+    "ticker": "EGEGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "EGEPO",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "EGGUB",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "EGPRO",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "EGSER",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "EKDMR",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "EKGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "EKIM",
+    "sektor": "Servis Taşımacılığı ve Araç Kiralama"
+  },
+  {
+    "ticker": "EKIZ",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "EKOS",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "EKSUN",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ELITE",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "EMKEL",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "EMNIS",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "EMPAE",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "ENDAE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ENERY",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ENJSA",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ENKAI",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "ENPRA",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "ENSRI",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "ENTRA",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "EPLAS",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "ERBOS",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "ERCB",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "EREGL",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "ERSU",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ESCAR",
+    "sektor": "Servis Taşımacılığı ve Araç Kiralama"
+  },
+  {
+    "ticker": "ESCOM",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "ESEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ETILR",
+    "sektor": "Toptan ve Perakende Ticaret"
+  },
+  {
+    "ticker": "ETYAT",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "EUHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "EUKYO",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "EUPWR",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "EUREN",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "EUYO",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "EYGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "FADE",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "FENER",
+    "sektor": "Spor"
+  },
+  {
+    "ticker": "FLAP",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "FMIZP",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "FONET",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "FORMT",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "FORTE",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "FRIGO",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "FRMPL",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "FROTO",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "FZLGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "GARAN",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "GARFA",
+    "sektor": "Faktoring"
+  },
+  {
+    "ticker": "GATEG",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "GEDIK",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "GEDZA",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "GENIL",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "GENKM",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "GENTS",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "GEREL",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "GESAN",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "GIPTA",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "GLBMD",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "GLCVY",
+    "sektor": "Varlık Yönetimi"
+  },
+  {
+    "ticker": "GLRMK",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "GLRYH",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "GLYHO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "GMTAS",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "GOKNR",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "GOLDA",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "GOLTS",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "GOODY",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "GOZDE",
+    "sektor": "Girişim Sermayesi Yat. Ort."
+  },
+  {
+    "ticker": "GRNYO",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "GRSEL",
+    "sektor": "Servis Taşımacılığı ve Araç Kiralama"
+  },
+  {
+    "ticker": "GRTHO",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "GSDDE",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "GSDHO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "GSRAY",
+    "sektor": "Spor"
+  },
+  {
+    "ticker": "GUBRF",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "GUNDG",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "GWIND",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "GZNMI",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "HALKB",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "HATEK",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "HATSN",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "HDFGS",
+    "sektor": "Girişim Sermayesi Yat. Ort."
+  },
+  {
+    "ticker": "HEDEF",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "HEKTS",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "HKTM",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "HLGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "HOROZ",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "HRKET",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "HTTBT",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "HUBVC",
+    "sektor": "Girişim Sermayesi Yat. Ort."
+  },
+  {
+    "ticker": "HUNER",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "HURGZ",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "ICBCT",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "ICUGS",
+    "sektor": "Girişim Sermayesi Yat. Ort."
+  },
+  {
+    "ticker": "IDGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "IEYHO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "IHAAS",
+    "sektor": "Haberleşme"
+  },
+  {
+    "ticker": "IHEVA",
+    "sektor": "Dayanıklı Tüketim Ürünleri"
+  },
+  {
+    "ticker": "IHGZT",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "IHLAS",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "IHLGM",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "IHYAY",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "IMASM",
+    "sektor": "Metal Eşya ve Makine"
+  },
+  {
+    "ticker": "INDES",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "INFO",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "INGRM",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "INTEK",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "INTEM",
+    "sektor": "Toptan ve Perakende Ticaret"
+  },
+  {
+    "ticker": "INTET",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "INVEO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "INVES",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "ISBIR",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "ISCTR",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "ISDMR",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "ISFIN",
+    "sektor": "Finansal Kiralama"
+  },
+  {
+    "ticker": "ISGSY",
+    "sektor": "Girişim Sermayesi Yat. Ort."
+  },
+  {
+    "ticker": "ISGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "ISKPL",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "ISMEN",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "ISSEN",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "ISVEA",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "ISYAT",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "IZENR",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "IZFAS",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "IZINV",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "IZMDC",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "JANTS",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "KAPLM",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "KARCL",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "KAREL",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "KARSN",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "KARTN",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "KATMR",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "KAYSE",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "KBORU",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "KCAER",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "KCHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "KENT",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "KERVN",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "KFEIN",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "KGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "KIMMR",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "KLGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "KLKIM",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "KLMSN",
+    "sektor": "Dayanıklı Tüketim Ürünleri"
+  },
+  {
+    "ticker": "KLNMA",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "KLRHO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "KLSER",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "KLSYN",
+    "sektor": "Mobilya ve Dekorasyon"
+  },
+  {
+    "ticker": "KLYPV",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "KMPUR",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "KNFRT",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "KOCMT",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "KONKA",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "KONTR",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "KONYA",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "KOPOL",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "KORDS",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "KOTON",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "KPEKS",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "KRDMA",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "KRDMB",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "KRDMD",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "KRGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "KRONT",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "KRPLS",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "KRSTL",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "KRTEK",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "KRVGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "KSTUR",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "KTLEV",
+    "sektor": "Tasarruf Finansman"
+  },
+  {
+    "ticker": "KTSKR",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "KUTPO",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "KUVVA",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "KUYAS",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "KZBGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "KZGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "LIDER",
+    "sektor": "Servis Taşımacılığı ve Araç Kiralama"
+  },
+  {
+    "ticker": "LIDFA",
+    "sektor": "Faktoring"
+  },
+  {
+    "ticker": "LILAK",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "LINK",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "LKMNH",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "LMKDC",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "LOGO",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "LRSHO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "LUKSK",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "LXGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "LYDHO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "LYDYE",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "MAALT",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "MACKO",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "MAGEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "MAKIM",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "MAKTK",
+    "sektor": "Metal Eşya ve Makine"
+  },
+  {
+    "ticker": "MANAS",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "MARBL",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "MARKA",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "MARMR",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "MARTI",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "MASFN",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "MAVI",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "MCARD",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "MEDTR",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "MEGAP",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "MEGMT",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "MEKAG",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "MEPET",
+    "sektor": "Toptan ve Perakende Ticaret"
+  },
+  {
+    "ticker": "MERCN",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "MERIT",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "MERKO",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "METEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "METRO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "METUR",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "MEYSU",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "MGROS",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "MHRGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "MIATK",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "MMCAS",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "MNDRS",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "MNDTR",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "MOBTL",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "MOGAN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "MOPAS",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "MPARK",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "MRGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "MRSHL",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "MSGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "MTRKS",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "MTRYO",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "MZHLD",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "NATEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "NETAS",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "NETCD",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "NETGL",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "NIBAS",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "NTGAZ",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "NTHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "NUGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "NUHCM",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "OBAMS",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "OBASE",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "ODAS",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ODINE",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "OFSYM",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ONCSM",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "ONRYT",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "ORCAY",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ORGE",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "ORMA",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "ORZAX",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "OSMEN",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "OSTIM",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "OTKAR",
+    "sektor": "Otomotiv"
+  },
+  {
+    "ticker": "OTTO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "OYAKC",
+    "sektor": "Taş, Toprak, Çimento"
+  },
+  {
+    "ticker": "OYAYO",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "OYLUM",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "OYYAT",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "OZATD",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "OZGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "OZKGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "OZRDN",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "OZSUB",
+    "sektor": "Tarım, Hayvancılık, Balıkçılık"
+  },
+  {
+    "ticker": "OZYSR",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "PAGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "PAHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "PAMEL",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "PAPIL",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "PARSN",
+    "sektor": "Otomotiv Yan Sanayi"
+  },
+  {
+    "ticker": "PASEU",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "PATEK",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "PCILT",
+    "sektor": "Destek ve Hizmet"
+  },
+  {
+    "ticker": "PEHOL",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "PEKGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "PENGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "PENTA",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "PETKM",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "PETUN",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "PGSUS",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "PINSU",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "PKART",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "PKENT",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "PLTUR",
+    "sektor": "Servis Taşımacılığı ve Araç Kiralama"
+  },
+  {
+    "ticker": "PNLSN",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "PNSUT",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "POLHO",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "POLTK",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "PRDGS",
+    "sektor": "Girişim Sermayesi Yat. Ort."
+  },
+  {
+    "ticker": "PRKAB",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "PRKME",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "PRZMA",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "PSDTC",
+    "sektor": "Toptan ve Perakende Ticaret"
+  },
+  {
+    "ticker": "PSGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "QNBFK",
+    "sektor": "Finansal Kiralama"
+  },
+  {
+    "ticker": "QNBFL",
+    "sektor": "Finansal Kiralama"
+  },
+  {
+    "ticker": "QNBTR",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "QUAGR",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "QUICK",
+    "sektor": "Sigorta"
+  },
+  {
+    "ticker": "RALYH",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "RAYSG",
+    "sektor": "Sigorta"
+  },
+  {
+    "ticker": "REEDR",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "RGYAS",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "RNPOL",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "RODRG",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "ROYAL",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "RTALB",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "RUBNS",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "RUZYE",
+    "sektor": "Madencilik ve Taş Ocakçılığı"
+  },
+  {
+    "ticker": "RYGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "RYSAS",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "SAFKR",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "SAHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "SAMAT",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "SANEL",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "SANFM",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "SANKO",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "SARAE",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "SARKY",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "SASA",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "SAYAS",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "SDTTR",
+    "sektor": "Savunma"
+  },
+  {
+    "ticker": "SEGMN",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "SEGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "SEKFK",
+    "sektor": "Finansal Kiralama"
+  },
+  {
+    "ticker": "SEKUR",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "SELEC",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "SELGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "SELVA",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "SERNT",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "SEYKM",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "SILVR",
+    "sektor": "Dayanıklı Tüketim Ürünleri"
+  },
+  {
+    "ticker": "SISE",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "SKBNK",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "SKTAS",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "SKYLP",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "SKYMD",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "SMART",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "SMRTG",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "SMRVA",
+    "sektor": "Varlık Yönetimi"
+  },
+  {
+    "ticker": "SNGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "SNICA",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "SNPAM",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "SODSN",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "SOHOE",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "SOKE",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "SOKM",
+    "sektor": "Gıda Perakendeciliği"
+  },
+  {
+    "ticker": "SONME",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "SRVGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "SSAAT",
+    "sektor": "Toptan ve Perakende Ticaret"
+  },
+  {
+    "ticker": "SUMAS",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "SUNTK",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "SURGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "SUWEN",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "SVGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "TABGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "TARKM",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "TATEN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "TATGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "TAVHL",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "TBORG",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "TCELL",
+    "sektor": "Haberleşme"
+  },
+  {
+    "ticker": "TCKRC",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "TDGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "TEHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "TEKTU",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "TERA",
+    "sektor": "Aracı Kurum"
+  },
+  {
+    "ticker": "TEZOL",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "TGSAS",
+    "sektor": "Toptan ve Perakende Ticaret"
+  },
+  {
+    "ticker": "THYAO",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "TKFEN",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "TKNKA",
+    "sektor": "Ambalaj"
+  },
+  {
+    "ticker": "TKNSA",
+    "sektor": "Teknolojik Ürün Ticareti"
+  },
+  {
+    "ticker": "TLMAN",
+    "sektor": "Ulaştırma"
+  },
+  {
+    "ticker": "TMPOL",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "TMSN",
+    "sektor": "Otomotiv"
+  },
+  {
+    "ticker": "TNZTP",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "TOASO",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "TRALT",
+    "sektor": "Madencilik ve Taş Ocakçılığı"
+  },
+  {
+    "ticker": "TRCAS",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "TRENJ",
+    "sektor": "Madencilik ve Taş Ocakçılığı"
+  },
+  {
+    "ticker": "TRGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "TRHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "TRILC",
+    "sektor": "İlaç ve Sağlık"
+  },
+  {
+    "ticker": "TRMET",
+    "sektor": "Madencilik ve Taş Ocakçılığı"
+  },
+  {
+    "ticker": "TSGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "TSKB",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "TSPOR",
+    "sektor": "Spor"
+  },
+  {
+    "ticker": "TTKOM",
+    "sektor": "Haberleşme"
+  },
+  {
+    "ticker": "TTRAK",
+    "sektor": "Otomotiv"
+  },
+  {
+    "ticker": "TUCLK",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "TUKAS",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "TUPRS",
+    "sektor": "Kimya ve Plastik"
+  },
+  {
+    "ticker": "TUREX",
+    "sektor": "Servis Taşımacılığı ve Araç Kiralama"
+  },
+  {
+    "ticker": "TURGG",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "TURSG",
+    "sektor": "Sigorta"
+  },
+  {
+    "ticker": "UCAYM",
+    "sektor": "Enerji Teknolojileri"
+  },
+  {
+    "ticker": "UFUK",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "ULAS",
+    "sektor": "Turizm"
+  },
+  {
+    "ticker": "ULKER",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ULUFA",
+    "sektor": "Faktoring"
+  },
+  {
+    "ticker": "ULUSE",
+    "sektor": "İmalat"
+  },
+  {
+    "ticker": "ULUUN",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "UMPAS",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "UNLU",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "USAK",
+    "sektor": "Cam, Seramik, Porselen"
+  },
+  {
+    "ticker": "USHOL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "VAKBN",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "VAKFA",
+    "sektor": "Faktoring"
+  },
+  {
+    "ticker": "VAKFN",
+    "sektor": "Finansal Kiralama"
+  },
+  {
+    "ticker": "VAKKO",
+    "sektor": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+  },
+  {
+    "ticker": "VANGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "VBTYZ",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "VERTU",
+    "sektor": "Girişim Sermayesi Yat. Ort."
+  },
+  {
+    "ticker": "VERUS",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "VESBE",
+    "sektor": "Dayanıklı Tüketim Ürünleri"
+  },
+  {
+    "ticker": "VESTL",
+    "sektor": "Dayanıklı Tüketim Ürünleri"
+  },
+  {
+    "ticker": "VEYAS",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "VKFYO",
+    "sektor": "Menkul Kıymet Yat. Ort."
+  },
+  {
+    "ticker": "VKGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "VKING",
+    "sektor": "Kağıt ve Kağıt Ürünleri"
+  },
+  {
+    "ticker": "VRGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "VSNMD",
+    "sektor": "Madencilik ve Taş Ocakçılığı"
+  },
+  {
+    "ticker": "YAPRK",
+    "sektor": "Tarım, Hayvancılık, Balıkçılık"
+  },
+  {
+    "ticker": "YATAS",
+    "sektor": "Mobilya ve Dekorasyon"
+  },
+  {
+    "ticker": "YAYLA",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "YBTAS",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "YEOTK",
+    "sektor": "Bilişim ve Yazılım"
+  },
+  {
+    "ticker": "YESIL",
+    "sektor": "Holding"
+  },
+  {
+    "ticker": "YGGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "YGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "YIGIT",
+    "sektor": "Otomotiv Yan Sanayi"
+  },
+  {
+    "ticker": "YKBNK",
+    "sektor": "Bankacılık"
+  },
+  {
+    "ticker": "YKSLN",
+    "sektor": "Ana Metal"
+  },
+  {
+    "ticker": "YONGA",
+    "sektor": "Mobilya ve Dekorasyon"
+  },
+  {
+    "ticker": "YUNSA",
+    "sektor": "Tekstil, Giyim ve Deri"
+  },
+  {
+    "ticker": "YYAPI",
+    "sektor": "İnşaat"
+  },
+  {
+    "ticker": "YYLGD",
+    "sektor": "Gıda ve İçecek"
+  },
+  {
+    "ticker": "ZEDUR",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ZERGY",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "ZGYO",
+    "sektor": "Gayrimenkul"
+  },
+  {
+    "ticker": "ZOREN",
+    "sektor": "Enerji Üretim ve Dağıtım"
+  },
+  {
+    "ticker": "ZRGYO",
+    "sektor": "Gayrimenkul"
+  }
+]

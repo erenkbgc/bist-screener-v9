@@ -30,12 +30,14 @@ UNKNOWN_RATIO_HALT_THRESHOLD=0.30 ustunde kalirsa kosu zaten durur).
 """
 from __future__ import annotations
 
+import json
 import re
 import socket
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
+from pathlib import Path
 from statistics import pstdev
 
 import borsapy as bp
@@ -68,10 +70,26 @@ PREFETCH_MAX_WORKERS = 4
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 _BANK_SECTOR_KEYWORDS = ["bankacılık", "banka", "finansal kiralama", "faktoring",
-                          "finansman şirketleri", "sigorta", "varlık yönetim",
-                          "tasarruf finansman", "aracı kurum"]
-_REIT_SECTOR_KEYWORDS = ["gayrimenkul yatırım", "gyo"]
-_HOLDING_SECTOR_KEYWORDS = ["holding", "yatırım ortaklığı"]
+                          "finansman şirketleri", "sigorta", "emeklilik",
+                          "varlık yönetim", "tasarruf finansman", "aracı kurum"]
+_REIT_SECTOR_KEYWORDS = ["gayrimenkul", "gyo"]
+_HOLDING_SECTOR_KEYWORDS = ["holding", "yatırım ortaklığı", "yat. ort."]
+
+# fintables.com'dan elle dogrulanmis ticker->sektor eslemesi (borsapy'nin
+# `info.sector` alani sik sik eksik/BILINMIYOR donuyor ya da tutarsiz bir
+# Ingilizce/karisik taksonomi kullaniyor). Mevcutsa bu, borsapy'nin sektor
+# alanindan ONCELIKLIDIR; kapsamadigi ticker'lar icin borsapy'ye dusulur.
+_SEKTOR_MAP_PATH = Path(__file__).resolve().parent.parent / "config" / "fintables_ticker_sektor.json"
+
+
+@lru_cache(maxsize=1)
+def _fintables_sector_map() -> dict[str, str]:
+    try:
+        with open(_SEKTOR_MAP_PATH, encoding="utf-8") as f:
+            rows = json.load(f)
+        return {r["ticker"]: r["sektor"] for r in rows}
+    except Exception:
+        return {}
 
 # TCMB politika faizi icin makul aralik (plausibility guard). borsapy'nin
 # policy_rate() saglayicisi bazen yanlis/eski bir hucre donduruyor (canli
@@ -234,7 +252,7 @@ def live_universe(limit: int | None = None) -> list[dict]:
     for _, r in companies_df.iterrows():
         ticker = r["ticker"]
         info = _info_cached(ticker)  # yukarida zaten cache'lendi, ag cagrisi yok
-        sector = info.get("sector") or info.get("industry")
+        sector = _fintables_sector_map().get(ticker) or info.get("sector") or info.get("industry")
         ratio_profile, regulator = _classify_sector(sector)
         seed.append({
             "ticker": ticker, "name": r.get("name") or ticker,
