@@ -157,6 +157,20 @@
       "effort_estimate": "1-2 gun",
       "impact": "2026-09-15 canli kosusunda peer-relative degerleme bazi dusuk likiditeli/mikro-cap hisselerde asiri uc hedef fiyat/beklenen getiri uretiyor (GLRYH %2838, A1CAP %972, IHLGM %443 -- STRONG_OPPORTUNITY listesinde). Degerler payload'dan gercek (uydurma degil) ama peer carpaninin ince/kucuk esler grubunda kontrolsuz buyumesinden kaynaklaniyor gibi gorunuyor. Henuz kok neden analizi yapilmadi; oneri: peer multiple/hedef fiyat farkina bir winsorization/cap uygulamak veya n kucukken (peer_n dusuk) guven seviyesini dusurmek.",
       "status": "todo"
+    },
+    {
+      "priority": "P0",
+      "module": "valuation_engine_v2_dcf_addon",
+      "effort_estimate": "tamamlandi",
+      "impact": "core/dcf.py: core/gordon.py ile AYNI mimari desende FCF iskonto modeli (deneysel, final_score'a/hard_filters'a girmez, 3 senaryolu -- dusuk/baz/yuksek buyume varsayimi -- fair-value araligi + mevcut fiyata gore prim/iskonto). WACC = CAPM (core/beta_hurdle.py::calculate_beta x ERP + risk-free) agirlikli ortalaması borc maliyeti proxy'siyle (net_debt/finansal_giderler orani, config/equity_risk_premium.yaml::corporate_tax_rate_pct ile vergi sonrasi); wacc-g<=0 ise null_reason='unstable_denominator' (gordon.py ile ayni kural). YENI alan: core/live_data.py::live_fundamentals + core/mock_data.py::mock_fundamentals '_financial_expenses_ttm' (gelir tablosu '(Esas Faaliyet Disi) Finansal Giderler (-)' satiri, canli THYAO ile dogrulandi). Entegrasyon: run.py, core/payload.py, core/db.py (yeni dcf_reference tablosu), report/templates/newsletter.html.j2 (kart ici blok + footer'da buyume senaryolari/vergi orani 'DENENMEMIS VARSAYIM' ifsasi), dashboard.py, skills/bist-valuation-addon/scripts/dcf.py. Test: tests/test_dcf.py (10 test: eligibility, wacc blend, range, unstable_denominator). Canli veriyle dogrulandi (2026-09-16, 30 tickerlik ornek evren, izole DB/rapor -- gercek projeye dokunmadi): validate_report is_valid=True, 3 aday gercek 3-senaryolu aralik uretti (orn. AHGAZ: wacc=%40.83, fair_value 16.75-18.43), 13 aday dogru null_reason ile atlandi (no_fcf/missing_shares_outstanding). Kapsam disi birakildi: historical_multiple_band_reference (spec'te AYRI/opsiyonel alt-bilesen olarak isaretli, ayri takip maddesi olarak eklendi -- bkz. dcf_historical_multiple_band_reference).",
+      "status": "tamamlandi (2026-09-16)"
+    },
+    {
+      "priority": "P2",
+      "module": "dcf_historical_multiple_band_reference",
+      "effort_estimate": "1-2 gun",
+      "impact": "valuation_engine_v2_dcf_addon spec'inin AYRI/opsiyonel alt-bileseni (design_tensions_flagged: no_historical_ratio_comparison ile celisir, bu yuzden valuation_z'nin DISINDA, gordon_growth_reference ile AYNI statude ayri bir bilgi bloku olarak eklenebilir). Sirketin kendi F/K veya PD/DD'sinin son 5 yillik gozlemlenen araligi icindeki persentili, acik 'gecmis performans gelecegin garantisi degildir' notuyla.",
+      "status": "todo"
     }
   ],
 

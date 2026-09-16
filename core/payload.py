@@ -10,6 +10,7 @@ from __future__ import annotations
 from core import db
 from core.scoring import load_weights
 from core.beta_hurdle import load_equity_risk_premium_pct
+from core.dcf import GROWTH_LOW_PCT, GROWTH_BASE_PCT, GROWTH_HIGH_PCT, load_corporate_tax_rate_pct
 from core.evaluate import summarize_outcomes
 from core.decision_diff import diff_against_previous_run
 
@@ -23,6 +24,7 @@ def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | N
         "SELECT * FROM predictions WHERE as_of_date=?", (as_of_date,)
     )
     gordon = db.query("SELECT * FROM gordon_reference WHERE as_of_date=?", (as_of_date,))
+    dcf = db.query("SELECT * FROM dcf_reference WHERE as_of_date=?", (as_of_date,))
     beta = db.query("SELECT * FROM beta_metrics WHERE as_of_date=?", (as_of_date,))
     sloan = db.query("SELECT * FROM earnings_quality WHERE as_of_date=?", (as_of_date,))
     piotroski = db.query("SELECT * FROM piotroski_scores WHERE as_of_date=?", (as_of_date,))
@@ -69,11 +71,16 @@ def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | N
             "low_vol_z": weights["scoring_weights"]["low_vol_z"],
             "piotroski_normalized_score_threshold": weights["piotroski"]["normalized_score_threshold"],
             "equity_risk_premium_pct": load_equity_risk_premium_pct(),
+            "dcf_growth_low_pct": GROWTH_LOW_PCT,
+            "dcf_growth_base_pct": GROWTH_BASE_PCT,
+            "dcf_growth_high_pct": GROWTH_HIGH_PCT,
+            "dcf_corporate_tax_rate_pct": load_corporate_tax_rate_pct(),
         },
         "regime": as_dicts(regime)[0] if regime else None,
         "scores": as_dicts(scores),
         "predictions": as_dicts(predictions),
         "gordon_reference": as_dicts(gordon),
+        "dcf_reference": as_dicts(dcf),
         "beta_metrics": as_dicts(beta),
         "earnings_quality": as_dicts(sloan),
         "piotroski_scores": as_dicts(piotroski),

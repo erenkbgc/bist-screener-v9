@@ -53,6 +53,7 @@ from core import hurdle as hurdle_mod
 from core import beta_hurdle as beta_hurdle_mod
 from core import dividend_sustainability as div_sustain_mod
 from core import gordon as gordon_mod
+from core import dcf as dcf_mod
 from core import concentration as concentration_mod
 from core import correlation as correlation_mod
 from core import scoring as scoring_mod
@@ -109,6 +110,7 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
         "net_debt": fnd.get("net_debt"), "shares_outstanding": shares_outstanding,
         "dividend_per_share_ttm": fnd.get("dividend_per_share_ttm"),
         "payout_ratio": fnd.get("payout_ratio"), "fcf_ttm": fnd.get("fcf_ttm"),
+        "financial_expenses_ttm": raw.get("_financial_expenses_ttm"),
         "piotroski_normalized_score": pio.get("normalized_score"),
         "sloan_flag": bool(sl.get("elevated_risk_flag")), "sloan_peer_percentile": sl.get("peer_percentile"),
         "catalyst_score": cat.get("catalyst_score", 0.0),
@@ -238,6 +240,12 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         )
         lt["gordon"] = gordon_row
         lt["dividend_sustainability"] = div_sustain
+        dcf_row = dcf_mod.calculate_dcf_reference(
+            as_of_date, t, lt.get("fcf_ttm"), lt.get("shares_outstanding"), current_price,
+            beta_lt["beta_60_120d"], macro["bond_2y_pct"], lt.get("market_cap"),
+            lt.get("net_debt"), lt.get("financial_expenses_ttm"),
+        )
+        lt["dcf"] = dcf_row
         lt["bucket"] = "long_term"
         lt["events"] = events_by_ticker.get(t, [])
         long_term_candidates.append(lt)

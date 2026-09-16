@@ -91,7 +91,7 @@ def check_market_regime(as_of_date: str) -> dict:
     if bond_shock:
         alerts.append({
             "condition": "bond_2y_pct son kosuya gore 300 baz puandan fazla degisti",
-            "action": "Hurdle, beta_adjusted_hurdle ve gordon_growth_reference'i yeniden hesapla",
+            "action": "Hurdle, beta_adjusted_hurdle, gordon_growth_reference ve dcf_reference'i yeniden hesapla",
         })
         severity = WARNING if severity == OK else severity
 

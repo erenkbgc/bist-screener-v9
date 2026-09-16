@@ -446,6 +446,13 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         eps_ttm = _val(_row(inc, "Hisse Başına Kazanç"))
 
     fcf_ttm = _val(_row(cf, "Serbest Nakit Akım"))
+    # valuation_engine_v2_dcf_addon.inputs.wacc: borclanma maliyeti proxy'si icin.
+    # "(Esas Faaliyet Disi) Finansal Giderler (-)" saf faiz gideri degil (FX
+    # zarari da icerebilir) ama gelir tablosunda mevcut EN YAKIN satir; canli
+    # THYAO verisiyle dogrulandi (2026-09-16).
+    financial_expenses_ttm = _val(_row(inc, "(Esas Faaliyet Dışı) Finansal Giderler (-)"))
+    if financial_expenses_ttm is not None:
+        financial_expenses_ttm = abs(financial_expenses_ttm)
     dividend_per_share_ttm = _dividend_ttm(ticker)
     payout_ratio = None
     if dividend_per_share_ttm and eps_ttm and eps_ttm > 0:
@@ -466,6 +473,7 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         "_shares_outstanding": shares_outstanding,
         "_total_assets": total_assets,
         "_net_income": net_income,
+        "_financial_expenses_ttm": financial_expenses_ttm,
     }
 
 

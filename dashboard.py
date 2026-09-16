@@ -42,6 +42,7 @@ def main() -> None:
     scores = _q("SELECT * FROM scores WHERE as_of_date=?", (as_of_date,))
     predictions = _q("SELECT * FROM predictions WHERE as_of_date=?", (as_of_date,))
     gordon = _q("SELECT * FROM gordon_reference WHERE as_of_date=?", (as_of_date,))
+    dcf = _q("SELECT * FROM dcf_reference WHERE as_of_date=?", (as_of_date,))
     beta = _q("SELECT * FROM beta_metrics WHERE as_of_date=?", (as_of_date,))
     sloan = _q("SELECT * FROM earnings_quality WHERE as_of_date=?", (as_of_date,))
     events = _q("SELECT * FROM upcoming_events")
@@ -75,6 +76,9 @@ def main() -> None:
 
     st.subheader("Gordon Buyume Referansi (deneysel, bilgi amacli)")
     st.dataframe(gordon, use_container_width=True)
+
+    st.subheader("DCF Referansi (deneysel, bilgi amacli)")
+    st.dataframe(dcf, use_container_width=True)
 
     st.subheader("Beta-duzeltmeli Hurdle (bilgi amacli)")
     st.dataframe(beta, use_container_width=True)

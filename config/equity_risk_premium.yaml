@@ -9,3 +9,11 @@ equity_risk_premium_pct: 5.0
 # enflasyon hedefi (guncel yayimlanmis hedef), piyasa beklentisi DEGILDIR.
 tcmb_long_term_inflation_target_pct: 5.0
 
+# valuation_engine_v2_dcf_addon.inputs.wacc: Turkiye'de genel kurumlar
+# vergisi orani (5520 sayili Kanun, resmi/yasal oran -- kalibre edilmis bir
+# varsayim DEGIL). Banka/sigorta/finansal kiralama icin farkli (guncel
+# mevzuatta %30-25 arasi) bir oran gecerli olabilir; bu modul o sektorleri
+# hedeflemedigi icin (core/gordon.py ile ayni sekilde bolgesel/sektorel ayrim
+# yapilmaz) tek bir genel oran kullanilir.
+corporate_tax_rate_pct: 25.0
+

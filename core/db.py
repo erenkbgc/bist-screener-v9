@@ -108,6 +108,14 @@ CREATE TABLE IF NOT EXISTS gordon_reference (
     PRIMARY KEY (as_of_date, ticker)
 );
 
+CREATE TABLE IF NOT EXISTS dcf_reference (
+    as_of_date TEXT, ticker TEXT, fcf_per_share REAL, wacc_pct REAL,
+    growth_low_pct REAL, growth_base_pct REAL, growth_high_pct REAL,
+    terminal_growth_pct REAL, fair_value_low REAL, fair_value_high REAL,
+    premium_discount_low_pct REAL, premium_discount_high_pct REAL, null_reason TEXT,
+    PRIMARY KEY (as_of_date, ticker)
+);
+
 CREATE TABLE IF NOT EXISTS correlation_flags (
     as_of_date TEXT, ticker_a TEXT, ticker_b TEXT, correlation_60d REAL
 );

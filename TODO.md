@@ -29,6 +29,10 @@ cikti, tekrar kullanilmamali).
   `.github/workflows/daily-screener.yml` push adimina fetch+rebase retry
   eklendi; kosu surerken lokalden master'a push yapilirsa artik gunun
   DB/rapor guncellemesi kaybolmuyor (2026-09-15'te oldugu gibi).
+- [ ] **dcf_historical_multiple_band_reference** (1-2 gun, P2) — `valuation_engine_v2_dcf_addon`
+  spec'inin AYRI/opsiyonel alt-bileseni: sirketin kendi F/K veya PD/DD'sinin
+  son 5 yillik gozlemlenen araligi icinde persentili, "gecmis performans
+  gelecegin garantisi degildir" notuyla. valuation_z'nin bir parcasi DEGIL.
 - [ ] **long_term_target_price_outlier_cap** (1-2 gun, P1) — 2026-09-15
   kosusunda bazi dusuk likiditeli hisselerde (GLRYH %2838, A1CAP %972,
   IHLGM %443) peer-relative hedef fiyat asiri uc deger uretti. Veri gercek
@@ -79,10 +83,21 @@ cikti, tekrar kullanilmamali).
   (KAP XBRL, TBB, alternatif saglayici). Etki: su an `reporting_basis=
   'unknown'` ile elenen BIST'in onemli bir kismi (~15-20 banka/sigorta
   tickeri) Piotroski/Sloan/valuation_z'ye dahil olur.
-- [ ] **valuation_engine_v2_dcf_addon** (5-7 gun) — `core/gordon.py` ile
-  ayni desende (deneysel, final_score'a girmez, 3 senaryolu aralik) bir DCF
-  referansi ekle. Tarihsel carpan bandi SADECE ayri, acikca etiketli bir
-  bilgi bloku olarak (cekirdek kesitsel degerlemeyi degistirmeden).
+- [x] **valuation_engine_v2_dcf_addon** — TAMAMLANDI (2026-09-16). `core/dcf.py`,
+  `core/gordon.py` ile ayni mimari desende (deneysel, final_score'a/hard_filters'a
+  girmez, 3 senaryolu fair-value araligi: dusuk/baz/yuksek buyume senaryosu,
+  tek sayi asla gosterilmez). WACC: CAPM (beta x ERP + risk-free) + borc
+  agirlikli maliyet (net_debt/finansal_giderler proxy'si, `config/equity_risk_premium.yaml::
+  corporate_tax_rate_pct` ile vergi sonrasi). `wacc - g <= 0` -> `null_reason=
+  'unstable_denominator'` (gordon.py ile ayni kural). Rapor/dashboard/skill
+  entegrasyonu (`report/templates/newsletter.html.j2`, `dashboard.py`,
+  `skills/bist-valuation-addon/scripts/dcf.py`) ve footer'da "DENENMEMIS
+  VARSAYIM" ifsasi tamam. `tests/test_dcf.py` (10 test) + gercek canli veriyle
+  (30 tickerlik ornek evren) dogrulandi: `validate_report` `is_valid=True`,
+  3 aday gercek 3-senaryolu aralik uretti, 13 aday dogru `null_reason` ile
+  atlandi. Tarihsel carpan bandi (`historical_multiple_band_reference`)
+  spec'te AYRI/opsiyonel bilgi bloku olarak isaretli -- bu kapsamda YAPILMADI,
+  ayri bir takip maddesi olarak yukariya (v11 bolumu) eklendi.
 
 ## P1 — Onemli (orta vadede portfoy/guvenilirlik icin)
 
