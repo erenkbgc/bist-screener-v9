@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BIST Strateji ve Hisse Raporu - {{ as_of_date }}</title>
+<title>BIST Strateji ve Hisse Raporu - 2026-09-18</title>
 <style>
   /* ========== BASE RESET & INSTITUTIONAL TYPOGRAPHY ========== */
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -585,61 +585,46 @@
   <div class="header-card">
     <div class="header-meta">
       <span>Borsa Istanbul Model Portfoy &amp; Tarama Raporu</span>
-      <span>{{ as_of_date }}</span>
+      <span>2026-09-18</span>
     </div>
     <h1 class="header-title">BIST Strateji ve Model Portfoy Bulteni</h1>
     <div class="header-subtitle">
-      {% if no_action_today %}
-        Hard-filter kriterlerini gecen aday bulunmamaktadir; risk yonetimi prensipleri uyarinca nakit pozisyonu korunmaktadir.
-      {% elif regime_taxonomy_tag %}
-        Piyasa Rejimi: <b style="color:#ffffff;">{{ regime_taxonomy_tag }}</b>. Cok faktorlu degerleme ve risk modelleri cercevesinde one cikan firsatlar asagida ozetlenmistir.
-      {% else %}
-        Cok faktorlu degerleme ve risk modelleri cercevesinde one cikan firsatlar asagida ozetlenmistir.
-      {% endif %}
+        Piyasa Rejimi: <b style="color:#ffffff;">unknown_real_rate + plateau_inflation + stable</b>. Cok faktorlu degerleme ve risk modelleri cercevesinde one cikan firsatlar asagida ozetlenmistir.
     </div>
 
-    {% if regime %}
     <div class="macro-grid">
       <div class="macro-item">
         <span class="macro-lbl">BIST 100</span>
-        <span class="macro-val">{{ regime.xu100_level | fmt }}</span>
+        <span class="macro-val">13509.76</span>
       </div>
       <div class="macro-item">
         <span class="macro-lbl">Politika Faizi</span>
-        <span class="macro-val">%{{ regime.policy_rate_pct | fmt }}</span>
+        <span class="macro-val">%-</span>
       </div>
       <div class="macro-item">
         <span class="macro-lbl">2Y Gosterge</span>
-        <span class="macro-val">%{{ regime.bond_2y_pct | fmt }}</span>
+        <span class="macro-val">%40.61</span>
       </div>
       <div class="macro-item">
         <span class="macro-lbl">Yillik TUFE</span>
-        <span class="macro-val">%{{ regime.cpi_yoy_pct | fmt }}</span>
+        <span class="macro-val">%-</span>
       </div>
       <div class="macro-item">
         <span class="macro-lbl">USD/TRY</span>
-        <span class="macro-val">{{ regime.usdtry_spot | fmt }}</span>
+        <span class="macro-val">48.83</span>
       </div>
     </div>
-    {% if regime.short_selling_ban_active %}
-    <div style="margin-top:8px;">
-      <span class="macro-pill-alert">Aciga Satis Yasagi Aktif</span>
-    </div>
-    {% endif %}
-    {% endif %}
   </div>
 
   <!-- ============================== BOZULAN TEZLER UYARISI ============================== -->
-  {% if invalidation_triggered %}
   <div class="alert-card">
     <b>Bozulan Tez Bildirimi:</b> Asagidaki hisselerde onceden belirlenmis tez bozulma kosullari tetiklenmistir (Dogrudan satis sinyali degildir, model risk kontroludur):
     <ul>
-      {% for t in invalidation_triggered %}
-      <li><b>{{ t.ticker }}</b>: {{ t.condition_field }} {{ t.condition_operator }} {{ t.condition_value }} gerceklesti (Guncel deger: {{ t.current_value }})</li>
-      {% endfor %}
+      <li><b>CIMSA</b>: piotroski_normalized_score &lt; 0.3 gerceklesti (Guncel deger: )</li>
+      <li><b>DOAS</b>: piotroski_normalized_score &lt; 0.3 gerceklesti (Guncel deger: )</li>
+      <li><b>PETKM</b>: piotroski_normalized_score &lt; 0.3 gerceklesti (Guncel deger: )</li>
     </ul>
   </div>
-  {% endif %}
 
   <!-- ============================== 1. UZUN VADELI FIRSATLAR ============================== -->
   <div class="card">
@@ -648,7 +633,6 @@
       <div class="section-desc">Sektorel goreli degerleme, Piotroski kalite filtresi ve Degerleme Ucgeni modellerine dayali stratejik pozisyonlar.</div>
     </div>
 
-    {% if long_term_candidates %}
     <div class="table-responsive">
       <table class="table-exec">
         <thead>
@@ -663,45 +647,48 @@
           </tr>
         </thead>
         <tbody>
-          {% for c in long_term_candidates %}
           <tr>
             <td>
               <div class="col-ticker-wrap">
-                <span class="col-ticker">{{ c.ticker }}</span>
-                <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+                <span class="col-ticker">FORTE</span>
+                <span class="badge badge-OPPORTUNITY">OPPORTUNITY</span>
               </div>
             </td>
             <td class="col-num">
-              {% if c.entry_low is not none and c.entry_high is not none %}
-                {{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}
-              {% else %}
-                {{ c.current_price | fmt }}
-              {% endif %}
-              <span class="col-sub">Guncel: {{ c.current_price | fmt }}</span>
+                96.66 – 101.76
+              <span class="col-sub">Guncel: 100.30</span>
             </td>
-            <td class="col-num" style="font-weight:700; color:#0f172a;">{{ c.target_price | fmt }}</td>
-            <td class="col-roi">+%{{ c.expected_roi_pct | fmt }}</td>
-            <td class="col-stop">{{ c.stop_loss | fmt }}</td>
+            <td class="col-num" style="font-weight:700; color:#0f172a;">154.25</td>
+            <td class="col-roi">+%53.79</td>
+            <td class="col-stop">85.73</td>
             <td class="col-range">
-              {% if c.fair_value_low is not none and c.fair_value_high is not none %}
-                {{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }}
-              {% elif c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %}
-                {{ c.dcf.fair_value_low | fmt }} – {{ c.dcf.fair_value_high | fmt }}
-              {% elif c.gordon and c.gordon.fair_value_low is not none and not c.gordon.null_reason %}
-                {{ c.gordon.fair_value_low | fmt }} – {{ c.gordon.fair_value_high | fmt }}
-              {% else %}
-                —
-              {% endif %}
+                77.82 – 230.68
             </td>
             <td class="col-num" style="font-weight:700;">
-              {% if c.position_size_pct is not none %}
-                %{{ c.position_size_pct | fmt }}
-              {% else %}
-                —
-              {% endif %}
+                %11.04
             </td>
           </tr>
-          {% endfor %}
+          <tr>
+            <td>
+              <div class="col-ticker-wrap">
+                <span class="col-ticker">KRDMD</span>
+                <span class="badge badge-OPPORTUNITY">OPPORTUNITY</span>
+              </div>
+            </td>
+            <td class="col-num">
+                43.10 – 44.47
+              <span class="col-sub">Guncel: 44.08</span>
+            </td>
+            <td class="col-num" style="font-weight:700; color:#0f172a;">70.53</td>
+            <td class="col-roi">+%60.00</td>
+            <td class="col-stop">39.60</td>
+            <td class="col-range">
+                59.95 – 81.11
+            </td>
+            <td class="col-num" style="font-weight:700;">
+                %15.71
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -711,11 +698,10 @@
       <div class="quick-copy-header">
         <span class="quick-copy-title">Yonetici Hizli Kopyala (WhatsApp / Notlar)</span>
       </div>
-      <div class="quick-copy-box">{% for c in long_term_candidates %}* {{ c.ticker }} | Alis: {{ c.current_price | fmt }}{% if c.entry_low is not none and c.entry_high is not none %} (Bant: {{ c.entry_low | fmt }} - {{ c.entry_high | fmt }}){% endif %} -> Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.stop_loss is not none %} | Stop: {{ c.stop_loss | fmt }}{% endif %}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %}{% if c.fair_value_low is not none and c.fair_value_high is not none %} | Adil Deger: {{ c.fair_value_low | fmt }} - {{ c.fair_value_high | fmt }}{% elif c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %} | DCF: {{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}{% endif %}{{ '\n' }}{% endfor %}</div>
+      <div class="quick-copy-box">* FORTE | Alis: 100.30 (Bant: 96.66 - 101.76) -> Hedef: 154.25 (%53.79) | Stop: 85.73 | Poz: %11.04 | Adil Deger: 77.82 - 230.68
+* KRDMD | Alis: 44.08 (Bant: 43.10 - 44.47) -> Hedef: 70.53 (%60.00) | Stop: 39.60 | Poz: %15.71 | Adil Deger: 59.95 - 81.11
+</div>
     </div>
-    {% else %}
-    <div class="empty-state">Bugun icin uzun vadeli model portfoy adayi bulunmamaktadir.</div>
-    {% endif %}
   </div>
 
   <!-- ============================== 2. KISA VADELI FIRSATLAR ============================== -->
@@ -725,7 +711,6 @@
       <div class="section-desc">20 gunluk hareketli ortalamaya geri cekilme, ATR volatilite kanali ve hacim teyitli taktiksel pozisyonlar.</div>
     </div>
 
-    {% if short_term_candidates %}
     <div class="table-responsive">
       <table class="table-exec">
         <thead>
@@ -740,41 +725,27 @@
           </tr>
         </thead>
         <tbody>
-          {% for c in short_term_candidates %}
           <tr>
             <td>
               <div class="col-ticker-wrap">
-                <span class="col-ticker">{{ c.ticker }}</span>
-                <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+                <span class="col-ticker">AKBNK</span>
+                <span class="badge badge-STRONG_OPPORTUNITY">STRONG_OPPORTUNITY</span>
               </div>
             </td>
             <td class="col-num">
-              {{ c.entry_price | fmt }}
-              {% if c.entry_low is not none and c.entry_high is not none %}
-                <span class="col-sub">Bant: {{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</span>
-              {% else %}
-                <span class="col-sub">Guncel: {{ c.current_price | fmt }}</span>
-              {% endif %}
+              71.81
+                <span class="col-sub">Bant: 70.15 – 72.11</span>
             </td>
-            <td class="col-num" style="font-weight:700; color:#0f172a;">{{ c.target_price | fmt }}</td>
-            <td class="col-roi">+%{{ c.expected_roi_pct | fmt }}</td>
-            <td class="col-stop">{{ c.stop_loss | fmt }}</td>
+            <td class="col-num" style="font-weight:700; color:#0f172a;">78.54</td>
+            <td class="col-roi">+%9.37</td>
+            <td class="col-stop">62.80</td>
             <td class="col-num">
-              {% if c.volume_ratio_20d is not none %}
-                {{ c.volume_ratio_20d | fmt }}x
-              {% else %}
-                —
-              {% endif %}
+                1.55x
             </td>
             <td class="col-num" style="font-weight:700;">
-              {% if c.position_size_pct is not none %}
-                %{{ c.position_size_pct | fmt }}
-              {% else %}
-                —
-              {% endif %}
+                %12.81
             </td>
           </tr>
-          {% endfor %}
         </tbody>
       </table>
     </div>
@@ -784,38 +755,30 @@
       <div class="quick-copy-header">
         <span class="quick-copy-title">Yonetici Hizli Kopyala (WhatsApp / Notlar)</span>
       </div>
-      <div class="quick-copy-box">{% for c in short_term_candidates %}* {{ c.ticker }} | Giris: {{ c.entry_price | fmt }}{% if c.entry_low is not none and c.entry_high is not none %} (Bant: {{ c.entry_low | fmt }} - {{ c.entry_high | fmt }}){% endif %} -> Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.stop_loss is not none %} | Stop: {{ c.stop_loss | fmt }}{% endif %}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %}{% if c.volume_ratio_20d is not none %} | Hacim: {{ c.volume_ratio_20d | fmt }}x{% endif %}{{ '\n' }}{% endfor %}</div>
+      <div class="quick-copy-box">* AKBNK | Giris: 71.81 (Bant: 70.15 - 72.11) -> Hedef: 78.54 (%9.37) | Stop: 62.80 | Poz: %12.81 | Hacim: 1.55x
+</div>
     </div>
-    {% else %}
-    <div class="empty-state">Bugun icin kisa vadeli taktiksel aday bulunmamaktadir.</div>
-    {% endif %}
   </div>
 
   <!-- ============================== 3. ADAY BAZLI YATIRIM TEZLERI ============================== -->
-  {% if long_term_candidates %}
   <div class="card">
     <div class="section-header">
       <h2 class="section-title">3. Aday Bazli Yatirim Tezleri &amp; Risk Analizi</h2>
       <div class="section-desc">Her aday icin model gerekceleri, katalizorler, ana riskler ve bozulma kosullari.</div>
     </div>
 
-    {% for c in long_term_candidates %}
     <div class="dossier-card">
       <div class="dossier-header">
         <div class="dossier-header-left">
-          <span class="dossier-ticker">{{ c.ticker }}</span>
-          <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
-          <span class="dossier-peer">{{ c.peer_group_used }} (n={{ c.peer_n }}) &middot; Guven: {{ c.confidence }}</span>
+          <span class="dossier-ticker">FORTE</span>
+          <span class="badge badge-OPPORTUNITY">OPPORTUNITY</span>
+          <span class="dossier-peer">supersector (n=15) &middot; Guven: degraded</span>
         </div>
         <div class="dossier-strip">
-          <span class="dossier-strip-item">Alis: <b>{{ c.current_price | fmt }}</b></span>
-          <span class="dossier-strip-item">Hedef: <b style="color:#059669;">{{ c.target_price | fmt }} (+%{{ c.expected_roi_pct | fmt }})</b></span>
-          {% if c.stop_loss is not none %}
-          <span class="dossier-strip-item">Stop: <b style="color:#dc2626;">{{ c.stop_loss | fmt }}</b></span>
-          {% endif %}
-          {% if c.position_size_pct is not none %}
-          <span class="dossier-strip-item">Poz: <b>%{{ c.position_size_pct | fmt }}</b></span>
-          {% endif %}
+          <span class="dossier-strip-item">Alis: <b>100.30</b></span>
+          <span class="dossier-strip-item">Hedef: <b style="color:#059669;">154.25 (+%53.79)</b></span>
+          <span class="dossier-strip-item">Stop: <b style="color:#dc2626;">85.73</b></span>
+          <span class="dossier-strip-item">Poz: <b>%11.04</b></span>
         </div>
       </div>
 
@@ -823,19 +786,19 @@
         <div class="dossier-grid">
           <!-- Yatirim Tezi -->
           <div class="dossier-callout-thesis">
-            <b>Yatirim Tezi &amp; Neden Simdi:</b> {{ c.why_now }}
+            <b>Yatirim Tezi &amp; Neden Simdi:</b> Hurdle marji pozitif; yakin donemde belirgin bir katalizor bulunmuyor.
             <ul>
-              {% for b in c.thesis_bullets %}
-              <li>{{ b }}</li>
-              {% endfor %}
+              <li>Esler grubuna (supersector, n=15) gore goreli degerleme skoru pozitif (valuation_z=1.01).</li>
+              <li>Beklenen getiri, 20.03% hurdle oranini 33.76 puan asiyor.</li>
+              <li>Piotroski F-Score (normalize) 0.75 ile kalite filtresini geciyor.</li>
             </ul>
           </div>
 
           <!-- Risk & Bozulma Sartlari -->
           <div class="dossier-callout-risk">
-            <b>Ana Risk:</b> {{ c.main_risk }}
+            <b>Ana Risk:</b> esler grubu guveni &#39;degraded&#39; seviyesinde, yorum temkinli okunmali
             <div class="dossier-invalidation">
-              <b>Tez Bozulma Kosulu:</b> {{ c.invalidation_condition_display }}
+              <b>Tez Bozulma Kosulu:</b> excess_over_hurdle_pct &lt; 0
             </div>
           </div>
         </div>
@@ -844,78 +807,118 @@
         <div class="metrics-grid">
           <div class="metric-entry">
             <span class="metric-key">Hurdle Orani</span>
-            <span class="metric-val">%{{ c.hurdle_rate_pct | fmt }}</span>
+            <span class="metric-val">%20.03</span>
           </div>
           <div class="metric-entry">
             <span class="metric-key">Hurdle Uzeri Fazla</span>
-            <span class="metric-val" style="color:#059669;">+%{{ c.excess_over_hurdle_pct | fmt }}</span>
+            <span class="metric-val" style="color:#059669;">+%33.76</span>
           </div>
           <div class="metric-entry">
             <span class="metric-key">Beta-Duzeltmeli Fazla</span>
-            <span class="metric-val">+%{{ c.excess_over_beta_hurdle_pct | fmt }}</span>
+            <span class="metric-val">+%13.02</span>
           </div>
           <div class="metric-entry">
             <span class="metric-key">Piotroski F-Score</span>
-            <span class="metric-val">{{ c.piotroski_normalized_score | fmt }}</span>
+            <span class="metric-val">0.75</span>
           </div>
-          {% if c.fair_value_base is not none %}
           <div class="metric-entry">
             <span class="metric-key">Adil Deger Bandi (Ucgen)</span>
-            <span class="metric-val">{{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }}</span>
+            <span class="metric-val">77.82 – 230.68</span>
           </div>
-          {% endif %}
-          {% if c.valuation_method %}
           <div class="metric-entry">
             <span class="metric-key">Degerleme Metodu</span>
-            <span class="metric-val">{{ c.valuation_method }}</span>
+            <span class="metric-val">Değerleme Üçgeni (DCF + Emsal + Kalite)</span>
           </div>
-          {% endif %}
-          {% if c.net_expected_roi_pct is not none %}
-          <div class="metric-entry">
-            <span class="metric-key">Net Getiri (Maliyet Sonrasi)</span>
-            <span class="metric-val" style="color:#059669;">+%{{ c.net_expected_roi_pct | fmt }}</span>
-          </div>
-          {% endif %}
-          {% if c.retail_pct is not none %}
-          <div class="metric-entry">
-            <span class="metric-key">Perakende Payi</span>
-            <span class="metric-val">%{{ c.retail_pct | fmt }}</span>
-          </div>
-          {% endif %}
         </div>
 
-        {% if c.upcoming_events %}
         <div class="dossier-note">
           <b>Yaklasan Kurumsal Olaylar:</b>
-          {% for ev in c.upcoming_events %}{{ ev.event_type }} ({{ ev.event_date }}){% if not loop.last %}; {% endif %}{% endfor %}
-        </div>
-        {% endif %}
+bilanco_aciklama_tarihi (2026-11-09); bilanco_aciklama_tarihi (2027-03-11)        </div>
 
-        {% if c.sloan_flag %}
-        <div class="warn-card" style="margin-top:10px;">
-          <b>Tahakkuk Riski (Sloan):</b> elevated_earnings_quality_risk (Peer yuzdelik dilim: {{ c.sloan_peer_percentile | fmt }})
-        </div>
-        {% endif %}
 
         <!-- Referans Modeller (DCF & Gordon) -->
-        {% if c.dcf and not c.dcf.null_reason %}
         <div class="ref-box">
-          <b>DCF Referansi (Deneysel):</b> Adil Deger {{ c.dcf.fair_value_low | fmt }} – {{ c.dcf.fair_value_high | fmt }} &middot; WACC: %{{ c.dcf.wacc_pct | fmt }} &middot; Terminal Buyume: %{{ c.dcf.terminal_growth_pct | fmt }}
+          <b>DCF Referansi (Deneysel):</b> Adil Deger 121.56 – 133.72 &middot; WACC: %40.77 &middot; Terminal Buyume: %5
         </div>
-        {% elif c.gordon and not c.gordon.null_reason %}
-        <div class="ref-box">
-          <b>Gordon Buyume Referansi (Deneysel):</b> Adil Deger {{ c.gordon.fair_value_low | fmt }} – {{ c.gordon.fair_value_high | fmt }}
-        </div>
-        {% endif %}
 
       </div>
     </div>
-    {% endfor %}
+    <div class="dossier-card">
+      <div class="dossier-header">
+        <div class="dossier-header-left">
+          <span class="dossier-ticker">KRDMD</span>
+          <span class="badge badge-OPPORTUNITY">OPPORTUNITY</span>
+          <span class="dossier-peer">supersector (n=15) &middot; Guven: degraded</span>
+        </div>
+        <div class="dossier-strip">
+          <span class="dossier-strip-item">Alis: <b>44.08</b></span>
+          <span class="dossier-strip-item">Hedef: <b style="color:#059669;">70.53 (+%60.00)</b></span>
+          <span class="dossier-strip-item">Stop: <b style="color:#dc2626;">39.60</b></span>
+          <span class="dossier-strip-item">Poz: <b>%15.71</b></span>
+        </div>
+      </div>
+
+      <div class="dossier-body">
+        <div class="dossier-grid">
+          <!-- Yatirim Tezi -->
+          <div class="dossier-callout-thesis">
+            <b>Yatirim Tezi &amp; Neden Simdi:</b> Hurdle marji pozitif; yakin donemde belirgin bir katalizor bulunmuyor.
+            <ul>
+              <li>Esler grubuna (supersector, n=15) gore goreli degerleme skoru pozitif (valuation_z=0.02).</li>
+              <li>Beklenen getiri, 20.03% hurdle oranini 39.97 puan asiyor.</li>
+              <li>Piotroski F-Score (normalize) 0.75 ile kalite filtresini geciyor.</li>
+            </ul>
+          </div>
+
+          <!-- Risk & Bozulma Sartlari -->
+          <div class="dossier-callout-risk">
+            <b>Ana Risk:</b> esler grubu guveni &#39;degraded&#39; seviyesinde, yorum temkinli okunmali
+            <div class="dossier-invalidation">
+              <b>Tez Bozulma Kosulu:</b> excess_over_hurdle_pct &lt; 0
+            </div>
+          </div>
+        </div>
+
+        <!-- Finansal & Model Parametreleri -->
+        <div class="metrics-grid">
+          <div class="metric-entry">
+            <span class="metric-key">Hurdle Orani</span>
+            <span class="metric-val">%20.03</span>
+          </div>
+          <div class="metric-entry">
+            <span class="metric-key">Hurdle Uzeri Fazla</span>
+            <span class="metric-val" style="color:#059669;">+%39.97</span>
+          </div>
+          <div class="metric-entry">
+            <span class="metric-key">Beta-Duzeltmeli Fazla</span>
+            <span class="metric-val">+%19.07</span>
+          </div>
+          <div class="metric-entry">
+            <span class="metric-key">Piotroski F-Score</span>
+            <span class="metric-val">0.75</span>
+          </div>
+          <div class="metric-entry">
+            <span class="metric-key">Adil Deger Bandi (Ucgen)</span>
+            <span class="metric-val">59.95 – 81.11</span>
+          </div>
+          <div class="metric-entry">
+            <span class="metric-key">Degerleme Metodu</span>
+            <span class="metric-val">Değerleme Üçgeni (Emsal)</span>
+          </div>
+        </div>
+
+        <div class="dossier-note">
+          <b>Yaklasan Kurumsal Olaylar:</b>
+bilanco_aciklama_tarihi (2026-11-09); bilanco_aciklama_tarihi (2027-03-11)        </div>
+
+
+        <!-- Referans Modeller (DCF & Gordon) -->
+
+      </div>
+    </div>
   </div>
-  {% endif %}
 
   <!-- ============================== 4. PORTFOY & MAKRO DEGISIMLER ============================== -->
-  {% if decision_diff.entered or decision_diff.exited or decision_diff.catalyst_deltas or decision_diff.macro_deltas or concentration_warnings %}
   <div class="card">
     <div class="section-header">
       <h2 class="section-title">4. Portfoy ve Makro Degisimler</h2>
@@ -923,44 +926,29 @@
     </div>
 
     <div style="font-size:12.5px; color:#334155; line-height:1.6;">
-      {% if decision_diff.entered %}
-      <div style="margin-bottom:6px;"><b>Portfoye Yeni Giren:</b> {{ decision_diff.entered | join(', ') }}</div>
-      {% endif %}
+      <div style="margin-bottom:6px;"><b>Portfoye Yeni Giren:</b> AKBNK, ARCLK, FORTE, KRDMD</div>
 
-      {% if decision_diff.exited %}
-      <div style="margin-bottom:6px;"><b>Portfoyden Cikan:</b> {{ decision_diff.exited | join(', ') }}</div>
-      {% endif %}
+      <div style="margin-bottom:6px;"><b>Portfoyden Cikan:</b> KOZAL, PETKM, TAVHL, TOASO, ULKER</div>
 
-      {% if decision_diff.catalyst_deltas %}
       <div style="margin-top:10px;"><b>Yeni KAP Bildirimleri:</b><br>
-        {% for e in decision_diff.catalyst_deltas %}&bull; {{ e.ticker }} ({{ e.category }} : {{ e.published_at }}){% if not loop.last %}<br>{% endif %}{% endfor %}
-      </div>
-      {% endif %}
+&bull; KOZAL (secondary_offering : 2026-09-18)<br>&bull; DOAS (insider_buy : 2026-09-18)<br>&bull; DOAS (insider_buy : 2026-09-18)<br>&bull; TURSG (financial_report : 2026-09-18)      </div>
 
-      {% if decision_diff.macro_deltas %}
       <div style="margin-top:10px;"><b>Makro Gosterge Degisimleri:</b>
-        {% for m in decision_diff.macro_deltas %}{{ m.field }}: {{ m.from | fmt }} &rarr; {{ m.to | fmt }}{% if not loop.last %}; {% endif %}{% endfor %}
-      </div>
-      {% endif %}
+bond_2y_pct: 39.60 &rarr; 40.61; usdtry_spot: 48.32 &rarr; 48.83; xu100_level: 15427.27 &rarr; 13509.76      </div>
 
-      {% if concentration_warnings %}
       <div class="warn-card">
         <b>Sektor / Grup Yogunlasma Uyarilari:</b>
         <ul>
-          {% for w in concentration_warnings %}<li>{{ w.message }}</li>{% endfor %}
-        </ul>
+<li>&#39;industrial&#39; profili adaylarin yuzde 66.67&#39;ini olusturuyor.</li>        </ul>
       </div>
-      {% endif %}
     </div>
   </div>
-  {% endif %}
 
   <!-- ============================== 5. MODEL TAHMIN IZLEME ============================== -->
-  {% if evaluation_summary %}
   <div class="card">
     <div class="section-header">
       <h2 class="section-title">5. Model Tahmin Izleme Ozeti</h2>
-      <div class="section-desc">Canli takip ozetidir. {{ evaluation_summary.independence_caveat }}</div>
+      <div class="section-desc">Canli takip ozetidir. T+5/T+20/T+60/T+180 ufuklari gunluk secilen adaylarda ortusur (180 gunluk uzun vadeli tezler 20 gunluk kisa vadeli adaylarla ayni donemde secilebilir); N gunluk takip N bagimsiz gozlem anlamina gelmez. Her ufuk asagida AYRI gosterilir, tek bir birlesik basari orani verilmez.</div>
     </div>
 
     <table class="eval-table">
@@ -973,30 +961,18 @@
         </tr>
       </thead>
       <tbody>
-        {% for horizon, s in evaluation_summary.by_horizon.items() %}
-        {% if s %}
-        <tr>
-          <td>{{ horizon }}</td>
-          <td>{{ s.n_observations | fmt }}</td>
-          <td style="font-weight:700; color:#0f172a;">%{{ s.hit_rate_pct | fmt }}</td>
-          <td>%{{ s.median_excess_vs_index | fmt }}</td>
-        </tr>
-        {% endif %}
-        {% endfor %}
       </tbody>
     </table>
   </div>
-  {% endif %}
 
   <!-- ============================== 6. KAPSAM DISI & FILTRE ============================== -->
   <div class="card">
     <details class="exec-details">
-      <summary>Filtreye Takilan / Kapsam Disi Hisseler ({{ no_action_count | fmt }} Uygun Olmayan + {{ unscored_count | fmt }} Skorlanamayan)</summary>
+      <summary>Filtreye Takilan / Kapsam Disi Hisseler (131 Uygun Olmayan + 0 Skorlanamayan)</summary>
       <div class="details-content">
         <div style="font-size:11.5px; color:#64748b; margin-bottom:10px;">
-          {{ unscored_count }} adet hisse eksik veri, baz belirsizligi veya yetersiz esler grubu nedeniyle skorlanamamistir.
+          0 adet hisse eksik veri, baz belirsizligi veya yetersiz esler grubu nedeniyle skorlanamamistir.
         </div>
-        {% if filtered_candidates %}
         <table class="filter-table">
           <thead>
             <tr>
@@ -1005,28 +981,191 @@
             </tr>
           </thead>
           <tbody>
-            {% for c in filtered_candidates %}
             <tr>
-              <td style="font-weight:700; color:#0f172a;">{{ c.ticker }}</td>
-              <td>{{ c.filtered_by }}</td>
+              <td style="font-weight:700; color:#0f172a;">AKBNK</td>
+              <td>hurdle</td>
             </tr>
-            {% endfor %}
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARCLK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ASELS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CIMSA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EREGL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GARAN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HALKB</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISCTR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MGROS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PETKM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SAHOL</td>
+              <td>confidence</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TAVHL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">THYAO</td>
+              <td>piotroski</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TOASO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TSKB</td>
+              <td>piotroski</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TUPRS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TURSG</td>
+              <td>confidence</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ULKER</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKBN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VESTL</td>
+              <td>piotroski</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARCLK</td>
+              <td>volume_breakout</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ASELS</td>
+              <td>volume_breakout</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CIMSA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EREGL</td>
+              <td>piotroski</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FORTE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GARAN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HALKB</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISCTR</td>
+              <td>volume_breakout</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRDMD</td>
+              <td>volume_breakout</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MGROS</td>
+              <td>volume_breakout</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PETKM</td>
+              <td>piotroski</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SAHOL</td>
+              <td>confidence</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TAVHL</td>
+              <td>volume_breakout</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">THYAO</td>
+              <td>piotroski</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TOASO</td>
+              <td>piotroski</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TSKB</td>
+              <td>piotroski</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TUPRS</td>
+              <td>volume_breakout</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TURSG</td>
+              <td>confidence</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ULKER</td>
+              <td>volume_breakout</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKBN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VESTL</td>
+              <td>piotroski</td>
+            </tr>
           </tbody>
         </table>
-        {% endif %}
       </div>
     </details>
   </div>
 
   <!-- ============================== FOOTER & DISCLAIMERS ============================== -->
   <div class="footer">
-    <p><b>final_score</b> = {{ weights.valuation_z | fmt }} &times; valuation_z + {{ weights.catalyst_score | fmt }} &times; catalyst_score + {{ weights.ownership_quality_z | fmt }} &times; ownership_quality_z + {{ weights.low_vol_z | fmt }} &times; low_vol_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
-    {% if weights.dcf_growth_low_pct is defined and weights.dcf_growth_low_pct is not none %}
-    <p>DCF Referansi (deneysel, ana karara girmez) buyume senaryolari: dusuk %{{ weights.dcf_growth_low_pct | fmt }} / baz %{{ weights.dcf_growth_base_pct | fmt }} / yuksek %{{ weights.dcf_growth_high_pct | fmt }}, kurumlar vergisi orani %{{ weights.dcf_corporate_tax_rate_pct | fmt }}. Buyume senaryolari DENENMEMIS VARSAYIMDIR; kurumlar vergisi orani resmi/yasal orandir.</p>
-    {% endif %}
+    <p><b>final_score</b> = 0.50 &times; valuation_z + 0.25 &times; catalyst_score + 0.15 &times; ownership_quality_z + 0.10 &times; low_vol_z. Piotroski esigi: 0.55, ERP: %5. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p>DCF Referansi (deneysel, ana karara girmez) buyume senaryolari: dusuk %0 / baz %5 / yuksek %10, kurumlar vergisi orani %25. Buyume senaryolari DENENMEMIS VARSAYIMDIR; kurumlar vergisi orani resmi/yasal orandir.</p>
     <div class="footer-divider"></div>
-    <p>{{ known_limitations_text }}</p>
-    <p>{{ disclaimer_text }}</p>
+    <p>BILINEN SINIRLAMA: VBTS/tedbir filtresi (Volatilite Bazli Tedbir Sistemi) su an gercek bir veri kaynagina baglanmadigi icin PASIF durumdadir -- tum adaylar tedbir_level=0 (tedbirsiz) varsayilir. Borsa Istanbul&#39;un guncel tedbir/VBTS listesi bu raporun DISINDA, bagimsiz olarak kontrol edilmelidir. Mali tablolar ucuncu taraf kaynaktan (Is Yatirim) nominal/tarihi maliyetle saglanmaktadir (TMS 29 enflasyon duzeltmesiz); yuksek enflasyon ortaminda donemler arasi aktif devir hizi kriteri (Piotroski kriter 9) enflasyon kirlenmesi nedeniyle hesaplanamaz (None) kabul edilmistir.</p>
+    <p>Bu bulten ve dashboard kisisel kullanim icin otomatik olarak uretilmistir. Yatirim danismanligi degildir, alim satim tavsiyesi icermez. Skorlama agirliklari ve esikleri (0.50/0.25/0.15/0.10, Piotroski esigi, equity risk premium) denenmemis baslangic varsayimlaridir, gecmis veriyle kalibre edilmemistir. Gecmis tahmin izleme ozeti bir backtest degildir, canli takiptir; ortusen zaman ufuklari nedeniyle bagimsiz gozlem sayisi dusuktur. Hedef fiyatlar sektor ici goreli degerleme ve teknik hesaplamalardan turetilmistir. Gordon buyume referansi deneysel bir modeldir ve ana karara girmez. Veriler ucuncu taraf kaynaklardan alinmistir ve hatali olabilir.</p>
   </div>
 
 </div>

@@ -280,17 +280,19 @@ def _val(series, col_pos: int = 0):
 # universe
 # ---------------------------------------------------------------------------
 
-def live_universe(limit: int | None = None) -> list[dict]:
+def live_universe(limit: int | None = None, tickers: list[str] | None = None) -> list[dict]:
     """companies() ile TUM BIST evrenini ceker (807 sirket, hardcoded liste DEGIL).
 
     Sektor/regulator siniflandirmasi icin her ticker'a bir 'info' cagrisi gerekir;
     bu maliyetlidir (~800 istek) ama gunluk bir toplu is (cron 18:30) icin kabul
-    edilebilir (~0.05-0.2sn/istek). `limit` yalnizca gelistirme/hizli-test icin:
+    edilebilir (~0.05-0.2sn/istek). `limit` veya `tickers` yalnizca gelistirme/hizli-test icin:
     verilirse per-ticker siniflandirma dongusune GIRMEDEN ONCE listeyi kirpar
     (yoksa limit'in hicbir performans faydasi olmazdi).
     """
     companies_df = bp.companies()
-    if limit:
+    if tickers:
+        companies_df = companies_df[companies_df["ticker"].isin([t.strip().upper() for t in tickers])]
+    elif limit:
         companies_df = companies_df.head(int(limit))
     tickers = companies_df["ticker"].tolist()
 

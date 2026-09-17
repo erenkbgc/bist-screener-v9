@@ -122,13 +122,13 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
     }
 
 
-def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
+def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False) -> dict:
     db.init_db()
     run_id = str(uuid.uuid4())
     started_at = datetime.now(timezone.utc).isoformat()
 
     existing = db.query("SELECT * FROM runs WHERE as_of_date=?", (as_of_date,))
-    if existing and existing[0]["email_sent"]:
+    if not force and existing and existing[0]["email_sent"]:
         return {"status": "skipped_idempotent", "as_of_date": as_of_date}
 
     # --- 1. regime_monitor ---
@@ -539,9 +539,10 @@ def main():
     parser = argparse.ArgumentParser(description="BIST AI Investment Screener - gunluk kosu")
     parser.add_argument("--as-of-date", default=date.today().isoformat())
     parser.add_argument("--min-volume-tl", type=float, default=10_000_000)
+    parser.add_argument("--force", action="store_true", help="Idempotency kontrolunu atla, kosuyu zorla calistir")
     args = parser.parse_args()
 
-    result = run(args.as_of_date, min_volume_tl=args.min_volume_tl)
+    result = run(args.as_of_date, min_volume_tl=args.min_volume_tl, force=args.force)
     print(result)
     if result.get("status") == "halted":
         sys.exit(1)

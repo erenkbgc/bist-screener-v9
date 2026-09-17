@@ -41,6 +41,10 @@ def get_universe() -> list[dict]:
     evreni doner (core/mock_data.py -> _UNIVERSE, yalnizca test/gelistirme icin)."""
     if _live_enabled():
         from core import live_data as ld
+        tickers_env = os.environ.get("BIST_LIVE_TICKERS")
+        if tickers_env:
+            tickers = [t.strip().upper() for t in tickers_env.split(",") if t.strip()]
+            return ld.live_universe(tickers=tickers)
         limit = os.environ.get("BIST_LIVE_UNIVERSE_LIMIT")
         # YALNIZCA gelistirme/hizli-test icin: gercek, dinamik olarak cekilen
         # evrenin ilk N kaydiyla sinirlar (siniflandirma dongusune girmeden
