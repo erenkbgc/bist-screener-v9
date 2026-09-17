@@ -157,7 +157,7 @@ def mock_prices(ticker: str, as_of_date: str, days: int = 140) -> list[dict]:
 
 def mock_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profile: str) -> dict:
     rng = _rng(ticker, as_of_date, "fundamentals")
-    reporting_basis = "adjusted" if regulator == "SPK_TFRS" else "nominal"
+    reporting_basis = "nominal" if regulator in ("SPK_TFRS", "BDDK") else "unknown"
     eps = rng.uniform(0.5, 40)
     pe = rng.uniform(3, 45)
     pb = rng.uniform(0.4, 8)
@@ -188,12 +188,13 @@ def mock_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     }
 
 
-def mock_piotroski_inputs(ticker: str, as_of_date: str) -> dict:
+def mock_piotroski_inputs(ticker: str, as_of_date: str, ratio_profile: str | None = None) -> dict:
     rng = _rng(ticker, as_of_date, "piotroski")
     return {f"criterion_{i}": rng.choice([0, 1]) for i in range(1, 10)}
 
 
-def mock_cashflow_for_sloan(ticker: str, as_of_date: str, net_income_hint: float) -> dict:
+def mock_cashflow_for_sloan(ticker: str, as_of_date: str, net_income_hint: float,
+                             ratio_profile: str | None = None) -> dict:
     rng = _rng(ticker, as_of_date, "sloan")
     operating_cashflow = net_income_hint * rng.uniform(0.5, 1.6)
     average_total_assets = abs(net_income_hint) * rng.uniform(8, 25) + 1e6

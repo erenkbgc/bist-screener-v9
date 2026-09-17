@@ -44,7 +44,16 @@ def compute_long_term_target(candidate: dict, all_candidates: list[dict]) -> dic
     peers, peer_level, confidence = build_peer_group(candidate, all_candidates)
     ratio_profile = candidate["ratio_profile"]
 
-    if ratio_profile == "bank":
+    if ratio_profile in ("bank", "insurance", "reit"):
+        # ranking.py::RATIO_PROFILES ucunde de ev_ebitda'yi forbidden_metrics sayiyor
+        # (finansal kuruluslar VE GYO'lar icin EV/EBITDA kavrami anlamsiz -- GYO'da
+        # amortisman/yeniden degerleme muhasebesi EBITDA'yi carpitir) -- generic 'else'
+        # bacagina dusmemeli, aksi halde leg2 sessizce yasakli bir carpan kullanirdi.
+        # KOK NEDEN (long_term_target_price_outlier_cap, 2026-09-15 IHLGM %443 asiri
+        # hedef): reit o zaman sector='BILINMIYOR' -> 'industrial' fallback'ine dustugu
+        # icin bu dal HIC calismiyordu; fintables entegrasyonu (2026-09-16) dogru
+        # profili verse bile targets.py reit'i ayri ele almadigi icin sorun devam
+        # ederdi -- bu yuzden ayrica duzeltildi.
         pe_med = _peer_median(peers, "pe")
         leg1 = pe_med * candidate["eps_ttm"] if (pe_med and candidate.get("eps_ttm")) else None
         legs = [v for v in (leg1,) if v is not None]

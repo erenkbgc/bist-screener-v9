@@ -12,9 +12,17 @@ def test_fintables_map_loads_known_tickers():
 
 
 def test_bank_like_categories_map_to_bddk():
-    for sektor in ["Bankacılık", "Faktoring", "Finansal Kiralama", "Sigorta",
-                   "Emeklilik", "Varlık Yönetimi", "Tasarruf Finansman", "Aracı Kurum"]:
+    for sektor in ["Bankacılık", "Faktoring", "Finansal Kiralama",
+                   "Varlık Yönetimi", "Tasarruf Finansman", "Aracı Kurum"]:
         assert _classify_sector(sektor) == ("bank", "BDDK")
+
+
+def test_insurance_like_categories_map_to_bddk_insurance_profile():
+    """financial_institution_data_source: sigorta/emeklilik RATIO_PROFILES'da AYRI bir
+    profil (combined_ratio vb.) -- bankalarla ayni 'bank' profiline dusmemeli, yoksa
+    valuation_z peer grubu karsilastirmasi (nim/npl_ratio/car) anlamsizlasir."""
+    for sektor in ["Sigorta", "Emeklilik"]:
+        assert _classify_sector(sektor) == ("insurance", "BDDK")
 
 
 def test_gayrimenkul_maps_to_reit():

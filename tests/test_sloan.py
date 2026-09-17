@@ -26,7 +26,7 @@ def test_sloan_is_cross_sectional_percentile_not_absolute_threshold(temp_db, mon
     }
 
     # her ticker icin farkli operating_cashflow -> farkli sloan orani
-    def fake_cashflow(ticker, as_of_date, net_income_hint):
+    def fake_cashflow(ticker, as_of_date, net_income_hint, ratio_profile=None):
         idx = int(ticker[1:])
         # idx arttikca operating cashflow azalir -> tahakkuk orani artar (daha supheli)
         return {"operating_cashflow_ttm": net_income_hint * (1.5 - idx * 0.1), "average_total_assets": 1000}
@@ -43,3 +43,21 @@ def test_sloan_is_cross_sectional_percentile_not_absolute_threshold(temp_db, mon
     # persentiller 0..1 araliginda olmali (mutlak deger degil goreli sira)
     for r in rows:
         assert 0.0 <= r["peer_percentile"] <= 1.0
+
+
+def test_sloan_null_when_cfo_unavailable_bank(temp_db, monkeypatch):
+    """financial_institution_data_source: banka/sigorta (UFRS) icin Is Yatirim
+    nakit akis tablosu hic sunmuyor -> operating_cashflow_ttm None doner. Bu None
+    ile aritmetik islem yapilip crash ETMEMELI, sessizce 'not_computable' olmali."""
+    universe_rows = [{"ticker": "BANK1", "sector": "XBANK", "supersector": "XBANK",
+                       "ratio_profile": "bank", "market_cap": 1000}]
+    fundamentals_by_ticker = {"BANK1": {"reporting_basis": "nominal", "_raw": {"pe": 10, "eps_ttm": 1}}}
+
+    def fake_cashflow(ticker, as_of_date, net_income_hint, ratio_profile=None):
+        return {"operating_cashflow_ttm": None, "average_total_assets": 5000}
+
+    monkeypatch.setattr(bist_mcp, "get_cashflow_for_sloan", fake_cashflow)
+
+    rows = calculate_earnings_quality("2026-09-10", universe_rows, fundamentals_by_ticker)
+    assert rows[0]["sloan_accrual_ratio"] is None
+    assert rows[0]["null_reason"] == "not_computable"

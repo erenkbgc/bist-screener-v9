@@ -31,7 +31,14 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
         ticker = u["ticker"]
         reporting_basis = basis_guard.resolve_reporting_basis(u["regulator"], period_end)
         f = bist_mcp.get_fundamentals(ticker, as_of_date, u["regulator"], u["ratio_profile"])
-        f["reporting_basis"] = reporting_basis  # basis_guard'in kurali MCP'nin donusunu ezer
+        # dead_hard_filters_repair (v12 T0-2): basis_guard'in regulator-bazli kurali
+        # normalde MCP'nin donusunu ezer (regulator->basis eslemesi tasarim geregi
+        # sabit), AMA MCP "unknown" sinyali gonderdiyse (mali tablo HICBIR sablonda
+        # cekilemedi -- bkz. core/live_data.py::live_fundamentals) bu sinyal KORUNUR.
+        # Regulator gecerli olsa bile veri yoksa baz bilinmiyor demektir.
+        if f.get("reporting_basis") == "unknown":
+            reporting_basis = "unknown"
+        f["reporting_basis"] = reporting_basis
 
         fcf_yield_usd = None
         null_reason = None

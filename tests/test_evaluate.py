@@ -42,6 +42,43 @@ def test_xu100_return_comes_from_real_series_not_hardcoded_zero(temp_db):
     assert result["by_horizon"][20] is not None
 
 
+def test_long_term_180_day_horizon_is_evaluated(temp_db):
+    """prediction_horizon_evaluation_mismatch (v12 T0-1): run.py uzun vadeli
+    tezleri horizon_days=180 ile yaziyor -- HORIZONS_DAYS bunu icermezse
+    (eski davranis) bu satir sonsuza kadar 'olgunlasmaz' sayilirdi. 108
+    gercek predictions satirinin 74'u (%69) bu yuzden hic degerlendirilemiyordu
+    (bkz. data/bist_history.db, 2026-09-17)."""
+    pred_date = "2026-01-05"
+    eval_date = "2026-07-04"  # pred_date + 180 gun (horizon)
+    _insert_matured_prediction(pred_date, "CCC", 180, 100.0)
+
+    result = evaluate_past_predictions(eval_date, lookback_months=6)
+
+    rows = db.query("SELECT * FROM outcomes WHERE ticker=?", ("CCC",))
+    assert len(rows) == 1
+    assert rows[0]["horizon_days"] == 180
+    assert result["by_horizon"][180] is not None
+
+
+def test_short_and_long_term_horizons_evaluated_independently(temp_db):
+    """Ayni tarihte secilen kisa (20g) ve uzun (180g) vadeli tezler ortusen
+    ufuklara sahip -- her biri KENDI ufkunda, birbirinden bagimsiz olarak
+    degerlendirilmeli, ortusme raporda independence_caveat ile ifsa edilir."""
+    pred_date = "2026-01-05"
+    _insert_matured_prediction(pred_date, "DDD", 20, 100.0)
+    _insert_matured_prediction(pred_date, "EEE", 180, 100.0)
+
+    # yalnizca 20g ufku dolmus (25 gun sonra)
+    result_20_only = evaluate_past_predictions("2026-01-30", lookback_months=6)
+    assert result_20_only["by_horizon"][20] is not None
+    assert result_20_only["by_horizon"][180] is None
+
+    # 180g ufku da dolunca ikisi de gorunmeli
+    result_both = evaluate_past_predictions("2026-07-04", lookback_months=8)
+    assert result_both["by_horizon"][20] is not None
+    assert result_both["by_horizon"][180] is not None
+
+
 def test_row_skipped_when_index_return_unavailable(temp_db, monkeypatch):
     """Endeks serisi cekilemezse (None) satir sessizce atlanir, 0.0 uydurulmaz
     -- ve bir sonraki kosuda tekrar denenebilsin diye 'islendi' olarak

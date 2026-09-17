@@ -15,11 +15,18 @@ _BDDK_NOMINAL_CUTOFF = date(2025, 1, 1)
 
 
 def resolve_reporting_basis(regulator: str, period_end: str | None) -> str:
-    """regulator + donem bilgisine gore reporting_basis dondurur: 'adjusted' | 'nominal' | 'unknown'."""
-    if regulator == "BDDK":
-        return "nominal"  # 2025 sonrasi nominal kurali
-    if regulator == "SPK_TFRS":
-        return "adjusted"
+    """regulator + donem bilgisine gore reporting_basis dondurur: 'nominal' | 'unknown'.
+
+    inflation_basis_truthful_labeling (v12 T0-3):
+    Mevzuat geregi SPK_TFRS sirketleri TMS 29 uygulamak zorunda olsa da (Turkiye
+    hala IAS 29 hiperenflasyon listesinde), mevcut veri saglayicimiz (Is Yatirim /
+    borsapy) bilanco ve gelir tablolarini nominal/tarihi maliyetli olarak sunmaktadir
+    (sanayi XI_29'da net parasal pozisyon kalemi yok, UFRS'de 2022-2025 degerleri 0.0,
+    ozkaynakta enflasyon duzeltme kalemi yok). SPK_TFRS icin otomatik 'adjusted'
+    etiketi kaldirilmistir; veri beslemesi gercegi 'nominal'dir.
+    """
+    if regulator in ("BDDK", "SPK_TFRS"):
+        return "nominal"
     return "unknown"
 
 

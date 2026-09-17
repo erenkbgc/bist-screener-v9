@@ -155,7 +155,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
     # ihtiyac duyacagi ag cagrilarini PARALEL olarak onceden cache'ler (bkz.
     # core/live_data.py::prefetch_all). Bu adim olmadan ~800 tickerlik tam evren
     # tamamen sirali agsal I/O nedeniyle saatler surebilir.
-    bist_mcp.prefetch([u["ticker"] for u in eligible])
+    bist_mcp.prefetch(eligible)
 
     # --- 4. basis_guard uygulanmis fundamentals ---
     from core import fundamentals as fundamentals_mod
@@ -169,7 +169,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         return {"status": "halted", "reason": "basis_guard_unknown_ratio"}
 
     # --- 5. quality_filter_piotroski + earnings_quality_sloan ---
-    piotroski_rows = piotroski_mod.calculate_piotroski_scores(as_of_date, eligible)
+    piotroski_rows = piotroski_mod.calculate_piotroski_scores(as_of_date, eligible, fundamentals_by_ticker)
     piotroski_by_ticker = {r["ticker"]: r for r in piotroski_rows}
     sloan_rows = sloan_mod.calculate_earnings_quality(as_of_date, eligible, fundamentals_by_ticker)
     sloan_by_ticker = {r["ticker"]: r for r in sloan_rows}

@@ -26,11 +26,15 @@ def calculate_earnings_quality(as_of_date: str, universe_rows: list[dict], funda
         if not pe or pe == 0:
             continue
         net_income_ttm = market_cap / pe  # earnings-yield esdegeri, hisse sayisina gerek kalmadan
-        cf = bist_mcp.get_cashflow_for_sloan(ticker, as_of_date, net_income_ttm)
+        cf = bist_mcp.get_cashflow_for_sloan(ticker, as_of_date, net_income_ttm, u["ratio_profile"])
         avg_assets = cf["average_total_assets"]
-        if not avg_assets:
+        operating_cashflow_ttm = cf["operating_cashflow_ttm"]
+        # Banka/sigorta (UFRS): Is Yatirim'de nakit akis tablosu hic mevcut degil
+        # (bkz. core/live_data.py::_statements_cached) -- operating_cashflow_ttm
+        # None kalir, tahakkuk orani bu ticker icin hesaplanamaz (uydurulmaz).
+        if not avg_assets or operating_cashflow_ttm is None:
             continue
-        ratio = (net_income_ttm - cf["operating_cashflow_ttm"]) / avg_assets
+        ratio = (net_income_ttm - operating_cashflow_ttm) / avg_assets
         raw_ratios[ticker] = {
             "ratio": ratio, "reporting_basis": fnd["reporting_basis"],
             "ratio_profile": u["ratio_profile"],

@@ -25,6 +25,22 @@ DISCLAIMER_TEXT_TR = (
     "alinmistir ve hatali olabilir."
 )
 
+# dead_hard_filters_repair (v12 T0-2, design_tensions_flagged #3): tedbir_level
+# icin gercek bir BIST VBTS kaynagi henuz entegre edilmedi (core/live_data.py::
+# live_tedbir_level sabit 0 donuyor). Bu, fail-closed davranisiyla ("None don,
+# tum evreni ele") tam uydurma bir deger ("0, kimse tedbirli degil" san) arasinda
+# BILINCLI bir gecici taviz -- ve bu taviz raporda GIZLENMEZ, acikca ifsa edilir.
+KNOWN_LIMITATIONS_TR = (
+    "BILINEN SINIRLAMA: VBTS/tedbir filtresi (Volatilite Bazli Tedbir Sistemi) su an "
+    "gercek bir veri kaynagina baglanmadigi icin PASIF durumdadir -- tum adaylar "
+    "tedbir_level=0 (tedbirsiz) varsayilir. Borsa Istanbul'un guncel tedbir/VBTS "
+    "listesi bu raporun DISINDA, bagimsiz olarak kontrol edilmelidir. "
+    "Mali tablolar ucuncu taraf kaynaktan (Is Yatirim) nominal/tarihi maliyetle "
+    "saglanmaktadir (TMS 29 enflasyon duzeltmesiz); yuksek enflasyon ortaminda donemler arasi "
+    "aktif devir hizi kriteri (Piotroski kriter 9) enflasyon kirlenmesi nedeniyle "
+    "hesaplanamaz (None) kabul edilmistir."
+)
+
 
 def _fmt(value):
     """Sablondaki HER sayisal alan bu filtre ile yazilir; core/payload.py::format_number
@@ -54,4 +70,5 @@ def render_newsletter(context: dict) -> str:
     template = _env().get_template("newsletter.html.j2")
     context = dict(context)
     context.setdefault("disclaimer_text", DISCLAIMER_TEXT_TR)
+    context.setdefault("known_limitations_text", KNOWN_LIMITATIONS_TR)
     return template.render(**context)

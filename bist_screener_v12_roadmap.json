@@ -1,0 +1,290 @@
+{
+  "project_name": "Autonomous BIST AI Investment Screener",
+  "version": "12.0.0-roadmap",
+  "base_spec": "bist_screener_v11_roadmap.json (v11.0.0-roadmap) -- BU DOSYA v9'U, v10'U ve v11'I DEGISTIRMEZ, UZERINE EKLER",
+  "spec_date": "2026-09-17",
+  "origin": "Kidemli bir yatirim analisti gozuyle tam kod tabani incelemesi + BIST'e ozgu muhasebe/piyasa yapisi konularinda GERCEK web arastirmasi + canli veriyle ampirik dogrulama (borsapy uzerinden gercek Is Yatirim tablolari, TCMB/doviz.com makro verisi). v9-v11'in aksine bu inceleme disaridan yapistirilan bir raporun siniflandirilmasi DEGIL, dogrudan kod+canli veri denetimidir. Bulgu: sistemin mimarisi ve durustluk disiplini (fail-closed, peer-relative, uydurma yok) saglam; asil sorun bir dizi kontrolun SESSIZCE devre disi olmasi -- sistem, vermedigi guvenceleri veriyormus gibi gorunuyor. v12 once bu sessiz bozukluklari onarmayi, sonra kapsam bosluklarini, en son yeni sinyalleri hedefler.",
+
+  "verified_claims_log": [
+    {
+      "claim": "Turkiye 2026 ortasinda IAS 29 (TMS 29) yuksek-enflasyon ekonomileri listesinden cikti / cikmak uzere",
+      "verdict": "YANLIS -- HALA LISTEDE",
+      "source": "Grant Thornton / RCGT, '30 Haziran 2026'da biten donemler icin hiperenflasyonist ulkeler' guncellemesi",
+      "detail": "Liste (10 ulke): Argentina, Haiti, Iran, Lebanon, Malawi, South Sudan, Sudan, TURKEY, Venezuela, Zimbabwe. Turkiye izleme listesinde veya cikis asamasinda DEGIL, tam kapsamda.",
+      "used_for": "inflation_basis_truthful_labeling (T0-4): gercek TFRS beyanlarinin enflasyon-duzeltmeli olmasi gerektigini dogrular -- sorun mevzuatta degil, borsapy/Is Yatirim veri saglayicisinda."
+    },
+    {
+      "claim": "2025-2027 icin enflasyon muhasebesi Turkiye'de tamamen ertelendi (3 yillik erteleme)",
+      "verdict": "KISMEN DOGRU, KAPSAM YANLIS ANLASILIRSA YANILTICI",
+      "source": "VUK Gecici Madde 37 (TBMM, 2025)",
+      "detail": "Erteleme yalnizca VERGI (VUK) defterlerini kapsar. Bagimsiz denetime tabi, TFRS/BOBI FRS uygulayan SPK sirketleri (bu projenin evreninin tamami) VUK ertelemesinden BAGIMSIZ olarak TMS 29'u uygulamaya devam etmek ZORUNDADIR. Bu iki rejim karistirilmamalidir.",
+      "used_for": "inflation_basis_truthful_labeling (T0-4): gercek beyanin hala enflasyon-duzeltmeli olmasi beklenir."
+    },
+    {
+      "claim": "borsapy/Is Yatirim'in sundugu mali tablolar (XI_29 ve UFRS financial_group) TMS 29 enflasyon-duzeltmeli mi, nominal mi?",
+      "verdict": "AMPIRIK OLARAK DOGRULANDI: NOMINAL (tarihi maliyet), TMS 29 DEGIL",
+      "source": "Bu proje, 2026-09-17, canli veri (THYAO/EREGL/BIMAS/ARCLK/AKBNK)",
+      "detail": "Kanit 1: TMS 29 zorunlu kalemi 'Net Parasal Pozisyon Kari/Zarari' sanayi (XI_29) gelir tablosunda HIC YOK. Kanit 2: banka (UFRS) sablonunda bu satir VAR ('XIV. NET PARASAL POZISYON KARI/ZARARI') ama 2022-2025 tum donemlerde deger 0.00. Kanit 3: ozkaynak bolumunde TMS 29 enflasyon duzeltme kalemi yok. Kanit 4: borsapy sadece iki financial_group sunuyor (XI_29, UFRS), enflasyon-duzeltmeli bir varyant yok. Kanit 5: THYAO hasilati 2023->2024 nominal %93.4 artmis gorunuyor -- gercek buyume degil, TMS 29 uygulansaydi bu deger cok daha dusuk cikardi.",
+      "used_for": "T0-4 inflation_basis_truthful_labeling'in TUM gerekcesi budur. basis_guard.resolve_reporting_basis SPK_TFRS icin otomatik 'adjusted' donduruyor -- bu artik durust degil."
+    },
+    {
+      "claim": "BIST'te dusuk volatilite anomalisi, deger primi, 2005-sonrasi momentum",
+      "verdict": "DOGRULANDI (v11'den devralindi, degismedi)",
+      "source": "Umut Gokcen (Ozyegin Universitesi), 'Factor Investing in the Turkish Equity Market', SSRN #4588551 (2026)",
+      "used_for": "low_vol_factor (tamamlandi), momentum_factor_short_window (T2-1, hala tek mesru dayanak)"
+    },
+    {
+      "claim": "Fama-French 6-faktor modeli BIST'te ustun (atif: Yunus Karaomer, Gumushane Universitesi)",
+      "verdict": "ZEHIRLI ATIF -- TEKRAR KULLANILMAYACAK (v11'den devralindi)",
+      "detail": "Gercek Karaomer, Mustafa Kemal Universitesi'nde ve calismasi 6-faktor degil 3/5-faktor uzerine. Bu atif hicbir modulun dayanagi olarak KULLANILMAMALI."
+    },
+    {
+      "claim": "v11'in 'inflation_accounting_flag: already_implemented / n/a (zaten mevcut)' kaydi",
+      "verdict": "DUZELTME GEREKIYOR",
+      "detail": "v11, core/basis_guard.py'nin TMS 29 ayrimini 'zaten yaptigini' varsaymisti. Bu YANLIS: basis_guard yalnizca regulator->etiket esllemesi yapiyor (BDDK->nominal, SPK_TFRS->adjusted), verinin GERCEKTEN enflasyon-duzeltmeli olup olmadigini DOGRULAMIYOR. Ampirik olcum (yukarida) besleme nominal oldugunu gosteriyor. Uygulanan sey bir ETIKETTIR, verinin dogrulanmis bir ozelligi degil. v12 T0-4 bunu duzeltir."
+    }
+  ],
+
+  "design_tensions_flagged": [
+    {
+      "review_suggestion": "reporting_basis etiketini besleme gercegine gore duzelt (SPK_TFRS artik otomatik 'adjusted' olmasin)",
+      "conflict": "Peer gruplama anahtari core/ranking.py'de (peer_key, reporting_basis, ratio_profile) -- bu alani degistirmek TUM peer gruplarini yeniden sekillendirebilir, beklenmedik confidence dususlerine yol acabilir.",
+      "resolution": "Tum SPK_TFRS sirketleri AYNI yeni degere birlikte gececegi icin (hepsi ayni anda 'adjusted'dan cikip yeni etikete gececek), peer gruplarinin GORECELI kompozisyonu degismez -- yalnizca etiket ismi degisir. Uygulama sonrasi peer_n dagilimi olculerek (degismedigi) dogrulanmali (bkz. verification)."
+    },
+    {
+      "review_suggestion": "mali tablo cekilemeyen tickerlar icin reporting_basis='unknown' erisilebilir yap",
+      "conflict": "Bu, su an sessizce skorlanan 15 banka-disi BDDK tickerini (faktoring/leasing/tasarruf finansman/varlik yonetimi) aktif olarak eler ve basis_guard.UNKNOWN_RATIO_HALT_THRESHOLD (%30) kapisini canlandirir -- ilk bakista 'daha fazla halt riski' gibi gorunur.",
+      "resolution": "Bu DOGRU davranistir -- live_data.py'nin kendi modul basligi zaten bunu iddia ediyor ('reporting_basis=unknown ile isaretlenir ve basis_guard.is_scorable() bunlari otomatik eler'), sadece kod bunu YAPMIYORDU. 15/800+ tickerlik oran %30 esiginin cok altinda kalmalidir; uygulama sonrasi gercek unknown orani olculmeli."
+    },
+    {
+      "review_suggestion": "tedbir_level'i gercek BIST VBTS kaynagindan cek",
+      "conflict": "Kaynak entegre edilene kadar ne yapilmali? Sabit 0 donmek P6_layered_vbts korumasini olu birakiyor (mevcut durum); dogrudan None donmek fail-closed kuralina gore TUM evreni eler (asiri tepki).",
+      "resolution": "Gercek kaynak entegre edilene kadar GECICI olarak sabit deger korunur AMA raporun metodoloji bolumunde acikca ifsa edilir ('VBTS/tedbir filtresi su an veri kaynagi eksikligi nedeniyle pasif'). Bu bilincli bir taviz, sessiz bir varsayim degildir."
+    },
+    {
+      "review_suggestion": "DCF/Gordon'da nominal iskonto orani yerine reel terimlere gec",
+      "conflict": "v9 execution_rules.priors_are_disclosed ve ai_role_boundaries ('iskonto orani veya buyume orani varsaymak' yasak) ile gerilim: reel donusum icin bir enflasyon BEKLENTISI girdisi gerekir, bu da yeni bir varsayim gibi gorunebilir.",
+      "resolution": "Enflasyon GERCEKLESEN (TUFE yillik) veya TCMB'nin RESMI yayimlanmis hedefi/anket verisi kullanilir -- keyfi/kisisel bir tahmin DEGIL. Girdi TCMB EVDS'den cekilemezse deger None + null_reason kalir, HICBIR enflasyon varsayimi UYDURULMAZ (mevcut gordon.py/dcf.py deseniyle birebir tutarli)."
+    },
+    {
+      "review_suggestion": "180 gunluk tahminleri de evaluate_past_predictions kapsamina al",
+      "conflict": "v9 evaluate_past_predictions_clarification.independence_caveat, T+5/T+20/T+60 ufuklarinin ORTUSTUGUNU zaten kabul ediyor; 180 gun eklemek ortusmeyi daha da artirir.",
+      "resolution": "180 gun HORIZONS_DAYS'e eklenir ama independence_caveat metni guncellenerek ortusmenin arttigi acikca belirtilir; TEK bir birlesik 'basari orani' asla verilmez, her ufuk kendi tanimlayici metrigiyle ayri gosterilir (mevcut kural zaten budur)."
+    }
+  ],
+
+  "priority_roadmap": [
+    {"priority": "P0", "module": "prediction_horizon_evaluation_mismatch", "effort_estimate": "1 gun", "impact": "core/evaluate.py::HORIZONS_DAYS=[5,20,60] iken run.py uzun vadeli tahminleri horizon_days=180 ile yaziyor -- DB kaniti: 108 tahminin 74'u (%69) hicbir zaman degerlendirilemiyor, outcomes tablosu 0 satir. Uzun vadeli tez takibi ve gelecekteki agirlik kalibrasyonu yapisal olarak imkansiz.", "status": "tamamlandi"},
+    {"priority": "P0", "module": "dead_hard_filters_repair", "effort_estimate": "2-3 gun", "impact": "tedbir_level sabit 0 donuyor (VBTS filtresi olu) ve _classify_sector hicbir zaman 'unknown' regulator uretmiyor (basis_guard'in %30 halt kapisi ve reporting_basis!='unknown' hard filter'i olu). Ayrica RATIO_PROFILES.forbidden_metrics hicbir yerde uygulanmiyor.", "status": "tamamlandi"},
+    {"priority": "P0", "module": "inflation_basis_truthful_labeling", "effort_estimate": "2-3 gun", "impact": "verified_claims_log'daki ampirik bulgu: DB'de 1606/1606 fundamentals satiri 'adjusted' ama besleme NOMINAL. basis_guard etiketi durust hale getirilmeli; enflasyondan mekanik olarak sisen Piotroski kriterleri (ozellikle kriter 9: aktif devir hizi) hesaplanamaz isaretlenmeli.", "status": "tamamlandi"},
+    {"priority": "P0", "module": "point_in_time_publication_lag", "effort_estimate": "3-4 gun", "impact": "core/fundamentals.py: published_at=period_end varsayimi CANLI modda da yururlukte -- gercek beyanlar 6-10 hafta sonra gelir, bu P11_lookahead_bias ihlalidir. KAP toplu API (kullanici onayli) veya mevcut earnings_dates cache'i gercek yayin tarihi icin kullanilmali.", "status": "todo"},
+    {"priority": "P0", "module": "nominal_real_consistency_in_valuation_addons", "effort_estimate": "2 gun", "impact": "Canli olcum 2026-09-17: bond_2y=%40.61 nominal iskonto orani ile g=%5.0 (dusuk-enflasyon rejimi varsayan terminal buyume) ayni formulde karisiyor -- ima edilen terminal carpan 2.5-2.65x FCF, neredeyse her sirket 'asiri degerli' cikiyor. DCF/Gordon reel terimlere gecirilmeli (TCMB EVDS enflasyon girdisiyle).", "status": "todo"},
+    {"priority": "P1", "module": "ev_ebitda_net_debt_recovery", "effort_estimate": "2-3 gun", "impact": "DB kaniti: ev_ebitda ve net_debt 1606/1606 satirda None (borsapy'nin ust kaynak kazimasi bu iki alani pratikte hic doldurmuyor). Industrial profilinin 7 metrigin 3'u, targets.py EV/FAVOK bacagi ve dividend_sustainability kaldirac kontrolu bu yuzden olu. Bilanco/gelir tablosu bilesenlerinden dogrudan hesaplanabilir.", "status": "todo"},
+    {"priority": "P1", "module": "reit_ffo_and_holding_nav", "effort_estimate": "4-5 gun", "impact": "62 GYO tickeri yalnizca PD/DD (reit profilinin 3 metriginden 1'i) ile siralaniyor; 69 holding tickeri nav_discount hep None oldugu icin HICBIR ZAMAN uzun vadeli hedef fiyat alamiyor. FFO ve borsada-islem-goren-kisim NAV'i (alt sinir olarak acikca etiketlenerek) eklenmeli.", "status": "todo"},
+    {"priority": "P1", "module": "insurance_peer_floor_and_financial_sector_ratios", "effort_estimate": "2-3 gun", "impact": "Evrende yalnizca 7 sigorta tickeri var, MIN_PEER_N=8 -- her sigorta ismi kosulsuz 'insufficient_peers' ile eleniyor (2026-09-17'de mali tablolari acilmis olsa bile). npl_ratio/nim UFRS tablolarindan hesaplanabilir (car durustce None kalir). roa/nim/npl_ratio/car/combined_ratio/ffo_yield icin fundamentals tablosunda kolon YOK -- yalnizca bellekte, payload/dashboard/validate.py'den gorunmez.", "status": "todo"},
+    {"priority": "P1", "module": "ownership_quality_z_truthful_scope", "effort_estimate": "1-2 gun (ifsa) veya arastirma (veri kaynagi)", "impact": "final_score'un %15'ini tasiyan ownership_quality_z, canli modda retail_pct/institutional_pct/investor_count hep None oldugu icin aslinda TEK BASINA free_float_pct z-skoru; uc risk kurali (_short_term_rejected, _penalize) kalici False. payout_ratio_trend_3p='stabil' sabit stringi de uydurma bir deger, kaldirilmali.", "status": "todo"},
+    {"priority": "P2", "module": "momentum_factor_short_window", "effort_estimate": "1-2 gun", "impact": "v11'den devraldi, bilincli olarak butunluk maddelerinden SONRAYA alindi -- once temeldeki degerlendirme/baz/filtre bozukluklari onarilmadan yeni bir faktor eklemek, bozuk bir olcum sistemine yeni bir gostergе eklemek olur. 6ay-1ay momentum, mevcut 140 gunluk pencereyle yapilabilir.", "status": "todo"}
+  ],
+
+  "modules": {
+    "prediction_horizon_evaluation_mismatch": {
+      "name": "prediction_horizon_evaluation_mismatch",
+      "status": "tamamlandi",
+      "problem": "core/evaluate.py::HORIZONS_DAYS = [5, 20, 60]; run.py:228 uzun vadeli (long_term) tahminleri horizon_days=180 ile predictions tablosuna yaziyor. evaluate_past_predictions bu satirlari hicbir zaman islemiyor (60 gunden buyuk ufuk yok). Ampirik dogrulama (data/bist_history.db, 2026-09-17): predictions tablosunda 108 satirin 74'u (180g) DEGERLENDIRILEMEZ durumda; outcomes tablosu 0 satir.",
+      "fix": "HORIZONS_DAYS'e 180 eklenir (config'e tasinarak). Her tahmin OLGUNLASTIGI ANDA (horizon_days'ine esit veya buyuk gun gectiginde) degerlendirilir; outcomes.horizon_days kendi degerini tasir (sema zaten uygun, degisiklik gerekmiyor).",
+      "hard_constraints": [
+        "evaluate_past_predictions_clarification.is_not_a_backtest kurali degismez -- bu hala yalnizca ex-post takip.",
+        "independence_caveat metni GUNCELLENIR: 180 gunluk ufuklarin eklenmesi ortusmeyi artirir, bu acikca belirtilmeli.",
+        "TEK bir birlesik 'basari orani' asla verilmez -- her ufuk (5/20/60/180) kendi tanimlayici metrigiyle ayri gosterilir."
+      ],
+      "side_finding": "runs tablosunda (as_of_date UNIQUE) 4 farkli skor gunune (09-11/12/13/14) karsilik yalnizca 1 satir var -- _persist_run cagrisi bazi kosularda eksik/basarisiz olmus, kosu proveniyansi kismen kayip. Bu madde kapsaminda incelenip duzeltilmeli.",
+      "acceptance_test": "180 gunluk bir tahmin olgunlastiginda outcomes tablosunda kendi horizon_days'iyle bir satir olusmali; mevcut 5/20/60 davranisinda regresyon olmamali."
+    },
+
+    "dead_hard_filters_repair": {
+      "name": "dead_hard_filters_repair",
+      "status": "tamamlandi",
+      "problem": "Uc ayri kanitlanmis olu kontrol: (1) core/live_data.py::live_tedbir_level HER ZAMAN {'tedbir_level': 0} donduruyor -- VBTS/tedbir hard filter'i (tedbir_level<=1) hicbir zaman tetiklenmiyor, P6_layered_vbts korumasiz. (2) _classify_sector yalnizca 'BDDK' veya 'SPK_TFRS' uretiyor, HICBIR ZAMAN regulator='unknown' -- basis_guard.resolve_reporting_basis dolayisiyla reporting_basis='unknown' asla donmuyor, ne %30 halt kapisi ne de reporting_basis!='unknown' hard filter'i hic tetiklenebiliyor (DB kaniti: 1606/1606 satir 'adjusted'). (3) core/ranking.py::RATIO_PROFILES her profil icin forbidden_metrics tanimliyor ama compute_valuation_z bu alana hic bakmiyor -- sadece ev_ebitda/ev_sales'in zaten olu olmasi (bkz. ev_ebitda_net_debt_recovery) bunu su ana kadar zararsiz kilmis.",
+      "fix": {
+        "tedbir": "Gercek BIST VBTS kaynagindan yapilandirilmis cekim (kullanici onayiyla arastirilacak). Kaynak hazir olana kadar sabit deger korunur AMA rapor metodoloji bolumunde acikca ifsa edilir.",
+        "unknown_basis": "_statements_cached bs/inc gercekten None donduruyorsa (mali tablo cekilemedi), regulator/reporting_basis zinciri bunu 'unknown' olarak yansitmali -- module docstring'inin zaten iddia ettigi davranis.",
+        "forbidden_metrics": "compute_valuation_z, profile['forbidden_metrics'] icindeki alanlari metrics listesinden aktif olarak cikarmali (savunma amacli -- gelecekte ev_ebitda/ev_sales canlanirsa yanlislikla bank/insurance/reit'e sizmasin)."
+      },
+      "hard_constraints": [
+        "basis_guard.UNKNOWN_RATIO_HALT_THRESHOLD (0.30) kuralinin KENDISI degismez -- bu madde yalnizca kuralin GERCEKTEN calismasini saglar.",
+        "unknown erisilebilir olunca 15 banka-disi BDDK tickeri (faktoring/leasing/tasarruf finansman/varlik yonetimi, TODO.md::non_bank_bddk_data_source_gap) elenecek -- bu BEKLENEN ve DOGRU davranistir."
+      ],
+      "acceptance_test": "En az bir sentetik testte mali tablo cekilemeyen ticker icin reporting_basis='unknown' ve is_scorable()=False dogrulanmali. Canli evrende gercek unknown orani olculup %30 esiginin (beklenen ~%2-3) altinda kaldigi raporlanmali. forbidden_metrics'teki bir metrigin (test icin gecici olarak doldurulmus) ilgili profilin z-skoruna GIRMEDIGI test edilmeli."
+    },
+
+    "inflation_basis_truthful_labeling": {
+      "name": "inflation_basis_truthful_labeling",
+      "status": "tamamlandi",
+      "problem": "verified_claims_log'daki ampirik bulgu: Is Yatirim/borsapy beslemesi NOMINAL (TMS 29 duzeltmesiz), ancak core/basis_guard.py::resolve_reporting_basis SPK_TFRS regulatoru icin kosulsuz 'adjusted' donduruyor. DB'de 1606/1606 fundamentals satiri 'adjusted'. Bu, basis_guard'i dekoratif bir etikete indirgiyor ve donem-karsilastirmali (Piotroski/buyume) kriterlerin enflasyondan sistematik olarak KIRLENMESINE izin veriyor -- en carpici ornek Piotroski kriter 9 (aktif devir hizi = cari-yil-TL hasilat / buyuk olcude tarihi-maliyet aktif): %30-45 enflasyonda bu oran MEKANIK olarak artar, gercek verimlilik iyilesmesinden BAGIMSIZ olarak neredeyse herkese bedava puan verir.",
+      "fix": [
+        "resolve_reporting_basis, besleme gercegini yansitacak sekilde guncellenir (SPK_TFRS icin otomatik 'adjusted' iddiasi kaldirilir).",
+        "Canli evrende her Piotroski kriterinin (ve buyume/margin turevlerinin) kesitsel dagilimi olculur; ezici cogunlukta ayni yonde sabit cikan kriter(ler) o donem icin 'hesaplanamaz' (None) isaretlenir -- mevcut criteria_computable orantili skorlama tasarimi bunu zaten dogru sekilde ele alir, ek bir mekanizma gerekmez.",
+        "basis_break() (core/basis_guard.py, TANIMLI ama HICBIR YERDEN CAGRILMIYOR) donem-karsilastirmali kriterlerde GERCEKTEN cagrilir -- core/piotroski.py:24-28'in kendi itirafi ('gercek veri entegrasyonunda ... bu noktada karsilastirilip ilgili kriterler None yapilir') tamamlanir.",
+        "Rapor metodoloji bolumune ('Metodoloji ve Varsayimlar') ifsa eklenir: mali tablolarin nominal oldugu ve donem-karsilastirmali bazi kriterlerin bu nedenle hesaplanamaz sayildigi acikca belirtilir."
+      ],
+      "hard_constraints": [
+        "no_historical_ratio_comparison (P3_historical_multiple_trap) IHLAL EDILMEZ: bir metrik kendi tarihiyle KARSILASTIRILMIYOR, yalnizca nominal besleme uzerinde donem-karsilastirmali hesaplamanin guvenilir olmadigi tespit edilip None yapiliyor. Bu bir veri-kalitesi kararidir, bir 'tarihsel norm' iddiasi degildir.",
+        "Peer gruplama anahtari (peer_key, reporting_basis, ratio_profile) etkilenir ama TUM SPK_TFRS sirketleri ayni yeni etikete birlikte gececegi icin peer gruplarinin GORECELI kompozisyonu degismez (bkz. design_tensions_flagged).",
+        "TMS 29 duzeltmeli GERCEK bir kaynak aramasi bu maddenin kapsaminda DEGIL -- ayri bir arastirma maddesi (tms29_adjusted_statement_source, asagida)."
+      ],
+      "acceptance_test": "En az 100 tickerlik canli bir orneklemde, enflasyondan sistematik olarak etkilenen kriterlerin None orani olculup raporlanmali. validate_report is_valid=True kalmali (ifsa metni payload'a eklenmis olmali, orphan-number uretmemeli)."
+    },
+
+    "point_in_time_publication_lag": {
+      "name": "point_in_time_publication_lag",
+      "status": "planlanan",
+      "problem": "core/fundamentals.py:17-21: published_at = period_end (\"basitlestirilmis mock varsayimi: bilanco donem sonunda aciklanir\") -- bu satir CANLI modda da AYNEN yururlukte. Gercek BIST beyanlari donem sonundan 6-10 hafta sonra gelir (Q2 icin orta-Agustos gibi). Sistem bir bilancoyu GERCEKTE var olmadan 40-70 gun once 'biliniyormus' gibi ele aliyor -- P11_lookahead_bias pitfall'unun dogrudan ihlali. effective_at (point-in-time gate'in test ettigi alan) bu uydurma tarihten turetildigi icin gate'in kendisi anlamsizlasiyor.",
+      "existing_reusable_infra": [
+        "core/live_data.py::live_kap_disclosures zaten GERCEK published_at uretiyor (KAP bildirim tarihinden).",
+        "core/live_data.py::_earnings_dates_cached her ticker icin cekilip prefetch_all ile cache'leniyor AMA su an yalnizca live_upcoming_events (gelecek etkinlik takvimi) tarafindan tuketiliyor -- yanlis tuketiciye bagli, dogru veri zaten elde."
+      ],
+      "fix": "effective_at, GERCEK yayin tarihinden turetilir: once _earnings_dates_cached'teki gecmis beyan tarihi denenir, mevcut degilse KAP toplu API'sinden (kullanici tarafindan onaylandi, bkz. asagidaki candidate_sources) donem sonrasi ilk 'Finansal Rapor' kategorili bildirim tarihi kullanilir. Hicbiri bulunamazsa (durustluk kurali) mevcut basitlestirilmis varsayima DUSULUR ama bu durum null_reason/source alaninda acikca isaretlenir.",
+      "candidate_sources": {
+        "kap_direct_api": {
+          "status": "kullanici tarafindan ACIKCA ONAYLANDI (2026-09-17) -- v11'de bu onay bekliyordu",
+          "endpoint": "POST https://www.kap.org.tr/tr/api/disclosure/list/main (v11'de canli test edildi, 2026-09-16)",
+          "caveat": "Resmi olmayan, dokumante edilmemis, SLA'siz bir ic API. Mevcut borsapy/Is Yatirim mirror'ina (kap_direct_api_alternative, TODO.md P1) GORE tercih edilir cunku tek bulk sorguyla TUM evrenin GERCEK yayin tarihlerini verir.",
+          "no_free_text_interpretation_of_kap_compliance": "Degismez -- bu madde yalnizca TARIH alani icin kullanilir, bildirim METNI hala LLM'e hic verilmez, once deterministik kategoriye indirilir (mevcut _categorize_kap_title degismez)."
+        }
+      },
+      "hard_constraints": [
+        "point_in_time_fields.enforcement_rule degismez: build_report_payload ve evaluate_past_predictions WHERE effective_at <= as_of_date_cutoff filtresini HER sorguya uygulamaya devam eder.",
+        "Gercek yayin tarihi bulunamadiginda ASLA iyimser bir tarih uydurulmaz -- ya bilinen en yakin GERCEK isaret (earnings_dates) ya da acikca isaretlenmis basitlestirilmis varsayim kullanilir."
+      ],
+      "acceptance_test": "tests/test_point_in_time.py GENISLETILIR: mevcut testler yalnizca effective_at<=as_of_date FILTRESINI dogruluyor, bu madde effective_at'in GERCEK bir yayin tarihinden TURETILDIGINI ayrica test etmeli (ornegin bilinen bir KAP bildirim tarihiyle karsilastirarak)."
+    },
+
+    "nominal_real_consistency_in_valuation_addons": {
+      "name": "nominal_real_consistency_in_valuation_addons",
+      "status": "planlanan",
+      "problem": "Canli olcum (2026-09-17): core/hurdle.py risk-free kaynagi bond_2y_pct=%40.61 (nominal). core/dcf.py/gordon.py bu nominal orani beta*ERP ile ozkaynak maliyetine (%44.6-47.1) cevirip, config/equity_risk_premium.yaml::tcmb_long_term_inflation_target_pct=5.0 (dusuk-enflasyon REJIMINI varsayan bir HEDEF, gercek TUFE degil) ile ayni formulde terminal buyume olarak kullaniyor. Sonuc: wacc-g spread'i ~40 puan, ima edilen terminal carpan (1+g)/(wacc-g) = 2.5-2.65x FCF -- neredeyse HER sirket bu carpanla 'asiri degerli' cikar, model gercek degerleme ayrimi yapamaz hale gelir.",
+      "fix": "Degerleme TUTARLI sekilde REEL terimlere cevrilir: reel_iskonto = (1+nominal_iskonto)/(1+beklenen_enflasyon) - 1; reel_buyume ve reel FCF de ayni deflatorle tutarli hale getirilir. Beklenen enflasyon girdisi TCMB EVDS'den (kullanici onayli) GERCEKLESEN TUFE yillik veya TCMB'nin RESMI orta-vadeli hedefinden alinir -- keyfi bir tahmin UYDURULMAZ.",
+      "hard_constraints": [
+        "ai_role_boundaries.forbidden: 'iskonto orani veya buyume orani varsaymak' -- bu madde YENI bir varsayim EKLEMIYOR, mevcut nominal/reel KARISIMINI GIDERIYOR. Enflasyon girdisi RESMI/GERCEKLESEN bir kaynaktan gelir.",
+        "TCMB EVDS'den enflasyon girdisi alinamazsa deger None + null_reason='missing_inflation_input' kalir -- mevcut wacc-g<=0 -> null_reason='unstable_denominator' deseniyle AYNI durustluk ilkesi.",
+        "Modeller DENEYSEL kalmaya devam eder: final_score'a ve hard_filters'a HICBIR bicimde girmezler (speculative_models_are_labeled degismez).",
+        "Mevcut outlier guard (spread < equity_risk_premium_pct -> null) KORUNUR; EK olarak spread'in ASIRI BUYUK oldugu simetrik durum icin de bir ust sinir guard'i eklenir (spread cok kucukken zaten koruma var, cok buyukken yoktu)."
+      ],
+      "acceptance_test": "tests/test_dcf.py ve test_gordon.py genisletilir: (a) enflasyon girdisi mevcutken reel-tutarli bir deger uretilmeli, (b) enflasyon girdisi yokken None+null_reason donmeli, (c) asiri buyuk spread durumunda yeni ust-sinir guard'i tetiklenmeli. Canli AKBNK/THYAO gibi tickerlarla, reel terimlere gecince ima edilen terminal carpanin makul bir araliga (literatur: BIST icin tek haneli ila dusuk-cift-haneli FCF carpani) dustugu gozlemsel olarak dogrulanmali."
+    },
+
+    "ev_ebitda_net_debt_recovery": {
+      "name": "ev_ebitda_net_debt_recovery",
+      "status": "planlanan",
+      "problem": "DB kaniti (2026-09-17, 1606 fundamentals satiri, 532 ticker canli kosu): ev_ebitda VE net_debt %0 doluluk (0/1606). Kok neden borsapy/_providers/isyatirim.py'nin ust kaynak kazimasi (sirket-karti.aspx 'Cari Degerler' bloğu) -- FD/FAVOK ve Net Borc etiketlerini pratikte hep None donduruyor. Bu, industrial profilinin (7 metrik) 3'unu (ev_ebitda, ev_sales, net_debt_ebitda) olu birakiyor; core/targets.py'nin EV/FAVOK bacagi (leg2) ve core/dividend_sustainability.py'nin kaldirac kontrolu bu yuzden hic calismiyor. Ayrica pe alani da yalnizca %45 dolu (727/1606) -- ayni kapsamda incelenmeli.",
+      "fix": "Bilanco ve gelir tablosu bilesenleri zaten cekiliyor (_statements_cached). net_debt = finansal borclar (kisa+uzun vadeli) - nakit ve nakit benzerleri, dogrudan _row/_val ile hesaplanabilir. FAVOK (ebitda_ttm) = faaliyet kari + amortisman/itfa (gelir tablosu + nakit akis tablosundan, sanayi sirketlerinde mevcut). Yeni alanlar core/live_data.py::live_fundamentals icinde hesaplanip fundamentals DB semasina (ayrica bkz. insurance_peer_floor_and_financial_sector_ratios'daki kolon eksikligi paterni) persist edilir.",
+      "hard_constraints": [
+        "Banka/sigorta icin bu metrikler zaten forbidden_metrics'te -- bu madde yalnizca industrial/holding/reit kapsamini hedefler.",
+        "Hesaplanamayan durumlarda (satir bulunamazsa) None + mevcut durustluk deseni korunur, TAHMIN UYDURULMAZ."
+      ],
+      "acceptance_test": "Canli orneklemde (>=30 industrial ticker) ev_ebitda ve net_debt doluluk oraninin %0'dan anlamli sekilde yukselmesi (>=%70 hedef); targets.py EV/FAVOK bacaginin en az bir ticker icin gercekten hesaplandigi dogrulanmali."
+    },
+
+    "reit_ffo_and_holding_nav": {
+      "name": "reit_ffo_and_holding_nav",
+      "status": "planlanan",
+      "problem": "RATIO_PROFILES.reit 3 metrik tanimliyor (pb, nav_discount, ffo_yield) ama nav_discount ve ffo_yield kalici None -- 62 GYO tickeri fiilen TEK metrikli (pb) bir modelle siralaniyor. RATIO_PROFILES.holding 3 metrik tanimliyor (nav_discount, pb, roe) ama nav_discount None oldugu icin core/targets.py:61-69'daki holding bacaginda legs HER ZAMAN bos kaliyor -- 69 holding tickeri HICBIR ZAMAN uzun vadeli hedef fiyat/tahmin alamiyor. README bunu 'bilinen sinirlama' olarak listeliyor ama hicbir roadmap'e girmemisti.",
+      "fix": {
+        "reit_ffo": "FFO = net kar - yatirim amacli gayrimenkul gercege uygun deger degisim kazanclari (+ zararlar) + amortisman/itfa. Turk GYO'larinda yeniden degerleme kazanclari net kari domine eder ve nakit disidir -- bu RATIO_PROFILES.reit.metrics'in zaten 'pe' ICERMEMESININ sebebidir (mevcut tasarim karari, degistirilmiyor, yalnizca eksik parca tamamlaniyor).",
+        "holding_nav": "Sum-of-parts NAV: borsada islem goren istiraklerin GUNCEL piyasa degerleri toplami (fast_info/market_cap, zaten cekiliyor). Borsada islem GORMEYEN istirakler HARIC TUTULUR ve bu acikca 'NAV bir ALT SINIRDIR, borsada islem gormeyen varliklari icermez' notuyla ifsa edilir -- keyfi bir deger UYDURULMAZ."
+      },
+      "hard_constraints": [
+        "holding.note ('NAV hesaplanamiyorsa skorlanmaz') artik GERCEKTEN uygulanir: core/ranking.py::compute_valuation_z bu notu su an YOK SAYIYOR (metrik None ise sessizce atlanip pb+roe ile skorluyor) -- bu madde kapsaminda ya not kaldirilir (cunku artik hesaplanabiliyor) ya da hesaplanamayan durumda GERCEKTEN skor uretilmez, ikisi arasinda tutarlilik saglanir.",
+        "GYO'nun pe hala kullanilmaz -- bu bilincli tasarim degismez."
+      ],
+      "acceptance_test": "En az 10 GYO tickerinda ffo_yield hesaplanmis olmali (RATIO_PROFILES.reit artik 3 metrigin >=2'sini kullaniyor). En az 10 holding tickerinda artik uzun vadeli bir target_price uretilebilmeli (legs_used>=1)."
+    },
+
+    "insurance_peer_floor_and_financial_sector_ratios": {
+      "name": "insurance_peer_floor_and_financial_sector_ratios",
+      "status": "planlanan",
+      "problem": "config/fintables_ticker_sektor.json'da yalnizca 7 sigorta tickeri var (AGESA, AKGRT, ANHYT, ANSGR, QUICK, RAYSG, TURSG); core/ranking.py::MIN_PEER_N=8. build_peer_group her seviyede (sector->supersector->market) ratio_profile ile sinirlandirdigi icin sigorta HER ZAMAN 'insufficient_peers' -> confidence hard filter'i tarafindan elenir -- financial_institution_data_source (2026-09-17) mali tablolarini acmis olsa bile hicbir sigorta ismi ASLA skorlanamaz. Ayrica roa/nim/npl_ratio/car/combined_ratio/ffo_yield fundamentals DB tablosunda KOLON OLARAK YOK -- yalnizca bellekte _raw dict'i uzerinden tasiniyor, payload/dashboard/report/validate.py ve tarihsel denetim icin GORUNMEZ.",
+      "fix": [
+        "Sigorta icin peer tabani: ya profile-ozel dusuk bir MIN_PEER_N (P4_small_sample korumasi ZAYIFLATILMADAN, confidence uygun sekilde 'low'/'insufficient_peers' arasi ayarlanarak), ya da supersector seviyesinde bank ile GECICI birlestirme (ikisi zaten ayni forbidden_metrics kumesini -- ev_ebitda, ev_sales -- paylasiyor, ve pe/pb/roe ortak metrikler).",
+        "npl_ratio = '6.2 Takipteki Krediler' / 'VI. KREDILER' (UFRS banka sablonu, 2026-09-17'de dogrulanan gercek satirlar). nim = 'III. NET FAIZ GELIRI/GIDERI' / ortalama getirili aktifler proxy'si. car durustce None kalir (BDDK/KAP sermaye yeterliligi beyani ayri, bu mali tablolarda YOK).",
+        "combined_ratio sigorta UFRS teknik bolum kalemlerinden (hasar/prim oranlari) hesaplanir.",
+        "fundamentals DB semasina roa, nim, npl_ratio, car, combined_ratio, ffo_yield kolonlari eklenir; core/fundamentals.py bu alanlari artik persist eder."
+      ],
+      "hard_constraints": [
+        "P4_small_sample korumasi (hiyerarsik fallback + MIN_PEER_N) mimari olarak korunur -- yalnizca sigorta icin OZEL bir esik/fallback davranisi eklenir, genel kural gevsetilmez.",
+        "car HICBIR ZAMAN uydurulmaz -- kaynak bulunamadigi surece None kalir."
+      ],
+      "acceptance_test": "En az 1 sigorta tickeri artik 'insufficient_peers' disinda bir confidence ile skorlanabilmeli. fundamentals tablosu sorgulandiginda roa/nim/npl_ratio en az bir banka tickerinda NULL olmayan deger tasimali."
+    },
+
+    "ownership_quality_z_truthful_scope": {
+      "name": "ownership_quality_z_truthful_scope",
+      "status": "planlanan",
+      "problem": "final_score'un %15 agirligini tasiyan ownership_quality_z (core/ownership.py), canli modda retail_pct/institutional_pct/investor_count HER ZAMAN None donuyor (MKK/TSPB ucretsiz API yok, kod bunu zaten belgeliyor) -- compute_ownership_z (raw = institutional_pct+free_float_pct-retail_pct) fiilen TEK BASINA free_float_pct z-skoruna donusuyor, ve _short_term_rejected/_penalize risk kurallari (retail_pct/investor_count_change_1m'e bagli) kalici olarak False. Ayrica live_dividend_history::payout_ratio_trend_3p sabit 'stabil' stringi donduruyor -- bu bir UYDURMA DEGERDIR, projenin kendi durustluk kuralini ihlal ediyor.",
+      "fix": "Iki secenek arastirilmali: (a) kapsam gercege uygun yeniden adlandirilip metodolojide 'free_float_quality_z' olarak ifsa edilir (agirlik/isim degisikligi manuel onay gerektirir), (b) MKK/TSPB'nin ucretsiz/erisilebilir bir veri kaynagi bulunursa retail/institutional kirilimi gercekten doldurulur. payout_ratio_trend_3p, gercek 3 donemlik payout serisinden hesaplanamiyorsa None donmeli, sabit string DEGIL.",
+      "hard_constraints": [
+        "weights.yaml agirlik/isim degisikligi execution_rules geregi MANUEL onay gerektirir -- otomatik degistirilmez.",
+        "Veri kaynagi bulunamazsa ISIM/KAPSAM ifsasi yeterli kabul edilir, ozellik KALDIRILMAZ (free_float_pct zaten mesru bir sinyal)."
+      ],
+      "acceptance_test": "Metodoloji metninde ownership_quality_z'nin fiili kapsaminin (free-float agirlikli) acikca belirtildigi dogrulanmali; payout_ratio_trend_3p artik sabit 'stabil' DEGIL, hesaplanabildiginde gercek deger/hesaplanamadiginda None donmeli (yeni test)."
+    },
+
+    "momentum_factor_short_window": {
+      "name": "momentum_factor_short_window",
+      "status": "planlanan (v11'den devralindi, siralama degisti)",
+      "note": "v11'de P0 idi; v12'de BILINCLI olarak butunluk maddelerinden (T0-1..T0-5) SONRAYA alindi -- gerekce: bozuk bir olcum/filtre altyapisina yeni bir faktor eklemek, o faktorun kendi degerini de guvenilmez kilar (ornegin evaluate_past_predictions 180 gunu olcemezken bir faktorun uzun vadede ise yarayip yaramadigi asla gorulemez).",
+      "spec": "core/momentum.py::compute_momentum_z, mevcut 140 gunluk fiyat penceresiyle 6ay-1ay (yaklasik 120-20 gun) momentum. ownership_z/low_vol_z ile AYNI kesitsel bucket-z deseni (None-safe, havuzdan disarida birakma, sabit esik yok). weights.yaml'a yeni agirlik + digerlerinden ORANTILI dusum (manuel onay gerektirir).",
+      "academic_basis": "YALNIZCA Gokcen (2026), SSRN #4588551 ('momentum, 2005 sonrasi anlamli'). 'Karaomer/Gumushane 6-faktor' atfi KULLANILMAZ.",
+      "hard_constraints": [
+        "Klasik 12ay-1ay ERTELENMIS kalir (140 gunluk pencere yetersiz, genisletmek borsapy throttle riskini artirir) -- bu v11 karari degismiyor.",
+        "'Kanitlanmis edge' olarak ASLA sunulmaz -- banned_claims listesi gecerli."
+      ],
+      "acceptance_test": "tests/test_momentum.py: None-safe, havuzdan disarida birakma, ownership_z/low_vol_z ile ayni imza deseni."
+    }
+  },
+
+  "carried_forward_from_v10_v11_unchanged": [
+    "position_sizing_diagnostics (P1, 3-4 gun, todo -- emir DEGIL teshis)",
+    "walk_forward_diagnostic (P1, 3-4 gun, todo, VARSAYILAN KAPALI)",
+    "investment_memo_generator (P2, 3-4 gun, todo)",
+    "qualitative_governance_score (P2, 3-5 gun, todo)",
+    "dcf_historical_multiple_band_reference (P2, 1-2 gun, todo -- valuation_z'nin DISINDA, ayri bilgi bloku)",
+    "entry_price_support_resistance (P2, 2-3 gun, todo)",
+    "trailing_stop_and_staged_exit (P2, 2-3 gun, todo)",
+    "non_bank_bddk_data_source_gap (P2, belirsiz sure, todo -- 15 ticker: faktoring/leasing/tasarruf finansman/varlik yonetimi)",
+    "point_in_time_dataset (P3, 5+ gun, todo)"
+  ],
+
+  "new_research_tracks": {
+    "tms29_adjusted_statement_source": {
+      "status": "arastirma gerekiyor, kullanici onayli",
+      "problem": "inflation_basis_truthful_labeling (T0-4) yalnizca ETIKETI durustlestiriyor, veriyi TMS 29 duzeltmeli hale GETIRMIYOR. Gercekten enflasyon-duzeltmeli tablolara gecmek ayri, buyuk bir veri muhendisligi projesidir.",
+      "candidate_sources": ["KAP XBRL dogrudan parse (ek gelistirme gerektirir)", "Ucuncu taraf mali tablo saglayicisi (fintables benzeri, kullanici onayli veri kaynaklari arasinda)"],
+      "acceptance_test": "Bir ornek sirket icin XBRL/ucuncu-taraf kaynaktan cekilen TMS 29 duzeltmeli hasilat, Is Yatirim'in nominal hasilatiyla karsilastirilip anlamli bir sapma (enflasyon oranina yakin) gosterilmeli."
+    },
+    "tms29_exit_watch": {
+      "status": "izleme gorevi (kod degisikligi degil, periyodik kontrol)",
+      "problem": "Turkiye IAS 29 listesinden CIKTIGINDA (3 yillik kumulatif enflasyon %100 altina dustugunde), TFRS raporlama rejimi degisecek ve bu YENI bir baz kirigi (basis_break) olusturacak -- tipki 2022'de listeye GIRISININ yarattigi kirik gibi.",
+      "fix": "basis_guard tarih/konfig-duyarli hale getirilmeli: TMS 29 uygulamasinin sona erdigi ilk raporlama donemi bilinen bir sabit/config olarak tanimlanip, o tarihten once ve sonraki donemler basis_break() ile ayristirilmali.",
+      "trigger": "Yilda birkaç kez (KGK/BDDK duyurulari, IAS Plus/Big-4 hiperenflasyon guncellemeleri) kontrol edilmeli -- otomatik degil, periyodik insan/AI izlemesi."
+    }
+  },
+
+  "testing_additions_required": [
+    "tests/test_evaluate.py: 180 gunluk bir tahmin olgunlastiginda outcomes tablosunda satir olusmali (mevcut HORIZONS_DAYS=[5,20,60] testleriyle ayni desende).",
+    "tests/test_basis_guard.py: mali tablo cekilemeyen (bs/inc None) bir senaryoda reporting_basis='unknown' ve is_scorable()=False donmeli; basis_break() donem-karsilastirmali bir kriter hesaplanirken GERCEKTEN cagrilmali (su an hicbir cagrisi yok).",
+    "tests/test_point_in_time.py: effective_at'in GERCEK bir yayin tarihinden (KAP/earnings_dates) turetildigi test edilmeli -- mevcut testler yalnizca filtre mekanizmasini (effective_at<=as_of_date) dogruluyor, turetmeyi DEGIL.",
+    "tests/test_dcf.py / test_gordon.py: enflasyon girdisi yokken None+null_reason; wacc-g spread'i ASIRI BUYUKKEN yeni simetrik ust-sinir guard'i tetiklenmeli (mevcut yalnizca ASIRI KUCUK spread'i yakaliyor).",
+    "tests/test_ranking.py: RATIO_PROFILES.forbidden_metrics'teki bir alanin (test icin doldurulmus olsa bile) ilgili profilin valuation_z'sine GIRMEDIGI dogrulanmali.",
+    "tests/test_targets.py: holding.note ('NAV hesaplanamiyorsa skorlanmaz') artik tutarli sekilde uygulaniyor mu (nav_discount hesaplanabiliyorsa target_price uretilir, hesaplanamiyorsa uretilmez) dogrulanmali.",
+    "tests/test_momentum.py: core/momentum.py::compute_momentum_z, ownership_z/low_vol_z ile ayni desende (None-safe, havuzdan disarida birakma)."
+  ],
+
+  "explicit_non_goals": [
+    "Bu roadmap sistemi 'yatirim danismanligi' konumuna TASIMAZ -- ai_role_boundaries v9'da tanimlandigi gibi kalir.",
+    "verified_claims_log akademik literatur dogrulamasi VE bu projenin kendi kod/veri denetimidir -- outcomes verisiyle yapilan bir KALIBRASYON DEGILDIR. weights.yaml'daki 'denenmemis baslangic varsayimi' notu gecerliligini korur; T0-1 (evaluate) bu kalibrasyonu MUMKUN KILAR ama KENDISI kalibrasyon yapmaz.",
+    "T0-4 (inflation_basis_truthful_labeling) TMS 29 duzeltmeli VERI URETMEZ, yalnizca mevcut nominal verinin ETIKETINI durustlestirir ve bu veriyle guvenilir sekilde hesaplanamayan kriterleri isaretler. Gercek duzeltme ayri bir arastirma maddesidir (tms29_adjusted_statement_source).",
+    "momentum_factor_short_window ve digerleri hicbir zaman 'kanitlanmis edge' olarak sunulmaz -- banned_claims listesi gecerli kalir.",
+    "T0-2'de tedbir_level icin gecici sabit deger korunmasi, bu degerin GUVENILIR oldugu anlamina GELMEZ -- yalnizca gercek kaynak entegre edilene kadar gecerli, ACIKCA IFSA EDILMIS bir tavizdir."
+  ]
+}

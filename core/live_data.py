@@ -70,10 +70,24 @@ PREFETCH_MAX_WORKERS = 4
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
 _BANK_SECTOR_KEYWORDS = ["bankacılık", "banka", "finansal kiralama", "faktoring",
-                          "finansman şirketleri", "sigorta", "emeklilik",
-                          "varlık yönetim", "tasarruf finansman", "aracı kurum"]
+                          "finansman şirketleri", "varlık yönetim",
+                          "tasarruf finansman", "aracı kurum"]
+_INSURANCE_SECTOR_KEYWORDS = ["sigorta", "emeklilik"]
 _REIT_SECTOR_KEYWORDS = ["gayrimenkul", "gyo"]
 _HOLDING_SECTOR_KEYWORDS = ["holding", "yatırım ortaklığı", "yat. ort."]
+
+# financial_institution_data_source: Is Yatirim'in "Finansal Tablolar" endpoint'i
+# XI_29 (sanayi) sablonunun yani sira bir de "UFRS" (BDDK-tipi konsolide,
+# banka/sigorta/finansal kiralama) sablonu sunuyor -- borsapy'nin
+# get_balance_sheet/get_income_stmt/get_cashflow fonksiyonlarina
+# financial_group="UFRS" verilerek erisiliyor (canli test: 2026-09-17, AKBNK
+# ve ANHYT icin dogrulandi). ratio_profile='bank'/'insurance' disinda (industrial/
+# holding/reit) financial_group=None birakilir (varsayilan XI_29).
+_UFRS_RATIO_PROFILES = frozenset({"bank", "insurance"})
+
+
+def _financial_group_for_profile(ratio_profile: str | None) -> str | None:
+    return "UFRS" if ratio_profile in _UFRS_RATIO_PROFILES else None
 
 # fintables.com'dan elle dogrulanmis ticker->sektor eslemesi (borsapy'nin
 # `info.sector` alani sik sik eksik/BILINMIYOR donuyor ya da tutarsiz bir
@@ -104,6 +118,8 @@ def _classify_sector(sector_text: str | None) -> tuple[str, str]:
     s = (sector_text or "").strip().lower()
     if any(k in s for k in _BANK_SECTOR_KEYWORDS):
         return "bank", "BDDK"
+    if any(k in s for k in _INSURANCE_SECTOR_KEYWORDS):
+        return "insurance", "BDDK"
     if any(k in s for k in _REIT_SECTOR_KEYWORDS):
         return "reit", "SPK_TFRS"
     if any(k in s for k in _HOLDING_SECTOR_KEYWORDS):
@@ -190,26 +206,55 @@ def _earnings_dates_cached(ticker: str):
 
 
 @lru_cache(maxsize=2048)
-def _statements_cached(ticker: str):
-    """(balance_sheet, income_stmt, cashflow) DataFrame'lerini dondurur, cekilemezse
-    ucu None olan bir tuple doner (banka/sigorta sablon uyumsuzlugu -> unknown basis)."""
+def _statements_cached(ticker: str, financial_group: str | None = None):
+    """(balance_sheet, income_stmt, cashflow) DataFrame'lerini dondurur.
+
+    financial_group=None -> XI_29 (sanayi, varsayilan). financial_group="UFRS"
+    -> banka/sigorta/finansal kiralama sablonu (bkz. _financial_group_for_profile).
+
+    Her tablo AYRI try/except icinde cekilir: banka/sigorta icin nakit akis
+    tablosu Is Yatirim'de HIC mevcut degil (canli test: 2026-09-17, AKBNK/ANHYT
+    icin DataNotAvailableError) ama bilanco/gelir tablosu mevcuttur -- tek bir
+    ortak try/except kullanilsaydi cf'nin basarisiz olmasi bs/inc'in de
+    (basariyla cekilebilecekken) atilmasina yol acardi.
+
+    financial_group="UFRS" ile FALLBACK: _classify_sector'un 'bank' profiline
+    soktugu her ticker gercekte UFRS sablonu KULLANMIYOR -- canli test
+    (2026-09-17) araci kurumlarin (ISMEN, GEDIK -- 'aracı kurum' anahtar
+    kelimesiyle 'bank' profiline giriyor) UFRS'de DataNotAvailableError
+    verdigini ama XI_29 (sanayi) sablonunda basariyla cekildigini gosterdi.
+    UFRS'nin UCU (bs VE inc) tamamen bos donerse XI_29 ile bir kez daha
+    denenir -- boylece sektor siniflandirmasi banka/aracı kurum ayrimini tam
+    yapamasa bile veri kaybi olmaz."""
     t = _ticker_obj(ticker)
-    try:
-        bs = t.balance_sheet
-        inc = t.income_stmt
-        cf = t.cashflow
-        return bs, inc, cf
-    except Exception:
-        return None, None, None
+
+    def fetch(fg):
+        def _f(fn_name: str):
+            try:
+                return getattr(t, f"get_{fn_name}")(financial_group=fg)
+            except Exception:
+                return None
+        return _f("balance_sheet"), _f("income_stmt"), _f("cashflow")
+
+    bs, inc, cf = fetch(financial_group)
+    if bs is None and inc is None and financial_group is not None:
+        bs, inc, cf = fetch(None)
+    return bs, inc, cf
 
 
 def _row(df, *labels):
-    """DataFrame'de TAM ESLESEN (indent'siz) ilk etiketi bulup Series dondurur, yoksa None."""
+    """DataFrame'de (bosluk-toleransli) ilk eslesen etiketi bulup Series dondurur, yoksa None.
+
+    UFRS (banka/sigorta) sablonlari ayni satiri XI_29'dan (sanayi) FARKLI bir
+    etiketle ve bazen baslangicta/sonunda fazladan bosluk ile donduruyor (orn.
+    ' AKTİF TOPLAMI' vs 'AKTİF TOPLAMI') -- strip() ile normalize edilmezse
+    bu satirlar sessizce None donerdi."""
     if df is None:
         return None
+    stripped_index = {str(idx).strip(): idx for idx in df.index}
     for lbl in labels:
-        if lbl in df.index:
-            return df.loc[lbl]
+        if lbl in stripped_index:
+            return df.loc[stripped_index[lbl]]
     return None
 
 
@@ -262,20 +307,29 @@ def live_universe(limit: int | None = None) -> list[dict]:
     return seed
 
 
-def prefetch_all(tickers: list[str]) -> None:
+def prefetch_all(universe_rows: list[dict]) -> None:
     """Evrenin geri kalan tum canli fonksiyonlarinin ihtiyac duydugu ag
     cagrilarini (fast_info, statements, dividends, 2y history, news,
     earnings_dates) PARALEL olarak onceden cache'ler. run.py, universe
     build'den sonra (eligible tickers belli olunca) bunu bir kez cagirir;
     ardindan gelen tum sirali per-ticker dongulari (fundamentals, piotroski,
     sloan, catalysts, prices, ownership, dividend_sustainability...) sadece
-    lru_cache'ten okur, yeni ag cagrisi yapmaz."""
-    fns = [_fast_info_cached, _info_cached, _statements_cached, _dividends_cached,
+    lru_cache'ten okur, yeni ag cagrisi yapmaz.
+
+    universe_rows: ticker basina 'ratio_profile' de tasir -- _statements_cached
+    banka/sigorta icin dogru financial_group="UFRS" ile onceden cache'lenmezse,
+    sonraki live_fundamentals/live_piotroski_raw_criteria cagrilari CACHE MISS
+    yasar ve sirali/ekstra ag cagrisina duser (bkz. financial_institution_data_source)."""
+    tickers = [u["ticker"] for u in universe_rows]
+    fns = [_fast_info_cached, _info_cached, _dividends_cached,
            _news_cached, _earnings_dates_cached]
     with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
         futures = []
         for fn in fns:
             futures.extend(pool.submit(fn, t) for t in tickers)
+        futures.extend(pool.submit(_statements_cached, u["ticker"],
+                                    _financial_group_for_profile(u.get("ratio_profile")))
+                        for u in universe_rows)
         futures.extend(pool.submit(_history_cached, t, "2y") for t in tickers)
         for f in futures:
             f.result()  # istisnalar zaten fonksiyon icinde yutuluyor, sadece bekle
@@ -427,7 +481,7 @@ def live_prices(ticker: str, as_of_date: str, days: int = 140) -> list[dict]:
 def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profile: str) -> dict:
     fi = _fast_info_cached(ticker)
     info = _info_cached(ticker)
-    bs, inc, cf = _statements_cached(ticker)
+    bs, inc, cf = _statements_cached(ticker, _financial_group_for_profile(ratio_profile))
 
     pe = fi.get("pe_ratio") if fi else None
     pb = fi.get("pb_ratio") if fi else None
@@ -436,10 +490,15 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     market_cap = fi.get("market_cap") if fi else None
     shares_outstanding = info.get("sharesOutstanding") or (fi.get("shares") if fi else None)
 
+    # "Satış Gelirleri"/"BRÜT KAR" (XI_29/sanayi) UFRS banka/sigorta sablonunda
+    # YOK -- revenue/gross-profit kavramlari bu sektorler icin anlamli degil,
+    # bu yuzden banka/sigorta icin bilinçli olarak None kalir (uydurulmaz).
     revenue = _val(_row(inc, "Satış Gelirleri"))
-    net_income = _val(_row(inc, "DÖNEM KARI (ZARARI)", "Ana Ortaklık Payları"))
-    equity = _val(_row(bs, "Özkaynaklar"))
-    total_assets = _val(_row(bs, "TOPLAM VARLIKLAR"))
+    net_income = _val(_row(inc, "DÖNEM KARI (ZARARI)", "Ana Ortaklık Payları",
+                            "23.1 Grubun Karı/Zararı", "XXIII. NET DÖNEM KARI/ZARARI (XVII+XXII)",
+                            "3- Dönem Net Kar veya Zararı"))
+    equity = _val(_row(bs, "Özkaynaklar", "XVI. ÖZKAYNAKLAR", "Özsermaye Toplamı"))
+    total_assets = _val(_row(bs, "TOPLAM VARLIKLAR", "AKTİF TOPLAMI"))
     ebitda_ttm = None
     if ev_ebitda and market_cap and net_debt is not None and ev_ebitda != 0:
         ebitda_ttm = (market_cap + net_debt) / ev_ebitda
@@ -478,8 +537,19 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     elif dividend_per_share_ttm == 0:
         payout_ratio = 0.0
 
+    # dead_hard_filters_repair (v12 T0-2): modul basligi (yukarida) zaten "mali
+    # tablo cekilemeyen ticker'lar reporting_basis='unknown' olarak isaretlenir"
+    # diyordu ama bu HICBIR ZAMAN gerceklesmiyordu -- fundamentals.py asagidaki
+    # None'u SADECE regulator'e gore (BDDK->nominal, SPK_TFRS->adjusted)
+    # eziyordu, gercekten veri gelip gelmedigine hic bakmadan. Sonuc: basis_guard'in
+    # %30 halt kapisi ve reporting_basis!='unknown' hard filter'i olu kaliyordu
+    # (canli kanit: 1606/1606 fundamentals satiri 'adjusted', 2026-09-17). bs VE
+    # inc'in IKISI de None ise (financial_group fallback'i dahil hicbir sablonda
+    # veri yok -- bkz. _statements_cached) fundamentals.py'ye "unknown" sinyali
+    # gonderilir; bu, regulator eslemesini KASITLI olarak ezer.
+    reporting_basis = "unknown" if (bs is None and inc is None) else None
     return {
-        "reporting_basis": None,  # fundamentals.py bunu basis_guard ile ezer
+        "reporting_basis": reporting_basis,  # None ise fundamentals.py basis_guard ile doldurur
         "pe": pe, "pb": pb, "ev_ebitda": ev_ebitda, "ev_sales": ev_sales, "roe": roe,
         "eps_ttm": eps_ttm, "ebitda_ttm": ebitda_ttm, "net_debt": net_debt,
         "nav_discount": None,  # NAV hesaplamasi icin GYO portfoy degeri gerekir, kaynak yok
@@ -508,18 +578,32 @@ def _dividend_ttm(ticker: str) -> float:
 # piotroski (gercek 9 kriter, 2 donem karsilastirmali)
 # ---------------------------------------------------------------------------
 
-def live_piotroski_raw_criteria(ticker: str, as_of_date: str) -> dict:
-    bs, inc, cf = _statements_cached(ticker)
-    if bs is None or inc is None or cf is None or bs.shape[1] < 2 or inc.shape[1] < 2:
+def live_piotroski_raw_criteria(ticker: str, as_of_date: str, ratio_profile: str | None = None) -> dict:
+    bs, inc, cf = _statements_cached(ticker, _financial_group_for_profile(ratio_profile))
+    # NOT cf is None DEGIL: banka/sigorta (UFRS) icin nakit akis tablosu Is
+    # Yatirim'de hic mevcut degil (bkz. _statements_cached), ama bilanco/gelir
+    # tablosu MEVCUT olabilir -- cf'yi de sarta baglamak bu tickerlari
+    # gereksiz yere TAMAMEN (9/9 None) elerdi; asagidaki kriterler zaten
+    # cfo'nun None kalmasiyla (2, 4, 7) dogal olarak hesaplanamaz sayilir.
+    if bs is None or inc is None or bs.shape[1] < 2 or inc.shape[1] < 2:
         return {f"criterion_{i}": None for i in range(1, 10)}
 
-    ta0, ta1 = _val(_row(bs, "TOPLAM VARLIKLAR"), 0), _val(_row(bs, "TOPLAM VARLIKLAR"), 1)
-    ni0, ni1 = _val(_row(inc, "DÖNEM KARI (ZARARI)"), 0), _val(_row(inc, "DÖNEM KARI (ZARARI)"), 1)
+    ta0, ta1 = (_val(_row(bs, "TOPLAM VARLIKLAR", "AKTİF TOPLAMI"), 0),
+                _val(_row(bs, "TOPLAM VARLIKLAR", "AKTİF TOPLAMI"), 1))
+    _ni_labels = ("DÖNEM KARI (ZARARI)", "23.1 Grubun Karı/Zararı",
+                  "XXIII. NET DÖNEM KARI/ZARARI (XVII+XXII)", "3- Dönem Net Kar veya Zararı")
+    ni0, ni1 = _val(_row(inc, *_ni_labels), 0), _val(_row(inc, *_ni_labels), 1)
     cfo0 = _val(_row(cf, " İşletme Faaliyetlerinden Kaynaklanan Net Nakit",
                       "İşletme Faaliyetlerinden Kaynaklanan Net Nakit"), 0)
-    ca0, ca1 = _val(_row(bs, "Dönen Varlıklar"), 0), _val(_row(bs, "Dönen Varlıklar"), 1)
-    cl0, cl1 = _val(_row(bs, "Kısa Vadeli Yükümlülükler"), 0), _val(_row(bs, "Kısa Vadeli Yükümlülükler"), 1)
-    ltd0, ltd1 = _val(_row(bs, "Uzun Vadeli Yükümlülükler"), 0), _val(_row(bs, "Uzun Vadeli Yükümlülükler"), 1)
+    # Sigorta (UFRS) sablonu cari/duran varlik ayrimini industrial'den FARKLI
+    # etiketlerle ama AYNI kavramla tutuyor (banka sablonunda bu ayrim yok --
+    # asagidaki etiketler bulunamaz, criterion_6 dogal olarak None kalir).
+    _ca_labels = ("Dönen Varlıklar", "I- Cari Varlıklar Toplamı")
+    _cl_labels = ("Kısa Vadeli Yükümlülükler", "III - Kısa Vadeli Yükümlülükler Toplamı")
+    _ltd_labels = ("Uzun Vadeli Yükümlülükler", "IV- Uzun Vadeli Yükümlülükler Toplamı")
+    ca0, ca1 = _val(_row(bs, *_ca_labels), 0), _val(_row(bs, *_ca_labels), 1)
+    cl0, cl1 = _val(_row(bs, *_cl_labels), 0), _val(_row(bs, *_cl_labels), 1)
+    ltd0, ltd1 = _val(_row(bs, *_ltd_labels), 0), _val(_row(bs, *_ltd_labels), 1)
     gp0, gp1 = _val(_row(inc, "BRÜT KAR (ZARAR)"), 0), _val(_row(inc, "BRÜT KAR (ZARAR)"), 1)
     rev0, rev1 = _val(_row(inc, "Satış Gelirleri"), 0), _val(_row(inc, "Satış Gelirleri"), 1)
     capital_raise0 = _val(_row(cf, "Sermaye Artırımı"), 0)
@@ -538,28 +622,50 @@ def live_piotroski_raw_criteria(ticker: str, as_of_date: str) -> dict:
     turn0 = safe_div(rev0, ta0)
     turn1 = safe_div(rev1, ta1)
 
-    def bit(cond):
-        return None if cond is None else (1 if cond else 0)
+    def bit(cmp, *vals):
+        """cmp(*vals) sonucunu 0/1'e cevirir; vals'tan biri None ise (banka/sigorta
+        sablonunda o satirin hic olmadigi durum dahil) None doner -- 'hesaplanamiyor'
+        ile 'kriter karsilanmadi' (0) birbirine KARISTIRILMAZ (bkz. core/piotroski.py
+        criteria_computable). ONEMLI: eskiden bu Python'un 'and' kisa devresine
+        dayaniyordu (orn. 'roa0 is not None and roa0 > 0') -- roa0 None oldugunda
+        bu ifade False (0) donuyordu, None DEGIL; yani "hesaplanamiyor" durumu
+        sessizce "kriter karsilanmadi" sayiliyordu. Banka/sigorta gibi bazi
+        kriterlerin YAPISAL olarak hesaplanamadigi (current ratio/margin/turnover/
+        capital raise gibi kavramlarin bile var olmadigi) durumlarda bu fark
+        onemli hale geliyor -- bu yuzden acikca None-guard edildi."""
+        if any(v is None for v in vals):
+            return None
+        return 1 if cmp(*vals) else 0
 
     return {
-        "criterion_1": bit(roa0 is not None and roa0 > 0),
-        "criterion_2": bit(cfo0 is not None and cfo0 > 0),
-        "criterion_3": bit(roa0 is not None and roa1 is not None and roa0 > roa1),
-        "criterion_4": bit(cfo0 is not None and ni0 is not None and cfo0 > ni0),
-        "criterion_5": bit(lev0 is not None and lev1 is not None and lev0 < lev1),
-        "criterion_6": bit(cur_ratio0 is not None and cur_ratio1 is not None and cur_ratio0 > cur_ratio1),
-        "criterion_7": bit(capital_raise0 is not None and capital_raise0 <= 0),
-        "criterion_8": bit(margin0 is not None and margin1 is not None and margin0 > margin1),
-        "criterion_9": bit(turn0 is not None and turn1 is not None and turn0 > turn1),
+        "criterion_1": bit(lambda r: r > 0, roa0),
+        "criterion_2": bit(lambda c: c > 0, cfo0),
+        "criterion_3": bit(lambda a, b: a > b, roa0, roa1),
+        "criterion_4": bit(lambda c, n: c > n, cfo0, ni0),
+        "criterion_5": bit(lambda a, b: a < b, lev0, lev1),
+        "criterion_6": bit(lambda a, b: a > b, cur_ratio0, cur_ratio1),
+        "criterion_7": bit(lambda c: c <= 0, capital_raise0),
+        "criterion_8": bit(lambda a, b: a > b, margin0, margin1),
+        # inflation_basis_truthful_labeling (v12 T0-3):
+        # Is Yatirim beslemesi nominal/tarihi maliyetli oldugundan, yuksek enflasyonda
+        # hasilat nominal siserken aktifler tarihi maliyetle kalir. Aktif devir hizi
+        # (turn0 > turn1) mekanik olarak siser ve neredeyse tum sirketlere bedava puan verir;
+        # bu nedenle nominal beslemede criterion_9 hesaplanamaz (None) kabul edilir.
+        "criterion_9": None,
     }
 
 
-def live_cashflow_for_sloan(ticker: str, as_of_date: str, net_income_hint: float) -> dict:
-    bs, inc, cf = _statements_cached(ticker)
+def live_cashflow_for_sloan(ticker: str, as_of_date: str, net_income_hint: float,
+                             ratio_profile: str | None = None) -> dict:
+    bs, inc, cf = _statements_cached(ticker, _financial_group_for_profile(ratio_profile))
+    # Banka/sigorta (UFRS) icin cf HER ZAMAN None -> cfo None kalir (bkz.
+    # _statements_cached); sloan.py bunu "not_computable" olarak ele alir,
+    # None ile aritmetik islem YAPMAZ.
     cfo = _val(_row(cf, " İşletme Faaliyetlerinden Kaynaklanan Net Nakit",
                      "İşletme Faaliyetlerinden Kaynaklanan Net Nakit"))
-    ta0 = _val(_row(bs, "TOPLAM VARLIKLAR"), 0)
-    ta1 = _val(_row(bs, "TOPLAM VARLIKLAR"), 1) if bs is not None and bs.shape[1] > 1 else None
+    _ta_labels = ("TOPLAM VARLIKLAR", "AKTİF TOPLAMI")
+    ta0 = _val(_row(bs, *_ta_labels), 0)
+    ta1 = _val(_row(bs, *_ta_labels), 1) if bs is not None and bs.shape[1] > 1 else None
     avg_assets = None
     if ta0 is not None:
         avg_assets = (ta0 + ta1) / 2 if ta1 is not None else ta0

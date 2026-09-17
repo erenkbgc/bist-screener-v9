@@ -21,7 +21,13 @@ from core import db
 from macro_mcp import server as macro_mcp
 from bist_mcp import server as bist_mcp
 
-HORIZONS_DAYS = [5, 20, 60]
+# prediction_horizon_evaluation_mismatch (v12 T0-1): core/targets.py::compute_long_term_target
+# ve run.py, uzun vadeli tezleri horizon_days=180 ile predictions tablosuna yaziyordu, ama
+# 180 bu listede YOKTU -- 180 gunluk HICBIR tahmin (evrenin tum uzun-vadeli tezleri) asla
+# degerlendirilemiyordu. Kanit (2026-09-17, data/bist_history.db): 108 predictions satirinin
+# 74'u (%69) horizon_days=180, outcomes tablosu 0 satir. 180 gun kisa vade (20) ile ayni
+# kesitte oldugu icin ORTUSME artiyor -- bkz. asagidaki independence_caveat guncellemesi.
+HORIZONS_DAYS = [5, 20, 60, 180]
 
 ALLOWED_CLAIMS = [
     "tanimlayici izleme metrigi (hit_rate, ortalama fazla getiri) belirtilen donem icin",
@@ -140,8 +146,11 @@ def summarize_outcomes(as_of_date: str, lookback_months: int = 6) -> dict:
 
     return {
         "is_not_a_backtest": True,
-        "independence_caveat": "T+5/T+20/T+60 ufuklari gunluk secilen adaylarda ortusur; "
-                                "N gunluk takip N bagimsiz gozlem anlamina gelmez.",
+        "independence_caveat": "T+5/T+20/T+60/T+180 ufuklari gunluk secilen adaylarda ortusur "
+                                "(180 gunluk uzun vadeli tezler 20 gunluk kisa vadeli adaylarla "
+                                "ayni donemde secilebilir); N gunluk takip N bagimsiz gozlem "
+                                "anlamina gelmez. Her ufuk asagida AYRI gosterilir, tek bir "
+                                "birlesik basari orani verilmez.",
         "by_horizon": summary,
         "allowed_claims": ALLOWED_CLAIMS,
         "banned_claims": BANNED_CLAIMS,

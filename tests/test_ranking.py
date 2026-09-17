@@ -1,4 +1,5 @@
 """min_peer_n geri dusus testi, ratio_profile testi."""
+from core import ranking
 from core.ranking import build_peer_group, compute_valuation_z, RATIO_PROFILES, MIN_PEER_N
 
 
@@ -43,6 +44,26 @@ def test_sector_level_used_when_enough_peers():
 def test_ratio_profile_bank_excludes_ev_metrics():
     assert "ev_ebitda" not in RATIO_PROFILES["bank"]["metrics"]
     assert "ev_ebitda" in RATIO_PROFILES["bank"].get("forbidden_metrics", [])
+
+
+def test_compute_valuation_z_never_uses_forbidden_metrics(monkeypatch):
+    """dead_hard_filters_repair (v12 T0-2): forbidden_metrics eskiden dekoratifti --
+    hicbir kod bakmiyordu, yalnizca RATIO_PROFILES['bank']['metrics'] zaten
+    'ev_ebitda' ICERMEDIGI icin zararsizdi. Bu, savunma hattinin gercekten
+    calistigini dogrulamiyor -- bu test, 'metrics' listesine YANLISLIKLA
+    yasakli bir metrik eklendigi (gelecekte ev_ebitda_net_debt_recovery
+    sonrasi olabilecek bir hata) senaryosunu simule edip valuation_z'nin
+    yine de o metrigi KULLANMADIGINI dogruluyor."""
+    monkeypatch.setitem(ranking.RATIO_PROFILES, "bank", {
+        "metrics": ["ev_ebitda"],  # yanlislikla forbidden bir metrik eklenmis
+        "direction": {"ev_ebitda": "lower_better"},
+        "forbidden_metrics": ["ev_ebitda", "ev_sales", "net_debt_ebitda"],
+    })
+    banks = [{"ticker": f"BANK{i}", "sector": "XBANK", "supersector": "XUMAL",
+              "ratio_profile": "bank", "reporting_basis": "nominal",
+              "ev_ebitda": 5.0 + i} for i in range(10)]
+    result = compute_valuation_z(banks[0], banks)
+    assert result["valuation_z"] is None  # forbidden metrik filtrelendigi icin skorlanamaz
 
 
 def test_ratio_profile_only_compares_within_same_profile():

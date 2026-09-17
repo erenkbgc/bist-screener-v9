@@ -9,23 +9,43 @@ from core import db, basis_guard
 from bist_mcp import server as bist_mcp
 
 
-def calculate_piotroski_scores(as_of_date: str, universe_rows: list[dict]) -> list[dict]:
+def calculate_piotroski_scores(as_of_date: str, universe_rows: list[dict],
+                               fundamentals_by_ticker: dict | None = None) -> list[dict]:
     rows = []
     for u in universe_rows:
         ticker = u["ticker"]
-        reporting_basis = basis_guard.resolve_reporting_basis(u["regulator"], None)
+        fnd = fundamentals_by_ticker.get(ticker) if fundamentals_by_ticker else None
+        if fnd and fnd.get("reporting_basis"):
+            reporting_basis = fnd["reporting_basis"]
+        else:
+            reporting_basis = basis_guard.resolve_reporting_basis(u["regulator"], None)
+
         if not basis_guard.is_scorable(reporting_basis):
             rows.append({"as_of_date": as_of_date, "ticker": ticker, "criteria_met": 0,
                          "criteria_computable": 0, "normalized_score": None,
                          "null_reason": "unknown_reporting_basis"})
             continue
 
-        raw = bist_mcp.get_piotroski_raw_criteria(ticker, as_of_date)
-        # basis_guard.rule: "Baz kirigi olan kriterler null sayilir, skor hesaplanabilen
-        # kriter sayisina orantilanir." Donem-karsilastirmali (buyume) kriterler icin
-        # onceki donemin baz bilgisi bu mock katmaninda tek donemli oldugundan basis_break
-        # burada tetiklenmez; gercek veri entegrasyonunda onceki donem reporting_basis'i
-        # bu noktada karsilastirilip ilgili kriterler None yapilir.
+        raw = dict(bist_mcp.get_piotroski_raw_criteria(ticker, as_of_date, u["ratio_profile"]))
+
+        # inflation_basis_truthful_labeling (v12 T0-3):
+        # 1. basis_break kontrolu: cari donem ile onceki donem arasinda baz farkliligi
+        #    varsa (orn. nominal vs adjusted) veya onceki donem baz bilgisi yoksa
+        #    tum donem-karsilastirmali kriterler (3, 5, 6, 8, 9) None yapilir.
+        prior_basis = u.get("prior_reporting_basis", reporting_basis)
+        if basis_guard.basis_break(reporting_basis, prior_basis):
+            for c in ("criterion_3", "criterion_5", "criterion_6", "criterion_8", "criterion_9"):
+                if c in raw:
+                    raw[c] = None
+
+        # 2. Nominal besleme enflasyon kirlenmesi: Is Yatirim beslemesi nominal/tarihi
+        #    maliyetli oldugundan, yuksek enflasyonda hasilat cari TL ile artarken
+        #    aktifler tarihi maliyetle kalir. Aktif devir hizi (kriter 9 = hasilat / aktifler)
+        #    bu yuzden mekanik olarak siser ve neredeyse her sirkete yapay puan verir.
+        #    Nominal bazda kriter 9 guvenilir olmadigindan hesaplanamaz (None) kabul edilir.
+        if reporting_basis == "nominal" and "criterion_9" in raw:
+            raw["criterion_9"] = None
+
         computable = {k: v for k, v in raw.items() if v is not None}
         criteria_met = sum(1 for v in computable.values() if v == 1)
         criteria_computable = len(computable)

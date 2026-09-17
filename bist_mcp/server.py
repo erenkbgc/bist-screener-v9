@@ -80,18 +80,19 @@ def get_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profile
     return md.mock_fundamentals(ticker, as_of_date, regulator, ratio_profile)
 
 
-def get_piotroski_raw_criteria(ticker: str, as_of_date: str) -> dict:
+def get_piotroski_raw_criteria(ticker: str, as_of_date: str, ratio_profile: str | None = None) -> dict:
     if _live_enabled():
         from core import live_data as ld
-        return ld.live_piotroski_raw_criteria(ticker, as_of_date)
-    return md.mock_piotroski_inputs(ticker, as_of_date)
+        return ld.live_piotroski_raw_criteria(ticker, as_of_date, ratio_profile)
+    return md.mock_piotroski_inputs(ticker, as_of_date, ratio_profile)
 
 
-def get_cashflow_for_sloan(ticker: str, as_of_date: str, net_income_hint: float) -> dict:
+def get_cashflow_for_sloan(ticker: str, as_of_date: str, net_income_hint: float,
+                            ratio_profile: str | None = None) -> dict:
     if _live_enabled():
         from core import live_data as ld
-        return ld.live_cashflow_for_sloan(ticker, as_of_date, net_income_hint)
-    return md.mock_cashflow_for_sloan(ticker, as_of_date, net_income_hint)
+        return ld.live_cashflow_for_sloan(ticker, as_of_date, net_income_hint, ratio_profile)
+    return md.mock_cashflow_for_sloan(ticker, as_of_date, net_income_hint, ratio_profile)
 
 
 def get_dividend_history(ticker: str, as_of_date: str) -> dict:
@@ -132,14 +133,14 @@ def get_current_price(ticker: str, price_rows: list[dict]) -> dict:
     return {"price": last_close, "source": "last_close"}
 
 
-def prefetch(tickers: list[str]) -> None:
+def prefetch(universe_rows: list[dict]) -> None:
     """Canli modda, evrenin ihtiyac duyacagi tum ag cagrilarini PARALEL olarak
     onceden cache'ler (bkz. core/live_data.py::prefetch_all) -- boylece
     run.py'deki sirali per-ticker dongulerinin her biri artik cache'ten okur.
     Mock modda no-op'tur (mock veri zaten anlik/CPU-bound)."""
     if _live_enabled():
         from core import live_data as ld
-        ld.prefetch_all(tickers)
+        ld.prefetch_all(universe_rows)
 
 
 if HAS_MCP:

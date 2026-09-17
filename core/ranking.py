@@ -115,7 +115,14 @@ def score_metric_z(candidate_value: float, peer_values: list[float], direction: 
 def compute_valuation_z(candidate: dict, all_candidates: list[dict]) -> dict:
     profile = RATIO_PROFILES[candidate["ratio_profile"]]
     peers, peer_level, confidence = build_peer_group(candidate, all_candidates)
-    metrics = profile["metrics"]
+    # dead_hard_filters_repair (v12 T0-2): forbidden_metrics su ana kadar
+    # yalnizca DEKORATIF bir alandi -- hicbir kod bakmiyordu, zararsizdi cunku
+    # ev_ebitda/ev_sales zaten kalici None'di (bkz. ev_ebitda_net_debt_recovery).
+    # O madde bu alanlari canlandirdiginda profile['metrics'] listesine yanlislikla
+    # bir yasakli metrik eklenirse (orn. bank/insurance/reit'e ev_ebitda sizarsa)
+    # SAVUNMA HATTI olarak burada acikca filtreleniyor.
+    forbidden = set(profile.get("forbidden_metrics", []))
+    metrics = [m for m in profile["metrics"] if m not in forbidden]
     z_scores = []
     for metric in metrics:
         peer_values = [p.get(metric) for p in peers if p.get(metric) is not None]
