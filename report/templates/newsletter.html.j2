@@ -71,6 +71,25 @@
   td { color:#334155; }
   tr:last-child td { border-bottom:none; }
 
+  /* Ana Ozet Tablolari */
+  .table-container { overflow-x:auto; margin:16px 0 16px; border:1px solid #e5e7eb; border-radius:10px; background:#ffffff; }
+  .summary-table { width:100%; border-collapse:collapse; font-size:13px; margin:0; }
+  .summary-table th { background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; padding:12px 14px; border-bottom:2px solid #e2e8f0; }
+  .summary-table td { padding:12px 14px; border-bottom:1px solid #f1f5f9; color:#1e293b; vertical-align:middle; }
+  .summary-table tr:hover { background:#f8fafc; }
+  .summary-table tr:last-child td { border-bottom:none; }
+  .summary-table .col-ticker { font-weight:800; font-size:14px; color:#0f172a; white-space:nowrap; }
+  .summary-table .col-num { text-align:right; font-variant-numeric:tabular-nums; }
+  .summary-table .col-roi { text-align:right; font-weight:700; color:#059669; font-variant-numeric:tabular-nums; }
+  .summary-table .col-stop { text-align:right; font-weight:700; color:#dc2626; font-variant-numeric:tabular-nums; }
+  .summary-table .col-dcf { text-align:right; color:#475569; font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+  /* Hizli Kopyalama Kutusu */
+  .quick-copy-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; margin-top:8px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap; color:#334155; }
+
+  /* Detay Karti (Accordion Icinde) */
+  .detail-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:18px; margin-bottom:16px; }
+
   /* Liste ve Yardimci Siniflar */
   ul { margin:12px 0; padding-left:20px; color:#475569; font-size:13px; }
   li { margin-bottom:6px; }
@@ -137,10 +156,56 @@
     <div class="section-sub">~6 aylik ufuk, sektor ici goreli degerlemeye dayali hedef fiyat hesabi.</div>
 
     {% if long_term_candidates %}
-    {% for c in long_term_candidates %}
-    <div class="stock-card">
-      <div class="stock-card-inner">
+    <div class="table-container">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Hisse</th>
+            <th class="col-num">Alis (Guncel)</th>
+            <th class="col-num">Hedef Fiyat</th>
+            <th class="col-roi">Beklenen Getiri</th>
+            <th class="col-dcf">DCF Araligi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in long_term_candidates %}
+          <tr>
+            <td class="col-ticker">
+              {{ c.ticker }}
+              <span class="badge badge-{{ c.candidate_state }}" style="font-size:10px; padding:2px 5px; margin-left:4px;">{{ c.candidate_state }}</span>
+            </td>
+            <td class="col-num">{{ c.current_price | fmt }}</td>
+            <td class="col-num" style="font-weight:600; color:#0f172a;">{{ c.target_price | fmt }}</td>
+            <td class="col-roi">%{{ c.expected_roi_pct | fmt }}</td>
+            <td class="col-dcf">
+              {% if c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %}
+                {{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}
+              {% elif c.gordon and c.gordon.fair_value_low is not none and not c.gordon.null_reason %}
+                {{ c.gordon.fair_value_low | fmt }} - {{ c.gordon.fair_value_high | fmt }} <span class="muted">(G)</span>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
+    <details style="margin-bottom:16px;">
+      <summary style="font-size:12px; font-weight:600; color:#475569; padding:8px 12px; background:#f1f5f9; border-radius:6px; cursor:pointer;">Hizli Kopyala (Metin Formati)</summary>
+      <div class="quick-copy-box">
+{%- for c in long_term_candidates %}
+* {{ c.ticker }} | Alis: {{ c.current_price | fmt }} -> Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %} | DCF: {{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}{% endif %}
+{%- endfor %}
+      </div>
+    </details>
+
+    <details>
+      <summary style="font-size:13px; font-weight:700; color:#1e293b; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:12px; cursor:pointer;">Aday Bazli Detayli Tezler ve Metrik Tablolari</summary>
+      <div style="margin-top:12px;">
+      {% for c in long_term_candidates %}
+      <div class="detail-card">
         <div class="stock-head">
           <span class="ticker">{{ c.ticker }}</span>
           <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
@@ -174,66 +239,65 @@
         </div>
         {% endif %}
 
-        <details>
-          <summary>Detaylari Incele</summary>
-          <ul style="margin-top:12px;">{% for b in c.thesis_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
-          <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
-            <span class="highlight">Bozulma Kosulu:</span> {{ c.invalidation_condition_display }}
-          </div>
+        <ul style="margin-top:12px;">{% for b in c.thesis_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+        <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
+          <span class="highlight">Bozulma Kosulu:</span> {{ c.invalidation_condition_display }}
+        </div>
 
-          <table>
-            <tbody>
-              <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%{{ c.hurdle_rate_pct | fmt }}</td></tr>
-              <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
-              <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%{{ c.excess_over_beta_hurdle_pct | fmt }}</td></tr>
-              <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">{{ c.piotroski_normalized_score | fmt }}</td></tr>
-              <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">{{ c.peer_group_used }} (n={{ c.peer_n }})</td></tr>
-              <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
-              <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">{{ c.reporting_basis }}</td></tr>
-              <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">{{ c.tedbir_level | fmt }}</td></tr>
-              <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%{{ c.retail_pct | fmt }}</td></tr>
-              {% if c.net_expected_roi_pct is not none %}
-              <tr><td data-label="Metrik">Net Getiri (Maliyet Sonrasi)</td><td data-label="Deger">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
-              {% endif %}
-            </tbody>
-          </table>
-
-          {% if c.sloan_flag %}
-          <div class="small risk" style="margin-top:12px; padding:10px;">
-            <b>Uyari:</b> elevated_earnings_quality_risk (peer_percentile: {{ c.sloan_peer_percentile | fmt }})
-          </div>
-          {% endif %}
-
-          <div class="small" style="margin-top:12px;">FCF getirisi (USD bazli, bilgi amacli): %{{ c.fcf_yield_usd | fmt }}</div>
-
-          {% if c.gordon %}
-          <div class="exp-box">
-            <div class="small highlight" style="margin-top:0;">Gordon Buyume Referansi (Deneysel, ana karara girmez)</div>
-            {% if c.gordon.null_reason %}
-            <div class="small muted" style="margin-top:4px;">Hesaplanamadi: {{ c.gordon.null_reason }}</div>
-            {% else %}
-            <div class="small" style="margin-top:4px;">Adil deger araligi: <b>{{ c.gordon.fair_value_low | fmt }} - {{ c.gordon.fair_value_high | fmt }}</b><br>
-              <span class="muted">(Iskonto senaryolari: %{{ c.gordon.discount_rate_low | fmt }} / %{{ c.gordon.discount_rate_base | fmt }} / %{{ c.gordon.discount_rate_high | fmt }})</span></div>
+        <table>
+          <tbody>
+            <tr><td data-label="Metrik">Giris fiyati</td><td data-label="Deger">{{ c.entry_price | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%{{ c.hurdle_rate_pct | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%{{ c.excess_over_beta_hurdle_pct | fmt }}</td></tr>
+            <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">{{ c.piotroski_normalized_score | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">{{ c.peer_group_used }} (n={{ c.peer_n }})</td></tr>
+            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
+            <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">{{ c.reporting_basis }}</td></tr>
+            <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">{{ c.tedbir_level | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%{{ c.retail_pct | fmt }}</td></tr>
+            {% if c.net_expected_roi_pct is not none %}
+            <tr><td data-label="Metrik">Net Getiri (Maliyet Sonrasi)</td><td data-label="Deger">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
             {% endif %}
-          </div>
-          {% endif %}
+          </tbody>
+        </table>
 
-          {% if c.dcf %}
-          <div class="exp-box">
-            <div class="small highlight" style="margin-top:0;">DCF Referansi (Deneysel, ana karara girmez)</div>
-            {% if c.dcf.null_reason %}
-            <div class="small muted" style="margin-top:4px;">Hesaplanamadi: {{ c.dcf.null_reason }}</div>
-            {% else %}
-            <div class="small" style="margin-top:4px;">Adil deger araligi: <b>{{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}</b>
-              (mevcut fiyata gore %{{ c.dcf.premium_discount_low_pct | fmt }} / %{{ c.dcf.premium_discount_high_pct | fmt }})<br>
-              <span class="muted">(WACC: %{{ c.dcf.wacc_pct | fmt }}, terminal buyume: %{{ c.dcf.terminal_growth_pct | fmt }})</span></div>
-            {% endif %}
-          </div>
+        {% if c.sloan_flag %}
+        <div class="small risk" style="margin-top:12px; padding:10px;">
+          <b>Uyari:</b> elevated_earnings_quality_risk (peer_percentile: {{ c.sloan_peer_percentile | fmt }})
+        </div>
+        {% endif %}
+
+        <div class="small" style="margin-top:12px;">FCF getirisi (USD bazli, bilgi amacli): %{{ c.fcf_yield_usd | fmt }}</div>
+
+        {% if c.gordon %}
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">Gordon Buyume Referansi (Deneysel, ana karara girmez)</div>
+          {% if c.gordon.null_reason %}
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: {{ c.gordon.null_reason }}</div>
+          {% else %}
+          <div class="small" style="margin-top:4px;">Adil deger araligi: <b>{{ c.gordon.fair_value_low | fmt }} - {{ c.gordon.fair_value_high | fmt }}</b><br>
+            <span class="muted">(Iskonto senaryolari: %{{ c.gordon.discount_rate_low | fmt }} / %{{ c.gordon.discount_rate_base | fmt }} / %{{ c.gordon.discount_rate_high | fmt }})</span></div>
           {% endif %}
-        </details>
+        </div>
+        {% endif %}
+
+        {% if c.dcf %}
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">DCF Referansi (Deneysel, ana karara girmez)</div>
+          {% if c.dcf.null_reason %}
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: {{ c.dcf.null_reason }}</div>
+          {% else %}
+          <div class="small" style="margin-top:4px;">Adil deger araligi: <b>{{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}</b>
+            (mevcut fiyata gore %{{ c.dcf.premium_discount_low_pct | fmt }} / %{{ c.dcf.premium_discount_high_pct | fmt }})<br>
+            <span class="muted">(WACC: %{{ c.dcf.wacc_pct | fmt }}, terminal buyume: %{{ c.dcf.terminal_growth_pct | fmt }})</span></div>
+          {% endif %}
+        </div>
+        {% endif %}
       </div>
-    </div>
-    {% endfor %}
+      {% endfor %}
+      </div>
+    </details>
     {% else %}
     <div class="empty-note">Bugun icin uzun vade adayi bulunmuyor.</div>
     {% endif %}
@@ -242,13 +306,53 @@
   <!-- 3. Kisa Vade Adaylari -->
   <div class="card">
     <h2 class="section-title">Kisa Vade Onerileri</h2>
-    <div class="section-sub">~20 gunluk ufuk, hacim teyitli teknik kirilim. "Giris seviyesi" 20 gunluk ortalamaya cekilme bazalidir.</div>
+    <div class="section-sub">~20 gunluk ufuk, hacim teyitli teknik kirilim. "Alis (Giris)" 20 gunluk ortalamaya cekilme bazalidir.</div>
 
     {% if short_term_candidates %}
-    {% for c in short_term_candidates %}
-    <div class="stock-card">
-      <div class="stock-card-inner">
+    <div class="table-container">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Hisse</th>
+            <th class="col-num">Alis (Giris)</th>
+            <th class="col-num">Hedef (ATR)</th>
+            <th class="col-roi">Beklenen Getiri</th>
+            <th class="col-stop">Stop-Loss</th>
+            <th class="col-num">Mevcut Fiyat</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in short_term_candidates %}
+          <tr>
+            <td class="col-ticker">
+              {{ c.ticker }}
+              <span class="badge badge-{{ c.candidate_state }}" style="font-size:10px; padding:2px 5px; margin-left:4px;">{{ c.candidate_state }}</span>
+            </td>
+            <td class="col-num">{{ c.entry_price | fmt }}</td>
+            <td class="col-num" style="font-weight:600; color:#0f172a;">{{ c.target_price | fmt }}</td>
+            <td class="col-roi">%{{ c.expected_roi_pct | fmt }}</td>
+            <td class="col-stop">{{ c.stop_loss | fmt }}</td>
+            <td class="col-num">{{ c.current_price | fmt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
+    <details style="margin-bottom:16px;">
+      <summary style="font-size:12px; font-weight:600; color:#475569; padding:8px 12px; background:#f1f5f9; border-radius:6px; cursor:pointer;">Hizli Kopyala (Metin Formati)</summary>
+      <div class="quick-copy-box">
+{%- for c in short_term_candidates %}
+* {{ c.ticker }} | Alis: {{ c.entry_price | fmt }} | Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}) | Stop: {{ c.stop_loss | fmt }} | Mevcut: {{ c.current_price | fmt }}
+{%- endfor %}
+      </div>
+    </details>
+
+    <details>
+      <summary style="font-size:13px; font-weight:700; color:#1e293b; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:12px; cursor:pointer;">Aday Bazli Detayli Tezler ve Metrik Tablolari</summary>
+      <div style="margin-top:12px;">
+      {% for c in short_term_candidates %}
+      <div class="detail-card">
         <div class="stock-head">
           <span class="ticker">{{ c.ticker }}</span>
           <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
@@ -274,23 +378,22 @@
           </div>
         </div>
 
-        <details>
-          <summary>Detaylari Incele</summary>
-          <table>
-            <tbody>
-              <tr><td data-label="Metrik">Hacim teyidi (20g orani)</td><td data-label="Deger">{{ c.volume_ratio_20d | fmt }}</td></tr>
-              <tr><td data-label="Metrik">Hurdle uzeri fazla</td><td data-label="Deger" class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
-              <tr><td data-label="Metrik">Katalizor skoru</td><td data-label="Deger">{{ c.catalyst_score | fmt }}</td></tr>
-              <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
-              {% if c.net_expected_roi_pct is not none %}
-              <tr><td data-label="Metrik">Net Getiri (Maliyet Sonrasi)</td><td data-label="Deger">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
-              {% endif %}
-            </tbody>
-          </table>
-        </details>
+        <table>
+          <tbody>
+            <tr><td data-label="Metrik">Hacim teyidi (20g orani)</td><td data-label="Deger">{{ c.volume_ratio_20d | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%{{ c.hurdle_rate_pct | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Hurdle uzeri fazla</td><td data-label="Deger" class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Katalizor skoru</td><td data-label="Deger">{{ c.catalyst_score | fmt }}</td></tr>
+            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
+            {% if c.net_expected_roi_pct is not none %}
+            <tr><td data-label="Metrik">Net Getiri (Maliyet Sonrasi)</td><td data-label="Deger">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
+            {% endif %}
+          </tbody>
+        </table>
       </div>
-    </div>
-    {% endfor %}
+      {% endfor %}
+      </div>
+    </details>
     {% else %}
     <div class="empty-note">Bugun icin kisa vade adayi bulunmuyor.</div>
     {% endif %}
