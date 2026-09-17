@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-162%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-172%20passing-brightgreen)
 ![Backtest](https://img.shields.io/badge/backtest-walk--forward%20%7C%20backtrader-blueviolet)
 ![Status](https://img.shields.io/badge/status-active%20research%20v13-orange)
 
@@ -29,7 +29,7 @@
   - [Universe Construction](#universe-construction)
   - [Cross-Sectional Ranking](#cross-sectional-ranking)
   - [Financial Quality](#financial-quality)
-  - [Valuation](#valuation)
+  - [Multi-Factor Valuation Triangle](#multi-factor-valuation-triangle-değerleme-üçgeni)
   - [Hurdle Rate](#hurdle-rate)
   - [Dynamic Risk Management & Position Sizing](#dynamic-risk-management--position-sizing)
   - [Catalysts & KAP](#catalysts--kap)
@@ -160,18 +160,37 @@ This accounts for the fact that different sectors naturally carry different valu
 
 **Sloan Accrual** — measures the extent to which reported earnings are backed by actual cash generation, surfacing divergence between accounting earnings and cash flow.
 
-### Valuation
+### Multi-Factor Valuation Triangle (Değerleme Üçgeni)
 
-The system does **not** source target prices from external analyst consensus. Instead, it computes its own peer-relative valuation:
+Single-metric valuations are fragile: peer multiples mislead at cyclical tops, and standalone DCF models are hyper-sensitive to growth assumptions. The system synthesizes three independent valuation pillars into an institutional-grade fair value range:
 
 ```mermaid
-flowchart LR
-    A[Company Metrics] --> D[Model Target Price]
-    B[Peer Group] --> D
-    C[Relative Valuation] --> D
+flowchart TD
+    A[Valuation Triangle] --> B[DCF: 40%]
+    A --> C[Peer Multiples: 35%]
+    A --> D[Quality Premium: 25%]
+    B --> E[WACC + Terminal Growth Scenarios]
+    C --> F[Sector Median P/E, EV/EBITDA, P/B, NAV]
+    D --> G[ROE vs Cost of Capital + Piotroski + Net Cash]
+    E --> H[Weighted Fair Value Range: Low / Base / High]
+    F --> H
+    G --> H
 ```
 
-The resulting figure is explicitly a **model-generated estimate**, not analyst consensus, not a broker target, and not a guarantee.
+- **DCF Leg (40% Weight)**:
+  - Discounted cash flow utilizing WACC (weighted cost of equity via CAPM + cost of debt) and TCMB long-term inflation target.
+  - Multi-scenario growth modeling: Low (0%), Base (5%), and High (10%) FCF expansion.
+- **Peer Multiples Leg (35% Weight)**:
+  - Sector/peer-relative multiples: P/E, EV/EBITDA, and P/B.
+  - Strict sector defenses: EV/EBITDA is forbidden for financial institutions and REITs (GYO).
+  - **REIT & Holding NAV**: For GYO stocks, Net Asset Value is calculated directly from the balance sheet ($\text{Portfolio Value} - \text{Net Debt} \,/\, \text{Shares}$), and traded discounts are evaluated against peer median discounts (`nav_discount`).
+- **Quality Premium Leg (25% Weight)**:
+  - Graham-Buffett intrinsic economic rent anchor based on Return on Equity vs. Cost of Capital ($\text{Fair } P/B \approx ROE \,/\, r_e$).
+  - Modified dynamically by balance sheet strength: Piotroski F-Score (+10% / 0% / -10%), net cash balance sheet (+10% / +5% / 0% / -10%), and excess ROE.
+- **Dynamic Normalization**:
+  If a leg is unavailable (e.g. negative FCF or non-computable metrics), the remaining available weights re-normalize proportionally so that no valid data point is discarded.
+- **Outputs**:
+  Produces `fair_value_low`, `fair_value_base`, `fair_value_high`, and `valuation_method`, with `target_price = fair_value_base`.
 
 ### Hurdle Rate
 
@@ -488,7 +507,7 @@ python -m bist_mcp.server
 pytest tests/ -v
 ```
 
-The suite (162 tests) covers:
+The suite (172 tests) covers:
 
 <details>
 <summary>Test coverage areas</summary>
@@ -509,6 +528,8 @@ The suite (162 tests) covers:
 - Walk-forward backtesting engine & zero look-ahead bias
 - Backtrader Cerebro runner & institutional performance metrics
 - Backtest database persistence and trade audit logs
+- Multi-Factor Valuation Triangle (DCF 40% + Peer Multiples 35% + Quality Premium 25%)
+- GYO & Holding balance sheet NAV / discount modeling
 
 </details>
 
@@ -548,7 +569,7 @@ These are **starting assumptions**, not empirically validated optimal parameters
 | Investor count / retail-institutional split | No reliable free data source |
 | TCMB expectation data | Partially unavailable |
 | Tedbir / VBTS data (live mode) | May be incomplete |
-| GYO / holding NAV calculation | In development (v13 P0 Multi-Factor Valuation) |
+| GYO / holding NAV calculation | Implemented (v13 P0 Değerleme Üçgeni) |
 | Bank & insurance sector ratios | Some sector-specific ratios not computable |
 | Listing-day, volume, KAP classification | Some fields rely on proxy assumptions |
 
@@ -575,7 +596,7 @@ Active engineering is driving the **v13 Institutional Quality Upgrade**:
 - **P0 Core Risk & Methodology**
   - [x] Dynamic Entry / Stop-Loss / Fixed Fractional Position Sizing
   - [x] Walk-Forward Backtesting Engine & Backtrader Integration
-  - [ ] Multi-Factor Valuation Triangle (DCF + Peer Multiples + Quality Premium + GYO NAV)
+  - [x] Multi-Factor Valuation Triangle (DCF + Peer Multiples + Quality Premium + GYO NAV)
   - [ ] Look-Ahead Bias & Survivorship Bias Guards
 - **P1 Execution & Monitoring**
   - [ ] AKD / Broker Distribution Analysis & Net Buying Concentration

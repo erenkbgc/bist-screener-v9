@@ -9,6 +9,7 @@ from __future__ import annotations
 from statistics import median
 
 from core.ranking import build_peer_group
+from core.valuation_triangle import compute_valuation_triangle
 
 # core/universe.py::MIN_VOLUME_TL_DEFAULT ile ayni taban: evrenin en ince ucundaki
 # hisseler (hacim tabanina yakin) burada baslar.
@@ -40,49 +41,33 @@ def _liquidity_buffer_multiplier(avg_volume_tl_20d: float | None) -> float:
     return MAX_LIQUIDITY_BUFFER - frac * (MAX_LIQUIDITY_BUFFER - 1.0)
 
 
-def compute_long_term_target(candidate: dict, all_candidates: list[dict]) -> dict:
+def compute_long_term_target(
+    candidate: dict,
+    all_candidates: list[dict],
+    macro_snapshot: dict | None = None,
+) -> dict:
+    """Coklu Degerleme Metodolojisi / Degerleme Ucgeni (v13 roadmap P0-3).
+    DCF (%40) + Emsal Carpanlar (%35) + Kalite Primi (%25).
+    GYO ve Holding icin NAV hesaplamasi.
+    """
     peers, peer_level, confidence = build_peer_group(candidate, all_candidates)
-    ratio_profile = candidate["ratio_profile"]
+    triangle = compute_valuation_triangle(candidate, peers, macro_snapshot=macro_snapshot)
 
-    if ratio_profile in ("bank", "insurance", "reit"):
-        # ranking.py::RATIO_PROFILES ucunde de ev_ebitda'yi forbidden_metrics sayiyor
-        # (finansal kuruluslar VE GYO'lar icin EV/EBITDA kavrami anlamsiz -- GYO'da
-        # amortisman/yeniden degerleme muhasebesi EBITDA'yi carpitir) -- generic 'else'
-        # bacagina dusmemeli, aksi halde leg2 sessizce yasakli bir carpan kullanirdi.
-        # KOK NEDEN (long_term_target_price_outlier_cap, 2026-09-15 IHLGM %443 asiri
-        # hedef): reit o zaman sector='BILINMIYOR' -> 'industrial' fallback'ine dustugu
-        # icin bu dal HIC calismiyordu; fintables entegrasyonu (2026-09-16) dogru
-        # profili verse bile targets.py reit'i ayri ele almadigi icin sorun devam
-        # ederdi -- bu yuzden ayrica duzeltildi.
-        pe_med = _peer_median(peers, "pe")
-        leg1 = pe_med * candidate["eps_ttm"] if (pe_med and candidate.get("eps_ttm")) else None
-        legs = [v for v in (leg1,) if v is not None]
-    elif ratio_profile == "holding":
-        nav_disc_med = _peer_median(peers, "nav_discount")
-        # NAV iskontosu medyani: mevcut piyasa degerinin, medyan iskontoya gore ima ettigi deger.
-        # NAV hesaplanamiyorsa (spec) skorlanmaz.
-        legs = []
-        if nav_disc_med is not None and candidate.get("market_cap"):
-            implied_nav = candidate["market_cap"] / (1 - nav_disc_med) if nav_disc_med < 1 else None
-            if implied_nav:
-                legs.append(implied_nav / candidate["market_cap"] * candidate.get("entry_price", 0))
-    else:
-        pe_med = _peer_median(peers, "pe")
-        ev_ebitda_med = _peer_median(peers, "ev_ebitda")
-        leg1 = pe_med * candidate["eps_ttm"] if (pe_med and candidate.get("eps_ttm")) else None
-        leg2 = None
-        if ev_ebitda_med and candidate.get("ebitda_ttm") is not None and candidate.get("net_debt") is not None \
-                and candidate.get("shares_outstanding"):
-            enterprise_value = ev_ebitda_med * candidate["ebitda_ttm"]
-            equity_value = enterprise_value - candidate["net_debt"]
-            leg2 = equity_value / candidate["shares_outstanding"]
-        legs = [v for v in (leg1, leg2) if v is not None]
-
-    target_price = sum(legs) / len(legs) if legs else None
     return {
-        "target_price": target_price, "horizon_days": 180,
-        "peer_group_used": peer_level, "peer_n": len(peers), "confidence": confidence,
-        "legs_used": len(legs),
+        "target_price": triangle["target_price"],
+        "fair_value_low": triangle["fair_value_low"],
+        "fair_value_base": triangle["fair_value_base"],
+        "fair_value_high": triangle["fair_value_high"],
+        "valuation_method": triangle["valuation_method"],
+        "weights_used": triangle["weights_used"],
+        "dcf_leg": triangle["dcf_leg"],
+        "peers_leg": triangle["peers_leg"],
+        "quality_leg": triangle["quality_leg"],
+        "horizon_days": 180,
+        "peer_group_used": peer_level,
+        "peer_n": len(peers),
+        "confidence": confidence,
+        "legs_used": triangle["legs_used"],
     }
 
 

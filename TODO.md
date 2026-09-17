@@ -21,10 +21,16 @@
   - Veritabani tablolari: `backtest_results` (ozet performans) ve `backtest_trades` (tekil islem kayitlari).
   - Canli test: `FORTE` hissesi uzerinde gercek 215 gunluk veriyle test edildi (8 islem, MDD sinirlamasi dogrulandi).
   - Testler: `tests/test_backtest.py` eklendi (4/4 basarili, genel suite 162/162 geciyor).
-- [ ] **3. Coklu Degerleme Metodolojisi (Degerleme Ucgeni)**
-  - DCF (%40) + Emsal Carpanlar (%35) + Kalite Primi (%25).
-  - GYO icin NAV (Net Aktif Degeri): Portfoy degeri - net borc / pay sayisi (`nav_discount` dolumu).
-  - Hedef fiyat = agirlikli ortalama fair value (`fair_value_low`, `fair_value_base`, `fair_value_high`).
+- [x] **3. Coklu Degerleme Metodolojisi (Degerleme Ucgeni)** — TAMAMLANDI (2026-09-17).
+  - DCF (%40): WACC, TCMB enflasyon hedefi (terminal g), FCF senaryolari (%0, %5, %10 buyume) `core/valuation_triangle.py::compute_dcf_leg`.
+  - Emsal Carpanlar (%35): Sanayi/teknoloji icin F/K, FD/FAVOK, PD/DD; Banka/Sigorta/GYO icin EV/EBITDA yasagi savunma hatti `core/valuation_triangle.py::compute_peers_leg`.
+  - Kalite Primi (%25): ROE vs Sermaye Maliyeti (Graham-Buffett EVA ekonomik kar), Piotroski F-Score mali saglik primi (+10%/0%/-10%), Dusuk Borc/Net Nakit bilanco gucu primi (+10%/+5%/0%/-10%) `core/valuation_triangle.py::compute_quality_leg`.
+  - GYO & Holding NAV: Yatirim Amacli Gayrimenkuller + Stoklar - Net Borc / Pay Sayisi ile hisse basina NAV ve `nav_discount` dolumu (`core/live_data.py::live_fundamentals`, `_val` DataFrame duplicate row destegi).
+  - Dinamik agirlik normalizasyonu: Herhangi bir bilesen verisizlik/uygunsuzluk nedeniyle hesaplanamazsa agirliklar diger bilesenler arasinda oransal olarak yeniden normalize edilir.
+  - Hedef fiyat = agirlikli ortalama fair value (`target_price = fair_value_base`).
+  - Ciktilar: `fair_value_low`, `fair_value_base`, `fair_value_high`, `valuation_method`, `predictions` tablosuna ve newsletter sablonuna entegre edildi.
+  - Canli testler: `FORTE` (Fiyat: 100.3, Hedef: 212.41, Adil Deger: 123.55 - 301.26 TL, DCF+Emsal+Kalite) ve `EKGYO` (Fiyat: 19.24, NAV/pay: 75.48 TL, NAV iskontosu: %74.5, Hedef: 20.48 TL) uzerinde canli verilerle dogrulandi.
+  - Testler: `tests/test_valuation_triangle.py` eklendi (10/10 basarili, genel suite 172/172 geciyor).
 - [ ] **4. Veri Kalitesi ve Survivorship Bias**
   - Delist / iflas eden hisselerin arsivlenmesi.
   - Fiyat duzeltmeleri: temettu, bedelsiz, sermaye artirimi.

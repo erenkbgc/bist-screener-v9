@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIST Tarama Bulteni - 2026-09-17</title>
+<style>
+  /* Temel Ayarlar ve Tipografi */
+  body { margin:0; padding:0; background-color:#f3f4f6; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#374151; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:740px; margin:0 auto; padding:24px 16px; }
+
+  /* Ana Kartlar */
+  .card { background-color:#ffffff; border:1px solid #e5e7eb; border-radius:12px; padding:28px; margin-bottom:24px; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+
+  /* Hero / Baslik Alani (Koyu Kurumsal Lacivert) */
+  .hero { background:linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); color:#ffffff; border-radius:12px; padding:32px 28px; margin-bottom:24px; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2); }
+  .hero h1 { font-size:24px; font-weight:800; margin:0 0 8px; letter-spacing:-0.02em; }
+  .hero .date { font-size:13px; color:#93c5fd; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:16px; }
+  .hero .headline { font-size:15px; font-weight:400; color:#e0e7ff; line-height:1.6; margin:0; }
+
+  /* Makro Etiketler (Pills) */
+  .pillrow { margin-top:20px; display:flex; flex-wrap:wrap; gap:10px; }
+  .pill { display:inline-flex; align-items:center; background-color:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#ffffff; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; letter-spacing:0.02em; backdrop-filter:blur(4px); }
+  .pill.alert { background-color:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.4); color:#fca5a5; }
+
+  /* Bolum Basliklari */
+  .section-title { font-size:18px; font-weight:700; color:#111827; margin:0 0 4px; letter-spacing:-0.01em; }
+  .section-sub { font-size:13px; color:#6b7280; margin:0 0 24px; font-weight:400; }
+
+  /* Hisse Kartlari */
+  .stock-card { border:1px solid #e5e7eb; border-radius:10px; padding:0; margin-bottom:20px; background:#ffffff; overflow:hidden; }
+  .stock-card-inner { padding:24px; }
+  .stock-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+  .ticker { font-size:20px; font-weight:800; color:#111827; letter-spacing:0.02em; }
+
+  /* Durum Etiketleri */
+  .badge { display:inline-block; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
+  .badge-STRONG_OPPORTUNITY { background:#dcfce7; color:#14532d; }
+  .badge-OPPORTUNITY { background:#dbeafe; color:#1e3a8a; }
+  .badge-WATCHLIST { background:#fef3c7; color:#78350f; }
+  .badge-NO_ACTION { background:#f3f4f6; color:#4b5563; }
+  .badge-QUARANTINE { background:#fee2e2; color:#7f1d1d; }
+
+  /* Veri Izgarasi (Terminal Stili) */
+  .price-row { display:flex; flex-wrap:wrap; margin:0 0 20px; background:#f8fafc; border-radius:8px; border:1px solid #f1f5f9; padding:16px; }
+  .price-box { flex:1; min-width:100px; border-right:1px solid #e2e8f0; padding-right:16px; margin-right:16px; }
+  .price-box:last-child { border-right:none; padding-right:0; margin-right:0; }
+  .price-box .lbl { font-size:11px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
+  .price-box .val { font-size:20px; font-weight:700; color:#0f172a; line-height:1.2; }
+  .price-box .val.up { color:#059669; }
+  .price-box .val.down { color:#dc2626; }
+  .live-tag { font-size:10px; color:#94a3b8; font-weight:500; margin-top:4px; }
+
+  /* Yorum / Analiz Alanlari */
+  .insight-box { margin-top:16px; border-radius:8px; font-size:13.5px; line-height:1.6; }
+  .why { color:#334155; padding:16px; background-color:#f0f9ff; border-left:4px solid #3b82f6; border-radius:4px; margin-bottom:12px; }
+  .risk { color:#7f1d1d; padding:16px; background-color:#fef2f2; border-left:4px solid #ef4444; border-radius:4px; }
+  .why b, .risk b { color:#0f172a; font-weight:700; }
+
+  /* Akordiyon (Detaylar) */
+  details { margin-top:20px; border-top:1px solid #f1f5f9; padding-top:16px; }
+  summary { cursor:pointer; font-size:13px; color:#475569; font-weight:600; outline:none; display:flex; align-items:center; }
+  summary:hover { color:#0f172a; }
+  summary::before { content:'+'; display:inline-block; margin-right:8px; font-size:16px; font-weight:400; color:#94a3b8; width:12px; }
+  details[open] summary::before { content:'-'; }
+
+  /* Minimalist Tablolar */
+  table { width:100%; border-collapse:collapse; font-size:12.5px; margin:16px 0 8px; }
+  th, td { text-align:left; padding:10px 4px; border-bottom:1px solid #f1f5f9; }
+  th { color:#64748b; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; padding-bottom:12px; border-bottom:2px solid #e2e8f0; }
+  td { color:#334155; }
+  tr:last-child td { border-bottom:none; }
+
+  /* Ana Ozet Tablolari */
+  .table-container { overflow-x:auto; margin:16px 0 16px; border:1px solid #e5e7eb; border-radius:10px; background:#ffffff; }
+  .summary-table { width:100%; border-collapse:collapse; font-size:13px; margin:0; }
+  .summary-table th { background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; padding:12px 14px; border-bottom:2px solid #e2e8f0; }
+  .summary-table td { padding:12px 14px; border-bottom:1px solid #f1f5f9; color:#1e293b; vertical-align:middle; }
+  .summary-table tr:hover { background:#f8fafc; }
+  .summary-table tr:last-child td { border-bottom:none; }
+  .summary-table .col-ticker { font-weight:800; font-size:14px; color:#0f172a; white-space:nowrap; }
+  .summary-table .col-num { text-align:right; font-variant-numeric:tabular-nums; }
+  .summary-table .col-roi { text-align:right; font-weight:700; color:#059669; font-variant-numeric:tabular-nums; }
+  .summary-table .col-stop { text-align:right; font-weight:700; color:#dc2626; font-variant-numeric:tabular-nums; }
+  .summary-table .col-dcf { text-align:right; color:#475569; font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+  /* Hizli Kopyalama Kutusu */
+  .quick-copy-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; margin-top:8px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap; color:#334155; }
+
+  /* Detay Karti (Accordion Icinde) */
+  .detail-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:18px; margin-bottom:16px; }
+
+  /* Liste ve Yardimci Siniflar */
+  ul { margin:12px 0; padding-left:20px; color:#475569; font-size:13px; }
+  li { margin-bottom:6px; }
+  .muted { color:#64748b; }
+  .small { font-size:12px; color:#64748b; margin-top:8px; line-height:1.5; }
+  .warn { color:#b45309; }
+  .highlight { font-weight:600; color:#0f172a; }
+
+  /* Deneysel / FCF Kutulari */
+  .exp-box { border:1px dashed #cbd5e1; border-radius:6px; padding:14px; margin-top:16px; background:#f8fafc; }
+  .empty-note { font-size:14px; color:#64748b; padding:24px; text-align:center; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; }
+
+  /* Footer */
+  .footer { font-size:11px; color:#94a3b8; line-height:1.7; background:transparent; border:none; box-shadow:none; padding:0 12px; text-align:justify; margin-top:8px; }
+
+  /* Mobil Düzenlemeler */
+  @media (max-width:540px) {
+    .wrap { padding:12px; }
+    .card, .hero { padding:20px; }
+    .price-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; border:none; background:transparent; padding:0; }
+    .price-box { border-right:none; padding-right:0; margin-right:0; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #f1f5f9; }
+    table, thead, tbody, th, td, tr { display:block; }
+    th { display:none; }
+    td { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9; }
+    td:before { content: attr(data-label); font-weight:600; color:#64748b; font-size:11px; text-transform:uppercase; letter-spacing:0.02em; }
+    td:last-child { text-align:right; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. Baslik Alanı -->
+  <div class="hero">
+    <h1>BIST Tarama Bulteni</h1>
+    <div class="date">2026-09-17</div>
+    <div class="headline">
+        Rejim durumu: <span style="color:#ffffff; font-weight:700;">high_positive_real_rate + plateau_inflation + stable</span>. Asagida kisa ve uzun vade adaylarin ozeti yer almaktadir, teknik analiz detaylari hisse kartlarindaki "Detaylari Incele" bolumundedir.
+    </div>
+
+    <div class="pillrow">
+      <span class="pill">Faiz %37</span>
+      <span class="pill">2Y Tahvil %39.60</span>
+      <span class="pill">TUFE %31.50</span>
+      <span class="pill">USD/TRY 48.32</span>
+      <span class="pill">XU100 15427.27</span>
+<span class="pill alert">Aciga Satis Yasagi Aktif</span>    </div>
+  </div>
+
+
+  <!-- 2. Uzun Vade Adaylari -->
+  <div class="card">
+    <h2 class="section-title">Uzun Vade Onerileri</h2>
+    <div class="section-sub">~6 aylik ufuk, sektor ici goreli degerlemeye dayali hedef fiyat hesabi.</div>
+
+    <div class="table-container">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Hisse</th>
+            <th class="col-num">Alis (Guncel)</th>
+            <th class="col-num">Hedef Fiyat</th>
+            <th class="col-roi">Beklenen Getiri</th>
+            <th class="col-dcf">DCF Araligi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-ticker">
+              KOZAL
+              <span class="badge badge-OPPORTUNITY" style="font-size:10px; padding:2px 5px; margin-left:4px;">OPPORTUNITY</span>
+            </td>
+            <td class="col-num">79.84</td>
+            <td class="col-num" style="font-weight:600; color:#0f172a;">378.34</td>
+            <td class="col-roi">%373.89</td>
+            <td class="col-dcf">
+                -
+            </td>
+          </tr>
+          <tr>
+            <td class="col-ticker">
+              PETKM
+              <span class="badge badge-OPPORTUNITY" style="font-size:10px; padding:2px 5px; margin-left:4px;">OPPORTUNITY</span>
+            </td>
+            <td class="col-num">98.76</td>
+            <td class="col-num" style="font-weight:600; color:#0f172a;">4602.22</td>
+            <td class="col-roi">%4560.24</td>
+            <td class="col-dcf">
+                5456.91 - 6002.60
+            </td>
+          </tr>
+          <tr>
+            <td class="col-ticker">
+              TAVHL
+              <span class="badge badge-WATCHLIST" style="font-size:10px; padding:2px 5px; margin-left:4px;">WATCHLIST</span>
+            </td>
+            <td class="col-num">360.97</td>
+            <td class="col-num" style="font-weight:600; color:#0f172a;">588.86</td>
+            <td class="col-roi">%63.13</td>
+            <td class="col-dcf">
+                -
+            </td>
+          </tr>
+          <tr>
+            <td class="col-ticker">
+              TOASO
+              <span class="badge badge-OPPORTUNITY" style="font-size:10px; padding:2px 5px; margin-left:4px;">OPPORTUNITY</span>
+            </td>
+            <td class="col-num">498.89</td>
+            <td class="col-num" style="font-weight:600; color:#0f172a;">1192.79</td>
+            <td class="col-roi">%139.09</td>
+            <td class="col-dcf">
+                1590.37 - 1749.41
+            </td>
+          </tr>
+          <tr>
+            <td class="col-ticker">
+              ULKER
+              <span class="badge badge-OPPORTUNITY" style="font-size:10px; padding:2px 5px; margin-left:4px;">OPPORTUNITY</span>
+            </td>
+            <td class="col-num">115.31</td>
+            <td class="col-num" style="font-weight:600; color:#0f172a;">179.66</td>
+            <td class="col-roi">%55.80</td>
+            <td class="col-dcf">
+                49.14 - 54.05
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details style="margin-bottom:16px;">
+      <summary style="font-size:12px; font-weight:600; color:#475569; padding:8px 12px; background:#f1f5f9; border-radius:6px; cursor:pointer;">Hizli Kopyala (Metin Formati)</summary>
+      <div class="quick-copy-box">* KOZAL | Alis: 79.84 -> Hedef: 378.34 (%373.89)* PETKM | Alis: 98.76 -> Hedef: 4602.22 (%4560.24) | DCF: 5456.91 - 6002.60* TAVHL | Alis: 360.97 -> Hedef: 588.86 (%63.13)* TOASO | Alis: 498.89 -> Hedef: 1192.79 (%139.09) | DCF: 1590.37 - 1749.41* ULKER | Alis: 115.31 -> Hedef: 179.66 (%55.80) | DCF: 49.14 - 54.05      </div>
+    </details>
+
+    <details>
+      <summary style="font-size:13px; font-weight:700; color:#1e293b; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:12px; cursor:pointer;">Aday Bazli Detayli Tezler ve Metrik Tablolari</summary>
+      <div style="margin-top:12px;">
+      <div class="detail-card">
+        <div class="stock-head">
+          <span class="ticker">KOZAL</span>
+          <span class="badge badge-OPPORTUNITY">OPPORTUNITY</span>
+        </div>
+
+        <div class="price-row">
+          <div class="price-box">
+            <div class="lbl">Guncel Fiyat</div>
+            <div class="val">79.84</div>
+            <div class="live-tag">Kapanis</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Hedef Fiyat</div>
+            <div class="val up">378.34</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Beklenen Getiri</div>
+            <div class="val up">%373.89</div>
+          </div>
+        </div>
+
+        <div class="insight-box">
+          <div class="why"><b>Neden:</b> Katalizor penceresi (son 14 gun) ve pozitif hurdle marji ayni anda gecerli.</div>
+          <div class="risk"><b>Ana Risk:</b> elevated_earnings_quality_risk (tahakkuk orani esler grubunun ust ondalik diliminde); esler grubu guveni &#39;degraded&#39; seviyesinde, yorum temkinli okunmali</div>
+        </div>
+
+
+        <ul style="margin-top:12px;"><li>Son donem KAP bildirimleri net pozitif katalizor skoru uretiyor (catalyst_score=0.07).</li><li>Beklenen getiri, 19.53% hurdle oranini 354.36 puan asiyor.</li><li>Piotroski F-Score (normalize) 0.62 ile kalite filtresini geciyor.</li></ul>
+        <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
+          <span class="highlight">Bozulma Kosulu:</span> excess_over_hurdle_pct &lt; 0
+        </div>
+
+        <table>
+          <tbody>
+            <tr><td data-label="Metrik">Giris fiyati</td><td data-label="Deger">79.84</td></tr>
+            <tr><td data-label="Metrik">Kademeli Alis Bandi</td><td data-label="Deger">78.69 - 80.30</td></tr>
+            <tr><td data-label="Metrik">Dinamik Stop-Loss</td><td data-label="Deger" class="risk">59.93</td></tr>
+            <tr><td data-label="Metrik">Onerilen Pozisyon Buyuklugu</td><td data-label="Deger">%6.09</td></tr>
+            <tr><td data-label="Metrik">Adil Deger Bandi (Ucgen)</td><td data-label="Deger" class="highlight">240.70 - 517.76 <span class="muted">(Baz: 378.34)</span></td></tr>
+            <tr><td data-label="Metrik">Degerleme Metodu</td><td data-label="Deger">Değerleme Üçgeni (Emsal + Kalite)</td></tr>
+            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%19.53</td></tr>
+            <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%354.36</td></tr>
+            <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%333.82</td></tr>
+            <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">0.62</td></tr>
+            <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">supersector (n=15)</td></tr>
+            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">degraded</td></tr>
+            <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">nominal</td></tr>
+            <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">0</td></tr>
+            <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%45.27</td></tr>
+          </tbody>
+        </table>
+
+        <div class="small risk" style="margin-top:12px; padding:10px;">
+          <b>Uyari:</b> elevated_earnings_quality_risk (peer_percentile: 0.93)
+        </div>
+
+        <div class="small" style="margin-top:12px;">FCF getirisi (USD bazli, bilgi amacli): %-0.79</div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">Gordon Buyume Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: dividend_history_insufficient</div>
+        </div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">DCF Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: no_fcf</div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="stock-head">
+          <span class="ticker">PETKM</span>
+          <span class="badge badge-OPPORTUNITY">OPPORTUNITY</span>
+        </div>
+
+        <div class="price-row">
+          <div class="price-box">
+            <div class="lbl">Guncel Fiyat</div>
+            <div class="val">98.76</div>
+            <div class="live-tag">Kapanis</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Hedef Fiyat</div>
+            <div class="val up">4602.22</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Beklenen Getiri</div>
+            <div class="val up">%4560.24</div>
+          </div>
+        </div>
+
+        <div class="insight-box">
+          <div class="why"><b>Neden:</b> Hurdle marji pozitif; yakin donemde belirgin bir katalizor bulunmuyor.</div>
+          <div class="risk"><b>Ana Risk:</b> esler grubu guveni &#39;degraded&#39; seviyesinde, yorum temkinli okunmali</div>
+        </div>
+
+        <div class="small" style="margin-top:16px;">
+          <span class="highlight">Yaklasan Olaylar:</span>
+bist_index_rebalance (2026-10-19); viop_expiry (2026-11-15)        </div>
+
+        <ul style="margin-top:12px;"><li>Esler grubuna (supersector, n=15) gore goreli degerleme skoru pozitif (valuation_z=0.50).</li><li>Beklenen getiri, 19.53% hurdle oranini 4540.71 puan asiyor.</li><li>Piotroski F-Score (normalize) 0.62 ile kalite filtresini geciyor.</li></ul>
+        <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
+          <span class="highlight">Bozulma Kosulu:</span> excess_over_hurdle_pct &lt; 0
+        </div>
+
+        <table>
+          <tbody>
+            <tr><td data-label="Metrik">Giris fiyati</td><td data-label="Deger">98.76</td></tr>
+            <tr><td data-label="Metrik">Kademeli Alis Bandi</td><td data-label="Deger">97.84 - 99.12</td></tr>
+            <tr><td data-label="Metrik">Dinamik Stop-Loss</td><td data-label="Deger" class="risk">95.10</td></tr>
+            <tr><td data-label="Metrik">Onerilen Pozisyon Buyuklugu</td><td data-label="Deger">%25</td></tr>
+            <tr><td data-label="Metrik">Adil Deger Bandi (Ucgen)</td><td data-label="Deger" class="highlight">1981.74 - 9676.07 <span class="muted">(Baz: 4602.22)</span></td></tr>
+            <tr><td data-label="Metrik">Degerleme Metodu</td><td data-label="Deger">Değerleme Üçgeni (DCF + Emsal + Kalite)</td></tr>
+            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%19.53</td></tr>
+            <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%4540.71</td></tr>
+            <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%4520.51</td></tr>
+            <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">0.62</td></tr>
+            <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">supersector (n=15)</td></tr>
+            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">degraded</td></tr>
+            <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">nominal</td></tr>
+            <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">1</td></tr>
+            <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%16.37</td></tr>
+          </tbody>
+        </table>
+
+
+        <div class="small" style="margin-top:12px;">FCF getirisi (USD bazli, bilgi amacli): %141.89</div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">Gordon Buyume Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: dividend_not_sustainable</div>
+        </div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">DCF Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small" style="margin-top:4px;">Adil deger araligi: <b>5456.91 - 6002.60</b>
+            (mevcut fiyata gore %5425.70 / %5978.27)<br>
+            <span class="muted">(WACC: %39.73, terminal buyume: %5)</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="stock-head">
+          <span class="ticker">TAVHL</span>
+          <span class="badge badge-WATCHLIST">WATCHLIST</span>
+        </div>
+
+        <div class="price-row">
+          <div class="price-box">
+            <div class="lbl">Guncel Fiyat</div>
+            <div class="val">360.97</div>
+            <div class="live-tag">Kapanis</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Hedef Fiyat</div>
+            <div class="val up">588.86</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Beklenen Getiri</div>
+            <div class="val up">%63.13</div>
+          </div>
+        </div>
+
+        <div class="insight-box">
+          <div class="why"><b>Neden:</b> Hurdle marji pozitif; yakin donemde belirgin bir katalizor bulunmuyor.</div>
+          <div class="risk"><b>Ana Risk:</b> esler grubu guveni &#39;degraded&#39; seviyesinde, yorum temkinli okunmali; perakende yatirimci payi yuksek (%85.66)</div>
+        </div>
+
+        <div class="small" style="margin-top:16px;">
+          <span class="highlight">Yaklasan Olaylar:</span>
+bist_index_rebalance (2026-10-24)        </div>
+
+        <ul style="margin-top:12px;"><li>Beklenen getiri, 19.53% hurdle oranini 43.60 puan asiyor.</li><li>Piotroski F-Score (normalize) 0.75 ile kalite filtresini geciyor.</li></ul>
+        <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
+          <span class="highlight">Bozulma Kosulu:</span> excess_over_hurdle_pct &lt; 0
+        </div>
+
+        <table>
+          <tbody>
+            <tr><td data-label="Metrik">Giris fiyati</td><td data-label="Deger">360.97</td></tr>
+            <tr><td data-label="Metrik">Kademeli Alis Bandi</td><td data-label="Deger">355.15 - 363.30</td></tr>
+            <tr><td data-label="Metrik">Dinamik Stop-Loss</td><td data-label="Deger" class="risk">337.69</td></tr>
+            <tr><td data-label="Metrik">Onerilen Pozisyon Buyuklugu</td><td data-label="Deger">%25</td></tr>
+            <tr><td data-label="Metrik">Adil Deger Bandi (Ucgen)</td><td data-label="Deger" class="highlight">243.83 - 1141.86 <span class="muted">(Baz: 588.86)</span></td></tr>
+            <tr><td data-label="Metrik">Degerleme Metodu</td><td data-label="Deger">Değerleme Üçgeni (Emsal)</td></tr>
+            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%19.53</td></tr>
+            <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%43.60</td></tr>
+            <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%24.07</td></tr>
+            <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">0.75</td></tr>
+            <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">supersector (n=15)</td></tr>
+            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">degraded</td></tr>
+            <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">nominal</td></tr>
+            <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">0</td></tr>
+            <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%85.66</td></tr>
+          </tbody>
+        </table>
+
+
+        <div class="small" style="margin-top:12px;">FCF getirisi (USD bazli, bilgi amacli): %-3.92</div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">Gordon Buyume Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: dividend_not_sustainable</div>
+        </div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">DCF Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: no_fcf</div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="stock-head">
+          <span class="ticker">TOASO</span>
+          <span class="badge badge-OPPORTUNITY">OPPORTUNITY</span>
+        </div>
+
+        <div class="price-row">
+          <div class="price-box">
+            <div class="lbl">Guncel Fiyat</div>
+            <div class="val">498.89</div>
+            <div class="live-tag">Kapanis</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Hedef Fiyat</div>
+            <div class="val up">1192.79</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Beklenen Getiri</div>
+            <div class="val up">%139.09</div>
+          </div>
+        </div>
+
+        <div class="insight-box">
+          <div class="why"><b>Neden:</b> Hurdle marji pozitif; yakin donemde belirgin bir katalizor bulunmuyor.</div>
+          <div class="risk"><b>Ana Risk:</b> esler grubu guveni &#39;degraded&#39; seviyesinde, yorum temkinli okunmali; perakende yatirimci payi yuksek (%93.19)</div>
+        </div>
+
+        <div class="small" style="margin-top:16px;">
+          <span class="highlight">Yaklasan Olaylar:</span>
+bist_index_rebalance (2026-10-03); viop_expiry (2026-09-20); genel_kurul_temettu_kesim (2026-10-11)        </div>
+
+        <ul style="margin-top:12px;"><li>Esler grubuna (supersector, n=15) gore goreli degerleme skoru pozitif (valuation_z=0.22).</li><li>Beklenen getiri, 19.53% hurdle oranini 119.56 puan asiyor.</li><li>Piotroski F-Score (normalize) 0.62 ile kalite filtresini geciyor.</li></ul>
+        <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
+          <span class="highlight">Bozulma Kosulu:</span> excess_over_hurdle_pct &lt; 0
+        </div>
+
+        <table>
+          <tbody>
+            <tr><td data-label="Metrik">Giris fiyati</td><td data-label="Deger">498.89</td></tr>
+            <tr><td data-label="Metrik">Kademeli Alis Bandi</td><td data-label="Deger">492.09 - 501.61</td></tr>
+            <tr><td data-label="Metrik">Dinamik Stop-Loss</td><td data-label="Deger" class="risk">460.56</td></tr>
+            <tr><td data-label="Metrik">Onerilen Pozisyon Buyuklugu</td><td data-label="Deger">%20.54</td></tr>
+            <tr><td data-label="Metrik">Adil Deger Bandi (Ucgen)</td><td data-label="Deger" class="highlight">713.93 - 1897.95 <span class="muted">(Baz: 1192.79)</span></td></tr>
+            <tr><td data-label="Metrik">Degerleme Metodu</td><td data-label="Deger">Değerleme Üçgeni (DCF + Emsal + Kalite)</td></tr>
+            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%19.53</td></tr>
+            <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%119.56</td></tr>
+            <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%99.62</td></tr>
+            <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">0.62</td></tr>
+            <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">supersector (n=15)</td></tr>
+            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">degraded</td></tr>
+            <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">nominal</td></tr>
+            <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">0</td></tr>
+            <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%93.19</td></tr>
+          </tbody>
+        </table>
+
+
+        <div class="small" style="margin-top:12px;">FCF getirisi (USD bazli, bilgi amacli): %17.22</div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">Gordon Buyume Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: dividend_not_sustainable</div>
+        </div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">DCF Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small" style="margin-top:4px;">Adil deger araligi: <b>1590.37 - 1749.41</b>
+            (mevcut fiyata gore %218.78 / %250.66)<br>
+            <span class="muted">(WACC: %33.91, terminal buyume: %5)</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="stock-head">
+          <span class="ticker">ULKER</span>
+          <span class="badge badge-OPPORTUNITY">OPPORTUNITY</span>
+        </div>
+
+        <div class="price-row">
+          <div class="price-box">
+            <div class="lbl">Guncel Fiyat</div>
+            <div class="val">115.31</div>
+            <div class="live-tag">Kapanis</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Hedef Fiyat</div>
+            <div class="val up">179.66</div>
+          </div>
+          <div class="price-box">
+            <div class="lbl">Beklenen Getiri</div>
+            <div class="val up">%55.80</div>
+          </div>
+        </div>
+
+        <div class="insight-box">
+          <div class="why"><b>Neden:</b> Hurdle marji pozitif; yakin donemde belirgin bir katalizor bulunmuyor.</div>
+          <div class="risk"><b>Ana Risk:</b> esler grubu guveni &#39;degraded&#39; seviyesinde, yorum temkinli okunmali</div>
+        </div>
+
+
+        <ul style="margin-top:12px;"><li>Esler grubuna (supersector, n=15) gore goreli degerleme skoru pozitif (valuation_z=0.21).</li><li>Beklenen getiri, 19.53% hurdle oranini 36.27 puan asiyor.</li><li>Piotroski F-Score (normalize) 0.62 ile kalite filtresini geciyor.</li></ul>
+        <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
+          <span class="highlight">Bozulma Kosulu:</span> excess_over_hurdle_pct &lt; 0
+        </div>
+
+        <table>
+          <tbody>
+            <tr><td data-label="Metrik">Giris fiyati</td><td data-label="Deger">115.31</td></tr>
+            <tr><td data-label="Metrik">Kademeli Alis Bandi</td><td data-label="Deger">113.49 - 116.04</td></tr>
+            <tr><td data-label="Metrik">Dinamik Stop-Loss</td><td data-label="Deger" class="risk">91.29</td></tr>
+            <tr><td data-label="Metrik">Onerilen Pozisyon Buyuklugu</td><td data-label="Deger">%7.33</td></tr>
+            <tr><td data-label="Metrik">Adil Deger Bandi (Ucgen)</td><td data-label="Deger" class="highlight">63.64 - 281.12 <span class="muted">(Baz: 179.66)</span></td></tr>
+            <tr><td data-label="Metrik">Degerleme Metodu</td><td data-label="Deger">Değerleme Üçgeni (DCF + Emsal + Kalite)</td></tr>
+            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%19.53</td></tr>
+            <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%36.27</td></tr>
+            <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%16.97</td></tr>
+            <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">0.62</td></tr>
+            <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">supersector (n=15)</td></tr>
+            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">degraded</td></tr>
+            <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">nominal</td></tr>
+            <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">1</td></tr>
+            <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%33.95</td></tr>
+          </tbody>
+        </table>
+
+
+        <div class="small" style="margin-top:12px;">FCF getirisi (USD bazli, bilgi amacli): %2.65</div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">Gordon Buyume Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: dividend_history_insufficient</div>
+        </div>
+
+        <div class="exp-box">
+          <div class="small highlight" style="margin-top:0;">DCF Referansi (Deneysel, ana karara girmez)</div>
+          <div class="small" style="margin-top:4px;">Adil deger araligi: <b>49.14 - 54.05</b>
+            (mevcut fiyata gore %-57.39 / %-53.13)<br>
+            <span class="muted">(WACC: %38.83, terminal buyume: %5)</span></div>
+        </div>
+      </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- 3. Kisa Vade Adaylari -->
+  <div class="card">
+    <h2 class="section-title">Kisa Vade Onerileri</h2>
+    <div class="section-sub">~20 gunluk ufuk, hacim teyitli teknik kirilim. "Alis (Giris)" 20 gunluk ortalamaya cekilme bazalidir.</div>
+
+    <div class="empty-note">Bugun icin kisa vade adayi bulunmuyor.</div>
+  </div>
+
+  <!-- 4. Ne Degisti + Yogunlasma Uyarisi -->
+  <div class="card">
+    <h2 class="section-title">Gunluk Degisimler</h2>
+    <div style="margin-top:16px;">
+      <div class="small"><span class="highlight">Portfoye Yeni Giren:</span> KOZAL, PETKM, TAVHL, TOASO</div>
+
+      <div class="small"><span class="highlight">Portfoyden Cikan:</span> A1CAP, AHSGY, AKFYE, AKSA, ALCAR, ANGEN, ATATP, AVPGY, BASGZ, BEYAZ, BIMAS, BMSTL, CATES, CEOEM, CGCAM, CONSE, DESA, DMRGD, DZGYO, EDIP, EGEGY, EGGUB, ELITE, ENERY, ENJSA, EPLAS, ESCAR, ESCOM, FMIZP, FORTE, FROTO, GRSEL, GSDDE, HLGYO, IHGZT, IHLGM, KIMMR, KLKIM, KRSTL, KUTPO, KZBGY, LILAK, LINK, LKMNH, LOGO, MERIT, MPARK, MTRKS, NTGAZ, ODAS, PATEK, PCILT, PGSUS, PLTUR, PNLSN, RTALB, RYGYO, SANEL, SISE, SRVGY, SURGY, TCELL, TDGYO, TMSN, TNZTP, TRENJ, TRMET, TUREX, YGGYO, YYLGD, ZOREN</div>
+
+      <div class="small" style="margin-top:12px;"><span class="highlight">Yeni KAP Olaylari:</span><br>
+&bull; EREGL (vbts_measure_applied : 2026-09-17)<br>&bull; EREGL (secondary_offering : 2026-09-17)<br>&bull; EREGL (vbts_measure_applied : 2026-09-17)<br>&bull; EREGL (secondary_offering : 2026-09-17)<br>&bull; EREGL (vbts_measure_applied : 2026-09-17)<br>&bull; EREGL (secondary_offering : 2026-09-17)      </div>
+
+      <div class="small" style="margin-top:12px;"><span class="highlight">Makro Degisim:</span>
+bond_2y_pct: 41.17 &rarr; 39.60; usdtry_spot: 48.64 &rarr; 48.32; xu100_level: 13122.58 &rarr; 15427.27      </div>
+
+      <div style="margin-top:16px; padding:12px; background:#fffbeb; border-left:4px solid #f59e0b; border-radius:4px;">
+        <div class="small highlight" style="color:#b45309; margin-top:0;">Yogunlasma Uyarilari:</div>
+        <ul style="margin:4px 0 0; color:#92400e;">
+<li>&#39;industrial&#39; profili adaylarin yuzde 100&#39;ini olusturuyor.</li>        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Bozulan Tezler -->
+  <div class="card">
+    <h2 class="section-title" style="color:#991b1b;">Bozulan Tezler</h2>
+    <div class="small muted" style="margin-bottom:16px;">Asagidakiler dogrudan bir SATIS SINYALI degildir, portfoy izleme (durum) bildirimidir.</div>
+    <ul style="margin:0; padding:0; list-style:none;">
+      <li class="small" style="padding:12px 16px; background:#fef2f2; border:1px solid #fee2e2; border-radius:6px; margin-bottom:8px; color:#7f1d1d;">
+        <b style="font-size:13px;">CIMSA</b>: piotroski_normalized_score &lt; 0.3 kosulu tetiklendi (Guncel: )
+      </li>
+    </ul>
+  </div>
+
+  <!-- 6. Gecmis Tahmin Izleme Ozeti -->
+  <div class="card">
+    <h2 class="section-title">Gecmis Tahmin Izleme Ozeti</h2>
+    <div class="small muted" style="margin-bottom:16px;">Bu canli bir takip ozetidir (Backtest degildir). Gecmis performans gelecekteki sonuclari garanti etmez. T+5/T+20/T+60/T+180 ufuklari gunluk secilen adaylarda ortusur (180 gunluk uzun vadeli tezler 20 gunluk kisa vadeli adaylarla ayni donemde secilebilir); N gunluk takip N bagimsiz gozlem anlamina gelmez. Her ufuk asagida AYRI gosterilir, tek bir birlesik basari orani verilmez.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Ufuk (Gun)</th>
+          <th>Gozlem Sayisi</th>
+          <th>Isabet Orani</th>
+          <th>Medyan Fazla Getiri (Endekse gore)</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7. Filtreye Takilanlar -->
+  <div class="card" style="padding:20px 28px;">
+    <details style="margin:0; border:none; padding:0;">
+      <summary style="font-size:14px; font-weight:700;">Filtreye takilan / Skorlanamayan Hisseler (82 + 0)</summary>
+      <div class="muted small" style="margin:12px 0 16px;">0 adet hisse bu kosuda skorlanamadi (eksik veri, baz belirsizligi veya yetersiz esler grubu).</div>
+      <table>
+        <thead><tr><th>Ticker</th><th>Filtrelenme Nedeni</th></tr></thead>
+        <tbody>
+          <tr><td data-label="Ticker" class="highlight">AKBNK</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">ARCLK</td><td data-label="Neden">piotroski</td></tr>
+          <tr><td data-label="Ticker" class="highlight">ASELS</td><td data-label="Neden">free_float_pct</td></tr>
+          <tr><td data-label="Ticker" class="highlight">CIMSA</td><td data-label="Neden">hurdle</td></tr>
+          <tr><td data-label="Ticker" class="highlight">DOAS</td><td data-label="Neden">hurdle</td></tr>
+          <tr><td data-label="Ticker" class="highlight">EREGL</td><td data-label="Neden">piotroski</td></tr>
+          <tr><td data-label="Ticker" class="highlight">GARAN</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">HALKB</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">ISCTR</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">KRDMD</td><td data-label="Neden">piotroski</td></tr>
+          <tr><td data-label="Ticker" class="highlight">MGROS</td><td data-label="Neden">hurdle</td></tr>
+          <tr><td data-label="Ticker" class="highlight">SAHOL</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">THYAO</td><td data-label="Neden">hurdle</td></tr>
+          <tr><td data-label="Ticker" class="highlight">TSKB</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">TUPRS</td><td data-label="Neden">free_float_pct</td></tr>
+          <tr><td data-label="Ticker" class="highlight">TURSG</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">VAKBN</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">VESTL</td><td data-label="Neden">hurdle</td></tr>
+          <tr><td data-label="Ticker" class="highlight">AKBNK</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">ARCLK</td><td data-label="Neden">piotroski</td></tr>
+          <tr><td data-label="Ticker" class="highlight">ASELS</td><td data-label="Neden">free_float_pct</td></tr>
+          <tr><td data-label="Ticker" class="highlight">CIMSA</td><td data-label="Neden">piotroski</td></tr>
+          <tr><td data-label="Ticker" class="highlight">DOAS</td><td data-label="Neden">volume_breakout</td></tr>
+          <tr><td data-label="Ticker" class="highlight">EREGL</td><td data-label="Neden">piotroski</td></tr>
+          <tr><td data-label="Ticker" class="highlight">GARAN</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">HALKB</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">ISCTR</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">KOZAL</td><td data-label="Neden">volume_breakout</td></tr>
+          <tr><td data-label="Ticker" class="highlight">KRDMD</td><td data-label="Neden">piotroski</td></tr>
+          <tr><td data-label="Ticker" class="highlight">MGROS</td><td data-label="Neden">piotroski</td></tr>
+          <tr><td data-label="Ticker" class="highlight">PETKM</td><td data-label="Neden">volume_breakout</td></tr>
+          <tr><td data-label="Ticker" class="highlight">SAHOL</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">TAVHL</td><td data-label="Neden">volume_breakout</td></tr>
+          <tr><td data-label="Ticker" class="highlight">THYAO</td><td data-label="Neden">volume_breakout</td></tr>
+          <tr><td data-label="Ticker" class="highlight">TOASO</td><td data-label="Neden">volume_breakout</td></tr>
+          <tr><td data-label="Ticker" class="highlight">TSKB</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">TUPRS</td><td data-label="Neden">free_float_pct</td></tr>
+          <tr><td data-label="Ticker" class="highlight">TURSG</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">ULKER</td><td data-label="Neden">volume_breakout</td></tr>
+          <tr><td data-label="Ticker" class="highlight">VAKBN</td><td data-label="Neden">confidence</td></tr>
+          <tr><td data-label="Ticker" class="highlight">VESTL</td><td data-label="Neden">piotroski</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+
+  <!-- 8. Metodoloji & Yasal Uyari (Footer) -->
+  <div class="footer">
+    <p>final_score = 0.50 x valuation_z + 0.25 x catalyst_score + 0.15 x ownership_quality_z + 0.10 x low_vol_z. Piotroski esigi: 0.55, ERP (Equity Risk Premium): %5. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p>DCF Referansi (deneysel, ana karara girmez) buyume senaryolari: dusuk %0 / baz %5 / yuksek %10, kurumlar vergisi orani %25. Buyume senaryolari DENENMEMIS VARSAYIMDIR (keyfi secilmistir, hicbir gecmis veriyle kalibre edilmemistir); kurumlar vergisi orani resmi/yasal orandir.</p>
+    <div style="border-top:1px solid #cbd5e1; margin:16px 0 12px; width:40px;"></div>
+    <p>BILINEN SINIRLAMA: VBTS/tedbir filtresi (Volatilite Bazli Tedbir Sistemi) su an gercek bir veri kaynagina baglanmadigi icin PASIF durumdadir -- tum adaylar tedbir_level=0 (tedbirsiz) varsayilir. Borsa Istanbul&#39;un guncel tedbir/VBTS listesi bu raporun DISINDA, bagimsiz olarak kontrol edilmelidir. Mali tablolar ucuncu taraf kaynaktan (Is Yatirim) nominal/tarihi maliyetle saglanmaktadir (TMS 29 enflasyon duzeltmesiz); yuksek enflasyon ortaminda donemler arasi aktif devir hizi kriteri (Piotroski kriter 9) enflasyon kirlenmesi nedeniyle hesaplanamaz (None) kabul edilmistir.</p>
+    <p>Bu bulten ve dashboard kisisel kullanim icin otomatik olarak uretilmistir. Yatirim danismanligi degildir, alim satim tavsiyesi icermez. Skorlama agirliklari ve esikleri (0.50/0.25/0.15/0.10, Piotroski esigi, equity risk premium) denenmemis baslangic varsayimlaridir, gecmis veriyle kalibre edilmemistir. Gecmis tahmin izleme ozeti bir backtest degildir, canli takiptir; ortusen zaman ufuklari nedeniyle bagimsiz gozlem sayisi dusuktur. Hedef fiyatlar sektor ici goreli degerleme ve teknik hesaplamalardan turetilmistir. Gordon buyume referansi deneysel bir modeldir ve ana karara girmez. Veriler ucuncu taraf kaynaklardan alinmistir ve hatali olabilir.</p>
+  </div>
+
+</div>
+</body>
+</html>

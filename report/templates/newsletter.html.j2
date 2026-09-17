@@ -256,6 +256,12 @@
             {% if c.position_size_pct is not none %}
             <tr><td data-label="Metrik">Onerilen Pozisyon Buyuklugu</td><td data-label="Deger">%{{ c.position_size_pct | fmt }}</td></tr>
             {% endif %}
+            {% if c.fair_value_base is not none %}
+            <tr><td data-label="Metrik">Adil Deger Bandi (Ucgen)</td><td data-label="Deger" class="highlight">{{ c.fair_value_low | fmt }} - {{ c.fair_value_high | fmt }} <span class="muted">(Baz: {{ c.fair_value_base | fmt }})</span></td></tr>
+            {% endif %}
+            {% if c.valuation_method %}
+            <tr><td data-label="Metrik">Degerleme Metodu</td><td data-label="Deger">{{ c.valuation_method }}</td></tr>
+            {% endif %}
             <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%{{ c.hurdle_rate_pct | fmt }}</td></tr>
             <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
             <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%{{ c.excess_over_beta_hurdle_pct | fmt }}</td></tr>

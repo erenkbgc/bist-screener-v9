@@ -141,7 +141,9 @@ CREATE TABLE IF NOT EXISTS predictions (
     -- GONDERILMEMESINE yol aciyordu (canli testte dogrulandi: orphan_numbers=['3.31']).
     volume_ratio_20d REAL,
     -- dynamic entry / stop / position sizing (v12 roadmap P0-1)
-    entry_low REAL, entry_high REAL, position_size_pct REAL
+    entry_low REAL, entry_high REAL, position_size_pct REAL,
+    -- valuation triangle (v13 roadmap P0-3)
+    fair_value_low REAL, fair_value_base REAL, fair_value_high REAL, valuation_method TEXT
 );
 
 CREATE TABLE IF NOT EXISTS invalidation_checks (
@@ -237,6 +239,10 @@ _TABLE_MIGRATIONS = {
         ("entry_low", "REAL"),
         ("entry_high", "REAL"),
         ("position_size_pct", "REAL"),
+        ("fair_value_low", "REAL"),
+        ("fair_value_base", "REAL"),
+        ("fair_value_high", "REAL"),
+        ("valuation_method", "TEXT"),
     ],
     "prices": [
         ("volatility_60d", "REAL"),

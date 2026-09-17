@@ -219,8 +219,16 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         lt["current_price"] = current_price
         lt["price_source"] = price_source
         lt["volatility_60d"] = last.get("volatility_60d")
-        lt_target = targets_mod.compute_long_term_target(lt, all_lt_for_peers)
+        lt_target = targets_mod.compute_long_term_target(lt, all_lt_for_peers, macro_snapshot=macro)
         lt["target_price"] = lt_target["target_price"]
+        lt["fair_value_low"] = lt_target.get("fair_value_low")
+        lt["fair_value_base"] = lt_target.get("fair_value_base")
+        lt["fair_value_high"] = lt_target.get("fair_value_high")
+        lt["valuation_method"] = lt_target.get("valuation_method")
+        lt["valuation_weights"] = lt_target.get("weights_used")
+        lt["valuation_dcf_leg"] = lt_target.get("dcf_leg")
+        lt["valuation_peers_leg"] = lt_target.get("peers_leg")
+        lt["valuation_quality_leg"] = lt_target.get("quality_leg")
         if lt["target_price"] is None:
             continue
         hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro,
@@ -277,6 +285,10 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         st["entry_high"] = short_target["entry_high"]
         st["stop_loss"] = short_target["dynamic_stop_loss"]
         st["position_size_pct"] = short_target["position_size_pct"]
+        st["fair_value_low"] = short_target["entry_low"]
+        st["fair_value_base"] = short_target["target_price"]
+        st["fair_value_high"] = short_target["target_price"]
+        st["valuation_method"] = "Kısa Vade Momentum & ATR Kanalı"
         st["current_price"] = current_price
         st["price_source"] = price_source
         st["volume_ratio_20d"] = last.get("volume_ratio_20d")
@@ -422,6 +434,10 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
             "entry_low": c.get("entry_low"),
             "entry_high": c.get("entry_high"),
             "position_size_pct": c.get("position_size_pct"),
+            "fair_value_low": c.get("fair_value_low"),
+            "fair_value_base": c.get("fair_value_base"),
+            "fair_value_high": c.get("fair_value_high"),
+            "valuation_method": c.get("valuation_method"),
         })
         invalidation_mod.create_invalidation_condition(as_of_date, c["ticker"], "excess_over_hurdle_pct", "<", 0)
         if c.get("piotroski_normalized_score") is not None:
@@ -437,12 +453,14 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
                    stop_loss, horizon_days, expected_roi_pct, hurdle_rate_pct, excess_over_hurdle_pct,
                    real_return_pct, usd_return_pct, rationale_hash, current_price, price_source,
                    net_expected_roi_pct, net_excess_over_hurdle_pct, transaction_cost_pct, volume_ratio_20d,
-                   entry_low, entry_high, position_size_pct)
+                   entry_low, entry_high, position_size_pct,
+                   fair_value_low, fair_value_base, fair_value_high, valuation_method)
                    VALUES (:as_of_date, :ticker, :bucket, :entry_price, :target_price, :stop_loss,
                            :horizon_days, :expected_roi_pct, :hurdle_rate_pct, :excess_over_hurdle_pct,
                            :real_return_pct, :usd_return_pct, :rationale_hash, :current_price, :price_source,
                            :net_expected_roi_pct, :net_excess_over_hurdle_pct, :transaction_cost_pct, :volume_ratio_20d,
-                           :entry_low, :entry_high, :position_size_pct)""",
+                           :entry_low, :entry_high, :position_size_pct,
+                           :fair_value_low, :fair_value_base, :fair_value_high, :valuation_method)""",
                 rows,
             )
             conn.commit()

@@ -259,10 +259,16 @@ def _row(df, *labels):
 
 
 def _val(series, col_pos: int = 0):
-    """Series'ten col_pos'inci (0=en yeni donem) sayisal degeri güvenle cikar."""
+    """Series veya DataFrame'den col_pos'inci (0=en yeni donem) sayisal degeri guvenle cikar.
+    Eger etiket birden fazla satirda tekrarlanmissa (orn. kisa ve uzun vadeli Stoklar/Borclar),
+    o doneme ait tum satirlari toplar."""
     if series is None:
         return None
     try:
+        if hasattr(series, "ndim") and series.ndim == 2:
+            col_vals = series.iloc[:, col_pos].dropna()
+            val = float(col_vals.sum())
+            return val if val == val else None
         v = series.iloc[col_pos]
         v = float(v)
         return v if v == v else None  # NaN kontrolu
@@ -537,6 +543,29 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     elif dividend_per_share_ttm == 0:
         payout_ratio = 0.0
 
+    # valuation_triangle (v13 roadmap P0-3): GYO portfoy degeri ve Holding net aktif degeri (NAV)
+    nav_discount = None
+    nav_per_share = None
+    portfolio_val = None
+    if ratio_profile == "reit" and bs is not None:
+        inv_prop = _val(_row(bs, "Yatırım Amaçlı Gayrimenkuller"))
+        inventories = _val(_row(bs, "Stoklar"))
+        tangible = _val(_row(bs, "Maddi Duran Varlıklar"))
+        portfolio_val = (inv_prop or 0.0) + (inventories or 0.0) + (tangible or 0.0)
+        if portfolio_val <= 0 and total_assets:
+            portfolio_val = total_assets
+        if portfolio_val > 0:
+            effective_net_debt = net_debt if net_debt is not None else 0.0
+            nav = portfolio_val - effective_net_debt
+            if shares_outstanding and shares_outstanding > 0:
+                nav_per_share = nav / shares_outstanding
+            if market_cap and market_cap > 0 and nav > 0:
+                nav_discount = (nav - market_cap) / nav
+    elif ratio_profile == "holding" and equity and market_cap and market_cap > 0 and equity > 0:
+        nav_discount = (equity - market_cap) / equity
+        if shares_outstanding and shares_outstanding > 0:
+            nav_per_share = equity / shares_outstanding
+
     # dead_hard_filters_repair (v12 T0-2): modul basligi (yukarida) zaten "mali
     # tablo cekilemeyen ticker'lar reporting_basis='unknown' olarak isaretlenir"
     # diyordu ama bu HICBIR ZAMAN gerceklesmiyordu -- fundamentals.py asagidaki
@@ -552,7 +581,7 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         "reporting_basis": reporting_basis,  # None ise fundamentals.py basis_guard ile doldurur
         "pe": pe, "pb": pb, "ev_ebitda": ev_ebitda, "ev_sales": ev_sales, "roe": roe,
         "eps_ttm": eps_ttm, "ebitda_ttm": ebitda_ttm, "net_debt": net_debt,
-        "nav_discount": None,  # NAV hesaplamasi icin GYO portfoy degeri gerekir, kaynak yok
+        "nav_discount": nav_discount,
         "dividend_per_share_ttm": dividend_per_share_ttm, "payout_ratio": payout_ratio,
         "fcf_ttm": fcf_ttm,
         "roa": (net_income / total_assets * 100) if (net_income is not None and total_assets) else None,
@@ -562,6 +591,8 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         "_total_assets": total_assets,
         "_net_income": net_income,
         "_financial_expenses_ttm": financial_expenses_ttm,
+        "_nav_per_share": nav_per_share,
+        "_portfolio_value": portfolio_val,
     }
 
 

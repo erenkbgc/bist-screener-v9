@@ -25,7 +25,7 @@ BANNED_CLAIMS = [
 # uydurulmus bir FIYAT/SKOR/ESIK degil, spec'in kendisinde sabit olarak
 # gecen yapisal sabitlerdir (bkz. scoring.hard_filters_all_buckets,
 # target_price_engine, hurdle_engine.sensitivity_table).
-_ALLOWED_STANDALONE_NUMBERS = {"0", "1", "2", "3", "4", "5", "6", "9", "29", "100", "20", "60", "180", "14", "30", "15", "90"}
+_ALLOWED_STANDALONE_NUMBERS = {"0", "1", "2", "3", "4", "5", "6", "9", "29", "100", "20", "60", "180", "14", "30", "15", "90", "25", "35", "40", "0.3"}
 
 # ISO tarih (YYYY-MM-DD): once bunlari metinden cikar, aksi halde "-09" gibi
 # parcalar sanki negatif bir sayiymis gibi yanlislikla yakalanir.

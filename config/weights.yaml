@@ -20,3 +20,12 @@ piotroski:
   normalized_score_threshold: 0.55  # 9 kriterin normalize edilmis skorunda gecme esigi
 
 top_n_per_bucket: 4
+
+# Degerleme Ucgeni (Valuation Triangle) bilesen agirliklari (v13 roadmap P0-3).
+# priors_are_disclosed: bu agirliklar akademik ve kurumsal degerleme
+# pratiklerine dayanan baslangic varsayimidir.
+valuation_triangle_weights:
+  dcf: 0.40
+  peer_multiples: 0.35
+  quality_premium: 0.25
+
