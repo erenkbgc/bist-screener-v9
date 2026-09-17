@@ -2,13 +2,14 @@
 
 # Autonomous BIST AI Screener
 
-**A deterministic, data-driven, multi-factor equity screening system for Borsa İstanbul.**
+**A deterministic, data-driven, multi-factor equity screening and quantitative backtesting system for Borsa İstanbul.**
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-92%20passing-brightgreen)
-![Status](https://img.shields.io/badge/status-personal%20research%20project-orange)
+![Tests](https://img.shields.io/badge/tests-162%20passing-brightgreen)
+![Backtest](https://img.shields.io/badge/backtest-walk--forward%20%7C%20backtrader-blueviolet)
+![Status](https://img.shields.io/badge/status-active%20research%20v13-orange)
 
 </div>
 
@@ -30,10 +31,12 @@
   - [Financial Quality](#financial-quality)
   - [Valuation](#valuation)
   - [Hurdle Rate](#hurdle-rate)
+  - [Dynamic Risk Management & Position Sizing](#dynamic-risk-management--position-sizing)
   - [Catalysts & KAP](#catalysts--kap)
   - [Dividend Sustainability](#dividend-sustainability)
   - [Ownership Analysis](#ownership-analysis)
 - [Data Quality Philosophy](#data-quality-philosophy)
+- [Walk-Forward Backtesting Engine](#walk-forward-backtesting-engine)
 - [Validation Gate](#validation-gate)
 - [Execution Pipeline](#execution-pipeline)
 - [Project Structure](#project-structure)
@@ -42,6 +45,7 @@
   - [Mock Mode](#mock-mode)
   - [Live Mode](#live-mode)
 - [Running the Screener](#running-the-screener)
+- [Running Backtests](#running-backtests)
 - [Dashboard](#dashboard)
 - [Automated Daily Execution](#automated-daily-execution)
 - [MCP Servers](#mcp-servers)
@@ -58,15 +62,16 @@
 
 ## Overview
 
-`bist-screener-v9` evaluates BIST-listed companies across multiple dimensions simultaneously — market regime, financial quality, valuation, catalysts, ownership structure, dividend sustainability, risk, and expected return — rather than relying on any single metric.
+`bist-screener` evaluates BIST-listed companies across multiple dimensions simultaneously — market regime, financial quality, valuation, catalysts, ownership structure, dividend sustainability, dynamic risk management, and expected return — rather than relying on any single metric.
 
 The system runs as a daily pipeline and produces:
 
 | Output | Description |
 |---|---|
-| HTML Report | Human-readable daily screening report |
-| JSON Payload | Structured, machine-readable results |
-| Streamlit Dashboard | Read-only visualization layer |
+| HTML Newsletter | Clean stacked summary tables, WhatsApp-ready Quick-Copy snippet, and collapsible candidate thesis cards |
+| JSON Payload | Structured, fully auditable machine-readable results |
+| Streamlit Dashboard | Read-only interactive visualization layer |
+| Backtesting Engine | Walk-forward simulation engine with Backtrader integration, tracking CAGR, Sharpe, Sortino, MDD, and trade logs in SQLite |
 
 **Core commitments:**
 
@@ -99,14 +104,21 @@ flowchart TD
     F --> G[Ownership & Dividend Analysis]
     G --> H[Valuation Engine]
     H --> I[Beta-Adjusted Hurdle Rate]
-    I --> J[Risk & Concentration Diagnostics]
-    J --> K[Decision Diff]
-    K --> L[Thesis Card]
-    L --> M{Validation Gate}
-    M -- valid --> N[JSON Payload]
-    M -- valid --> O[HTML Report]
-    O --> P[Read-Only Dashboard]
-    M -- invalid --> Q[Halt — Not Dispatched]
+    I --> J[Dynamic Risk Sizing: Entry Bands / Stop-Loss]
+    J --> K[Risk & Concentration Diagnostics]
+    K --> L[Decision Diff]
+    L --> M[Thesis Card]
+    M --> N{Validation Gate}
+    N -- valid --> O[JSON Payload]
+    N -- valid --> P[HTML Newsletter]
+    P --> Q[Read-Only Dashboard]
+    N -- invalid --> R[Halt — Not Dispatched]
+
+    subgraph SIM["Backtesting Subsystem"]
+        BT1[Walk-Forward Engine] --> BT2[Backtrader Integration]
+        BT2 --> BT3[(SQLite: backtest_results & trades)]
+    end
+    SRC -.-> SIM
 ```
 
 ---
@@ -174,6 +186,23 @@ Expected return is never assessed in isolation — it is compared against a requ
 Expected Return   vs.   Required Return
 ```
 
+### Dynamic Risk Management & Position Sizing
+
+Signals do not rely on market orders (`entry_price = current_price`) or leave stop-losses null. Every candidate produces disciplined execution and risk parameters:
+
+- **Stepped Entry Band (`entry_low`, `entry_high`)**:
+  $$\text{entry\_low} = \text{current\_price} - 0.5 \times \text{ATR20}$$
+  $$\text{entry\_high} = \text{current\_price} + 0.2 \times \text{ATR20}$$
+  Accumulation is scaled 50% at the lower band and 50% at the upper band ($\text{effective\_entry} = 0.5 \times \text{entry\_low} + 0.5 \times \text{entry\_high}$).
+
+- **Dynamic Stop-Loss (`stop_loss`)**:
+  $$\text{stop\_loss} = \text{entry\_low} - 1.5 \times \text{ATR20}$$
+  If a recent 20-day swing low provides an established support level below entry, the stop-loss dynamically anchors to $\min(\text{base\_stop}, \text{swing\_low})$ for robust protection.
+
+- **Fixed Fractional Position Sizing (`position_size_pct`)**:
+  Positions are sized inversely to risk distance per share, keeping account portfolio risk strictly within the target budget (1%–2%, default 1.5%):
+  $$\text{position\_size\_pct} = \min\left(25.0\%,\, \frac{\text{account\_risk\_pct}}{\text{risk\_per\_share} \,/\, \text{effective\_entry}}\right)$$
+
 ### Catalysts & KAP
 
 KAP (Public Disclosure Platform) filings are classified using a **rule-based / regex** approach — not an LLM-based prediction model. This choice prioritizes deterministic, reproducible, and transparent classification over probabilistic inference.
@@ -206,6 +235,26 @@ flowchart LR
     A[Missing Data] --> B[None]
     B --> C[Guard / Filter]
     C --> D[Controlled Exclusion from Scoring]
+```
+
+---
+
+## Walk-Forward Backtesting Engine
+
+To bridge the gap between forward-looking prediction tracking and historical strategy validation, the system provides an event-driven **Walk-Forward Backtesting Engine** paired with **Backtrader** integration:
+
+- **Zero Look-Ahead Bias**: Signals and dynamic risk bands are evaluated strictly on information available on or before each trading bar (`effective_at <= bar_date`).
+- **Realistic Execution Friction**: Default trading costs incorporate institutional friction — **0.15% commission** + **0.10% slippage** per trade.
+- **Institutional Metrics**: Calculates Compounded Annual Growth Rate (**CAGR**), **Sharpe Ratio** (annualized vs. risk-free rate), **Sortino Ratio** (downside deviation), **Max Drawdown (MDD)**, **Hit Rate (% profitable trades)**, and **Profit Factor**.
+- **Full Traceability**: Every simulated trade, entry/exit timestamp, dynamic stop trigger, and trade return is persisted into SQLite tables (`backtest_results` and `backtest_trades`).
+
+```mermaid
+flowchart LR
+    A[Historical OHLCV + Signals] --> B[Walk-Forward Engine]
+    B --> C[Friction: 0.15% Comm + 0.10% Slip]
+    C --> D[Backtrader Cerebro Runner]
+    D --> E[Metrics: CAGR / Sharpe / Sortino / MDD]
+    E --> F[(SQLite: backtest_results & trades)]
 ```
 
 ---
@@ -370,6 +419,24 @@ python run.py
 
 ---
 
+## Running Backtests
+
+Simulate historical strategy performance, friction costs, and dynamic risk execution across any BIST stock:
+
+**Run walk-forward backtest via CLI:**
+
+```bash
+python -m core.backtest --ticker FORTE --days 250 --capital 100000
+```
+
+**Run using the Backtrader engine:**
+
+```bash
+python -m core.backtest --ticker FORTE --days 250 --backtrader
+```
+
+---
+
 ## Dashboard
 
 ```bash
@@ -421,7 +488,7 @@ python -m bist_mcp.server
 pytest tests/ -v
 ```
 
-The suite (92 tests) covers:
+The suite (162 tests) covers:
 
 <details>
 <summary>Test coverage areas</summary>
@@ -438,6 +505,10 @@ The suite (92 tests) covers:
 - Banned claims / unsupported statements
 - Idempotency
 - Dashboard read-only behavior
+- Dynamic risk levels (ATR entry band, stop-loss, position sizing)
+- Walk-forward backtesting engine & zero look-ahead bias
+- Backtrader Cerebro runner & institutional performance metrics
+- Backtest database persistence and trade audit logs
 
 </details>
 
@@ -451,7 +522,7 @@ For a fixed dataset and configuration, the system guarantees:
 Same Input  →  Same Calculation  →  Same Output
 ```
 
-Prediction tracking is **not** presented as a classical backtest — it evaluates prior thesis outcomes against subsequent data, which is a distinct methodology.
+Strategy performance is verified through rigorous walk-forward backtesting with transaction costs and slippage, and forward thesis outcomes are monitored in parallel via prediction tracking.
 
 ---
 
@@ -472,12 +543,12 @@ These are **starting assumptions**, not empirically validated optimal parameters
 
 | Area | Status |
 |---|---|
-| Broker concentration guard | Not yet implemented |
+| Broker concentration guard | In development (v13 P1) |
 | XU100 historical benchmark series | Integration incomplete |
 | Investor count / retail-institutional split | No reliable free data source |
 | TCMB expectation data | Partially unavailable |
 | Tedbir / VBTS data (live mode) | May be incomplete |
-| GYO / holding NAV calculation | Not implemented |
+| GYO / holding NAV calculation | In development (v13 P0 Multi-Factor Valuation) |
 | Bank & insurance sector ratios | Some sector-specific ratios not computable |
 | Listing-day, volume, KAP classification | Some fields rely on proxy assumptions |
 
@@ -499,9 +570,28 @@ These gaps are represented explicitly as `None` / `unknown` rather than being si
 
 ## Roadmap
 
-Planned for v10: expanded data coverage, completion of currently missing data sources, and further pipeline refinement.
+Active engineering is driving the **v13 Institutional Quality Upgrade**:
 
-Full detail: [`bist_screener_v10_roadmap.json`](./bist_screener_v10_roadmap.json)
+- **P0 Core Risk & Methodology**
+  - [x] Dynamic Entry / Stop-Loss / Fixed Fractional Position Sizing
+  - [x] Walk-Forward Backtesting Engine & Backtrader Integration
+  - [ ] Multi-Factor Valuation Triangle (DCF + Peer Multiples + Quality Premium + GYO NAV)
+  - [ ] Look-Ahead Bias & Survivorship Bias Guards
+- **P1 Execution & Monitoring**
+  - [ ] AKD / Broker Distribution Analysis & Net Buying Concentration
+  - [ ] Trailing Stop-Loss & Dynamic Target Adjustments
+  - [ ] Sector-Specific Financial Quality Templates (Banks, Tech, GYO, Industry)
+  - [ ] KAP LLM/NLP Sentiment & Financial Catalyst Classification
+- **P2 Scalability & Distribution**
+  - [ ] Telegram Bot Integration for Real-Time Signals & Invalidation Alerts
+  - [ ] Multi-User Portfolio Watchlists & Dynamic Position Alerts
+  - [ ] Black-Litterman & Risk Parity Portfolio Optimization
+- **P3 Microstructure & Infrastructure**
+  - [ ] Order Book Imbalance / Depth Metrics
+  - [ ] Parallel Scraping & Distributed Data Pipeline
+  - [ ] Vectorized Feature Store (Parquet/DuckDB)
+
+Detailed roadmap document: [`TODO.md`](./TODO.md)
 
 ---
 
