@@ -1,8 +1,58 @@
-# BIST Screener — v10/v11/v12 Yol Haritasi (To-Do)
+# BIST Screener — v10/v11/v12/v13 Yol Haritasi (To-Do)
 
-Kaynak: Bir yatirim analisti perspektifinden yapilan disaridan inceleme
-(2026-09-11). Tam spec: `bist_screener_v10_roadmap.json` (v9 spec'i
-`bist_screener_v9_prompt.json`'u DEGISTIRMEZ, uzerine ekler).
+## v13 Stratejik Yol Haritasi ve Oncelik Siralamasi (2026-09-17)
+
+### P0 — Acil & Cok Yuksek Etki
+- [x] **1. Dinamik Entry / Stop-Loss / Position Sizing** — TAMAMLANDI (2026-09-17).
+  - ATR bazli alis bandi: `entry_low = current_price - 0.5 * ATR20`, `entry_high = current_price + 0.2 * ATR20`.
+  - Dinamik stop-loss: `stop_loss = entry_low - 1.5 * ATR20` (veya son swing dusuk destegi).
+  - Kademeli alim: %50 alt bant, %50 ust bant (`effective_entry = 0.5 * entry_low + 0.5 * entry_high`).
+  - Sabit kesirli pozisyon buyuklugu: hesap bakiyesinin %1–2'si (varsayilan %1.5) / risk_yuzdesi (`max_position_size_pct` tavan korumali).
+  - `core/targets.py::compute_dynamic_risk_levels` eklendi; `compute_short_term_target` genisletildi.
+  - `run.py` uzerinde hem uzun hem kisa vade adaylarina dynamic risk seviyeleri entegre edildi.
+  - `predictions` tablosuna `entry_low`, `entry_high`, `position_size_pct` eklendi, otomatik migrasyon yazildi.
+  - Bulten sablonuna kademeli alis bandi, dinamik stop-loss ve pozisyon buyuklugu metrikleri eklendi.
+  - Testler: `tests/test_dynamic_risk.py` eklendi (9/9 basarili, genel suite 158/158 geciyor).
+- [ ] **2. Backtesting Altyapisi**
+  - Walk-forward analiz, islem maliyeti + slippage simülasyonu.
+  - Metrikler: CAGR, Sharpe, Sortino, Max Drawdown, hit rate, profit factor.
+  - Look-ahead bias kontrolu: `available_at` / `effective_at` alanlarini kullan.
+  - Cikti: `backtest_results` tablosu + raporlama.
+- [ ] **3. Coklu Degerleme Metodolojisi (Degerleme Ucgeni)**
+  - DCF (%40) + Emsal Carpanlar (%35) + Kalite Primi (%25).
+  - GYO icin NAV (Net Aktif Degeri): Portfoy degeri - net borc / pay sayisi (`nav_discount` dolumu).
+  - Hedef fiyat = agirlikli ortalama fair value (`fair_value_low`, `fair_value_base`, `fair_value_high`).
+- [ ] **4. Veri Kalitesi ve Survivorship Bias**
+  - Delist / iflas eden hisselerin arsivlenmesi.
+  - Fiyat duzeltmeleri: temettu, bedelsiz, sermaye artirimi.
+  - Alternatif kaynaklar: KAP direkt, Fintables, Investing.
+  - Cikti: `data_quality_report`, duzeltilmis fiyat serisi.
+
+### P1 — Yuksek Oncelik (2–6 hafta)
+- [ ] **5. Portfoy Optimizasyonu**
+  - Risk Parity, Min Variance, Max Sharpe secenekleri.
+  - Korelasyon > 0.8 olan hisselerden yalnizca birini secme kurali.
+  - Sektor limiti: max %30. Cikti: `recommended_portfolio_weights`.
+- [ ] **6. Faktor Ifsa Raporu**
+  - `final_score` katki analizi: valuation_z * 0.5, catalyst * 0.25, ownership * 0.15, low_vol * 0.1.
+  - "Bu skoru ne artirdi, ne dusurdu?" aciklamasi. Cikti: `factor_contribution` tablosu.
+- [ ] **7. Sektor Notrlestirme**
+  - `valuation_z` sektor ici z-skoru / supersector normalizasyonu.
+  - `peer_n < 5` ise supersector'a dusme. Cikti: `valuation_z_sector_neutral`.
+- [ ] **8. Kurumsal Aksiyon Takvimi**
+  - `event_calendar` tablosu: tarih, tur, etki. Fiyat duzeltmesi otomatik. Entry/exit sinyal uyarilari.
+
+### P2 — Orta Oncelik (6–12 hafta)
+- [ ] **9. Duygu Analizi / NLP** (KAP bildirimleri + haber basliklari, FinBERT/lexicon, katalizor skoruna %20 agirlik).
+- [ ] **10. Makro Rejim Modeli** (Faiz, enflasyon, FX rejimine gore dinamik agirliklar).
+- [ ] **11. UI / Raporlama** (Streamlit/Dash dashboard gelistirmesi, canli filtreler).
+
+### P3 — Dusuk Oncelik (12+ hafta)
+- [ ] **12. Otomatik Emir Entegrasyonu** (Broker API - AlgoTrader/Matriks).
+- [ ] **13. Coklu Varlik Sinifi** (ETF, tahvil, emtia).
+- [ ] **14. API Servisi** (FastAPI + Docker).
+
+---
 
 ## v12 (2026-09-17) — butunluk onarimi (kidemli analist incelemesi + canli dogrulama)
 

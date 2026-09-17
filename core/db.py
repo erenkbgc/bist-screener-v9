@@ -139,7 +139,9 @@ CREATE TABLE IF NOT EXISTS predictions (
     -- OPPORTUNITY adayinda (coğu zaman baska hicbir alanla CAKISMAYAN bir deger
     -- oldugu icin) orphan-number hatasi vermesine ve e-postanin SESSIZCE
     -- GONDERILMEMESINE yol aciyordu (canli testte dogrulandi: orphan_numbers=['3.31']).
-    volume_ratio_20d REAL
+    volume_ratio_20d REAL,
+    -- dynamic entry / stop / position sizing (v12 roadmap P0-1)
+    entry_low REAL, entry_high REAL, position_size_pct REAL
 );
 
 CREATE TABLE IF NOT EXISTS invalidation_checks (
@@ -192,6 +194,9 @@ _TABLE_MIGRATIONS = {
         ("net_excess_over_hurdle_pct", "REAL"),
         ("transaction_cost_pct", "REAL"),
         ("volume_ratio_20d", "REAL"),
+        ("entry_low", "REAL"),
+        ("entry_high", "REAL"),
+        ("position_size_pct", "REAL"),
     ],
     "prices": [
         ("volatility_60d", "REAL"),

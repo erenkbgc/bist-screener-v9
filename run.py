@@ -211,6 +211,8 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
         price_source = live_price["source"] or "last_close"
         bid_ask = bist_mcp.get_bid_ask(t)  # v10 roadmap: transaction_cost_model girdisi
 
+        recent_swing_low = min((p["low"] for p in price_rows[-20:] if p.get("low") is not None), default=None) if price_rows else None
+
         # --- uzun vade: target_price_engine ---
         lt = dict(base)
         lt["entry_price"] = current_price
@@ -226,7 +228,18 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
                                            volume_ratio_20d=last.get("volume_ratio_20d"))
         lt.update(hurdle_lt)
         lt["horizon_days"] = 180
-        lt["stop_loss"] = None
+        # Dinamik Risk Yonetimi (v12 roadmap P0-1: entry_low, entry_high, stop_loss, position_size_pct)
+        lt_risk = targets_mod.compute_dynamic_risk_levels(
+            current_price=current_price,
+            atr20=last.get("atr20"),
+            recent_swing_low=recent_swing_low,
+            avg_volume_tl_20d=base.get("avg_volume_tl_20d"),
+        )
+        lt["entry_low"] = lt_risk["entry_low"]
+        lt["entry_high"] = lt_risk["entry_high"]
+        lt["stop_loss"] = lt_risk["stop_loss"]
+        lt["position_size_pct"] = lt_risk["position_size_pct"]
+
         beta_lt = beta_hurdle_mod.calculate_beta_adjusted_hurdle(
             as_of_date, t, price_rows, macro["bond_2y_pct"], hurdle_lt["expected_roi_pct"]
         )
@@ -256,8 +269,14 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000) -> dict:
             continue
         st = dict(base)
         short_target = targets_mod.compute_short_term_target(
-            current_price, atr20, sma20, base.get("avg_volume_tl_20d"))
+            current_price, atr20, sma20, base.get("avg_volume_tl_20d"),
+            recent_swing_low=recent_swing_low)
         st.update(short_target)
+        # Dinamik Risk Yonetimi (v12 roadmap P0-1)
+        st["entry_low"] = short_target["entry_low"]
+        st["entry_high"] = short_target["entry_high"]
+        st["stop_loss"] = short_target["dynamic_stop_loss"]
+        st["position_size_pct"] = short_target["position_size_pct"]
         st["current_price"] = current_price
         st["price_source"] = price_source
         st["volume_ratio_20d"] = last.get("volume_ratio_20d")
@@ -400,6 +419,9 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
             "net_excess_over_hurdle_pct": c.get("net_excess_over_hurdle_pct"),
             "transaction_cost_pct": c.get("transaction_cost_pct"),
             "volume_ratio_20d": c.get("volume_ratio_20d"),
+            "entry_low": c.get("entry_low"),
+            "entry_high": c.get("entry_high"),
+            "position_size_pct": c.get("position_size_pct"),
         })
         invalidation_mod.create_invalidation_condition(as_of_date, c["ticker"], "excess_over_hurdle_pct", "<", 0)
         if c.get("piotroski_normalized_score") is not None:
@@ -414,11 +436,13 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
                 """INSERT INTO predictions (as_of_date, ticker, bucket, entry_price, target_price,
                    stop_loss, horizon_days, expected_roi_pct, hurdle_rate_pct, excess_over_hurdle_pct,
                    real_return_pct, usd_return_pct, rationale_hash, current_price, price_source,
-                   net_expected_roi_pct, net_excess_over_hurdle_pct, transaction_cost_pct, volume_ratio_20d)
+                   net_expected_roi_pct, net_excess_over_hurdle_pct, transaction_cost_pct, volume_ratio_20d,
+                   entry_low, entry_high, position_size_pct)
                    VALUES (:as_of_date, :ticker, :bucket, :entry_price, :target_price, :stop_loss,
                            :horizon_days, :expected_roi_pct, :hurdle_rate_pct, :excess_over_hurdle_pct,
                            :real_return_pct, :usd_return_pct, :rationale_hash, :current_price, :price_source,
-                           :net_expected_roi_pct, :net_excess_over_hurdle_pct, :transaction_cost_pct, :volume_ratio_20d)""",
+                           :net_expected_roi_pct, :net_excess_over_hurdle_pct, :transaction_cost_pct, :volume_ratio_20d,
+                           :entry_low, :entry_high, :position_size_pct)""",
                 rows,
             )
             conn.commit()
