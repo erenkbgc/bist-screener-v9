@@ -13,6 +13,14 @@ on:
         description: "Test icin evreni ilk N tickerla sinirla (bos = tam ~800 hisse, production)"
         required: false
         default: ""
+      tickers:
+        description: "Test edilecek hisseler (virgulle ayrilmis, orn: FORTE,THYAO,ASELS) - bos = tam evren"
+        required: false
+        default: ""
+      force:
+        description: "Idempotency kontrolunu atla (true = zorla yeniden calistir)"
+        required: false
+        default: "false"
 
 # Ayni anda iki kosunun ayni SQLite dosyasina yazip cakismasini engeller.
 concurrency:
@@ -51,13 +59,19 @@ jobs:
         env:
           BIST_DATA_MODE: live
           BIST_LIVE_UNIVERSE_LIMIT: ${{ inputs.universe_limit }}
+          BIST_LIVE_TICKERS: ${{ inputs.tickers }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
-        run: python run.py --as-of-date ${{ steps.today.outputs.date }}
+        run: |
+          EXTRA_ARGS=""
+          if [ "${{ inputs.force }}" = "true" ]; then
+            EXTRA_ARGS="--force"
+          fi
+          python run.py --as-of-date ${{ steps.today.outputs.date }} $EXTRA_ARGS
 
       - name: HTML raporu ve payload'i is ciktisi olarak yukle
         if: always()
