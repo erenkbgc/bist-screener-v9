@@ -5,134 +5,359 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BIST Tarama Bulteni - {{ as_of_date }}</title>
 <style>
-  /* Temel Ayarlar ve Tipografi */
-  body { margin:0; padding:0; background-color:#f3f4f6; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:#374151; line-height:1.6; -webkit-font-smoothing:antialiased; }
-  .wrap { max-width:740px; margin:0 auto; padding:24px 16px; }
+  /* ========== TEMEL ========== */
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:0; background:#f9fafb;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#1f2937; line-height:1.6; -webkit-font-smoothing:antialiased;
+    font-size:14px;
+  }
+  .wrap { max-width:860px; margin:0 auto; padding:28px 20px; }
 
-  /* Ana Kartlar */
-  .card { background-color:#ffffff; border:1px solid #e5e7eb; border-radius:12px; padding:28px; margin-bottom:24px; box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+  /* ========== KARTLAR ========== */
+  .card {
+    background:#fff; border:1px solid #e5e7eb; border-radius:14px;
+    padding:28px; margin-bottom:20px;
+    box-shadow:0 1px 2px rgba(15,23,42,0.04);
+  }
 
-  /* Hero / Baslik Alani (Koyu Kurumsal Lacivert) */
-  .hero { background:linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); color:#ffffff; border-radius:12px; padding:32px 28px; margin-bottom:24px; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2); }
-  .hero h1 { font-size:24px; font-weight:800; margin:0 0 8px; letter-spacing:-0.02em; }
-  .hero .date { font-size:13px; color:#93c5fd; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:16px; }
-  .hero .headline { font-size:15px; font-weight:400; color:#e0e7ff; line-height:1.6; margin:0; }
+  /* ========== HERO ========== */
+  .hero {
+    background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 100%);
+    color:#fff; border-radius:14px; padding:32px 28px; margin-bottom:20px;
+    box-shadow:0 8px 24px -8px rgba(15,23,42,0.3);
+  }
+  .hero h1 { font-size:22px; font-weight:800; margin:0 0 6px; letter-spacing:-0.02em; }
+  .hero .date { font-size:12px; color:#93c5fd; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; }
+  .hero .headline { font-size:14px; color:#e0e7ff; line-height:1.65; margin:0; }
 
-  /* Makro Etiketler (Pills) */
-  .pillrow { margin-top:20px; display:flex; flex-wrap:wrap; gap:10px; }
-  .pill { display:inline-flex; align-items:center; background-color:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#ffffff; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; letter-spacing:0.02em; backdrop-filter:blur(4px); }
-  .pill.alert { background-color:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.4); color:#fca5a5; }
+  .pillrow { margin-top:18px; display:flex; flex-wrap:wrap; gap:8px; }
+  .pill {
+    display:inline-flex; align-items:center;
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+    color:#fff; border-radius:6px; padding:5px 11px;
+    font-size:11.5px; font-weight:600; letter-spacing:0.02em;
+  }
+  .pill.alert { background:rgba(239,68,68,0.18); border-color:rgba(239,68,68,0.35); color:#fca5a5; }
 
-  /* Bolum Basliklari */
-  .section-title { font-size:18px; font-weight:700; color:#111827; margin:0 0 4px; letter-spacing:-0.01em; }
-  .section-sub { font-size:13px; color:#6b7280; margin:0 0 24px; font-weight:400; }
+  /* ========== BOLUM BASLIKLARI ========== */
+  .section-title {
+    font-size:17px; font-weight:800; color:#0f172a;
+    margin:0 0 4px; letter-spacing:-0.01em;
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-title::before {
+    content:''; display:inline-block; width:3px; height:16px;
+    background:#1e40af; border-radius:2px;
+  }
+  .section-sub { font-size:12.5px; color:#6b7280; margin:0 0 20px; padding-left:11px; }
 
-  /* Hisse Kartlari */
-  .stock-card { border:1px solid #e5e7eb; border-radius:10px; padding:0; margin-bottom:20px; background:#ffffff; overflow:hidden; }
-  .stock-card-inner { padding:24px; }
-  .stock-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
-  .ticker { font-size:20px; font-weight:800; color:#111827; letter-spacing:0.02em; }
+  /* ========== DURUM BADGE ========== */
+  .badge {
+    display:inline-block; border-radius:5px; padding:3px 8px;
+    font-size:9.5px; font-weight:800; text-transform:uppercase;
+    letter-spacing:0.05em; vertical-align:middle; white-space:nowrap;
+  }
+  .badge-STRONG_OPPORTUNITY { background:#d1fae5; color:#065f46; }
+  .badge-OPPORTUNITY        { background:#dbeafe; color:#1e40af; }
+  .badge-WATCHLIST          { background:#fef3c7; color:#92400e; }
+  .badge-NO_ACTION          { background:#f1f5f9; color:#475569; }
+  .badge-QUARANTINE         { background:#fee2e2; color:#991b1b; }
 
-  /* Durum Etiketleri */
-  .badge { display:inline-block; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
-  .badge-STRONG_OPPORTUNITY { background:#dcfce7; color:#14532d; }
-  .badge-OPPORTUNITY { background:#dbeafe; color:#1e3a8a; }
-  .badge-WATCHLIST { background:#fef3c7; color:#78350f; }
-  .badge-NO_ACTION { background:#f3f4f6; color:#4b5563; }
-  .badge-QUARANTINE { background:#fee2e2; color:#7f1d1d; }
+  /* ========== OZET TABLO ========== */
+  .table-container {
+    overflow-x:auto; margin:0 0 16px;
+    border:1px solid #e5e7eb; border-radius:10px;
+  }
+  .summary-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .summary-table thead th {
+    background:#f8fafc; color:#475569;
+    font-weight:700; font-size:10.5px;
+    text-transform:uppercase; letter-spacing:0.04em;
+    padding:11px 14px; border-bottom:2px solid #e2e8f0;
+    text-align:left; white-space:nowrap;
+  }
+  .summary-table tbody td {
+    padding:11px 14px; border-bottom:1px solid #f1f5f9;
+    color:#1e293b; vertical-align:middle;
+  }
+  .summary-table tbody tr:hover { background:#f8fafc; }
+  .summary-table tbody tr:last-child td { border-bottom:none; }
 
-  /* Veri Izgarasi (Terminal Stili) */
-  .price-row { display:flex; flex-wrap:wrap; margin:0 0 20px; background:#f8fafc; border-radius:8px; border:1px solid #f1f5f9; padding:16px; }
-  .price-box { flex:1; min-width:100px; border-right:1px solid #e2e8f0; padding-right:16px; margin-right:16px; }
-  .price-box:last-child { border-right:none; padding-right:0; margin-right:0; }
-  .price-box .lbl { font-size:11px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
-  .price-box .val { font-size:20px; font-weight:700; color:#0f172a; line-height:1.2; }
-  .price-box .val.up { color:#059669; }
+  .summary-table .col-ticker { font-weight:800; font-size:13.5px; color:#0f172a; white-space:nowrap; }
+  .summary-table .col-num    { text-align:right; font-variant-numeric:tabular-nums; }
+  .summary-table .col-roi    { text-align:right; font-weight:700; color:#059669; font-variant-numeric:tabular-nums; }
+  .summary-table .col-stop   { text-align:right; font-weight:700; color:#dc2626; font-variant-numeric:tabular-nums; }
+  .summary-table .col-dcf    { text-align:right; color:#64748b; font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+  /* ========== AKORDIYON ========== */
+  details.section-details {
+    margin-top:4px;
+    border:1px solid #e2e8f0; border-radius:10px;
+    background:#f8fafc; overflow:hidden;
+  }
+  details.section-details > summary {
+    cursor:pointer; list-style:none;
+    padding:13px 18px;
+    font-size:13px; font-weight:700; color:#1e293b;
+    display:flex; align-items:center; gap:8px;
+    user-select:none;
+    transition:background 0.15s;
+  }
+  details.section-details > summary::-webkit-details-marker { display:none; }
+  details.section-details > summary::before {
+    content:'+'; display:inline-block;
+    width:16px; height:16px; line-height:15px; text-align:center;
+    font-size:14px; font-weight:400; color:#64748b;
+    border:1px solid #cbd5e1; border-radius:4px; background:#fff;
+  }
+  details.section-details[open] > summary::before { content:'−'; }
+  details.section-details > summary:hover { background:#f1f5f9; }
+  details.section-details > .details-body { padding:0 18px 18px; background:#fff; border-top:1px solid #e2e8f0; }
+
+  /* ========== KOPYALA KUTUSU ========== */
+  .quick-copy-box {
+    background:#0f172a; color:#e2e8f0;
+    border-radius:8px; padding:14px 16px; margin-top:16px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+    font-size:11.5px; line-height:1.8;
+    white-space:pre-wrap; overflow-x:auto;
+  }
+
+  /* ========== DETAY KARTI ========== */
+  .detail-card {
+    background:#fff; border:1px solid #e5e7eb; border-radius:10px;
+    padding:0; margin:16px 0;
+    overflow:hidden;
+  }
+  .detail-card + .detail-card { margin-top:14px; }
+
+  .detail-header {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; flex-wrap:wrap;
+    padding:16px 20px; background:#f8fafc;
+    border-bottom:1px solid #e5e7eb;
+  }
+  .detail-header .left { display:flex; align-items:center; gap:10px; }
+  .detail-num {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:26px; height:26px; padding:0 8px;
+    background:#1e40af; color:#fff;
+    font-size:11px; font-weight:800; border-radius:6px;
+    font-variant-numeric:tabular-nums;
+  }
+  .detail-header .ticker { font-size:18px; font-weight:800; color:#0f172a; letter-spacing:0.02em; }
+
+  .detail-body { padding:20px; }
+
+  /* Fiyat Kutulari */
+  .price-row {
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));
+    gap:0; margin:0 0 18px;
+    background:#f8fafc; border-radius:8px;
+    border:1px solid #f1f5f9; padding:14px;
+  }
+  .price-box {
+    padding:0 16px; border-right:1px solid #e2e8f0;
+  }
+  .price-box:first-child { padding-left:0; }
+  .price-box:last-child { border-right:none; padding-right:0; }
+  .price-box .lbl {
+    font-size:10px; color:#64748b; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.06em;
+    margin-bottom:4px;
+  }
+  .price-box .val {
+    font-size:19px; font-weight:800; color:#0f172a;
+    line-height:1.2; font-variant-numeric:tabular-nums;
+  }
+  .price-box .val.up   { color:#059669; }
   .price-box .val.down { color:#dc2626; }
-  .live-tag { font-size:10px; color:#94a3b8; font-weight:500; margin-top:4px; }
+  .price-box .live-tag { font-size:10px; color:#94a3b8; font-weight:500; margin-top:3px; }
 
-  /* Yorum / Analiz Alanlari */
-  .insight-box { margin-top:16px; border-radius:8px; font-size:13.5px; line-height:1.6; }
-  .why { color:#334155; padding:16px; background-color:#f0f9ff; border-left:4px solid #3b82f6; border-radius:4px; margin-bottom:12px; }
-  .risk { color:#7f1d1d; padding:16px; background-color:#fef2f2; border-left:4px solid #ef4444; border-radius:4px; }
+  /* Neden / Risk */
+  .insight-box { margin-bottom:16px; }
+  .why, .risk {
+    padding:14px 16px; border-radius:6px;
+    font-size:13px; line-height:1.6;
+    margin-bottom:10px;
+  }
+  .why  { color:#334155; background:#f0f9ff; border-left:3px solid #3b82f6; }
+  .risk { color:#7f1d1d; background:#fef2f2; border-left:3px solid #ef4444; margin-bottom:0; }
   .why b, .risk b { color:#0f172a; font-weight:700; }
 
-  /* Akordiyon (Detaylar) */
-  details { margin-top:20px; border-top:1px solid #f1f5f9; padding-top:16px; }
-  summary { cursor:pointer; font-size:13px; color:#475569; font-weight:600; outline:none; display:flex; align-items:center; }
-  summary:hover { color:#0f172a; }
-  summary::before { content:'+'; display:inline-block; margin-right:8px; font-size:16px; font-weight:400; color:#94a3b8; width:12px; }
-  details[open] summary::before { content:'-'; }
+  /* Uyari kutusu (Sloan) */
+  .flag-warning {
+    margin-top:12px; padding:10px 14px;
+    background:#fef2f2; border:1px solid #fecaca;
+    border-radius:6px; color:#991b1b; font-size:12px;
+  }
 
-  /* Minimalist Tablolar */
-  table { width:100%; border-collapse:collapse; font-size:12.5px; margin:16px 0 8px; }
-  th, td { text-align:left; padding:10px 4px; border-bottom:1px solid #f1f5f9; }
-  th { color:#64748b; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; padding-bottom:12px; border-bottom:2px solid #e2e8f0; }
-  td { color:#334155; }
-  tr:last-child td { border-bottom:none; }
+  /* Metrik Tablosu */
+  .metric-table { width:100%; border-collapse:collapse; font-size:12.5px; margin:16px 0 8px; }
+  .metric-table tbody tr { border-bottom:1px solid #f1f5f9; }
+  .metric-table tbody tr:nth-child(even) { background:#fafbfc; }
+  .metric-table tbody tr:last-child { border-bottom:none; }
+  .metric-table td {
+    padding:9px 4px; color:#334155; vertical-align:middle;
+  }
+  .metric-table td:first-child {
+    color:#64748b; font-size:12px; width:60%;
+  }
+  .metric-table td:last-child {
+    text-align:right; font-weight:600; color:#1f2937;
+    font-variant-numeric:tabular-nums;
+  }
+  .metric-table td.highlight { color:#059669; }
+  .metric-table td.risk { color:#dc2626; }
 
-  /* Ana Ozet Tablolari */
-  .table-container { overflow-x:auto; margin:16px 0 16px; border:1px solid #e5e7eb; border-radius:10px; background:#ffffff; }
-  .summary-table { width:100%; border-collapse:collapse; font-size:13px; margin:0; }
-  .summary-table th { background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; padding:12px 14px; border-bottom:2px solid #e2e8f0; }
-  .summary-table td { padding:12px 14px; border-bottom:1px solid #f1f5f9; color:#1e293b; vertical-align:middle; }
-  .summary-table tr:hover { background:#f8fafc; }
-  .summary-table tr:last-child td { border-bottom:none; }
-  .summary-table .col-ticker { font-weight:800; font-size:14px; color:#0f172a; white-space:nowrap; }
-  .summary-table .col-num { text-align:right; font-variant-numeric:tabular-nums; }
-  .summary-table .col-roi { text-align:right; font-weight:700; color:#059669; font-variant-numeric:tabular-nums; }
-  .summary-table .col-stop { text-align:right; font-weight:700; color:#dc2626; font-variant-numeric:tabular-nums; }
-  .summary-table .col-dcf { text-align:right; color:#475569; font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  /* Deneysel Kutular */
+  .exp-box {
+    border:1px dashed #cbd5e1; border-radius:8px;
+    padding:14px 16px; margin-top:12px;
+    background:#f8fafc; font-size:12.5px; line-height:1.6;
+  }
+  .exp-box .exp-title {
+    font-weight:700; color:#0f172a; font-size:12px;
+    margin-bottom:4px;
+  }
 
-  /* Hizli Kopyalama Kutusu */
-  .quick-copy-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 14px; margin-top:8px; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:12px; line-height:1.7; white-space:pre-wrap; color:#334155; }
+  /* Kucuk notlar */
+  .note-inline { font-size:12px; color:#64748b; margin-top:12px; line-height:1.6; }
+  .note-inline .highlight { color:#0f172a; font-weight:700; }
+  .invalidation-box {
+    margin:14px 0; padding:10px 14px;
+    background:#f8fafc; border-radius:6px;
+    font-size:12px; color:#475569;
+  }
 
-  /* Detay Karti (Accordion Icinde) */
-  .detail-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:18px; margin-bottom:16px; }
+  /* ========== GENEL YARDIMCI ========== */
+  .muted    { color:#64748b; }
+  .small    { font-size:12px; color:#64748b; line-height:1.6; }
+  .highlight{ font-weight:700; color:#0f172a; }
+  .empty-note {
+    padding:28px; text-align:center;
+    background:#f8fafc; border:1px dashed #e2e8f0;
+    border-radius:8px; color:#94a3b8; font-size:13px;
+  }
 
-  /* Liste ve Yardimci Siniflar */
-  ul { margin:12px 0; padding-left:20px; color:#475569; font-size:13px; }
-  li { margin-bottom:6px; }
-  .muted { color:#64748b; }
-  .small { font-size:12px; color:#64748b; margin-top:8px; line-height:1.5; }
-  .warn { color:#b45309; }
-  .highlight { font-weight:600; color:#0f172a; }
+  ul.plain { margin:12px 0; padding-left:18px; color:#475569; font-size:12.5px; }
+  ul.plain li { margin-bottom:5px; }
 
-  /* Deneysel / FCF Kutulari */
-  .exp-box { border:1px dashed #cbd5e1; border-radius:6px; padding:14px; margin-top:16px; background:#f8fafc; }
-  .empty-note { font-size:14px; color:#64748b; padding:24px; text-align:center; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; }
+  /* Uyari karti (Yogunlasma) */
+  .warn-box {
+    padding:12px 16px; background:#fffbeb;
+    border-left:3px solid #f59e0b; border-radius:6px;
+    margin-top:14px;
+  }
+  .warn-box .wt { color:#b45309; font-weight:700; font-size:12.5px; }
+  .warn-box ul { margin:6px 0 0; padding-left:18px; color:#92400e; font-size:12px; }
+
+  /* Bozulan tezler */
+  .broken-list { list-style:none; padding:0; margin:0; }
+  .broken-list li {
+    padding:12px 16px; background:#fef2f2;
+    border:1px solid #fee2e2; border-left:3px solid #ef4444;
+    border-radius:6px; margin-bottom:8px;
+    color:#7f1d1d; font-size:12.5px;
+  }
+
+  /* Gecmis Tahmin Tablosu */
+  .eval-table { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  .eval-table th {
+    text-align:left; padding:10px 12px;
+    background:#f8fafc; color:#64748b;
+    font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.04em;
+    border-bottom:2px solid #e2e8f0;
+  }
+  .eval-table td {
+    padding:10px 12px; border-bottom:1px solid #f1f5f9; color:#334155;
+  }
+  .eval-table tr:last-child td { border-bottom:none; }
+
+  /* Filtre listesi */
+  .filter-list { width:100%; border-collapse:collapse; font-size:12px; }
+  .filter-list th {
+    text-align:left; padding:8px 10px;
+    color:#64748b; font-size:10.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.04em;
+    border-bottom:2px solid #e2e8f0; background:#f8fafc;
+  }
+  .filter-list td {
+    padding:8px 10px; border-bottom:1px solid #f1f5f9; color:#334155;
+  }
+  .filter-list tr:last-child td { border-bottom:none; }
 
   /* Footer */
-  .footer { font-size:11px; color:#94a3b8; line-height:1.7; background:transparent; border:none; box-shadow:none; padding:0 12px; text-align:justify; margin-top:8px; }
+  .footer {
+    font-size:11px; color:#94a3b8; line-height:1.75;
+    padding:0 12px; text-align:justify; margin-top:12px;
+  }
+  .footer p { margin:8px 0; }
+  .footer .divider {
+    border-top:1px solid #cbd5e1;
+    margin:16px 0 12px; width:40px;
+  }
 
-  /* Mobil Düzenlemeler */
-  @media (max-width:540px) {
-    .wrap { padding:12px; }
+  /* ========== MOBIL ========== */
+  @media (max-width:640px) {
+    .wrap { padding:14px; }
     .card, .hero { padding:20px; }
-    .price-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; border:none; background:transparent; padding:0; }
-    .price-box { border-right:none; padding-right:0; margin-right:0; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #f1f5f9; }
-    table, thead, tbody, th, td, tr { display:block; }
-    th { display:none; }
-    td { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9; }
-    td:before { content: attr(data-label); font-weight:600; color:#64748b; font-size:11px; text-transform:uppercase; letter-spacing:0.02em; }
-    td:last-child { text-align:right; }
+    .hero h1 { font-size:19px; }
+    .detail-body { padding:16px; }
+
+    /* Fiyat kutulari 2x2 grid */
+    .price-row {
+      grid-template-columns:1fr 1fr;
+      gap:10px; padding:0; background:transparent; border:none;
+    }
+    .price-box {
+      border-right:none; padding:12px;
+      background:#f8fafc; border:1px solid #f1f5f9; border-radius:8px;
+    }
+    .price-box:first-child { padding-left:12px; }
+
+    /* Metrik tablolari mobilde blok haline gelsin */
+    .metric-table, .metric-table tbody, .metric-table tr, .metric-table td { display:block; width:100%; }
+    .metric-table td { display:flex; justify-content:space-between; padding:7px 0; }
+    .metric-table td:first-child { width:auto; color:#64748b; }
+    .metric-table td:last-child { width:auto; text-align:right; }
+    .metric-table tbody tr:nth-child(even) { background:transparent; }
+    .metric-table tbody tr { border-bottom:1px solid #f1f5f9; }
+
+    /* Summary-table yatay kaydirmali kalsin */
+    .summary-table { min-width:540px; }
+    .table-container { border-radius:8px; }
+
+    /* Eval ve filtre tablolarini blok yap */
+    .eval-table, .eval-table tbody, .eval-table tr, .eval-table td { display:block; width:100%; }
+    .eval-table thead { display:none; }
+    .eval-table td { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+    .eval-table td:before { content:attr(data-label); font-weight:600; color:#64748b; font-size:11px; text-transform:uppercase; }
+
+    .filter-list, .filter-list tbody, .filter-list tr, .filter-list td { display:block; width:100%; }
+    .filter-list thead { display:none; }
+    .filter-list td { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+    .filter-list td:before { content:attr(data-label); font-weight:600; color:#64748b; font-size:11px; text-transform:uppercase; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- 1. Baslik Alanı -->
+  <!-- ============================== 1. HERO ============================== -->
   <div class="hero">
     <h1>BIST Tarama Bulteni</h1>
     <div class="date">{{ as_of_date }}</div>
     <div class="headline">
       {% if no_action_today %}
-        Bugun hard-filter'lardan gecen bir aday yok - sistem bilerek sessiz kaliyor, aksiyon onerilmiyor.
+        Bugun hard-filter'lardan gecen bir aday yok — sistem bilerek sessiz kaliyor, aksiyon onerilmiyor.
       {% elif regime_taxonomy_tag %}
-        Rejim durumu: <span style="color:#ffffff; font-weight:700;">{{ regime_taxonomy_tag }}</span>. Asagida kisa ve uzun vade adaylarin ozeti yer almaktadir, teknik analiz detaylari hisse kartlarindaki "Detaylari Incele" bolumundedir.
+        Rejim: <span style="color:#ffffff; font-weight:700;">{{ regime_taxonomy_tag }}</span>. Asagida kisa ve uzun vade adaylarin ozeti yer alir; her hissenin detayli tezi "Aday Bazli Detaylar" bolumundedir.
       {% else %}
-        Asagida kisa ve uzun vade adaylarin ozeti yer almaktadir, teknik analiz detaylari hisse kartlarindaki "Detaylari Incele" bolumundedir.
+        Asagida kisa ve uzun vade adaylarin ozeti yer alir; her hissenin detayli tezi "Aday Bazli Detaylar" bolumundedir.
       {% endif %}
     </div>
 
@@ -150,10 +375,10 @@
 
   {% set price_source_label = {'live': 'Anlik', 'vwap_fallback': 'Hacim Ort. (VWAP)', 'last_close': 'Kapanis'} %}
 
-  <!-- 2. Uzun Vade Adaylari -->
+  <!-- ============================== 2. UZUN VADE ============================== -->
   <div class="card">
     <h2 class="section-title">Uzun Vade Onerileri</h2>
-    <div class="section-sub">~6 aylik ufuk, sektor ici goreli degerlemeye dayali hedef fiyat hesabi.</div>
+    <div class="section-sub">~6 aylik ufuk · sektor ici goreli degerlemeye dayali hedef fiyat hesabi</div>
 
     {% if long_term_candidates %}
     <div class="table-container">
@@ -162,9 +387,10 @@
           <tr>
             <th>Hisse</th>
             <th class="col-num">Alis (Guncel)</th>
-            <th class="col-num">Hedef Fiyat</th>
-            <th class="col-roi">Beklenen Getiri</th>
-            <th class="col-dcf">DCF Araligi</th>
+            <th class="col-num">Hedef</th>
+            <th class="col-roi">Getiri</th>
+            <th class="col-stop">Stop-Loss</th>
+            <th class="col-dcf">Adil Deger / DCF</th>
           </tr>
         </thead>
         <tbody>
@@ -172,18 +398,21 @@
           <tr>
             <td class="col-ticker">
               {{ c.ticker }}
-              <span class="badge badge-{{ c.candidate_state }}" style="font-size:10px; padding:2px 5px; margin-left:4px;">{{ c.candidate_state }}</span>
+              <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
             </td>
             <td class="col-num">{{ c.current_price | fmt }}</td>
-            <td class="col-num" style="font-weight:600; color:#0f172a;">{{ c.target_price | fmt }}</td>
+            <td class="col-num" style="font-weight:700; color:#0f172a;">{{ c.target_price | fmt }}</td>
             <td class="col-roi">%{{ c.expected_roi_pct | fmt }}</td>
+            <td class="col-stop">{{ c.stop_loss | fmt }}</td>
             <td class="col-dcf">
-              {% if c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %}
-                {{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}
+              {% if c.fair_value_low is not none and c.fair_value_high is not none %}
+                {{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }}
+              {% elif c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %}
+                {{ c.dcf.fair_value_low | fmt }} – {{ c.dcf.fair_value_high | fmt }}
               {% elif c.gordon and c.gordon.fair_value_low is not none and not c.gordon.null_reason %}
-                {{ c.gordon.fair_value_low | fmt }} - {{ c.gordon.fair_value_high | fmt }} <span class="muted">(G)</span>
+                {{ c.gordon.fair_value_low | fmt }} – {{ c.gordon.fair_value_high | fmt }} <span class="muted">(G)</span>
               {% else %}
-                -
+                <span class="muted">—</span>
               {% endif %}
             </td>
           </tr>
@@ -192,125 +421,138 @@
       </table>
     </div>
 
-    <details style="margin-bottom:16px;">
-      <summary style="font-size:12px; font-weight:600; color:#475569; padding:8px 12px; background:#f1f5f9; border-radius:6px; cursor:pointer;">Hizli Kopyala (Metin Formati)</summary>
-      <div class="quick-copy-box">
-{%- for c in long_term_candidates %}
-* {{ c.ticker }} | Alis: {{ c.current_price | fmt }} -> Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %} | DCF: {{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}{% endif %}
-{%- endfor %}
-      </div>
-    </details>
+    <details class="section-details">
+      <summary>Aday Bazli Detaylar ve Kopyala Metni ({{ long_term_candidates | length }} hisse)</summary>
+      <div class="details-body">
 
-    <details>
-      <summary style="font-size:13px; font-weight:700; color:#1e293b; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:12px; cursor:pointer;">Aday Bazli Detayli Tezler ve Metrik Tablolari</summary>
-      <div style="margin-top:12px;">
-      {% for c in long_term_candidates %}
-      <div class="detail-card">
-        <div class="stock-head">
-          <span class="ticker">{{ c.ticker }}</span>
-          <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
-        </div>
+        <details style="margin-top:16px;">
+          <summary style="cursor:pointer; font-size:12px; font-weight:600; color:#475569; padding:8px 0;">Hizli Kopyala (Metin Formati)</summary>
+          <div class="quick-copy-box">{%- for c in long_term_candidates %}
+* {{ c.ticker }} | Alis: {{ c.current_price | fmt }} → Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.fair_value_low is not none %} | Adil Deger: {{ c.fair_value_low | fmt }} - {{ c.fair_value_high | fmt }}{% elif c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %} | DCF: {{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}{% endif %}{% if c.stop_loss is not none %} | Stop: {{ c.stop_loss | fmt }}{% endif %}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %}{%- endfor %}</div>
+        </details>
 
-        <div class="price-row">
-          <div class="price-box">
-            <div class="lbl">Guncel Fiyat</div>
-            <div class="val">{{ c.current_price | fmt }}</div>
-            <div class="live-tag">{{ price_source_label.get(c.price_source, c.price_source) }}</div>
+        {% for c in long_term_candidates %}
+        <div class="detail-card">
+          <div class="detail-header">
+            <div class="left">
+              <span class="detail-num">{{ loop.index }}</span>
+              <span class="ticker">{{ c.ticker }}</span>
+            </div>
+            <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
           </div>
-          <div class="price-box">
-            <div class="lbl">Hedef Fiyat</div>
-            <div class="val up">{{ c.target_price | fmt }}</div>
+
+          <div class="detail-body">
+
+            <div class="price-row">
+              <div class="price-box">
+                <div class="lbl">Guncel</div>
+                <div class="val">{{ c.current_price | fmt }}</div>
+                <div class="live-tag">{{ price_source_label.get(c.price_source, c.price_source) }}</div>
+              </div>
+              <div class="price-box">
+                <div class="lbl">Hedef</div>
+                <div class="val up">{{ c.target_price | fmt }}</div>
+              </div>
+              <div class="price-box">
+                <div class="lbl">Beklenen Getiri</div>
+                <div class="val up">%{{ c.expected_roi_pct | fmt }}</div>
+              </div>
+              {% if c.stop_loss is not none %}
+              <div class="price-box">
+                <div class="lbl">Stop-Loss</div>
+                <div class="val down">{{ c.stop_loss | fmt }}</div>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="insight-box">
+              <div class="why"><b>Neden:</b> {{ c.why_now }}</div>
+              <div class="risk"><b>Ana Risk:</b> {{ c.main_risk }}</div>
+            </div>
+
+            {% if c.upcoming_events %}
+            <div class="note-inline">
+              <span class="highlight">Yaklasan Olaylar:</span>
+              {% for ev in c.upcoming_events %}{{ ev.event_type }} ({{ ev.event_date }}){% if not loop.last %}; {% endif %}{% endfor %}
+            </div>
+            {% endif %}
+
+            <ul class="plain">{% for b in c.thesis_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+
+            <div class="invalidation-box">
+              <span class="highlight">Bozulma Kosulu:</span> {{ c.invalidation_condition_display }}
+            </div>
+
+            <table class="metric-table">
+              <tbody>
+                <tr><td>Giris fiyati</td><td>{{ c.entry_price | fmt }}</td></tr>
+                {% if c.entry_low is not none and c.entry_high is not none %}
+                <tr><td>Kademeli Alis Bandi</td><td>{{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</td></tr>
+                {% endif %}
+                {% if c.stop_loss is not none %}
+                <tr><td>Dinamik Stop-Loss</td><td class="risk">{{ c.stop_loss | fmt }}</td></tr>
+                {% endif %}
+                {% if c.position_size_pct is not none %}
+                <tr><td>Onerilen Pozisyon Buyuklugu</td><td>%{{ c.position_size_pct | fmt }}</td></tr>
+                {% endif %}
+                {% if c.fair_value_base is not none %}
+                <tr><td>Adil Deger Bandi (Ucgen)</td><td class="highlight">{{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }} <span class="muted">(Baz: {{ c.fair_value_base | fmt }})</span></td></tr>
+                {% endif %}
+                {% if c.valuation_method %}
+                <tr><td>Degerleme Metodu</td><td>{{ c.valuation_method }}</td></tr>
+                {% endif %}
+                <tr><td>Hurdle orani</td><td>%{{ c.hurdle_rate_pct | fmt }}</td></tr>
+                <tr><td>Hurdle uzeri fazla getiri</td><td class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
+                <tr><td>Beta-duzeltmeli fazla</td><td>%{{ c.excess_over_beta_hurdle_pct | fmt }}</td></tr>
+                <tr><td>F-Score (Normalize)</td><td>{{ c.piotroski_normalized_score | fmt }}</td></tr>
+                <tr><td>Esler grubu</td><td>{{ c.peer_group_used }} (n={{ c.peer_n }})</td></tr>
+                <tr><td>Guven duzeyi</td><td>{{ c.confidence }}</td></tr>
+                <tr><td>Raporlama bazi</td><td>{{ c.reporting_basis }}</td></tr>
+                <tr><td>Tedbir seviyesi</td><td>{{ c.tedbir_level | fmt }}</td></tr>
+                <tr><td>Perakende payi</td><td>%{{ c.retail_pct | fmt }}</td></tr>
+                {% if c.net_expected_roi_pct is not none %}
+                <tr><td>Net Getiri (Maliyet Sonrasi)</td><td class="highlight">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+
+            {% if c.sloan_flag %}
+            <div class="flag-warning">
+              <b>Uyari:</b> elevated_earnings_quality_risk (peer_percentile: {{ c.sloan_peer_percentile | fmt }})
+            </div>
+            {% endif %}
+
+            <div class="note-inline">FCF getirisi (USD bazli, bilgi amacli): <b>%{{ c.fcf_yield_usd | fmt }}</b></div>
+
+            {% if c.gordon %}
+            <div class="exp-box">
+              <div class="exp-title">Gordon Buyume Referansi <span class="muted" style="font-weight:400;">(deneysel, ana karara girmez)</span></div>
+              {% if c.gordon.null_reason %}
+                <span class="muted">Hesaplanamadi: {{ c.gordon.null_reason }}</span>
+              {% else %}
+                Adil deger araligi: <b>{{ c.gordon.fair_value_low | fmt }} – {{ c.gordon.fair_value_high | fmt }}</b>
+                <span class="muted">(Iskonto: %{{ c.gordon.discount_rate_low | fmt }} / %{{ c.gordon.discount_rate_base | fmt }} / %{{ c.gordon.discount_rate_high | fmt }})</span>
+              {% endif %}
+            </div>
+            {% endif %}
+
+            {% if c.dcf %}
+            <div class="exp-box">
+              <div class="exp-title">DCF Referansi <span class="muted" style="font-weight:400;">(deneysel, ana karara girmez)</span></div>
+              {% if c.dcf.null_reason %}
+                <span class="muted">Hesaplanamadi: {{ c.dcf.null_reason }}</span>
+              {% else %}
+                Adil deger araligi: <b>{{ c.dcf.fair_value_low | fmt }} – {{ c.dcf.fair_value_high | fmt }}</b>
+                <span class="muted">(mevcut fiyata gore %{{ c.dcf.premium_discount_low_pct | fmt }} / %{{ c.dcf.premium_discount_high_pct | fmt }})</span><br>
+                <span class="muted">WACC: %{{ c.dcf.wacc_pct | fmt }} · terminal buyume: %{{ c.dcf.terminal_growth_pct | fmt }}</span>
+              {% endif %}
+            </div>
+            {% endif %}
+
           </div>
-          <div class="price-box">
-            <div class="lbl">Beklenen Getiri</div>
-            <div class="val up">%{{ c.expected_roi_pct | fmt }}</div>
-          </div>
         </div>
+        {% endfor %}
 
-        <div class="insight-box">
-          <div class="why"><b>Neden:</b> {{ c.why_now }}</div>
-          <div class="risk"><b>Ana Risk:</b> {{ c.main_risk }}</div>
-        </div>
-
-        {% if c.upcoming_events %}
-        <div class="small" style="margin-top:16px;">
-          <span class="highlight">Yaklasan Olaylar:</span>
-          {% for ev in c.upcoming_events %}{{ ev.event_type }} ({{ ev.event_date }}){% if not loop.last %}; {% endif %}{% endfor %}
-        </div>
-        {% endif %}
-
-        <ul style="margin-top:12px;">{% for b in c.thesis_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
-        <div class="small" style="margin-bottom:16px; padding:12px; background:#f8fafc; border-radius:6px;">
-          <span class="highlight">Bozulma Kosulu:</span> {{ c.invalidation_condition_display }}
-        </div>
-
-        <table>
-          <tbody>
-            <tr><td data-label="Metrik">Giris fiyati</td><td data-label="Deger">{{ c.entry_price | fmt }}</td></tr>
-            {% if c.entry_low is not none and c.entry_high is not none %}
-            <tr><td data-label="Metrik">Kademeli Alis Bandi</td><td data-label="Deger">{{ c.entry_low | fmt }} - {{ c.entry_high | fmt }}</td></tr>
-            {% endif %}
-            {% if c.stop_loss is not none %}
-            <tr><td data-label="Metrik">Dinamik Stop-Loss</td><td data-label="Deger" class="risk">{{ c.stop_loss | fmt }}</td></tr>
-            {% endif %}
-            {% if c.position_size_pct is not none %}
-            <tr><td data-label="Metrik">Onerilen Pozisyon Buyuklugu</td><td data-label="Deger">%{{ c.position_size_pct | fmt }}</td></tr>
-            {% endif %}
-            {% if c.fair_value_base is not none %}
-            <tr><td data-label="Metrik">Adil Deger Bandi (Ucgen)</td><td data-label="Deger" class="highlight">{{ c.fair_value_low | fmt }} - {{ c.fair_value_high | fmt }} <span class="muted">(Baz: {{ c.fair_value_base | fmt }})</span></td></tr>
-            {% endif %}
-            {% if c.valuation_method %}
-            <tr><td data-label="Metrik">Degerleme Metodu</td><td data-label="Deger">{{ c.valuation_method }}</td></tr>
-            {% endif %}
-            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%{{ c.hurdle_rate_pct | fmt }}</td></tr>
-            <tr><td data-label="Metrik">Hurdle uzeri fazla getiri</td><td data-label="Deger" class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
-            <tr><td data-label="Metrik">Beta-duzeltmeli fazla</td><td data-label="Deger">%{{ c.excess_over_beta_hurdle_pct | fmt }}</td></tr>
-            <tr><td data-label="Metrik">F-Score (Normalize)</td><td data-label="Deger">{{ c.piotroski_normalized_score | fmt }}</td></tr>
-            <tr><td data-label="Metrik">Esler grubu</td><td data-label="Deger">{{ c.peer_group_used }} (n={{ c.peer_n }})</td></tr>
-            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
-            <tr><td data-label="Metrik">Raporlama bazi</td><td data-label="Deger">{{ c.reporting_basis }}</td></tr>
-            <tr><td data-label="Metrik">Tedbir seviyesi</td><td data-label="Deger">{{ c.tedbir_level | fmt }}</td></tr>
-            <tr><td data-label="Metrik">Perakende payi</td><td data-label="Deger">%{{ c.retail_pct | fmt }}</td></tr>
-            {% if c.net_expected_roi_pct is not none %}
-            <tr><td data-label="Metrik">Net Getiri (Maliyet Sonrasi)</td><td data-label="Deger">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
-            {% endif %}
-          </tbody>
-        </table>
-
-        {% if c.sloan_flag %}
-        <div class="small risk" style="margin-top:12px; padding:10px;">
-          <b>Uyari:</b> elevated_earnings_quality_risk (peer_percentile: {{ c.sloan_peer_percentile | fmt }})
-        </div>
-        {% endif %}
-
-        <div class="small" style="margin-top:12px;">FCF getirisi (USD bazli, bilgi amacli): %{{ c.fcf_yield_usd | fmt }}</div>
-
-        {% if c.gordon %}
-        <div class="exp-box">
-          <div class="small highlight" style="margin-top:0;">Gordon Buyume Referansi (Deneysel, ana karara girmez)</div>
-          {% if c.gordon.null_reason %}
-          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: {{ c.gordon.null_reason }}</div>
-          {% else %}
-          <div class="small" style="margin-top:4px;">Adil deger araligi: <b>{{ c.gordon.fair_value_low | fmt }} - {{ c.gordon.fair_value_high | fmt }}</b><br>
-            <span class="muted">(Iskonto senaryolari: %{{ c.gordon.discount_rate_low | fmt }} / %{{ c.gordon.discount_rate_base | fmt }} / %{{ c.gordon.discount_rate_high | fmt }})</span></div>
-          {% endif %}
-        </div>
-        {% endif %}
-
-        {% if c.dcf %}
-        <div class="exp-box">
-          <div class="small highlight" style="margin-top:0;">DCF Referansi (Deneysel, ana karara girmez)</div>
-          {% if c.dcf.null_reason %}
-          <div class="small muted" style="margin-top:4px;">Hesaplanamadi: {{ c.dcf.null_reason }}</div>
-          {% else %}
-          <div class="small" style="margin-top:4px;">Adil deger araligi: <b>{{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}</b>
-            (mevcut fiyata gore %{{ c.dcf.premium_discount_low_pct | fmt }} / %{{ c.dcf.premium_discount_high_pct | fmt }})<br>
-            <span class="muted">(WACC: %{{ c.dcf.wacc_pct | fmt }}, terminal buyume: %{{ c.dcf.terminal_growth_pct | fmt }})</span></div>
-          {% endif %}
-        </div>
-        {% endif %}
-      </div>
-      {% endfor %}
       </div>
     </details>
     {% else %}
@@ -318,10 +560,10 @@
     {% endif %}
   </div>
 
-  <!-- 3. Kisa Vade Adaylari -->
+  <!-- ============================== 3. KISA VADE ============================== -->
   <div class="card">
     <h2 class="section-title">Kisa Vade Onerileri</h2>
-    <div class="section-sub">~20 gunluk ufuk, hacim teyitli teknik kirilim. "Alis (Giris)" 20 gunluk ortalamaya cekilme bazalidir.</div>
+    <div class="section-sub">~20 gunluk ufuk · hacim teyitli teknik kirilim · "Giris" 20 gunluk ortalamaya cekilme bazalidir</div>
 
     {% if short_term_candidates %}
     <div class="table-container">
@@ -329,11 +571,11 @@
         <thead>
           <tr>
             <th>Hisse</th>
-            <th class="col-num">Alis (Giris)</th>
+            <th class="col-num">Giris</th>
             <th class="col-num">Hedef (ATR)</th>
-            <th class="col-roi">Beklenen Getiri</th>
+            <th class="col-roi">Getiri</th>
             <th class="col-stop">Stop-Loss</th>
-            <th class="col-num">Mevcut Fiyat</th>
+            <th class="col-num">Mevcut</th>
           </tr>
         </thead>
         <tbody>
@@ -341,10 +583,10 @@
           <tr>
             <td class="col-ticker">
               {{ c.ticker }}
-              <span class="badge badge-{{ c.candidate_state }}" style="font-size:10px; padding:2px 5px; margin-left:4px;">{{ c.candidate_state }}</span>
+              <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
             </td>
             <td class="col-num">{{ c.entry_price | fmt }}</td>
-            <td class="col-num" style="font-weight:600; color:#0f172a;">{{ c.target_price | fmt }}</td>
+            <td class="col-num" style="font-weight:700; color:#0f172a;">{{ c.target_price | fmt }}</td>
             <td class="col-roi">%{{ c.expected_roi_pct | fmt }}</td>
             <td class="col-stop">{{ c.stop_loss | fmt }}</td>
             <td class="col-num">{{ c.current_price | fmt }}</td>
@@ -354,65 +596,71 @@
       </table>
     </div>
 
-    <details style="margin-bottom:16px;">
-      <summary style="font-size:12px; font-weight:600; color:#475569; padding:8px 12px; background:#f1f5f9; border-radius:6px; cursor:pointer;">Hizli Kopyala (Metin Formati)</summary>
-      <div class="quick-copy-box">
-{%- for c in short_term_candidates %}
-* {{ c.ticker }} | Alis: {{ c.entry_price | fmt }} | Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}) | Stop: {{ c.stop_loss | fmt }} | Mevcut: {{ c.current_price | fmt }}
-{%- endfor %}
-      </div>
-    </details>
+    <details class="section-details">
+      <summary>Aday Bazli Detaylar ve Kopyala Metni ({{ short_term_candidates | length }} hisse)</summary>
+      <div class="details-body">
 
-    <details>
-      <summary style="font-size:13px; font-weight:700; color:#1e293b; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:12px; cursor:pointer;">Aday Bazli Detayli Tezler ve Metrik Tablolari</summary>
-      <div style="margin-top:12px;">
-      {% for c in short_term_candidates %}
-      <div class="detail-card">
-        <div class="stock-head">
-          <span class="ticker">{{ c.ticker }}</span>
-          <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+        <details style="margin-top:16px;">
+          <summary style="cursor:pointer; font-size:12px; font-weight:600; color:#475569; padding:8px 0;">Hizli Kopyala (Metin Formati)</summary>
+          <div class="quick-copy-box">{%- for c in short_term_candidates %}
+* {{ c.ticker }} | Alis: {{ c.entry_price | fmt }}{% if c.entry_low is not none %} (Bant: {{ c.entry_low | fmt }}-{{ c.entry_high | fmt }}){% endif %} | Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}) | Stop: {{ c.stop_loss | fmt }}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %} | Mevcut: {{ c.current_price | fmt }}{%- endfor %}</div>
+        </details>
+
+        {% for c in short_term_candidates %}
+        <div class="detail-card">
+          <div class="detail-header">
+            <div class="left">
+              <span class="detail-num">{{ loop.index }}</span>
+              <span class="ticker">{{ c.ticker }}</span>
+            </div>
+            <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+          </div>
+
+          <div class="detail-body">
+
+            <div class="price-row">
+              <div class="price-box">
+                <div class="lbl">Guncel</div>
+                <div class="val">{{ c.current_price | fmt }}</div>
+                <div class="live-tag">{{ price_source_label.get(c.price_source, c.price_source) }}</div>
+              </div>
+              <div class="price-box">
+                <div class="lbl">Giris (Pullback)</div>
+                <div class="val">{{ c.entry_price | fmt }}</div>
+              </div>
+              <div class="price-box">
+                <div class="lbl">ATR Hedefi</div>
+                <div class="val up">{{ c.target_price | fmt }}</div>
+              </div>
+              <div class="price-box">
+                <div class="lbl">Stop-Loss</div>
+                <div class="val down">{{ c.stop_loss | fmt }}</div>
+              </div>
+            </div>
+
+            <table class="metric-table">
+              <tbody>
+                {% if c.entry_low is not none and c.entry_high is not none %}
+                <tr><td>Kademeli Alis Bandi</td><td>{{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</td></tr>
+                {% endif %}
+                {% if c.position_size_pct is not none %}
+                <tr><td>Onerilen Pozisyon Buyuklugu</td><td>%{{ c.position_size_pct | fmt }}</td></tr>
+                {% endif %}
+                <tr><td>Hacim teyidi (20g orani)</td><td>{{ c.volume_ratio_20d | fmt }}</td></tr>
+                <tr><td>Hurdle orani</td><td>%{{ c.hurdle_rate_pct | fmt }}</td></tr>
+                <tr><td>Hurdle uzeri fazla</td><td class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
+                <tr><td>Katalizor skoru</td><td>{{ c.catalyst_score | fmt }}</td></tr>
+                <tr><td>Guven duzeyi</td><td>{{ c.confidence }}</td></tr>
+                {% if c.net_expected_roi_pct is not none %}
+                <tr><td>Net Getiri (Maliyet Sonrasi)</td><td class="highlight">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+
+          </div>
         </div>
+        {% endfor %}
 
-        <div class="price-row">
-          <div class="price-box">
-            <div class="lbl">Guncel Fiyat</div>
-            <div class="val">{{ c.current_price | fmt }}</div>
-            <div class="live-tag">{{ price_source_label.get(c.price_source, c.price_source) }}</div>
-          </div>
-          <div class="price-box">
-            <div class="lbl">Giris (Pullback)</div>
-            <div class="val">{{ c.entry_price | fmt }}</div>
-          </div>
-          <div class="price-box">
-            <div class="lbl">ATR Hedefi</div>
-            <div class="val up">{{ c.target_price | fmt }}</div>
-          </div>
-          <div class="price-box">
-            <div class="lbl">Stop-Loss</div>
-            <div class="val down">{{ c.stop_loss | fmt }}</div>
-          </div>
-        </div>
-
-        <table>
-          <tbody>
-            {% if c.entry_low is not none and c.entry_high is not none %}
-            <tr><td data-label="Metrik">Kademeli Alis Bandi</td><td data-label="Deger">{{ c.entry_low | fmt }} - {{ c.entry_high | fmt }}</td></tr>
-            {% endif %}
-            {% if c.position_size_pct is not none %}
-            <tr><td data-label="Metrik">Onerilen Pozisyon Buyuklugu</td><td data-label="Deger">%{{ c.position_size_pct | fmt }}</td></tr>
-            {% endif %}
-            <tr><td data-label="Metrik">Hacim teyidi (20g orani)</td><td data-label="Deger">{{ c.volume_ratio_20d | fmt }}</td></tr>
-            <tr><td data-label="Metrik">Hurdle orani</td><td data-label="Deger">%{{ c.hurdle_rate_pct | fmt }}</td></tr>
-            <tr><td data-label="Metrik">Hurdle uzeri fazla</td><td data-label="Deger" class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
-            <tr><td data-label="Metrik">Katalizor skoru</td><td data-label="Deger">{{ c.catalyst_score | fmt }}</td></tr>
-            <tr><td data-label="Metrik">Guven duzeyi</td><td data-label="Deger">{{ c.confidence }}</td></tr>
-            {% if c.net_expected_roi_pct is not none %}
-            <tr><td data-label="Metrik">Net Getiri (Maliyet Sonrasi)</td><td data-label="Deger">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-      {% endfor %}
       </div>
     </details>
     {% else %}
@@ -420,17 +668,18 @@
     {% endif %}
   </div>
 
-  <!-- 4. Ne Degisti + Yogunlasma Uyarisi -->
+  <!-- ============================== 4. GUNLUK DEGISIMLER ============================== -->
   {% if decision_diff.entered or decision_diff.exited or decision_diff.catalyst_deltas or decision_diff.macro_deltas or concentration_warnings %}
   <div class="card">
     <h2 class="section-title">Gunluk Degisimler</h2>
+
     <div style="margin-top:16px;">
       {% if decision_diff.entered %}
-      <div class="small"><span class="highlight">Portfoye Yeni Giren:</span> {{ decision_diff.entered | join(', ') }}</div>
+      <div class="small" style="margin-bottom:6px;"><span class="highlight">Portfoye Yeni Giren:</span> {{ decision_diff.entered | join(', ') }}</div>
       {% endif %}
 
       {% if decision_diff.exited %}
-      <div class="small"><span class="highlight">Portfoyden Cikan:</span> {{ decision_diff.exited | join(', ') }}</div>
+      <div class="small" style="margin-bottom:6px;"><span class="highlight">Portfoyden Cikan:</span> {{ decision_diff.exited | join(', ') }}</div>
       {% endif %}
 
       {% if decision_diff.catalyst_deltas %}
@@ -441,14 +690,14 @@
 
       {% if decision_diff.macro_deltas %}
       <div class="small" style="margin-top:12px;"><span class="highlight">Makro Degisim:</span>
-        {% for m in decision_diff.macro_deltas %}{{ m.field }}: {{ m.from | fmt }} &rarr; {{ m.to | fmt }}{% if not loop.last %}; {% endif %}{% endfor %}
+        {% for m in decision_diff.macro_deltas %}{{ m.field }}: {{ m.from | fmt }} → {{ m.to | fmt }}{% if not loop.last %}; {% endif %}{% endfor %}
       </div>
       {% endif %}
 
       {% if concentration_warnings %}
-      <div style="margin-top:16px; padding:12px; background:#fffbeb; border-left:4px solid #f59e0b; border-radius:4px;">
-        <div class="small highlight" style="color:#b45309; margin-top:0;">Yogunlasma Uyarilari:</div>
-        <ul style="margin:4px 0 0; color:#92400e;">
+      <div class="warn-box">
+        <div class="wt">Yogunlasma Uyarilari</div>
+        <ul>
           {% for w in concentration_warnings %}<li>{{ w.message }}</li>{% endfor %}
         </ul>
       </div>
@@ -457,33 +706,35 @@
   </div>
   {% endif %}
 
-  <!-- 5. Bozulan Tezler -->
+  <!-- ============================== 5. BOZULAN TEZLER ============================== -->
   {% if invalidation_triggered %}
   <div class="card">
     <h2 class="section-title" style="color:#991b1b;">Bozulan Tezler</h2>
-    <div class="small muted" style="margin-bottom:16px;">Asagidakiler dogrudan bir SATIS SINYALI degildir, portfoy izleme (durum) bildirimidir.</div>
-    <ul style="margin:0; padding:0; list-style:none;">
-    {% for t in invalidation_triggered %}
-      <li class="small" style="padding:12px 16px; background:#fef2f2; border:1px solid #fee2e2; border-radius:6px; margin-bottom:8px; color:#7f1d1d;">
-        <b style="font-size:13px;">{{ t.ticker }}</b>: {{ t.condition_field }} {{ t.condition_operator }} {{ t.condition_value }} kosulu tetiklendi (Guncel: {{ t.current_value }})
+    <div class="section-sub">Asagidakiler dogrudan bir SATIS SINYALI degildir — portfoy izleme bildirimidir.</div>
+
+    <ul class="broken-list">
+      {% for t in invalidation_triggered %}
+      <li>
+        <b>{{ t.ticker }}</b>: {{ t.condition_field }} {{ t.condition_operator }} {{ t.condition_value }} kosulu tetiklendi (Guncel: {{ t.current_value }})
       </li>
-    {% endfor %}
+      {% endfor %}
     </ul>
   </div>
   {% endif %}
 
-  <!-- 6. Gecmis Tahmin Izleme Ozeti -->
+  <!-- ============================== 6. GECMIS TAHMIN ============================== -->
   {% if evaluation_summary %}
   <div class="card">
     <h2 class="section-title">Gecmis Tahmin Izleme Ozeti</h2>
-    <div class="small muted" style="margin-bottom:16px;">Bu canli bir takip ozetidir (Backtest degildir). Gecmis performans gelecekteki sonuclari garanti etmez. {{ evaluation_summary.independence_caveat }}</div>
-    <table>
+    <div class="section-sub">Canli takip ozeti (Backtest degildir). Gecmis performans gelecegi garanti etmez. {{ evaluation_summary.independence_caveat }}</div>
+
+    <table class="eval-table">
       <thead>
         <tr>
           <th>Ufuk (Gun)</th>
-          <th>Gozlem Sayisi</th>
-          <th>Isabet Orani</th>
-          <th>Medyan Fazla Getiri (Endekse gore)</th>
+          <th>Gozlem</th>
+          <th>Isabet</th>
+          <th>Medyan Fazla Getiri</th>
         </tr>
       </thead>
       <tbody>
@@ -502,17 +753,23 @@
   </div>
   {% endif %}
 
-  <!-- 7. Filtreye Takilanlar -->
-  <div class="card" style="padding:20px 28px;">
-    <details style="margin:0; border:none; padding:0;">
-      <summary style="font-size:14px; font-weight:700;">Filtreye takilan / Skorlanamayan Hisseler ({{ no_action_count | fmt }} + {{ unscored_count | fmt }})</summary>
-      <div class="muted small" style="margin:12px 0 16px;">{{ unscored_count }} adet hisse bu kosuda skorlanamadi (eksik veri, baz belirsizligi veya yetersiz esler grubu).</div>
+  <!-- ============================== 7. FILTREYE TAKILANLAR ============================== -->
+  <div class="card">
+    <details style="border:none;">
+      <summary style="cursor:pointer; font-size:14px; font-weight:700; color:#1e293b; padding:4px 0;">
+        Filtreye takilan / Skorlanamayan Hisseler ({{ no_action_count | fmt }} + {{ unscored_count | fmt }})
+      </summary>
+      <div class="small" style="margin:12px 0 16px;">{{ unscored_count }} adet hisse bu kosuda skorlanamadi (eksik veri, baz belirsizligi veya yetersiz esler grubu).</div>
+
       {% if filtered_candidates %}
-      <table>
+      <table class="filter-list">
         <thead><tr><th>Ticker</th><th>Filtrelenme Nedeni</th></tr></thead>
         <tbody>
           {% for c in filtered_candidates %}
-          <tr><td data-label="Ticker" class="highlight">{{ c.ticker }}</td><td data-label="Neden">{{ c.filtered_by }}</td></tr>
+          <tr>
+            <td data-label="Ticker" class="highlight">{{ c.ticker }}</td>
+            <td data-label="Neden">{{ c.filtered_by }}</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
@@ -520,11 +777,11 @@
     </details>
   </div>
 
-  <!-- 8. Metodoloji & Yasal Uyari (Footer) -->
+  <!-- ============================== 8. FOOTER ============================== -->
   <div class="footer">
-    <p>final_score = {{ weights.valuation_z | fmt }} x valuation_z + {{ weights.catalyst_score | fmt }} x catalyst_score + {{ weights.ownership_quality_z | fmt }} x ownership_quality_z + {{ weights.low_vol_z | fmt }} x low_vol_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP (Equity Risk Premium): %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
-    <p>DCF Referansi (deneysel, ana karara girmez) buyume senaryolari: dusuk %{{ weights.dcf_growth_low_pct | fmt }} / baz %{{ weights.dcf_growth_base_pct | fmt }} / yuksek %{{ weights.dcf_growth_high_pct | fmt }}, kurumlar vergisi orani %{{ weights.dcf_corporate_tax_rate_pct | fmt }}. Buyume senaryolari DENENMEMIS VARSAYIMDIR (keyfi secilmistir, hicbir gecmis veriyle kalibre edilmemistir); kurumlar vergisi orani resmi/yasal orandir.</p>
-    <div style="border-top:1px solid #cbd5e1; margin:16px 0 12px; width:40px;"></div>
+    <p><b>final_score</b> = {{ weights.valuation_z | fmt }} × valuation_z + {{ weights.catalyst_score | fmt }} × catalyst_score + {{ weights.ownership_quality_z | fmt }} × ownership_quality_z + {{ weights.low_vol_z | fmt }} × low_vol_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p>DCF Referansi (deneysel, ana karara girmez) buyume senaryolari: dusuk %{{ weights.dcf_growth_low_pct | fmt }} / baz %{{ weights.dcf_growth_base_pct | fmt }} / yuksek %{{ weights.dcf_growth_high_pct | fmt }}, kurumlar vergisi orani %{{ weights.dcf_corporate_tax_rate_pct | fmt }}. Buyume senaryolari DENENMEMIS VARSAYIMDIR; kurumlar vergisi orani resmi/yasal orandir.</p>
+    <div class="divider"></div>
     <p>{{ known_limitations_text }}</p>
     <p>{{ disclaimer_text }}</p>
   </div>
