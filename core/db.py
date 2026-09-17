@@ -164,6 +164,46 @@ CREATE TABLE IF NOT EXISTS runs (
     run_id TEXT, as_of_date TEXT UNIQUE, status TEXT, run_level_state TEXT,
     started_at TEXT, finished_at TEXT, email_sent INTEGER, error_message TEXT
 );
+
+CREATE TABLE IF NOT EXISTS backtest_results (
+    run_id TEXT PRIMARY KEY,
+    strategy_name TEXT,
+    ticker TEXT,
+    start_date TEXT,
+    end_date TEXT,
+    initial_capital REAL,
+    final_capital REAL,
+    total_return_pct REAL,
+    cagr_pct REAL,
+    sharpe_ratio REAL,
+    sortino_ratio REAL,
+    max_drawdown_pct REAL,
+    hit_rate_pct REAL,
+    profit_factor REAL,
+    total_trades INTEGER,
+    winning_trades INTEGER,
+    losing_trades INTEGER,
+    commission_pct REAL,
+    slippage_pct REAL,
+    created_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS backtest_trades (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id TEXT,
+    ticker TEXT,
+    entry_date TEXT,
+    exit_date TEXT,
+    entry_price REAL,
+    exit_price REAL,
+    target_price REAL,
+    stop_loss REAL,
+    position_size_pct REAL,
+    shares REAL,
+    pnl_tl REAL,
+    return_pct REAL,
+    exit_reason TEXT
+);
 """
 
 

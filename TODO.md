@@ -13,11 +13,14 @@
   - `predictions` tablosuna `entry_low`, `entry_high`, `position_size_pct` eklendi, otomatik migrasyon yazildi.
   - Bulten sablonuna kademeli alis bandi, dinamik stop-loss ve pozisyon buyuklugu metrikleri eklendi.
   - Testler: `tests/test_dynamic_risk.py` eklendi (9/9 basarili, genel suite 158/158 geciyor).
-- [ ] **2. Backtesting Altyapisi**
-  - Walk-forward analiz, islem maliyeti + slippage simülasyonu.
-  - Metrikler: CAGR, Sharpe, Sortino, Max Drawdown, hit rate, profit factor.
-  - Look-ahead bias kontrolu: `available_at` / `effective_at` alanlarini kullan.
-  - Cikti: `backtest_results` tablosu + raporlama.
+- [x] **2. Backtesting Altyapisi** — TAMAMLANDI (2026-09-17).
+  - Walk-forward motoru (`core/backtest.py::WalkForwardEngine`): look-ahead bias icermeyen adim adim simülasyon.
+  - Komisyon (%0.15) ve kayma/slippage (%0.10) gercekci maliyet modeli.
+  - Metrikler: CAGR, Sharpe Orani, Sortino Orani, Max Drawdown, Hit Rate, Profit Factor.
+  - Backtrader entegrasyonu: `core/backtest.py::BacktraderDynamicRiskStrategy` ve Cerebro calistiricisi.
+  - Veritabani tablolari: `backtest_results` (ozet performans) ve `backtest_trades` (tekil islem kayitlari).
+  - Canli test: `FORTE` hissesi uzerinde gercek 215 gunluk veriyle test edildi (8 islem, MDD sinirlamasi dogrulandi).
+  - Testler: `tests/test_backtest.py` eklendi (4/4 basarili, genel suite 162/162 geciyor).
 - [ ] **3. Coklu Degerleme Metodolojisi (Degerleme Ucgeni)**
   - DCF (%40) + Emsal Carpanlar (%35) + Kalite Primi (%25).
   - GYO icin NAV (Net Aktif Degeri): Portfoy degeri - net borc / pay sayisi (`nav_discount` dolumu).
