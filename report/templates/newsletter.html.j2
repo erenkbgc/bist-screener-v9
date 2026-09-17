@@ -3,416 +3,701 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BIST Tarama Bulteni - {{ as_of_date }}</title>
+<title>BIST Strateji ve Hisse Raporu - {{ as_of_date }}</title>
 <style>
-  /* ========== TEMEL ========== */
-  * { box-sizing: border-box; }
+  /* ========== BASE RESET & INSTITUTIONAL TYPOGRAPHY ========== */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    margin:0; padding:0; background:#f9fafb;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    color:#1f2937; line-height:1.6; -webkit-font-smoothing:antialiased;
-    font-size:14px;
+    background-color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 13.5px;
+    padding: 24px 12px;
   }
-  .wrap { max-width:860px; margin:0 auto; padding:28px 20px; }
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+  }
 
-  /* ========== KARTLAR ========== */
+  /* ========== CARDS & CONTAINERS ========== */
   .card {
-    background:#fff; border:1px solid #e5e7eb; border-radius:14px;
-    padding:28px; margin-bottom:20px;
-    box-shadow:0 1px 2px rgba(15,23,42,0.04);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 24px 26px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
+  .card-flush {
+    padding: 0;
+    overflow: hidden;
   }
 
-  /* ========== HERO ========== */
-  .hero {
-    background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 100%);
-    color:#fff; border-radius:14px; padding:32px 28px; margin-bottom:20px;
-    box-shadow:0 8px 24px -8px rgba(15,23,42,0.3);
+  /* ========== EXECUTIVE HEADER ========== */
+  .header-card {
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 28px 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
   }
-  .hero h1 { font-size:22px; font-weight:800; margin:0 0 6px; letter-spacing:-0.02em; }
-  .hero .date { font-size:12px; color:#93c5fd; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; }
-  .hero .headline { font-size:14px; color:#e0e7ff; line-height:1.65; margin:0; }
-
-  .pillrow { margin-top:18px; display:flex; flex-wrap:wrap; gap:8px; }
-  .pill {
-    display:inline-flex; align-items:center;
-    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
-    color:#fff; border-radius:6px; padding:5px 11px;
-    font-size:11.5px; font-weight:600; letter-spacing:0.02em;
+  .header-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
   }
-  .pill.alert { background:rgba(239,68,68,0.18); border-color:rgba(239,68,68,0.35); color:#fca5a5; }
+  .header-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    margin-bottom: 8px;
+    line-height: 1.25;
+  }
+  .header-subtitle {
+    font-size: 13px;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .macro-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .macro-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .macro-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  .macro-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+  }
+  .macro-pill-alert {
+    display: inline-block;
+    background: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
 
-  /* ========== BOLUM BASLIKLARI ========== */
+  /* ========== SECTION TITLES ========== */
+  .section-header {
+    margin-bottom: 16px;
+  }
   .section-title {
-    font-size:17px; font-weight:800; color:#0f172a;
-    margin:0 0 4px; letter-spacing:-0.01em;
-    display:flex; align-items:center; gap:8px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .section-title::before {
-    content:''; display:inline-block; width:3px; height:16px;
-    background:#1e40af; border-radius:2px;
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: #2563eb;
+    border-radius: 2px;
   }
-  .section-sub { font-size:12.5px; color:#6b7280; margin:0 0 20px; padding-left:11px; }
+  .section-desc {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+    padding-left: 12px;
+  }
 
-  /* ========== DURUM BADGE ========== */
+  /* ========== STATUS BADGES ========== */
   .badge {
-    display:inline-block; border-radius:5px; padding:3px 8px;
-    font-size:9.5px; font-weight:800; text-transform:uppercase;
-    letter-spacing:0.05em; vertical-align:middle; white-space:nowrap;
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    vertical-align: middle;
   }
-  .badge-STRONG_OPPORTUNITY { background:#d1fae5; color:#065f46; }
-  .badge-OPPORTUNITY        { background:#dbeafe; color:#1e40af; }
-  .badge-WATCHLIST          { background:#fef3c7; color:#92400e; }
-  .badge-NO_ACTION          { background:#f1f5f9; color:#475569; }
-  .badge-QUARANTINE         { background:#fee2e2; color:#991b1b; }
+  .badge-STRONG_OPPORTUNITY { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .badge-OPPORTUNITY        { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+  .badge-WATCHLIST          { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+  .badge-NO_ACTION          { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  .badge-QUARANTINE         { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
-  /* ========== OZET TABLO ========== */
-  .table-container {
-    overflow-x:auto; margin:0 0 16px;
-    border:1px solid #e5e7eb; border-radius:10px;
+  /* ========== TABLES ========== */
+  .table-responsive {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
   }
-  .summary-table { width:100%; border-collapse:collapse; font-size:13px; }
-  .summary-table thead th {
-    background:#f8fafc; color:#475569;
-    font-weight:700; font-size:10.5px;
-    text-transform:uppercase; letter-spacing:0.04em;
-    padding:11px 14px; border-bottom:2px solid #e2e8f0;
-    text-align:left; white-space:nowrap;
+  .table-exec {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    text-align: left;
   }
-  .summary-table tbody td {
-    padding:11px 14px; border-bottom:1px solid #f1f5f9;
-    color:#1e293b; vertical-align:middle;
+  .table-exec th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
   }
-  .summary-table tbody tr:hover { background:#f8fafc; }
-  .summary-table tbody tr:last-child td { border-bottom:none; }
+  .table-exec td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+  }
+  .table-exec tr:last-child td {
+    border-bottom: none;
+  }
+  .table-exec tr:hover td {
+    background: #f8fafc;
+  }
 
-  .summary-table .col-ticker { font-weight:800; font-size:13.5px; color:#0f172a; white-space:nowrap; }
-  .summary-table .col-num    { text-align:right; font-variant-numeric:tabular-nums; }
-  .summary-table .col-roi    { text-align:right; font-weight:700; color:#059669; font-variant-numeric:tabular-nums; }
-  .summary-table .col-stop   { text-align:right; font-weight:700; color:#dc2626; font-variant-numeric:tabular-nums; }
-  .summary-table .col-dcf    { text-align:right; color:#64748b; font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .col-ticker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col-ticker {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.01em;
+  }
+  .col-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .col-roi {
+    text-align: right;
+    font-weight: 800;
+    color: #059669;
+    font-variant-numeric: tabular-nums;
+  }
+  .col-stop {
+    text-align: right;
+    font-weight: 700;
+    color: #dc2626;
+    font-variant-numeric: tabular-nums;
+  }
+  .col-range {
+    text-align: right;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .col-sub {
+    display: block;
+    font-size: 10.5px;
+    color: #94a3b8;
+    font-weight: 500;
+    margin-top: 1px;
+  }
 
-  /* ========== AKORDIYON ========== */
-  details.section-details {
-    margin-top:4px;
-    border:1px solid #e2e8f0; border-radius:10px;
-    background:#f8fafc; overflow:hidden;
+  /* ========== QUICK COPY CONTAINER ========== */
+  .quick-copy-wrapper {
+    margin-top: 14px;
   }
-  details.section-details > summary {
-    cursor:pointer; list-style:none;
-    padding:13px 18px;
-    font-size:13px; font-weight:700; color:#1e293b;
-    display:flex; align-items:center; gap:8px;
-    user-select:none;
-    transition:background 0.15s;
+  .quick-copy-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
   }
-  details.section-details > summary::-webkit-details-marker { display:none; }
-  details.section-details > summary::before {
-    content:'+'; display:inline-block;
-    width:16px; height:16px; line-height:15px; text-align:center;
-    font-size:14px; font-weight:400; color:#64748b;
-    border:1px solid #cbd5e1; border-radius:4px; background:#fff;
+  .quick-copy-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
   }
-  details.section-details[open] > summary::before { content:'−'; }
-  details.section-details > summary:hover { background:#f1f5f9; }
-  details.section-details > .details-body { padding:0 18px 18px; background:#fff; border-top:1px solid #e2e8f0; }
-
-  /* ========== KOPYALA KUTUSU ========== */
   .quick-copy-box {
-    background:#0f172a; color:#e2e8f0;
-    border-radius:8px; padding:14px 16px; margin-top:16px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-    font-size:11.5px; line-height:1.8;
-    white-space:pre-wrap; overflow-x:auto;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11.5px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    border: 1px solid #1e293b;
   }
 
-  /* ========== DETAY KARTI ========== */
-  .detail-card {
-    background:#fff; border:1px solid #e5e7eb; border-radius:10px;
-    padding:0; margin:16px 0;
-    overflow:hidden;
+  /* ========== CANDIDATE DOSSIER CARD ========== */
+  .dossier-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-top: 14px;
+    overflow: hidden;
   }
-  .detail-card + .detail-card { margin-top:14px; }
-
-  .detail-header {
-    display:flex; align-items:center; justify-content:space-between;
-    gap:12px; flex-wrap:wrap;
-    padding:16px 20px; background:#f8fafc;
-    border-bottom:1px solid #e5e7eb;
+  .dossier-header {
+    background: #f8fafc;
+    padding: 12px 18px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  .detail-header .left { display:flex; align-items:center; gap:10px; }
-  .detail-num {
-    display:inline-flex; align-items:center; justify-content:center;
-    min-width:26px; height:26px; padding:0 8px;
-    background:#1e40af; color:#fff;
-    font-size:11px; font-weight:800; border-radius:6px;
-    font-variant-numeric:tabular-nums;
+  .dossier-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-  .detail-header .ticker { font-size:18px; font-weight:800; color:#0f172a; letter-spacing:0.02em; }
-
-  .detail-body { padding:20px; }
-
-  /* Fiyat Kutulari */
-  .price-row {
-    display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));
-    gap:0; margin:0 0 18px;
-    background:#f8fafc; border-radius:8px;
-    border:1px solid #f1f5f9; padding:14px;
+  .dossier-ticker {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.02em;
   }
-  .price-box {
-    padding:0 16px; border-right:1px solid #e2e8f0;
+  .dossier-peer {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
   }
-  .price-box:first-child { padding-left:0; }
-  .price-box:last-child { border-right:none; padding-right:0; }
-  .price-box .lbl {
-    font-size:10px; color:#64748b; font-weight:700;
-    text-transform:uppercase; letter-spacing:0.06em;
-    margin-bottom:4px;
+  .dossier-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #334155;
+    font-variant-numeric: tabular-nums;
   }
-  .price-box .val {
-    font-size:19px; font-weight:800; color:#0f172a;
-    line-height:1.2; font-variant-numeric:tabular-nums;
+  .dossier-strip-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
-  .price-box .val.up   { color:#059669; }
-  .price-box .val.down { color:#dc2626; }
-  .price-box .live-tag { font-size:10px; color:#94a3b8; font-weight:500; margin-top:3px; }
-
-  /* Neden / Risk */
-  .insight-box { margin-bottom:16px; }
-  .why, .risk {
-    padding:14px 16px; border-radius:6px;
-    font-size:13px; line-height:1.6;
-    margin-bottom:10px;
-  }
-  .why  { color:#334155; background:#f0f9ff; border-left:3px solid #3b82f6; }
-  .risk { color:#7f1d1d; background:#fef2f2; border-left:3px solid #ef4444; margin-bottom:0; }
-  .why b, .risk b { color:#0f172a; font-weight:700; }
-
-  /* Uyari kutusu (Sloan) */
-  .flag-warning {
-    margin-top:12px; padding:10px 14px;
-    background:#fef2f2; border:1px solid #fecaca;
-    border-radius:6px; color:#991b1b; font-size:12px;
+  .dossier-strip-item b {
+    color: #0f172a;
   }
 
-  /* Metrik Tablosu */
-  .metric-table { width:100%; border-collapse:collapse; font-size:12.5px; margin:16px 0 8px; }
-  .metric-table tbody tr { border-bottom:1px solid #f1f5f9; }
-  .metric-table tbody tr:nth-child(even) { background:#fafbfc; }
-  .metric-table tbody tr:last-child { border-bottom:none; }
-  .metric-table td {
-    padding:9px 4px; color:#334155; vertical-align:middle;
+  .dossier-body {
+    padding: 16px 18px;
   }
-  .metric-table td:first-child {
-    color:#64748b; font-size:12px; width:60%;
+  .dossier-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
   }
-  .metric-table td:last-child {
-    text-align:right; font-weight:600; color:#1f2937;
-    font-variant-numeric:tabular-nums;
+  .dossier-callout-thesis {
+    background: #f8fafc;
+    border-left: 3px solid #2563eb;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #334155;
   }
-  .metric-table td.highlight { color:#059669; }
-  .metric-table td.risk { color:#dc2626; }
-
-  /* Deneysel Kutular */
-  .exp-box {
-    border:1px dashed #cbd5e1; border-radius:8px;
-    padding:14px 16px; margin-top:12px;
-    background:#f8fafc; font-size:12.5px; line-height:1.6;
+  .dossier-callout-thesis b {
+    color: #0f172a;
   }
-  .exp-box .exp-title {
-    font-weight:700; color:#0f172a; font-size:12px;
-    margin-bottom:4px;
+  .dossier-callout-thesis ul {
+    margin-top: 6px;
+    padding-left: 16px;
+    color: #475569;
+    font-size: 12px;
   }
-
-  /* Kucuk notlar */
-  .note-inline { font-size:12px; color:#64748b; margin-top:12px; line-height:1.6; }
-  .note-inline .highlight { color:#0f172a; font-weight:700; }
-  .invalidation-box {
-    margin:14px 0; padding:10px 14px;
-    background:#f8fafc; border-radius:6px;
-    font-size:12px; color:#475569;
+  .dossier-callout-thesis li {
+    margin-bottom: 3px;
   }
 
-  /* ========== GENEL YARDIMCI ========== */
-  .muted    { color:#64748b; }
-  .small    { font-size:12px; color:#64748b; line-height:1.6; }
-  .highlight{ font-weight:700; color:#0f172a; }
-  .empty-note {
-    padding:28px; text-align:center;
-    background:#f8fafc; border:1px dashed #e2e8f0;
-    border-radius:8px; color:#94a3b8; font-size:13px;
+  .dossier-callout-risk {
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #78350f;
+  }
+  .dossier-callout-risk b {
+    color: #451a03;
+  }
+  .dossier-invalidation {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: #92400e;
+    background: rgba(245, 158, 11, 0.12);
+    padding: 4px 8px;
+    border-radius: 4px;
   }
 
-  ul.plain { margin:12px 0; padding-left:18px; color:#475569; font-size:12.5px; }
-  ul.plain li { margin-bottom:5px; }
-
-  /* Uyari karti (Yogunlasma) */
-  .warn-box {
-    padding:12px 16px; background:#fffbeb;
-    border-left:3px solid #f59e0b; border-radius:6px;
-    margin-top:14px;
+  /* Key Metrics Micro-Table */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 6px 16px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 11.5px;
+    margin-top: 10px;
   }
-  .warn-box .wt { color:#b45309; font-weight:700; font-size:12.5px; }
-  .warn-box ul { margin:6px 0 0; padding-left:18px; color:#92400e; font-size:12px; }
-
-  /* Bozulan tezler */
-  .broken-list { list-style:none; padding:0; margin:0; }
-  .broken-list li {
-    padding:12px 16px; background:#fef2f2;
-    border:1px solid #fee2e2; border-left:3px solid #ef4444;
-    border-radius:6px; margin-bottom:8px;
-    color:#7f1d1d; font-size:12.5px;
+  .metric-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #edf2f7;
+    padding: 4px 0;
+  }
+  .metric-entry:last-child {
+    border-bottom: none;
+  }
+  .metric-key {
+    color: #64748b;
+  }
+  .metric-val {
+    font-weight: 700;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Gecmis Tahmin Tablosu */
-  .eval-table { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; }
+  .dossier-note {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .dossier-note b {
+    color: #334155;
+  }
+
+  /* Reference Models Box */
+  .ref-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .ref-box b {
+    color: #1e293b;
+  }
+
+  /* Warning Box */
+  .warn-card {
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #92400e;
+  }
+  .warn-card b {
+    color: #78350f;
+  }
+  .warn-card ul {
+    margin: 4px 0 0;
+    padding-left: 16px;
+  }
+
+  /* Invalidation Triggered Box */
+  .alert-card {
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 12.5px;
+    color: #991b1b;
+  }
+  .alert-card b {
+    color: #7f1d1d;
+  }
+  .alert-card ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+
+  /* Evaluation & Diff Sections */
+  .eval-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 10px;
+  }
   .eval-table th {
-    text-align:left; padding:10px 12px;
-    background:#f8fafc; color:#64748b;
-    font-size:10.5px; font-weight:700;
-    text-transform:uppercase; letter-spacing:0.04em;
-    border-bottom:2px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
   }
   .eval-table td {
-    padding:10px 12px; border-bottom:1px solid #f1f5f9; color:#334155;
+    padding: 9px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-variant-numeric: tabular-nums;
   }
-  .eval-table tr:last-child td { border-bottom:none; }
+  .eval-table tr:last-child td {
+    border-bottom: none;
+  }
 
-  /* Filtre listesi */
-  .filter-list { width:100%; border-collapse:collapse; font-size:12px; }
-  .filter-list th {
-    text-align:left; padding:8px 10px;
-    color:#64748b; font-size:10.5px; font-weight:700;
-    text-transform:uppercase; letter-spacing:0.04em;
-    border-bottom:2px solid #e2e8f0; background:#f8fafc;
+  /* Accordion for Secondary Items */
+  details.exec-details {
+    margin-top: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    overflow: hidden;
   }
-  .filter-list td {
-    padding:8px 10px; border-bottom:1px solid #f1f5f9; color:#334155;
+  details.exec-details > summary {
+    cursor: pointer;
+    padding: 10px 14px;
+    background: #f8fafc;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    user-select: none;
+    outline: none;
   }
-  .filter-list tr:last-child td { border-bottom:none; }
+  details.exec-details > summary:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+  }
+  details.exec-details > .details-content {
+    padding: 14px;
+    border-top: 1px solid #e2e8f0;
+  }
 
-  /* Footer */
+  /* Filter list */
+  .filter-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+  .filter-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+  }
+  .filter-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+  }
+  .filter-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Empty states */
+  .empty-state {
+    padding: 24px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 12.5px;
+  }
+
+  /* ========== FOOTER ========== */
   .footer {
-    font-size:11px; color:#94a3b8; line-height:1.75;
-    padding:0 12px; text-align:justify; margin-top:12px;
+    padding: 16px 8px;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.7;
+    text-align: justify;
   }
-  .footer p { margin:8px 0; }
-  .footer .divider {
-    border-top:1px solid #cbd5e1;
-    margin:16px 0 12px; width:40px;
+  .footer p {
+    margin-bottom: 8px;
+  }
+  .footer-divider {
+    border-top: 1px solid #cbd5e1;
+    margin: 12px 0;
   }
 
-  /* ========== MOBIL ========== */
-  @media (max-width:640px) {
-    .wrap { padding:14px; }
-    .card, .hero { padding:20px; }
-    .hero h1 { font-size:19px; }
-    .detail-body { padding:16px; }
-
-    /* Fiyat kutulari 2x2 grid */
-    .price-row {
-      grid-template-columns:1fr 1fr;
-      gap:10px; padding:0; background:transparent; border:none;
-    }
-    .price-box {
-      border-right:none; padding:12px;
-      background:#f8fafc; border:1px solid #f1f5f9; border-radius:8px;
-    }
-    .price-box:first-child { padding-left:12px; }
-
-    /* Metrik tablolari mobilde blok haline gelsin */
-    .metric-table, .metric-table tbody, .metric-table tr, .metric-table td { display:block; width:100%; }
-    .metric-table td { display:flex; justify-content:space-between; padding:7px 0; }
-    .metric-table td:first-child { width:auto; color:#64748b; }
-    .metric-table td:last-child { width:auto; text-align:right; }
-    .metric-table tbody tr:nth-child(even) { background:transparent; }
-    .metric-table tbody tr { border-bottom:1px solid #f1f5f9; }
-
-    /* Summary-table yatay kaydirmali kalsin */
-    .summary-table { min-width:540px; }
-    .table-container { border-radius:8px; }
-
-    /* Eval ve filtre tablolarini blok yap */
-    .eval-table, .eval-table tbody, .eval-table tr, .eval-table td { display:block; width:100%; }
-    .eval-table thead { display:none; }
-    .eval-table td { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; }
-    .eval-table td:before { content:attr(data-label); font-weight:600; color:#64748b; font-size:11px; text-transform:uppercase; }
-
-    .filter-list, .filter-list tbody, .filter-list tr, .filter-list td { display:block; width:100%; }
-    .filter-list thead { display:none; }
-    .filter-list td { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9; }
-    .filter-list td:before { content:attr(data-label); font-weight:600; color:#64748b; font-size:11px; text-transform:uppercase; }
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 680px) {
+    body { padding: 12px 6px; }
+    .card, .header-card { padding: 18px 16px; }
+    .header-title { font-size: 19px; }
+    .dossier-grid { grid-template-columns: 1fr; }
+    .dossier-strip { flex-wrap: wrap; gap: 8px; }
+    .dossier-header { flex-direction: column; align-items: flex-start; }
+    .macro-grid { grid-template-columns: 1fr 1fr; }
+    .table-exec { min-width: 520px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- ============================== 1. HERO ============================== -->
-  <div class="hero">
-    <h1>BIST Tarama Bulteni</h1>
-    <div class="date">{{ as_of_date }}</div>
-    <div class="headline">
+  <!-- ============================== EXECUTIVE HEADER ============================== -->
+  <div class="header-card">
+    <div class="header-meta">
+      <span>Borsa Istanbul Model Portfoy &amp; Tarama Raporu</span>
+      <span>{{ as_of_date }}</span>
+    </div>
+    <h1 class="header-title">BIST Strateji ve Model Portfoy Bulteni</h1>
+    <div class="header-subtitle">
       {% if no_action_today %}
-        Bugun hard-filter'lardan gecen bir aday yok — sistem bilerek sessiz kaliyor, aksiyon onerilmiyor.
+        Hard-filter kriterlerini gecen aday bulunmamaktadir; risk yonetimi prensipleri uyarinca nakit pozisyonu korunmaktadir.
       {% elif regime_taxonomy_tag %}
-        Rejim: <span style="color:#ffffff; font-weight:700;">{{ regime_taxonomy_tag }}</span>. Asagida kisa ve uzun vade adaylarin ozeti yer alir; her hissenin detayli tezi "Aday Bazli Detaylar" bolumundedir.
+        Piyasa Rejimi: <b style="color:#ffffff;">{{ regime_taxonomy_tag }}</b>. Cok faktorlu degerleme ve risk modelleri cercevesinde one cikan firsatlar asagida ozetlenmistir.
       {% else %}
-        Asagida kisa ve uzun vade adaylarin ozeti yer alir; her hissenin detayli tezi "Aday Bazli Detaylar" bolumundedir.
+        Cok faktorlu degerleme ve risk modelleri cercevesinde one cikan firsatlar asagida ozetlenmistir.
       {% endif %}
     </div>
 
     {% if regime %}
-    <div class="pillrow">
-      <span class="pill">Faiz %{{ regime.policy_rate_pct | fmt }}</span>
-      <span class="pill">2Y Tahvil %{{ regime.bond_2y_pct | fmt }}</span>
-      <span class="pill">TUFE %{{ regime.cpi_yoy_pct | fmt }}</span>
-      <span class="pill">USD/TRY {{ regime.usdtry_spot | fmt }}</span>
-      <span class="pill">XU100 {{ regime.xu100_level | fmt }}</span>
-      {% if regime.short_selling_ban_active %}<span class="pill alert">Aciga Satis Yasagi Aktif</span>{% endif %}
+    <div class="macro-grid">
+      <div class="macro-item">
+        <span class="macro-lbl">BIST 100</span>
+        <span class="macro-val">{{ regime.xu100_level | fmt }}</span>
+      </div>
+      <div class="macro-item">
+        <span class="macro-lbl">Politika Faizi</span>
+        <span class="macro-val">%{{ regime.policy_rate_pct | fmt }}</span>
+      </div>
+      <div class="macro-item">
+        <span class="macro-lbl">2Y Gosterge</span>
+        <span class="macro-val">%{{ regime.bond_2y_pct | fmt }}</span>
+      </div>
+      <div class="macro-item">
+        <span class="macro-lbl">Yillik TUFE</span>
+        <span class="macro-val">%{{ regime.cpi_yoy_pct | fmt }}</span>
+      </div>
+      <div class="macro-item">
+        <span class="macro-lbl">USD/TRY</span>
+        <span class="macro-val">{{ regime.usdtry_spot | fmt }}</span>
+      </div>
     </div>
+    {% if regime.short_selling_ban_active %}
+    <div style="margin-top:8px;">
+      <span class="macro-pill-alert">Aciga Satis Yasagi Aktif</span>
+    </div>
+    {% endif %}
     {% endif %}
   </div>
 
-  {% set price_source_label = {'live': 'Anlik', 'vwap_fallback': 'Hacim Ort. (VWAP)', 'last_close': 'Kapanis'} %}
+  <!-- ============================== BOZULAN TEZLER UYARISI ============================== -->
+  {% if invalidation_triggered %}
+  <div class="alert-card">
+    <b>Bozulan Tez Bildirimi:</b> Asagidaki hisselerde onceden belirlenmis tez bozulma kosullari tetiklenmistir (Dogrudan satis sinyali degildir, model risk kontroludur):
+    <ul>
+      {% for t in invalidation_triggered %}
+      <li><b>{{ t.ticker }}</b>: {{ t.condition_field }} {{ t.condition_operator }} {{ t.condition_value }} gerceklesti (Guncel deger: {{ t.current_value }})</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 
-  <!-- ============================== 2. UZUN VADE ============================== -->
+  <!-- ============================== 1. UZUN VADELI FIRSATLAR ============================== -->
   <div class="card">
-    <h2 class="section-title">Uzun Vade Onerileri</h2>
-    <div class="section-sub">~6 aylik ufuk · sektor ici goreli degerlemeye dayali hedef fiyat hesabi</div>
+    <div class="section-header">
+      <h2 class="section-title">1. Uzun Vadeli Firsatlar (60 – 180 Gun)</h2>
+      <div class="section-desc">Sektorel goreli degerleme, Piotroski kalite filtresi ve Degerleme Ucgeni modellerine dayali stratejik pozisyonlar.</div>
+    </div>
 
     {% if long_term_candidates %}
-    <div class="table-container">
-      <table class="summary-table">
+    <div class="table-responsive">
+      <table class="table-exec">
         <thead>
           <tr>
             <th>Hisse</th>
-            <th class="col-num">Alis (Guncel)</th>
-            <th class="col-num">Hedef</th>
-            <th class="col-roi">Getiri</th>
+            <th class="col-num">Kademeli Alis Bandi</th>
+            <th class="col-num">Hedef Fiyat</th>
+            <th class="col-roi">Beklenen Getiri</th>
             <th class="col-stop">Stop-Loss</th>
-            <th class="col-dcf">Adil Deger / DCF</th>
+            <th class="col-range">Adil Deger (Ucgen / DCF)</th>
+            <th class="col-num">Onerilen Poz.</th>
           </tr>
         </thead>
         <tbody>
           {% for c in long_term_candidates %}
           <tr>
-            <td class="col-ticker">
-              {{ c.ticker }}
-              <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+            <td>
+              <div class="col-ticker-wrap">
+                <span class="col-ticker">{{ c.ticker }}</span>
+                <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+              </div>
             </td>
-            <td class="col-num">{{ c.current_price | fmt }}</td>
+            <td class="col-num">
+              {% if c.entry_low is not none and c.entry_high is not none %}
+                {{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}
+              {% else %}
+                {{ c.current_price | fmt }}
+              {% endif %}
+              <span class="col-sub">Guncel: {{ c.current_price | fmt }}</span>
+            </td>
             <td class="col-num" style="font-weight:700; color:#0f172a;">{{ c.target_price | fmt }}</td>
-            <td class="col-roi">%{{ c.expected_roi_pct | fmt }}</td>
+            <td class="col-roi">+%{{ c.expected_roi_pct | fmt }}</td>
             <td class="col-stop">{{ c.stop_loss | fmt }}</td>
-            <td class="col-dcf">
+            <td class="col-range">
               {% if c.fair_value_low is not none and c.fair_value_high is not none %}
                 {{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }}
               {% elif c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %}
                 {{ c.dcf.fair_value_low | fmt }} – {{ c.dcf.fair_value_high | fmt }}
               {% elif c.gordon and c.gordon.fair_value_low is not none and not c.gordon.null_reason %}
-                {{ c.gordon.fair_value_low | fmt }} – {{ c.gordon.fair_value_high | fmt }} <span class="muted">(G)</span>
+                {{ c.gordon.fair_value_low | fmt }} – {{ c.gordon.fair_value_high | fmt }}
               {% else %}
-                <span class="muted">—</span>
+                —
+              {% endif %}
+            </td>
+            <td class="col-num" style="font-weight:700;">
+              {% if c.position_size_pct is not none %}
+                %{{ c.position_size_pct | fmt }}
+              {% else %}
+                —
               {% endif %}
             </td>
           </tr>
@@ -421,282 +706,248 @@
       </table>
     </div>
 
-    <details class="section-details">
-      <summary>Aday Bazli Detaylar ve Kopyala Metni ({{ long_term_candidates | length }} hisse)</summary>
-      <div class="details-body">
-
-        <details style="margin-top:16px;">
-          <summary style="cursor:pointer; font-size:12px; font-weight:600; color:#475569; padding:8px 0;">Hizli Kopyala (Metin Formati)</summary>
-          <div class="quick-copy-box">{%- for c in long_term_candidates %}
-* {{ c.ticker }} | Alis: {{ c.current_price | fmt }} → Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.fair_value_low is not none %} | Adil Deger: {{ c.fair_value_low | fmt }} - {{ c.fair_value_high | fmt }}{% elif c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %} | DCF: {{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}{% endif %}{% if c.stop_loss is not none %} | Stop: {{ c.stop_loss | fmt }}{% endif %}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %}{%- endfor %}</div>
-        </details>
-
-        {% for c in long_term_candidates %}
-        <div class="detail-card">
-          <div class="detail-header">
-            <div class="left">
-              <span class="detail-num">{{ loop.index }}</span>
-              <span class="ticker">{{ c.ticker }}</span>
-            </div>
-            <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
-          </div>
-
-          <div class="detail-body">
-
-            <div class="price-row">
-              <div class="price-box">
-                <div class="lbl">Guncel</div>
-                <div class="val">{{ c.current_price | fmt }}</div>
-                <div class="live-tag">{{ price_source_label.get(c.price_source, c.price_source) }}</div>
-              </div>
-              <div class="price-box">
-                <div class="lbl">Hedef</div>
-                <div class="val up">{{ c.target_price | fmt }}</div>
-              </div>
-              <div class="price-box">
-                <div class="lbl">Beklenen Getiri</div>
-                <div class="val up">%{{ c.expected_roi_pct | fmt }}</div>
-              </div>
-              {% if c.stop_loss is not none %}
-              <div class="price-box">
-                <div class="lbl">Stop-Loss</div>
-                <div class="val down">{{ c.stop_loss | fmt }}</div>
-              </div>
-              {% endif %}
-            </div>
-
-            <div class="insight-box">
-              <div class="why"><b>Neden:</b> {{ c.why_now }}</div>
-              <div class="risk"><b>Ana Risk:</b> {{ c.main_risk }}</div>
-            </div>
-
-            {% if c.upcoming_events %}
-            <div class="note-inline">
-              <span class="highlight">Yaklasan Olaylar:</span>
-              {% for ev in c.upcoming_events %}{{ ev.event_type }} ({{ ev.event_date }}){% if not loop.last %}; {% endif %}{% endfor %}
-            </div>
-            {% endif %}
-
-            <ul class="plain">{% for b in c.thesis_bullets %}<li>{{ b }}</li>{% endfor %}</ul>
-
-            <div class="invalidation-box">
-              <span class="highlight">Bozulma Kosulu:</span> {{ c.invalidation_condition_display }}
-            </div>
-
-            <table class="metric-table">
-              <tbody>
-                <tr><td>Giris fiyati</td><td>{{ c.entry_price | fmt }}</td></tr>
-                {% if c.entry_low is not none and c.entry_high is not none %}
-                <tr><td>Kademeli Alis Bandi</td><td>{{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</td></tr>
-                {% endif %}
-                {% if c.stop_loss is not none %}
-                <tr><td>Dinamik Stop-Loss</td><td class="risk">{{ c.stop_loss | fmt }}</td></tr>
-                {% endif %}
-                {% if c.position_size_pct is not none %}
-                <tr><td>Onerilen Pozisyon Buyuklugu</td><td>%{{ c.position_size_pct | fmt }}</td></tr>
-                {% endif %}
-                {% if c.fair_value_base is not none %}
-                <tr><td>Adil Deger Bandi (Ucgen)</td><td class="highlight">{{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }} <span class="muted">(Baz: {{ c.fair_value_base | fmt }})</span></td></tr>
-                {% endif %}
-                {% if c.valuation_method %}
-                <tr><td>Degerleme Metodu</td><td>{{ c.valuation_method }}</td></tr>
-                {% endif %}
-                <tr><td>Hurdle orani</td><td>%{{ c.hurdle_rate_pct | fmt }}</td></tr>
-                <tr><td>Hurdle uzeri fazla getiri</td><td class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
-                <tr><td>Beta-duzeltmeli fazla</td><td>%{{ c.excess_over_beta_hurdle_pct | fmt }}</td></tr>
-                <tr><td>F-Score (Normalize)</td><td>{{ c.piotroski_normalized_score | fmt }}</td></tr>
-                <tr><td>Esler grubu</td><td>{{ c.peer_group_used }} (n={{ c.peer_n }})</td></tr>
-                <tr><td>Guven duzeyi</td><td>{{ c.confidence }}</td></tr>
-                <tr><td>Raporlama bazi</td><td>{{ c.reporting_basis }}</td></tr>
-                <tr><td>Tedbir seviyesi</td><td>{{ c.tedbir_level | fmt }}</td></tr>
-                <tr><td>Perakende payi</td><td>%{{ c.retail_pct | fmt }}</td></tr>
-                {% if c.net_expected_roi_pct is not none %}
-                <tr><td>Net Getiri (Maliyet Sonrasi)</td><td class="highlight">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
-                {% endif %}
-              </tbody>
-            </table>
-
-            {% if c.sloan_flag %}
-            <div class="flag-warning">
-              <b>Uyari:</b> elevated_earnings_quality_risk (peer_percentile: {{ c.sloan_peer_percentile | fmt }})
-            </div>
-            {% endif %}
-
-            <div class="note-inline">FCF getirisi (USD bazli, bilgi amacli): <b>%{{ c.fcf_yield_usd | fmt }}</b></div>
-
-            {% if c.gordon %}
-            <div class="exp-box">
-              <div class="exp-title">Gordon Buyume Referansi <span class="muted" style="font-weight:400;">(deneysel, ana karara girmez)</span></div>
-              {% if c.gordon.null_reason %}
-                <span class="muted">Hesaplanamadi: {{ c.gordon.null_reason }}</span>
-              {% else %}
-                Adil deger araligi: <b>{{ c.gordon.fair_value_low | fmt }} – {{ c.gordon.fair_value_high | fmt }}</b>
-                <span class="muted">(Iskonto: %{{ c.gordon.discount_rate_low | fmt }} / %{{ c.gordon.discount_rate_base | fmt }} / %{{ c.gordon.discount_rate_high | fmt }})</span>
-              {% endif %}
-            </div>
-            {% endif %}
-
-            {% if c.dcf %}
-            <div class="exp-box">
-              <div class="exp-title">DCF Referansi <span class="muted" style="font-weight:400;">(deneysel, ana karara girmez)</span></div>
-              {% if c.dcf.null_reason %}
-                <span class="muted">Hesaplanamadi: {{ c.dcf.null_reason }}</span>
-              {% else %}
-                Adil deger araligi: <b>{{ c.dcf.fair_value_low | fmt }} – {{ c.dcf.fair_value_high | fmt }}</b>
-                <span class="muted">(mevcut fiyata gore %{{ c.dcf.premium_discount_low_pct | fmt }} / %{{ c.dcf.premium_discount_high_pct | fmt }})</span><br>
-                <span class="muted">WACC: %{{ c.dcf.wacc_pct | fmt }} · terminal buyume: %{{ c.dcf.terminal_growth_pct | fmt }}</span>
-              {% endif %}
-            </div>
-            {% endif %}
-
-          </div>
-        </div>
-        {% endfor %}
-
+    <!-- Hizli Kopyala / WhatsApp Metni -->
+    <div class="quick-copy-wrapper">
+      <div class="quick-copy-header">
+        <span class="quick-copy-title">Yonetici Hizli Kopyala (WhatsApp / Notlar)</span>
       </div>
-    </details>
+      <div class="quick-copy-box">{% for c in long_term_candidates %}* {{ c.ticker }} | Alis: {{ c.current_price | fmt }}{% if c.entry_low is not none and c.entry_high is not none %} (Bant: {{ c.entry_low | fmt }} - {{ c.entry_high | fmt }}){% endif %} -> Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.stop_loss is not none %} | Stop: {{ c.stop_loss | fmt }}{% endif %}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %}{% if c.fair_value_low is not none and c.fair_value_high is not none %} | Adil Deger: {{ c.fair_value_low | fmt }} - {{ c.fair_value_high | fmt }}{% elif c.dcf and c.dcf.fair_value_low is not none and not c.dcf.null_reason %} | DCF: {{ c.dcf.fair_value_low | fmt }} - {{ c.dcf.fair_value_high | fmt }}{% endif %}
+{% endfor %}</div>
+    </div>
     {% else %}
-    <div class="empty-note">Bugun icin uzun vade adayi bulunmuyor.</div>
+    <div class="empty-state">Bugun icin uzun vadeli model portfoy adayi bulunmamaktadir.</div>
     {% endif %}
   </div>
 
-  <!-- ============================== 3. KISA VADE ============================== -->
+  <!-- ============================== 2. KISA VADELI FIRSATLAR ============================== -->
   <div class="card">
-    <h2 class="section-title">Kisa Vade Onerileri</h2>
-    <div class="section-sub">~20 gunluk ufuk · hacim teyitli teknik kirilim · "Giris" 20 gunluk ortalamaya cekilme bazalidir</div>
+    <div class="section-header">
+      <h2 class="section-title">2. Kisa Vadeli Firsatlar (5 – 20 Gun)</h2>
+      <div class="section-desc">20 gunluk hareketli ortalamaya geri cekilme, ATR volatilite kanali ve hacim teyitli taktiksel pozisyonlar.</div>
+    </div>
 
     {% if short_term_candidates %}
-    <div class="table-container">
-      <table class="summary-table">
+    <div class="table-responsive">
+      <table class="table-exec">
         <thead>
           <tr>
             <th>Hisse</th>
-            <th class="col-num">Giris</th>
-            <th class="col-num">Hedef (ATR)</th>
-            <th class="col-roi">Getiri</th>
+            <th class="col-num">Giris (Pullback)</th>
+            <th class="col-num">ATR Hedefi</th>
+            <th class="col-roi">Beklenen Getiri</th>
             <th class="col-stop">Stop-Loss</th>
-            <th class="col-num">Mevcut</th>
+            <th class="col-num">Hacim Teyidi</th>
+            <th class="col-num">Onerilen Poz.</th>
           </tr>
         </thead>
         <tbody>
           {% for c in short_term_candidates %}
           <tr>
-            <td class="col-ticker">
-              {{ c.ticker }}
-              <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+            <td>
+              <div class="col-ticker-wrap">
+                <span class="col-ticker">{{ c.ticker }}</span>
+                <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+              </div>
             </td>
-            <td class="col-num">{{ c.entry_price | fmt }}</td>
+            <td class="col-num">
+              {{ c.entry_price | fmt }}
+              {% if c.entry_low is not none and c.entry_high is not none %}
+                <span class="col-sub">Bant: {{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</span>
+              {% else %}
+                <span class="col-sub">Guncel: {{ c.current_price | fmt }}</span>
+              {% endif %}
+            </td>
             <td class="col-num" style="font-weight:700; color:#0f172a;">{{ c.target_price | fmt }}</td>
-            <td class="col-roi">%{{ c.expected_roi_pct | fmt }}</td>
+            <td class="col-roi">+%{{ c.expected_roi_pct | fmt }}</td>
             <td class="col-stop">{{ c.stop_loss | fmt }}</td>
-            <td class="col-num">{{ c.current_price | fmt }}</td>
+            <td class="col-num">
+              {% if c.volume_ratio_20d is not none %}
+                {{ c.volume_ratio_20d | fmt }}x
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td class="col-num" style="font-weight:700;">
+              {% if c.position_size_pct is not none %}
+                %{{ c.position_size_pct | fmt }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
 
-    <details class="section-details">
-      <summary>Aday Bazli Detaylar ve Kopyala Metni ({{ short_term_candidates | length }} hisse)</summary>
-      <div class="details-body">
-
-        <details style="margin-top:16px;">
-          <summary style="cursor:pointer; font-size:12px; font-weight:600; color:#475569; padding:8px 0;">Hizli Kopyala (Metin Formati)</summary>
-          <div class="quick-copy-box">{%- for c in short_term_candidates %}
-* {{ c.ticker }} | Alis: {{ c.entry_price | fmt }}{% if c.entry_low is not none %} (Bant: {{ c.entry_low | fmt }}-{{ c.entry_high | fmt }}){% endif %} | Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}) | Stop: {{ c.stop_loss | fmt }}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %} | Mevcut: {{ c.current_price | fmt }}{%- endfor %}</div>
-        </details>
-
-        {% for c in short_term_candidates %}
-        <div class="detail-card">
-          <div class="detail-header">
-            <div class="left">
-              <span class="detail-num">{{ loop.index }}</span>
-              <span class="ticker">{{ c.ticker }}</span>
-            </div>
-            <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
-          </div>
-
-          <div class="detail-body">
-
-            <div class="price-row">
-              <div class="price-box">
-                <div class="lbl">Guncel</div>
-                <div class="val">{{ c.current_price | fmt }}</div>
-                <div class="live-tag">{{ price_source_label.get(c.price_source, c.price_source) }}</div>
-              </div>
-              <div class="price-box">
-                <div class="lbl">Giris (Pullback)</div>
-                <div class="val">{{ c.entry_price | fmt }}</div>
-              </div>
-              <div class="price-box">
-                <div class="lbl">ATR Hedefi</div>
-                <div class="val up">{{ c.target_price | fmt }}</div>
-              </div>
-              <div class="price-box">
-                <div class="lbl">Stop-Loss</div>
-                <div class="val down">{{ c.stop_loss | fmt }}</div>
-              </div>
-            </div>
-
-            <table class="metric-table">
-              <tbody>
-                {% if c.entry_low is not none and c.entry_high is not none %}
-                <tr><td>Kademeli Alis Bandi</td><td>{{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</td></tr>
-                {% endif %}
-                {% if c.position_size_pct is not none %}
-                <tr><td>Onerilen Pozisyon Buyuklugu</td><td>%{{ c.position_size_pct | fmt }}</td></tr>
-                {% endif %}
-                <tr><td>Hacim teyidi (20g orani)</td><td>{{ c.volume_ratio_20d | fmt }}</td></tr>
-                <tr><td>Hurdle orani</td><td>%{{ c.hurdle_rate_pct | fmt }}</td></tr>
-                <tr><td>Hurdle uzeri fazla</td><td class="highlight">%{{ c.excess_over_hurdle_pct | fmt }}</td></tr>
-                <tr><td>Katalizor skoru</td><td>{{ c.catalyst_score | fmt }}</td></tr>
-                <tr><td>Guven duzeyi</td><td>{{ c.confidence }}</td></tr>
-                {% if c.net_expected_roi_pct is not none %}
-                <tr><td>Net Getiri (Maliyet Sonrasi)</td><td class="highlight">%{{ c.net_expected_roi_pct | fmt }} <span class="muted">(Maliyet: %{{ c.transaction_cost_pct | fmt }})</span></td></tr>
-                {% endif %}
-              </tbody>
-            </table>
-
-          </div>
-        </div>
-        {% endfor %}
-
+    <!-- Hizli Kopyala / WhatsApp Metni -->
+    <div class="quick-copy-wrapper">
+      <div class="quick-copy-header">
+        <span class="quick-copy-title">Yonetici Hizli Kopyala (WhatsApp / Notlar)</span>
       </div>
-    </details>
+      <div class="quick-copy-box">{% for c in short_term_candidates %}* {{ c.ticker }} | Giris: {{ c.entry_price | fmt }}{% if c.entry_low is not none and c.entry_high is not none %} (Bant: {{ c.entry_low | fmt }} - {{ c.entry_high | fmt }}){% endif %} -> Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.stop_loss is not none %} | Stop: {{ c.stop_loss | fmt }}{% endif %}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %}{% if c.volume_ratio_20d is not none %} | Hacim: {{ c.volume_ratio_20d | fmt }}x{% endif %}
+{% endfor %}</div>
+    </div>
     {% else %}
-    <div class="empty-note">Bugun icin kisa vade adayi bulunmuyor.</div>
+    <div class="empty-state">Bugun icin kisa vadeli taktiksel aday bulunmamaktadir.</div>
     {% endif %}
   </div>
 
-  <!-- ============================== 4. GUNLUK DEGISIMLER ============================== -->
+  <!-- ============================== 3. ADAY BAZLI YATIRIM TEZLERI ============================== -->
+  {% if long_term_candidates %}
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">3. Aday Bazli Yatirim Tezleri &amp; Risk Analizi</h2>
+      <div class="section-desc">Her aday icin model gerekceleri, katalizorler, ana riskler ve bozulma kosullari.</div>
+    </div>
+
+    {% for c in long_term_candidates %}
+    <div class="dossier-card">
+      <div class="dossier-header">
+        <div class="dossier-header-left">
+          <span class="dossier-ticker">{{ c.ticker }}</span>
+          <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
+          <span class="dossier-peer">{{ c.peer_group_used }} (n={{ c.peer_n }}) &middot; Guven: {{ c.confidence }}</span>
+        </div>
+        <div class="dossier-strip">
+          <span class="dossier-strip-item">Alis: <b>{{ c.current_price | fmt }}</b></span>
+          <span class="dossier-strip-item">Hedef: <b style="color:#059669;">{{ c.target_price | fmt }} (+%{{ c.expected_roi_pct | fmt }})</b></span>
+          {% if c.stop_loss is not none %}
+          <span class="dossier-strip-item">Stop: <b style="color:#dc2626;">{{ c.stop_loss | fmt }}</b></span>
+          {% endif %}
+          {% if c.position_size_pct is not none %}
+          <span class="dossier-strip-item">Poz: <b>%{{ c.position_size_pct | fmt }}</b></span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="dossier-body">
+        <div class="dossier-grid">
+          <!-- Yatirim Tezi -->
+          <div class="dossier-callout-thesis">
+            <b>Yatirim Tezi &amp; Neden Simdi:</b> {{ c.why_now }}
+            <ul>
+              {% for b in c.thesis_bullets %}
+              <li>{{ b }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- Risk & Bozulma Sartlari -->
+          <div class="dossier-callout-risk">
+            <b>Ana Risk:</b> {{ c.main_risk }}
+            <div class="dossier-invalidation">
+              <b>Tez Bozulma Kosulu:</b> {{ c.invalidation_condition_display }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Finansal & Model Parametreleri -->
+        <div class="metrics-grid">
+          <div class="metric-entry">
+            <span class="metric-key">Hurdle Orani</span>
+            <span class="metric-val">%{{ c.hurdle_rate_pct | fmt }}</span>
+          </div>
+          <div class="metric-entry">
+            <span class="metric-key">Hurdle Uzeri Fazla</span>
+            <span class="metric-val" style="color:#059669;">+%{{ c.excess_over_hurdle_pct | fmt }}</span>
+          </div>
+          <div class="metric-entry">
+            <span class="metric-key">Beta-Duzeltmeli Fazla</span>
+            <span class="metric-val">+%{{ c.excess_over_beta_hurdle_pct | fmt }}</span>
+          </div>
+          <div class="metric-entry">
+            <span class="metric-key">Piotroski F-Score</span>
+            <span class="metric-val">{{ c.piotroski_normalized_score | fmt }}</span>
+          </div>
+          {% if c.fair_value_base is not none %}
+          <div class="metric-entry">
+            <span class="metric-key">Adil Deger Bandi (Ucgen)</span>
+            <span class="metric-val">{{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }}</span>
+          </div>
+          {% endif %}
+          {% if c.valuation_method %}
+          <div class="metric-entry">
+            <span class="metric-key">Degerleme Metodu</span>
+            <span class="metric-val">{{ c.valuation_method }}</span>
+          </div>
+          {% endif %}
+          {% if c.net_expected_roi_pct is not none %}
+          <div class="metric-entry">
+            <span class="metric-key">Net Getiri (Maliyet Sonrasi)</span>
+            <span class="metric-val" style="color:#059669;">+%{{ c.net_expected_roi_pct | fmt }}</span>
+          </div>
+          {% endif %}
+          {% if c.retail_pct is not none %}
+          <div class="metric-entry">
+            <span class="metric-key">Perakende Payi</span>
+            <span class="metric-val">%{{ c.retail_pct | fmt }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if c.upcoming_events %}
+        <div class="dossier-note">
+          <b>Yaklasan Kurumsal Olaylar:</b>
+          {% for ev in c.upcoming_events %}{{ ev.event_type }} ({{ ev.event_date }}){% if not loop.last %}; {% endif %}{% endfor %}
+        </div>
+        {% endif %}
+
+        {% if c.sloan_flag %}
+        <div class="warn-card" style="margin-top:10px;">
+          <b>Tahakkuk Riski (Sloan):</b> elevated_earnings_quality_risk (Peer yuzdelik dilim: {{ c.sloan_peer_percentile | fmt }})
+        </div>
+        {% endif %}
+
+        <!-- Referans Modeller (DCF & Gordon) -->
+        {% if c.dcf and not c.dcf.null_reason %}
+        <div class="ref-box">
+          <b>DCF Referansi (Deneysel):</b> Adil Deger {{ c.dcf.fair_value_low | fmt }} – {{ c.dcf.fair_value_high | fmt }} &middot; WACC: %{{ c.dcf.wacc_pct | fmt }} &middot; Terminal Buyume: %{{ c.dcf.terminal_growth_pct | fmt }}
+        </div>
+        {% elif c.gordon and not c.gordon.null_reason %}
+        <div class="ref-box">
+          <b>Gordon Buyume Referansi (Deneysel):</b> Adil Deger {{ c.gordon.fair_value_low | fmt }} – {{ c.gordon.fair_value_high | fmt }}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ============================== 4. PORTFOY & MAKRO DEGISIMLER ============================== -->
   {% if decision_diff.entered or decision_diff.exited or decision_diff.catalyst_deltas or decision_diff.macro_deltas or concentration_warnings %}
   <div class="card">
-    <h2 class="section-title">Gunluk Degisimler</h2>
+    <div class="section-header">
+      <h2 class="section-title">4. Portfoy ve Makro Degisimler</h2>
+      <div class="section-desc">Onceki kosuya gore listeye yeni giren/cikan hisseler, makro guncellemeler ve yogunlasma uyarilari.</div>
+    </div>
 
-    <div style="margin-top:16px;">
+    <div style="font-size:12.5px; color:#334155; line-height:1.6;">
       {% if decision_diff.entered %}
-      <div class="small" style="margin-bottom:6px;"><span class="highlight">Portfoye Yeni Giren:</span> {{ decision_diff.entered | join(', ') }}</div>
+      <div style="margin-bottom:6px;"><b>Portfoye Yeni Giren:</b> {{ decision_diff.entered | join(', ') }}</div>
       {% endif %}
 
       {% if decision_diff.exited %}
-      <div class="small" style="margin-bottom:6px;"><span class="highlight">Portfoyden Cikan:</span> {{ decision_diff.exited | join(', ') }}</div>
+      <div style="margin-bottom:6px;"><b>Portfoyden Cikan:</b> {{ decision_diff.exited | join(', ') }}</div>
       {% endif %}
 
       {% if decision_diff.catalyst_deltas %}
-      <div class="small" style="margin-top:12px;"><span class="highlight">Yeni KAP Olaylari:</span><br>
+      <div style="margin-top:10px;"><b>Yeni KAP Bildirimleri:</b><br>
         {% for e in decision_diff.catalyst_deltas %}&bull; {{ e.ticker }} ({{ e.category }} : {{ e.published_at }}){% if not loop.last %}<br>{% endif %}{% endfor %}
       </div>
       {% endif %}
 
       {% if decision_diff.macro_deltas %}
-      <div class="small" style="margin-top:12px;"><span class="highlight">Makro Degisim:</span>
-        {% for m in decision_diff.macro_deltas %}{{ m.field }}: {{ m.from | fmt }} → {{ m.to | fmt }}{% if not loop.last %}; {% endif %}{% endfor %}
+      <div style="margin-top:10px;"><b>Makro Gosterge Degisimleri:</b>
+        {% for m in decision_diff.macro_deltas %}{{ m.field }}: {{ m.from | fmt }} &rarr; {{ m.to | fmt }}{% if not loop.last %}; {% endif %}{% endfor %}
       </div>
       {% endif %}
 
       {% if concentration_warnings %}
-      <div class="warn-box">
-        <div class="wt">Yogunlasma Uyarilari</div>
+      <div class="warn-card">
+        <b>Sektor / Grup Yogunlasma Uyarilari:</b>
         <ul>
           {% for w in concentration_warnings %}<li>{{ w.message }}</li>{% endfor %}
         </ul>
@@ -706,82 +957,76 @@
   </div>
   {% endif %}
 
-  <!-- ============================== 5. BOZULAN TEZLER ============================== -->
-  {% if invalidation_triggered %}
-  <div class="card">
-    <h2 class="section-title" style="color:#991b1b;">Bozulan Tezler</h2>
-    <div class="section-sub">Asagidakiler dogrudan bir SATIS SINYALI degildir — portfoy izleme bildirimidir.</div>
-
-    <ul class="broken-list">
-      {% for t in invalidation_triggered %}
-      <li>
-        <b>{{ t.ticker }}</b>: {{ t.condition_field }} {{ t.condition_operator }} {{ t.condition_value }} kosulu tetiklendi (Guncel: {{ t.current_value }})
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
-
-  <!-- ============================== 6. GECMIS TAHMIN ============================== -->
+  <!-- ============================== 5. MODEL TAHMIN IZLEME ============================== -->
   {% if evaluation_summary %}
   <div class="card">
-    <h2 class="section-title">Gecmis Tahmin Izleme Ozeti</h2>
-    <div class="section-sub">Canli takip ozeti (Backtest degildir). Gecmis performans gelecegi garanti etmez. {{ evaluation_summary.independence_caveat }}</div>
+    <div class="section-header">
+      <h2 class="section-title">5. Model Tahmin Izleme Ozeti</h2>
+      <div class="section-desc">Canli takip ozetidir. {{ evaluation_summary.independence_caveat }}</div>
+    </div>
 
     <table class="eval-table">
       <thead>
         <tr>
           <th>Ufuk (Gun)</th>
-          <th>Gozlem</th>
-          <th>Isabet</th>
+          <th>Gozlem Sayisi</th>
+          <th>Isabet Orani</th>
           <th>Medyan Fazla Getiri</th>
         </tr>
       </thead>
       <tbody>
-      {% for horizon, s in evaluation_summary.by_horizon.items() %}
+        {% for horizon, s in evaluation_summary.by_horizon.items() %}
         {% if s %}
         <tr>
-          <td data-label="Ufuk">{{ horizon }}</td>
-          <td data-label="Gozlem Sayisi">{{ s.n_observations | fmt }}</td>
-          <td data-label="Isabet Orani" class="highlight">%{{ s.hit_rate_pct | fmt }}</td>
-          <td data-label="Fazla Getiri">%{{ s.median_excess_vs_index | fmt }}</td>
+          <td>{{ horizon }}</td>
+          <td>{{ s.n_observations | fmt }}</td>
+          <td style="font-weight:700; color:#0f172a;">%{{ s.hit_rate_pct | fmt }}</td>
+          <td>%{{ s.median_excess_vs_index | fmt }}</td>
         </tr>
         {% endif %}
-      {% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </div>
   {% endif %}
 
-  <!-- ============================== 7. FILTREYE TAKILANLAR ============================== -->
+  <!-- ============================== 6. KAPSAM DISI & FILTRE ============================== -->
   <div class="card">
-    <details style="border:none;">
-      <summary style="cursor:pointer; font-size:14px; font-weight:700; color:#1e293b; padding:4px 0;">
-        Filtreye takilan / Skorlanamayan Hisseler ({{ no_action_count | fmt }} + {{ unscored_count | fmt }})
-      </summary>
-      <div class="small" style="margin:12px 0 16px;">{{ unscored_count }} adet hisse bu kosuda skorlanamadi (eksik veri, baz belirsizligi veya yetersiz esler grubu).</div>
-
-      {% if filtered_candidates %}
-      <table class="filter-list">
-        <thead><tr><th>Ticker</th><th>Filtrelenme Nedeni</th></tr></thead>
-        <tbody>
-          {% for c in filtered_candidates %}
-          <tr>
-            <td data-label="Ticker" class="highlight">{{ c.ticker }}</td>
-            <td data-label="Neden">{{ c.filtered_by }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% endif %}
+    <details class="exec-details">
+      <summary>Filtreye Takilan / Kapsam Disi Hisseler ({{ no_action_count | fmt }} Uygun Olmayan + {{ unscored_count | fmt }} Skorlanamayan)</summary>
+      <div class="details-content">
+        <div style="font-size:11.5px; color:#64748b; margin-bottom:10px;">
+          {{ unscored_count }} adet hisse eksik veri, baz belirsizligi veya yetersiz esler grubu nedeniyle skorlanamamistir.
+        </div>
+        {% if filtered_candidates %}
+        <table class="filter-table">
+          <thead>
+            <tr>
+              <th>Hisse</th>
+              <th>Filtrelenme Gerekcesi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in filtered_candidates %}
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">{{ c.ticker }}</td>
+              <td>{{ c.filtered_by }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
     </details>
   </div>
 
-  <!-- ============================== 8. FOOTER ============================== -->
+  <!-- ============================== FOOTER & DISCLAIMERS ============================== -->
   <div class="footer">
-    <p><b>final_score</b> = {{ weights.valuation_z | fmt }} × valuation_z + {{ weights.catalyst_score | fmt }} × catalyst_score + {{ weights.ownership_quality_z | fmt }} × ownership_quality_z + {{ weights.low_vol_z | fmt }} × low_vol_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p><b>final_score</b> = {{ weights.valuation_z | fmt }} &times; valuation_z + {{ weights.catalyst_score | fmt }} &times; catalyst_score + {{ weights.ownership_quality_z | fmt }} &times; ownership_quality_z + {{ weights.low_vol_z | fmt }} &times; low_vol_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    {% if weights.dcf_growth_low_pct is defined and weights.dcf_growth_low_pct is not none %}
     <p>DCF Referansi (deneysel, ana karara girmez) buyume senaryolari: dusuk %{{ weights.dcf_growth_low_pct | fmt }} / baz %{{ weights.dcf_growth_base_pct | fmt }} / yuksek %{{ weights.dcf_growth_high_pct | fmt }}, kurumlar vergisi orani %{{ weights.dcf_corporate_tax_rate_pct | fmt }}. Buyume senaryolari DENENMEMIS VARSAYIMDIR; kurumlar vergisi orani resmi/yasal orandir.</p>
-    <div class="divider"></div>
+    {% endif %}
+    <div class="footer-divider"></div>
     <p>{{ known_limitations_text }}</p>
     <p>{{ disclaimer_text }}</p>
   </div>
