@@ -98,7 +98,8 @@ CREATE TABLE IF NOT EXISTS scores (
     as_of_date TEXT, ticker TEXT, bucket TEXT, candidate_state TEXT,
     valuation_z REAL, catalyst_score REAL, ownership_z REAL, low_vol_z REAL,
     final_score REAL,
-    peer_group_used TEXT, peer_n INTEGER, confidence TEXT, filtered_by TEXT
+    peer_group_used TEXT, peer_n INTEGER, confidence TEXT, filtered_by TEXT,
+    valuation_z_sector_neutral REAL
 );
 
 CREATE TABLE IF NOT EXISTS gordon_reference (
@@ -206,6 +207,96 @@ CREATE TABLE IF NOT EXISTS backtest_trades (
     return_pct REAL,
     exit_reason TEXT
 );
+
+CREATE TABLE IF NOT EXISTS delisted_stocks (
+    ticker TEXT PRIMARY KEY,
+    company_name TEXT,
+    delist_date TEXT,
+    delist_reason TEXT,
+    last_price REAL,
+    terminal_recovery_pct REAL,
+    sector TEXT,
+    notes TEXT
+);
+
+CREATE TABLE IF NOT EXISTS corporate_actions (
+    ticker TEXT,
+    action_date TEXT,
+    action_type TEXT,
+    ratio_or_amount REAL,
+    split_factor REAL,
+    dividend_amount REAL,
+    source TEXT,
+    PRIMARY KEY (ticker, action_date, action_type)
+);
+
+CREATE TABLE IF NOT EXISTS data_quality_reports (
+    as_of_date TEXT,
+    ticker TEXT,
+    quality_score REAL,
+    is_clean INTEGER,
+    total_bars INTEGER,
+    missing_days_count INTEGER,
+    suspicious_jumps_count INTEGER,
+    zero_volume_count INTEGER,
+    delist_status TEXT,
+    issues_json TEXT,
+    created_at TEXT,
+    PRIMARY KEY (as_of_date, ticker)
+);
+
+CREATE TABLE IF NOT EXISTS adjusted_prices (
+    date TEXT,
+    ticker TEXT,
+    adj_open REAL,
+    adj_high REAL,
+    adj_low REAL,
+    adj_close REAL,
+    adj_volume REAL,
+    adjustment_factor REAL,
+    raw_close REAL,
+    PRIMARY KEY (date, ticker)
+);
+
+CREATE TABLE IF NOT EXISTS portfolio_allocations (
+    as_of_date TEXT,
+    ticker TEXT,
+    method TEXT,
+    weight_pct REAL,
+    sector TEXT,
+    expected_return_pct REAL,
+    volatility_pct REAL,
+    created_at TEXT,
+    PRIMARY KEY (as_of_date, ticker, method)
+);
+
+CREATE TABLE IF NOT EXISTS factor_contributions (
+    as_of_date TEXT,
+    ticker TEXT,
+    bucket TEXT,
+    final_score REAL,
+    valuation_contrib REAL,
+    catalyst_contrib REAL,
+    ownership_contrib REAL,
+    low_vol_contrib REAL,
+    top_positive_factor TEXT,
+    top_negative_factor TEXT,
+    explanation TEXT,
+    created_at TEXT,
+    PRIMARY KEY (as_of_date, ticker, bucket)
+);
+
+CREATE TABLE IF NOT EXISTS event_calendar (
+    ticker TEXT,
+    event_date TEXT,
+    event_type TEXT,
+    description TEXT,
+    expected_impact TEXT,
+    ratio_or_amount REAL,
+    source TEXT,
+    created_at TEXT,
+    PRIMARY KEY (ticker, event_date, event_type)
+);
 """
 
 
@@ -249,6 +340,7 @@ _TABLE_MIGRATIONS = {
     ],
     "scores": [
         ("low_vol_z", "REAL"),
+        ("valuation_z_sector_neutral", "REAL"),
     ],
 }
 

@@ -92,14 +92,51 @@ class WalkForwardEngine:
         pending_order: dict[str, Any] | None = None
 
         ticker = self.price_rows[0].get("ticker", "UNKNOWN")
+        from core.data_quality import get_delist_info
+        delist_info = get_delist_info(ticker)
 
         for i in range(20, len(self.price_rows)):
             bar = self.price_rows[i]
             date_str = bar["date"]
-            open_p = bar["open"]
-            high_p = bar["high"]
-            low_p = bar["low"]
-            close_p = bar["close"]
+            open_p = bar.get("adj_open", bar["open"])
+            high_p = bar.get("adj_high", bar["high"])
+            low_p = bar.get("adj_low", bar["low"])
+            close_p = bar.get("adj_close", bar["close"])
+
+            # Delist / İflas kontrolü (Survivorship bias önleme)
+            if delist_info and date_str >= delist_info["delist_date"]:
+                if in_position:
+                    recovery_pct = float(delist_info.get("terminal_recovery_pct", 0.0))
+                    exit_price = pos_entry_price * (recovery_pct / 100.0)
+                    exit_reason = f"delisted_{delist_info.get('delist_reason', 'bankruptcy')}"
+                    gross_proceeds = pos_shares * exit_price
+                    exit_comm = gross_proceeds * (self.commission_pct / 100.0)
+                    net_proceeds = gross_proceeds - exit_comm
+                    capital += net_proceeds
+                    trade_cost = pos_shares * pos_entry_price
+                    trade_pnl = net_proceeds - trade_cost
+                    ret_pct = ((exit_price - pos_entry_price) / pos_entry_price) * 100.0
+                    trades.append(
+                        TradeRecord(
+                            ticker=ticker,
+                            entry_date=pos_entry_date,
+                            exit_date=date_str,
+                            entry_price=round(pos_entry_price, 2),
+                            exit_price=round(exit_price, 2),
+                            target_price=round(pos_target_price, 2),
+                            stop_loss=round(pos_stop_loss, 2),
+                            position_size_pct=round(pos_size_pct, 2),
+                            shares=round(pos_shares, 2),
+                            pnl_tl=round(trade_pnl, 2),
+                            return_pct=round(ret_pct, 2),
+                            exit_reason=exit_reason,
+                            holding_days=days_in_trade,
+                        )
+                    )
+                    in_position = False
+                    pos_shares = 0.0
+                    days_in_trade = 0
+                continue
 
             # 1. Mevcut pozisyonu kontrol et (Exit kontrolu)
             if in_position:
@@ -578,9 +615,23 @@ def run_backtest(
     commission_pct: float = 0.15,
     slippage_pct: float = 0.10,
     save_to_db: bool = True,
+    adjust_prices: bool = True,
+    audit_quality: bool = True,
 ) -> dict[str, Any]:
     """Tekil bir hisse veya liste icin walk-forward backtest calistirir."""
+    from core.data_quality import adjust_price_series, audit_ticker_data_quality, fetch_corporate_actions
+
     prices = bist_mcp.get_prices(ticker, as_of_date, days=days)
+    actions = []
+    if adjust_prices or audit_quality:
+        actions = fetch_corporate_actions(ticker, as_of_date)
+
+    if audit_quality and prices:
+        audit_ticker_data_quality(ticker, prices, as_of_date=as_of_date, corporate_actions=actions)
+
+    if adjust_prices and prices:
+        prices = adjust_price_series(prices, actions)
+
     engine = WalkForwardEngine(
         price_rows=prices,
         initial_capital=initial_capital,

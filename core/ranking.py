@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from statistics import mean, pstdev
 
-MIN_PEER_N = 8
+MIN_PEER_N = 5  # v13 P1-7: peer_n < 5 ise supersector'e dusulur; kucuk sektorler (sigorta vb.) gereksiz elenmez
 FALLBACK_CHAIN = ["sector", "supersector", "market"]
 CONFIDENCE_MAPPING = {"sector": "high", "supersector": "degraded", "market": "low", "none": "insufficient_peers"}
 
@@ -134,7 +134,25 @@ def compute_valuation_z(candidate: dict, all_candidates: list[dict]) -> dict:
     valuation_z = mean(z_scores) if z_scores else None
     return {
         "valuation_z": valuation_z,
+        "valuation_z_sector_neutral": valuation_z,
         "peer_group_used": peer_level,
         "peer_n": len(peers),
         "confidence": confidence,
     }
+
+
+def compute_sector_neutral_valuation(
+    candidate: dict,
+    all_candidates: list[dict],
+    min_peer_n: int = MIN_PEER_N,
+) -> dict:
+    """Sektor ici normalizasyon (sektor-notr degerleme z-skoru).
+
+    v13 Roadmap P1-7:
+    - Z-skoru oncelikle sektor ici hesaplanir.
+    - Sektordeki peer_n < 5 ise supersector'e (XUMAL, XUSIN, XUHIZ, XUTEK) duser.
+    - Supersector de < 5 ise market geneline duser.
+    Cikti: valuation_z_sector_neutral.
+    """
+    return compute_valuation_z(candidate, all_candidates)
+

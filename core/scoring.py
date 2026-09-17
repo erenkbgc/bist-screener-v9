@@ -72,6 +72,7 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
 
         val = compute_valuation_z(c, [x for x in raw_candidates if x["bucket"] == c["bucket"]])
         c["valuation_z"] = val["valuation_z"]
+        c["valuation_z_sector_neutral"] = val.get("valuation_z_sector_neutral", val["valuation_z"])
         c["peer_group_used"] = val["peer_group_used"]
         c["peer_n"] = val["peer_n"]
         c["confidence"] = val["confidence"]
@@ -131,16 +132,17 @@ def _persist(as_of_date: str, scored: list[dict]) -> None:
         "low_vol_z": c.get("low_vol_z"),
         "final_score": c.get("final_score"), "peer_group_used": c.get("peer_group_used"),
         "peer_n": c.get("peer_n"), "confidence": c.get("confidence"), "filtered_by": c.get("filtered_by"),
+        "valuation_z_sector_neutral": c.get("valuation_z_sector_neutral"),
     } for c in scored]
     conn = db.get_connection()
     try:
         conn.executemany(
             """INSERT INTO scores (as_of_date, ticker, bucket, candidate_state, valuation_z,
                catalyst_score, ownership_z, low_vol_z, final_score, peer_group_used, peer_n,
-               confidence, filtered_by)
+               confidence, filtered_by, valuation_z_sector_neutral)
                VALUES (:as_of_date, :ticker, :bucket, :candidate_state, :valuation_z, :catalyst_score,
                        :ownership_z, :low_vol_z, :final_score, :peer_group_used, :peer_n, :confidence,
-                       :filtered_by)""",
+                       :filtered_by, :valuation_z_sector_neutral)""",
             rows,
         )
         conn.commit()

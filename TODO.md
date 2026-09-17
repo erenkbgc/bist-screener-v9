@@ -31,25 +31,42 @@
   - Ciktilar: `fair_value_low`, `fair_value_base`, `fair_value_high`, `valuation_method`, `predictions` tablosuna ve newsletter sablonuna entegre edildi.
   - Canli testler: `FORTE` (Fiyat: 100.3, Hedef: 212.41, Adil Deger: 123.55 - 301.26 TL, DCF+Emsal+Kalite) ve `EKGYO` (Fiyat: 19.24, NAV/pay: 75.48 TL, NAV iskontosu: %74.5, Hedef: 20.48 TL) uzerinde canli verilerle dogrulandi.
   - Testler: `tests/test_valuation_triangle.py` eklendi (10/10 basarili, genel suite 172/172 geciyor).
-- [ ] **4. Veri Kalitesi ve Survivorship Bias**
-  - Delist / iflas eden hisselerin arsivlenmesi.
-  - Fiyat duzeltmeleri: temettu, bedelsiz, sermaye artirimi.
-  - Alternatif kaynaklar: KAP direkt, Fintables, Investing.
-  - Cikti: `data_quality_report`, duzeltilmis fiyat serisi.
+- [x] **4. Veri Kalitesi ve Survivorship Bias** — TAMAMLANDI (2026-09-17).
+  - Delist / iflas eden hisselerin arsivlenmesi (`delisted_stocks` tablosu, `HISTORICAL_DELISTED_STOCKS` tohum verileri: ASYAB, GENYH, MEMS, ESEM, MANGO, ARTI, MEKPET, UKIM, BISAS, RANLO, TRANST, DENIZ, TEB, MUTLU).
+  - Survivorship-free tarihsel evren olusturma (`core/data_quality.py::get_survivorship_free_universe`).
+  - Fiyat duzeltmeleri motoru (`core/data_quality.py::adjust_price_series`): Bedelsiz (bonus issue), bedelli (rights issue) ve nakit temettu (cash dividend) icin geriye donuk CRSP standart duzeltmesi; `adjusted_prices` tablosu.
+  - Veri dogrulama denetcisi (`core/data_quality.py::audit_ticker_data_quality`): BIST devre kesici / marj asimi (>%10.5) tespiti, kurumsal aksiyon teyidi, ters fiyat kontrolu (H<L, Close disinda), sifir hacim ve durgun fiyat serisi analizi; `data_quality_reports` tablosu.
+  - Backtest entegrasyonu: `WalkForwardEngine`'e delist kontrolu (iflas durumunda 0 TL tasfiye ile zorunlu cikis, M&A cagri bedeliyle cikis) ve duzeltilmis fiyat destegi entegre edildi.
+  - Canli test: `FORTE` hissesi uzerinde canli 140 gunluk veri, temettuler ve veri kalitesi denetlendi (Kalite Skoru: 97.0/100, `is_clean=True`).
+  - Testler: `tests/test_data_quality.py` eklendi (10/10 basarili, genel suite 182/182 geciyor).
 
 ### P1 — Yuksek Oncelik (2–6 hafta)
-- [ ] **5. Portfoy Optimizasyonu**
-  - Risk Parity, Min Variance, Max Sharpe secenekleri.
-  - Korelasyon > 0.8 olan hisselerden yalnizca birini secme kurali.
-  - Sektor limiti: max %30. Cikti: `recommended_portfolio_weights`.
-- [ ] **6. Faktor Ifsa Raporu**
-  - `final_score` katki analizi: valuation_z * 0.5, catalyst * 0.25, ownership * 0.15, low_vol * 0.1.
-  - "Bu skoru ne artirdi, ne dusurdu?" aciklamasi. Cikti: `factor_contribution` tablosu.
-- [ ] **7. Sektor Notrlestirme**
-  - `valuation_z` sektor ici z-skoru / supersector normalizasyonu.
-  - `peer_n < 5` ise supersector'a dusme. Cikti: `valuation_z_sector_neutral`.
-- [ ] **8. Kurumsal Aksiyon Takvimi**
-  - `event_calendar` tablosu: tarih, tur, etki. Fiyat duzeltmesi otomatik. Entry/exit sinyal uyarilari.
+- [x] **5. Portfoy Optimizasyonu** — TAMAMLANDI (2026-09-17).
+  - 3 Optimizasyon Metodu: `risk_parity` (Ters volatilite / esit risk), `min_variance` (Kovaryans bazli min risk), `max_sharpe` (Maksimum Sharpe orani).
+  - Korelasyon filtresi: $\rho > 0.80$ olan ciftlerden skoru yuksek olani tutma, digerini gerekceli eleme (`core/portfolio.py::filter_correlated_candidates`).
+  - Sektor limiti: Bounded simplex projeksiyonu ile hicbir sektorun portfoyun %30'unu asmamasi garanti edildi (`core/portfolio.py::apply_sector_caps`).
+  - Ciktilar: `recommended_portfolio_weights`, `sector_allocations_pct`, portfoy beklenen getirisi, portfoy volatilitesi ve Sharpe orani.
+  - Veritabani: `portfolio_allocations` tablosu.
+  - Canli test: `FORTE` ve emsalleri (THYAO, ASELS, BIMAS, AKBNK, EKGYO) uzerinde gercek 60 gunluk fiyat serileriyle test edildi (FORTE: RP %10.45, MinVar %12.98, MaxSharpe %30.00; sektor tavanlarinin <=%30 oldugu teyit edildi).
+  - Testler: `tests/test_portfolio.py` eklendi (5/5 basarili, genel suite 187/187 geciyor).
+- [x] **6. Faktor Ifsa Raporu** — TAMAMLANDI (2026-09-17).
+  - Her hisse icin katki analizi: `valuation_z * 0.50`, `catalyst_score * 0.25`, `ownership_z * 0.15`, `low_vol_z * 0.10` (`core/factor_disclosure.py`).
+  - "Bu skoru ne artirdi, ne dusurdu?" kural-tabanli dogal dil aciklama motoru (`core/factor_disclosure.py::explain_candidate_score`).
+  - Veritabani: `factor_contributions` tablosu.
+  - Canli test: `FORTE` adayi uzerinde test edildi (Final Skor: 1.54, Degerleme: +1.08, Katalizor: +0.45, Dusuk Vol: +0.09, Ortaklik: -0.07; seffaf metin uretimi ve DB roundtrip dogrulandi).
+  - Testler: `tests/test_factor_disclosure.py` eklendi (4/4 basarili, genel suite 191/191 geciyor).
+- [x] **7. Sektor Notrlestirme** — TAMAMLANDI (2026-09-17).
+  - `valuation_z` sektor ici z-skoru ve supersector normalizasyonu (`core/ranking.py::compute_valuation_z`, `compute_sector_neutral_valuation`).
+  - `peer_n < 5` ise supersector'e dusme kurali (`MIN_PEER_N = 5`).
+  - Cikti: `valuation_z_sector_neutral` alani, `scores` tablosuna ve semaya eklendi.
+  - Canli test: `FORTE` hissesi uzerinde test edildi (XUTEK sektorunde 6 emsal ile 'sector' seviyesinde normalize edildi, Z-skor: 1.87, confidence: 'high').
+  - Testler: `tests/test_sector_neutral.py` eklendi (3/3 basarili, genel suite 194/194 geciyor).
+- [x] **8. Kurumsal Aksiyon Takvimi** — TAMAMLANDI (2026-09-17).
+  - `event_calendar` tablosu: tarih, tur, aciklama, beklenen etki, oran/tutar, kaynak.
+  - Fiyat duzeltmesi ve kurumsal aksiyon otomatik eslestirme (`core/events.py::populate_calendar_from_corporate_actions`).
+  - Entry/exit sinyal uyarilari: Vade suresi icinde (orn. 20 gun) temettu/bedelsiz/bedelli planlaniyorsa yuksek oncelikli uyari uretimi (`core/events.py::check_signal_corporate_action_warnings`).
+  - Canli test: `FORTE` hissesi uzerinde test edildi (gercek temettuler takvime aktarildi; vade ici temettu uyarisi 'HIGH' seviyesinde yakalandi).
+  - Testler: `tests/test_events.py` genisletildi (5/5 basarili, genel suite 196/196 geciyor).
 
 ### P2 — Orta Oncelik (6–12 hafta)
 - [ ] **9. Duygu Analizi / NLP** (KAP bildirimleri + haber basliklari, FinBERT/lexicon, katalizor skoruna %20 agirlik).

@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-172%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-196%20passing-brightgreen)
 ![Backtest](https://img.shields.io/badge/backtest-walk--forward%20%7C%20backtrader-blueviolet)
 ![Status](https://img.shields.io/badge/status-active%20research%20v13-orange)
 
@@ -27,15 +27,18 @@
 - [Analysis Layers](#analysis-layers)
   - [Market Regime](#market-regime)
   - [Universe Construction](#universe-construction)
-  - [Cross-Sectional Ranking](#cross-sectional-ranking)
+  - [Cross-Sectional Ranking & Sector Neutralization](#cross-sectional-ranking--sector-neutralization)
   - [Financial Quality](#financial-quality)
   - [Multi-Factor Valuation Triangle](#multi-factor-valuation-triangle-değerleme-üçgeni)
+  - [Factor Disclosure & Attribution](#factor-disclosure--attribution)
   - [Hurdle Rate](#hurdle-rate)
   - [Dynamic Risk Management & Position Sizing](#dynamic-risk-management--position-sizing)
+  - [Portfolio Optimization & Sector Constraints](#portfolio-optimization--sector-constraints)
+  - [Corporate Actions Calendar](#corporate-actions-calendar)
   - [Catalysts & KAP](#catalysts--kap)
   - [Dividend Sustainability](#dividend-sustainability)
   - [Ownership Analysis](#ownership-analysis)
-- [Data Quality Philosophy](#data-quality-philosophy)
+- [Data Quality & Survivorship Bias](#data-quality--survivorship-bias)
 - [Walk-Forward Backtesting Engine](#walk-forward-backtesting-engine)
 - [Validation Gate](#validation-gate)
 - [Execution Pipeline](#execution-pipeline)
@@ -154,6 +157,8 @@ flowchart LR
 
 This accounts for the fact that different sectors naturally carry different valuation multiples and financial characteristics.
 
+- **Sector Neutralization (`valuation_z_sector_neutral`)**: Valuations are standardized within specific sectors. If a niche subsector has fewer than 5 active peers (`peer_n < 5`, e.g. insurance or specialized financials), it gracefully falls back to supersector normalization (`XUMAL`, `XUSIN`, `XUHIZ`, `XUTEK`) rather than premature market-wide contamination.
+
 ### Financial Quality
 
 **Piotroski F-Score** — a 9-criteria assessment covering profitability, cash flow, leverage, liquidity, and operational efficiency.
@@ -192,6 +197,12 @@ flowchart TD
 - **Outputs**:
   Produces `fair_value_low`, `fair_value_base`, `fair_value_high`, and `valuation_method`, with `target_price = fair_value_base`.
 
+### Factor Disclosure & Attribution
+
+Every score is 100% transparent. The system decomposes `final_score` into its exact factor contributions:
+$$\text{final\_score} = 0.50 \times \text{valuation\_z} + 0.25 \times \text{catalyst\_score} + 0.15 \times \text{ownership\_z} + 0.10 \times \text{low\_vol\_z}$$
+For each candidate, a deterministic natural language explanation details *"what increased and what suppressed this score"*, isolating primary drivers and risks into the `factor_contributions` table.
+
 ### Hurdle Rate
 
 Expected return is never assessed in isolation — it is compared against a required-return benchmark built from:
@@ -222,6 +233,24 @@ Signals do not rely on market orders (`entry_price = current_price`) or leave st
   Positions are sized inversely to risk distance per share, keeping account portfolio risk strictly within the target budget (1%–2%, default 1.5%):
   $$\text{position\_size\_pct} = \min\left(25.0\%,\, \frac{\text{account\_risk\_pct}}{\text{risk\_per\_share} \,/\, \text{effective\_entry}}\right)$$
 
+### Portfolio Optimization & Sector Constraints
+
+To move from standalone signals to portfolio construction, `core/portfolio.py` provides institutional asset allocation:
+- **Pairwise Correlation Filter**: If $\rho_{i,j} > 0.80$ between any pair over 60 days, the lower-scoring asset is automatically pruned to prevent hidden risk clustering.
+- **Sector Cap ($\le 30.0\%$)**: Enforced via bounded simplex projection. No single sector can exceed 30% of portfolio equity, redistributing excess exposure proportionally across other candidates.
+- **Three Allocation Models**:
+  - **Risk Parity (Inverse Volatility)**: Allocates inversely to individual asset volatility ($\sigma_i$).
+  - **Minimum Variance**: Solves $\min w^T \Sigma w$ via projected gradient descent.
+  - **Maximum Sharpe**: Tangency portfolio maximizing $(w^T \mu - r_f) / \sigma_p$.
+- **Persistence**: Allocations and sector weights are tracked in the `portfolio_allocations` table.
+
+### Corporate Actions Calendar
+
+Corporate actions significantly alter nominal market prices:
+- **`event_calendar` Database**: Tracks cash dividends, bonus share issues (bedelsiz), rights issues (bedelli), and general assemblies.
+- **Automatic Link to Price Adjustments**: Feeds into the historical price adjustment engine.
+- **Signal Warnings**: Generates high-priority alerts (`check_signal_corporate_action_warnings`) for any recommendation whose trade horizon intersects an upcoming corporate action.
+
 ### Catalysts & KAP
 
 KAP (Public Disclosure Platform) filings are classified using a **rule-based / regex** approach — not an LLM-based prediction model. This choice prioritizes deterministic, reproducible, and transparent classification over probabilistic inference.
@@ -236,24 +265,33 @@ An ownership-quality layer incorporates available shareholder-structure informat
 
 ---
 
-## Data Quality Philosophy
+## Data Quality & Survivorship Bias
 
-> **Missing data is not positive data.**
+> **Missing data is not positive data. Survivorship bias is the silent killer of quantitative models.**
 
-When a value cannot be reliably sourced:
+The data layer is built on three rigorous integrity principles:
 
-```python
-if data_is_missing:
-    value = None
-```
+1. **Explicit Missing Data Handling**:
+   When a value cannot be reliably sourced:
+   ```python
+   if data_is_missing:
+       value = None
+   ```
+   ...rather than being estimated or inferred. Companies with incomplete statements are flagged with `reporting_basis = "unknown"` and safely halted by guardrails.
 
-...rather than being estimated or inferred. This is especially relevant for banks, insurers, and leasing companies, whose financial statement formats differ structurally and may cause certain metrics to be non-computable. Such companies can be flagged with `reporting_basis = "unknown"` and are automatically excluded by the relevant guard mechanisms.
+2. **Survivorship Bias Elimination (`delisted_stocks`)**:
+   Backtesting only on currently listed stocks introduces severe survivorship bias (overstating returns by ignoring bankruptcies). The system maintains an archive of historical delistings (`delisted_stocks` table including `ASYAB`, `GENYH`, `MEMS`, `ESEM`, `MANGO`, `ARTI`, `UKIM`, `BISAS`, `DENIZ`, etc.). When backtesting historically, `get_survivorship_free_universe` reconstructs the active universe as of that date, forcing positions in bankrupted stocks to experience 100% terminal liquidation losses.
+
+3. **Continuous Price Adjustments & Auditing (`core/data_quality.py`)**:
+   - **CRSP Standard Backward Adjustments**: Automatically adjusts historical prices for bonus share splits ($1 / (1+R)$) and cash dividends ($(P_{cum} - D) / P_{cum}$), preventing artificial -50% drawdowns in backtests.
+   - **Quality Auditor (`audit_ticker_data_quality`)**: Audits price series for BIST circuit-breaker violations (>10.5% unexplained jumps), flat price freezes, zero-volume streaks, and calendar gaps, producing a transparent `0–100` data quality score.
 
 ```mermaid
 flowchart LR
-    A[Missing Data] --> B[None]
-    B --> C[Guard / Filter]
-    C --> D[Controlled Exclusion from Scoring]
+    A[Raw OHLCV + Events] --> B[Corporate Actions Engine]
+    B --> C[CRSP Backward Adjustment]
+    C --> D[Data Quality Auditor: 0-100 Score]
+    D --> E[Survivorship-Free Universe Reconstructor]
 ```
 
 ---
@@ -593,24 +631,20 @@ These gaps are represented explicitly as `None` / `unknown` rather than being si
 
 Active engineering is driving the **v13 Institutional Quality Upgrade**:
 
-- **P0 Core Risk & Methodology**
-  - [x] Dynamic Entry / Stop-Loss / Fixed Fractional Position Sizing
-  - [x] Walk-Forward Backtesting Engine & Backtrader Integration
-  - [x] Multi-Factor Valuation Triangle (DCF + Peer Multiples + Quality Premium + GYO NAV)
-  - [ ] Look-Ahead Bias & Survivorship Bias Guards
-- **P1 Execution & Monitoring**
-  - [ ] AKD / Broker Distribution Analysis & Net Buying Concentration
-  - [ ] Trailing Stop-Loss & Dynamic Target Adjustments
-  - [ ] Sector-Specific Financial Quality Templates (Banks, Tech, GYO, Industry)
-  - [ ] KAP LLM/NLP Sentiment & Financial Catalyst Classification
-- **P2 Scalability & Distribution**
-  - [ ] Telegram Bot Integration for Real-Time Signals & Invalidation Alerts
-  - [ ] Multi-User Portfolio Watchlists & Dynamic Position Alerts
-  - [ ] Black-Litterman & Risk Parity Portfolio Optimization
-- **P3 Microstructure & Infrastructure**
-  - [ ] Order Book Imbalance / Depth Metrics
-  - [ ] Parallel Scraping & Distributed Data Pipeline
-  - [ ] Vectorized Feature Store (Parquet/DuckDB)
+- **P0 Core Risk & Methodology (100% Completed)**
+  - [x] Dynamic Entry / Stop-Loss / Fixed Fractional Position Sizing (`core/targets.py`)
+  - [x] Walk-Forward Backtesting Engine & Backtrader Integration (`core/backtest.py`)
+  - [x] Multi-Factor Valuation Triangle (DCF + Peer Multiples + Quality Premium + GYO NAV) (`core/valuation_triangle.py`)
+  - [x] Data Quality, CRSP Price Adjustments & Survivorship Bias Guards (`core/data_quality.py`)
+- **P1 Portfolio, Diagnostics & Optimization (Active / Completed)**
+  - [x] Portfolio Optimization: Risk Parity, Min Variance, Max Sharpe, Pairwise Correlation Filter, Sector Cap $\le 30\%$ (`core/portfolio.py`)
+  - [x] Transparent Factor Disclosure & Attribution: "What increased/decreased this score?" (`core/factor_disclosure.py`)
+  - [x] Sector Neutralization: Cross-sectional z-score standardization with $N < 5$ supersector fallback (`core/ranking.py`)
+  - [x] Corporate Actions Calendar: `event_calendar` database and signal execution warnings (`core/events.py`)
+- **P2 Advanced Analytics & Infrastructure**
+  - [ ] KAP LLM/NLP Sentiment Analysis & Text Mining
+  - [ ] Macro Dynamic Regime Asset Rebalancing
+  - [ ] Streamlit/Dash Interactive Analytical Web UI
 
 Detailed roadmap document: [`TODO.md`](./TODO.md)
 
