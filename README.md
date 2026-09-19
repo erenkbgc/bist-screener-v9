@@ -261,7 +261,7 @@ flowchart TD
 ### Factor Disclosure & Attribution
 
 Every score is 100% transparent. The system decomposes `final_score` into its exact factor contributions:
-$$\text{final\_score} = 0.50 \times \text{valuation\_z} + 0.25 \times \text{catalyst\_score} + 0.15 \times \text{ownership\_z} + 0.10 \times \text{low\_vol\_z}$$
+$$\text{final\\_score} = 0.50 \times \text{valuation\\_z} + 0.25 \times \text{catalyst\\_score} + 0.15 \times \text{ownership\\_z} + 0.10 \times \text{low\\_vol\\_z}$$
 For each candidate, a deterministic natural language explanation details *"what increased and what suppressed this score"*, isolating primary drivers and risks into the `factor_contributions` table.
 
 ### Hurdle Rate & Amihud Illiquidity Friction
@@ -278,17 +278,17 @@ Expected return is never assessed in isolation — it is compared against a requ
 Signals do not rely on market orders (`entry_price = current_price`) or leave stop-losses null. Every candidate produces disciplined execution and risk parameters:
 
 - **Stepped Entry Band (`entry_low`, `entry_high`)**:
-  $$\text{entry\_low} = \text{current\_price} - 0.5 \times \text{ATR20}$$
-  $$\text{entry\_high} = \text{current\_price} + 0.2 \times \text{ATR20}$$
-  Accumulation is scaled 50% at the lower band and 50% at the upper band ($\text{effective\_entry} = 0.5 \times \text{entry\_low} + 0.5 \times \text{entry\_high}$).
+  $$\text{entry\\_low} = \text{current\\_price} - 0.5 \times \text{ATR20}$$
+  $$\text{entry\\_high} = \text{current\\_price} + 0.2 \times \text{ATR20}$$
+  Accumulation is scaled 50% at the lower band and 50% at the upper band ($\text{effective\\_entry} = 0.5 \times \text{entry\\_low} + 0.5 \times \text{entry\\_high}$).
 
 - **Dynamic Stop-Loss (`stop_loss`)**:
-  $$\text{stop\_loss} = \text{entry\_low} - 1.5 \times \text{ATR20}$$
-  If a recent 20-day swing low provides an established support level below entry, the stop-loss dynamically anchors to $\min(\text{base\_stop}, \text{swing\_low})$ for robust protection.
+  $$\text{stop\\_loss} = \text{entry\\_low} - 1.5 \times \text{ATR20}$$
+  If a recent 20-day swing low provides an established support level below entry, the stop-loss dynamically anchors to $\min(\text{base\\_stop}, \text{swing\\_low})$ for robust protection.
 
 - **Fixed Fractional Position Sizing (`position_size_pct`)**:
   Positions are sized inversely to risk distance per share, keeping account portfolio risk strictly within the target budget (1%–2%, default 1.5%):
-  $$\text{position\_size\_pct} = \min\left(25.0\%,\, \frac{\text{account\_risk\_pct}}{\text{risk\_per\_share} \,/\, \text{effective\_entry}}\right)$$
+  $$\text{position\\_size\\_pct} = \min\left(25.0\%,\, \frac{\text{account\\_risk\\_pct}}{\text{risk\\_per\\_share} \,/\, \text{effective\\_entry}}\right)$$
 
 ### Hierarchical Risk Parity (HRP) & Portfolio Optimization
 
@@ -296,10 +296,10 @@ To move from standalone signals to resilient portfolio construction, `core/portf
 
 ```mermaid
 flowchart TD
-    A[Asset Return Covariance Matrix] --> B[Distance Metric: d_i,j = sqrt(0.5*(1-ρ_i,j))]
-    B --> C[Hierarchical Tree Clustering: Ward Linkage]
-    C --> D[Quasi-Diagonalization & Recursive Bisection]
-    D --> E[HRP Allocation Weights - Zero Matrix Inversion]
+    A[Asset Return Covariance Matrix] --> B["Distance Metric: d(i,j) = sqrt(0.5*(1-rho(i,j)))"]
+    B --> C["Hierarchical Tree Clustering: Ward Linkage"]
+    C --> D["Quasi-Diagonalization and Recursive Bisection"]
+    D --> E["HRP Allocation Weights - Zero Matrix Inversion"]
 ```
 
 - **Zero Inversion Singularity**: Classical Markowitz mean-variance optimization fails when the covariance matrix is ill-conditioned. HRP uses graph theory and hierarchical clustering, completely eliminating unstable matrix inversions.
