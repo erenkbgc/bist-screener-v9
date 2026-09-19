@@ -26,9 +26,8 @@ BANNED_CLAIMS = [
 # gecen yapisal sabitlerdir (bkz. scoring.hard_filters_all_buckets,
 # target_price_engine, hurdle_engine.sensitivity_table).
 _ALLOWED_STANDALONE_NUMBERS = {
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-    "25", "29", "30", "35", "40", "50", "60", "90", "100", "180", "0.3",
+    "0", "1", "2", "3", "4", "5", "6", "9", "12", "29", "100", "20", "60",
+    "95", "180", "14", "30", "15", "90", "25", "35", "40", "0.3",
 }
 
 # ISO tarih (YYYY-MM-DD): once bunlari metinden cikar, aksi halde "-09" gibi

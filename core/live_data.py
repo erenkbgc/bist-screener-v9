@@ -35,7 +35,7 @@ import re
 import socket
 import warnings
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
 from statistics import pstdev
@@ -494,6 +494,7 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     pe = fi.get("pe_ratio") if fi else None
     pb = fi.get("pb_ratio") if fi else None
     ev_ebitda = info.get("enterpriseToEbitda")
+    ev_sales = None
     net_debt = info.get("netDebt")
     market_cap = fi.get("market_cap") if fi else None
     shares_outstanding = info.get("sharesOutstanding") or (fi.get("shares") if fi else None)
@@ -508,9 +509,37 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     equity = _val(_row(bs, "Özkaynaklar", "XVI. ÖZKAYNAKLAR", "Özsermaye Toplamı"))
     total_assets = _val(_row(bs, "TOPLAM VARLIKLAR", "AKTİF TOPLAMI"))
     ebitda_ttm = None
-    if ev_ebitda and market_cap and net_debt is not None and ev_ebitda != 0:
-        ebitda_ttm = (market_cap + net_debt) / ev_ebitda
-    ev_sales = ((market_cap + net_debt) / revenue) if (market_cap and net_debt is not None and revenue) else None
+
+    # Net Borc & FAVOK Kurtarimi (v15 ev_ebitda_net_debt_recovery)
+    # Banka ve sigorta sirketlerinde finansal borc / FAVOK sanayi anlaminda mevcut degildir
+    is_financial = ratio_profile in ("bank", "insurance")
+    if not is_financial:
+        if net_debt is None and bs is not None:
+            fin_debt = _val(_row(bs, "Finansal Borçlar", "Kısa Vadeli Borçlanmalar", "Uzun Vadeli Borçlanmalar"))
+            cash = _val(_row(bs, "Nakit ve Nakit Benzerleri", "Nakit ve Benzerleri"))
+            if fin_debt is not None or cash is not None:
+                net_debt = (fin_debt or 0.0) - (cash or 0.0)
+
+        if ebitda_ttm is None and inc is not None:
+            op_inc = _val(_row(inc, "Net Faaliyet Kar/Zararı", "FAALİYET KARI (ZARARI)"))
+            depr = _val(_row(cf, "Amortisman Giderleri", "Amortisman & İtfa Payları",
+                             "Amortisman ve İtfa Gideri ile İlgili Düzeltmeler")) if cf is not None else None
+            if op_inc is not None and depr is not None:
+                ebitda_ttm = op_inc + abs(depr)
+
+        if market_cap and net_debt is not None:
+            ev = market_cap + net_debt
+            if ev > 0:
+                if ebitda_ttm and ebitda_ttm > 0 and ev_ebitda is None:
+                    ev_ebitda = ev / ebitda_ttm
+                if revenue and revenue > 0 and ev_sales is None:
+                    ev_sales = ev / revenue
+    else:
+        net_debt = None
+        ebitda_ttm = None
+        ev_ebitda = None
+        ev_sales = None
+
     roe = (net_income / equity * 100) if (net_income is not None and equity) else None
 
     # OLCUM SONUCU (2026-09-13): "Hisse Basina Kazanc" tablo satiri, sirketin
@@ -748,16 +777,35 @@ def live_ownership(ticker: str, as_of_date: str) -> dict:
 # ---------------------------------------------------------------------------
 
 _CATEGORY_RULES: list[tuple[str, str, re.Pattern]] = [
-    ("financial_report", "positive", re.compile(r"finansal rapor|bilanço|mali tablo", re.I)),
-    ("share_buyback", "positive", re.compile(r"pay geri al|geri alım", re.I)),
+    # impact_sign="neutral": bir "Finansal Rapor" basligindan kar acikladi/kacirdi
+    # bilgisi CIKARILAMAZ (gercek EPS beklenti verisi yok, bkz. config/catalyst_decay.yaml
+    # yorumu) -- "positive" sabitlemek sahte bir yon sinyali olurdu.
+    ("financial_report", "neutral", re.compile(r"finansal rapor|bilanço|mali tablo", re.I)),
+    # "geri alı" (kok) -- hem "geri alım" hem "geri alınmasına/alınan" gibi
+    # cekimli bicimleri yakalar (canli dogrulama, 2026-09-19: "Payların Geri
+    # Alınmasına İlişkin Bildirim" eski `geri alım` deseniyle KACIRILIYORDU).
+    ("share_buyback", "positive", re.compile(r"pay geri al|geri alı", re.I)),
     ("bonus_issue", "positive", re.compile(r"bedelsiz", re.I)),
     ("rights_issue", "neutral", re.compile(r"bedelli|sermaye artır", re.I)),
     ("insider_buy", "positive", re.compile(r"pay alım.*(yönetici|ilişkili)|(yönetici|ilişkili).*pay alım", re.I)),
     ("insider_sell", "negative", re.compile(r"pay satış.*(yönetici|ilişkili)|(yönetici|ilişkili).*pay satış", re.I)),
     ("vbts_measure_applied", "negative", re.compile(r"tedbir|vbts", re.I)),
+    # SPK/Borsa tarafindan konulan islem yasagi -- vbts kadar ciddi bir
+    # regulatuar kisitlama (canli dogrulama: "SPK İşlem Yasağı Nedeniyle Pay
+    # Duyurusu", 5 hisselik ornekte 15 bildirim).
+    ("trading_ban", "negative", re.compile(r"işlem yasağı", re.I)),
     ("secondary_offering", "neutral", re.compile(r"halka arz|ikincil", re.I)),
     ("management_change", "neutral", re.compile(r"yönetim kurulu|genel müdür", re.I)),
-    ("new_business_or_tender", "positive", re.compile(r"ihale|sözleşme|anlaşma|yatırım", re.I)),
+    # "iş ilişkisi" eklendi (canli dogrulama: "Yeni İş İlişkisi", 5 hisselik
+    # ornekte EN SIK ikinci baslik -- 31 bildirim, eski desende hic yoktu).
+    ("new_business_or_tender", "positive", re.compile(r"ihale|sözleşme|anlaşma|yatırım|iş ilişkisi", re.I)),
+    # Kar payi/temettu dagitim duyurusu -- ortaklara nakit getiri sinyali.
+    ("dividend_distribution", "positive", re.compile(r"kar payı dağıtım|temettü dağıtım", re.I)),
+    # Devre kesici (fiyat limiti) bildirimi: yon bilgisi YOK (asiri hareket
+    # yukari veya asagi olabilir), yalnizca artmis oynakligin isareti --
+    # vbts_measure_expiring ile ayni "volatility_event" mekanizmasi kullanilir
+    # (canli dogrulama: 5 hisselik ornekte EN SIK ucuncu baslik, 42 bildirim).
+    ("circuit_breaker", "neutral", re.compile(r"devre kesici", re.I)),
 ]
 _DEFAULT_CATEGORY = "material_event_other"
 
@@ -800,6 +848,66 @@ def live_kap_disclosures(tickers: list[str], as_of_date: str, lookback_days: int
                 "effective_at": published_dt.isoformat(),
             })
     return rows
+
+
+_FINANCIAL_REPORT_TITLE_RE = re.compile(r"finansal\s*rapor", re.I)
+# BIST konsolide/bagimsiz denetimli finansal tablo beyan sureleri (~10 hafta)
+# icin guvenli ust sinir; bunun disinda kalan bir "Finansal Rapor" bildirimi
+# muhtemelen FARKLI bir doneme aittir (yanlislikla eslestirilmemeli).
+_FINANCIAL_REPORT_MAX_LAG_DAYS = 150
+
+
+@lru_cache(maxsize=2048)
+def _financial_report_disclosures_cached(ticker: str):
+    """KAP'tan (varsayilan Ticker.news limit=20'nin AKSINE) genis bir pencereyle
+    (limit=200) ham bildirim listesi ceker -- aktif hisselerde (pay alim-satim,
+    devre kesici bildirimleriyle dolu) gercek "Finansal Rapor" bildirimi 20
+    kayitlik varsayilan pencerenin disinda kalabilir (canli dogrulama: FORTE,
+    2026-09-19 -- Ticker.news'te YOK, limit=200'de 4 donem geriye kadar var)."""
+    try:
+        return _ticker_obj(ticker)._get_kap().get_disclosures(ticker, limit=200)
+    except Exception:
+        return None
+
+
+def live_financial_report_published_at(ticker: str, period_end: str) -> str | None:
+    """point_in_time_publication_lag: donem sonundan (period_end) SONRA
+    yayinlanan ilk gercek KAP 'Finansal Rapor' bildirim tarihini dondurur.
+
+    core/fundamentals.py'nin onceki "published_at = period_end" varsayimi
+    ("basitlestirilmis mock varsayimi") canli modda da yururlukteydi ->
+    P11_lookahead_bias ihlali (gercek beyanlar donem sonundan haftalar sonra
+    gelir, ayni gun degil). Canli olcum (2026-09-19, FORTE): gercek gecikme
+    37-58 gun (~5-8 hafta).
+
+    Eslesen bir bildirim bulunamazsa (agsal hata, kapsam disi pencere, cok
+    yeni sirket) None doner -- UYDURULMAZ; cagiran taraf (core/fundamentals.py)
+    bu durumda point_in_time hard filter'inin adayi elemesine izin verir."""
+    try:
+        period_end_date = datetime.strptime(period_end, "%Y-%m-%d").date()
+    except Exception:
+        return None
+
+    df = _financial_report_disclosures_cached(ticker)
+    if df is None or df.empty:
+        return None
+
+    best: tuple[int, date] | None = None
+    for _, row in df.iterrows():
+        title = str(row.get("Title") or "")
+        if not _FINANCIAL_REPORT_TITLE_RE.search(title):
+            continue
+        try:
+            pub_dt = datetime.strptime(str(row["Date"]), "%d.%m.%Y %H:%M:%S").date()
+        except Exception:
+            continue
+        lag_days = (pub_dt - period_end_date).days
+        # Finansal rapor HER ZAMAN donem sonundan SONRA yayinlanir; pencere
+        # disinda kalanlar (negatif veya > MAX_LAG) baska bir doneme aittir.
+        if 0 < lag_days <= _FINANCIAL_REPORT_MAX_LAG_DAYS and (best is None or lag_days < best[0]):
+            best = (lag_days, pub_dt)
+
+    return best[1].isoformat() if best else None
 
 
 def live_upcoming_events(tickers: list[str], as_of_date: str) -> list[dict]:

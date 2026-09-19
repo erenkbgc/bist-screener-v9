@@ -61,27 +61,45 @@ from core import payload as payload_mod
 from core import thesis as thesis_mod
 from core import invalidation as invalidation_mod
 from core import evaluate as evaluate_mod
+from core import momentum as momentum_mod
+from core import trend_forecaster
+from core import portfolio as portfolio_mod
+from core import factor_disclosure
 from bist_mcp import server as bist_mcp
 from report import render as report_render
 from report import validate as report_validate
 
 
 def _net_debt_ebitda(net_debt, ebitda_ttm):
-    return (net_debt / ebitda_ttm) if (ebitda_ttm and net_debt is not None) else None
+    # ebitda_ttm <= 0 ise net_debt pozitifken oran negatif cikip ranking'de
+    # ("lower_better") yapay olarak ucuz/guclu gorunmemeli; None donulur.
+    if net_debt is None or ebitda_ttm is None or ebitda_ttm <= 0:
+        return None
+    return net_debt / ebitda_ttm
 
 
 def _fcf_yield(fcf_ttm, market_cap):
     return (fcf_ttm / market_cap) if (market_cap and fcf_ttm is not None) else None
 
 
-def _shares_outstanding(market_cap, pe, eps_ttm):
-    if market_cap and pe and eps_ttm:
+def _shares_outstanding(market_cap: float | None, current_price: float | None = None,
+                        raw_shares: float | None = None,
+                        pe: float | None = None, eps_ttm: float | None = None) -> float | None:
+    # 1. Oncelik: Borsadan/fast_info'dan gelen dogrudan teyitli pay sayisi
+    if raw_shares and raw_shares > 0:
+        return raw_shares
+    # 2. Oncelik: Market Cap / Price temel matematiksel tanimi
+    if market_cap and current_price and current_price > 0 and market_cap > 0:
+        return market_cap / current_price
+    # 3. Oncelik: Fiyat yoksa P/E * EPS carpani (pozitif ve tutarli carpimlar)
+    if market_cap and pe and eps_ttm and (pe * eps_ttm) > 0:
         return market_cap / (pe * eps_ttm)
     return None
 
 
 def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_by_ticker: dict,
-                            catalyst_by_ticker: dict, ownership_by_ticker: dict) -> dict:
+                            catalyst_by_ticker: dict, ownership_by_ticker: dict,
+                            current_price: float | None = None) -> dict:
     ticker = u["ticker"]
     raw = fnd.get("_raw", {})
     pio = piotroski_by_ticker.get(ticker, {})
@@ -89,9 +107,16 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
     cat = catalyst_by_ticker.get(ticker, {"catalyst_score": 0.0})
     own = ownership_by_ticker.get(ticker, {})
 
+    raw_shares = raw.get("_shares_outstanding") or fnd.get("_shares_outstanding")
     net_debt_ebitda = _net_debt_ebitda(fnd.get("net_debt"), fnd.get("ebitda_ttm"))
     fcf_yield = _fcf_yield(fnd.get("fcf_ttm"), u.get("market_cap"))
-    shares_outstanding = _shares_outstanding(u.get("market_cap"), raw.get("pe"), fnd.get("eps_ttm"))
+    shares_outstanding = _shares_outstanding(
+        market_cap=u.get("market_cap"),
+        current_price=current_price,
+        raw_shares=raw_shares,
+        pe=raw.get("pe"),
+        eps_ttm=fnd.get("eps_ttm"),
+    )
 
     return {
         "ticker": ticker, "sector": u["sector"], "supersector": u["supersector"],
@@ -181,6 +206,15 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
 
     # --- prices (hurdle/beta/target/correlation icin ortak girdi) ---
     prices_by_ticker = {t: bist_mcp.get_prices(t, as_of_date, days=140) for t in tickers}
+    xu100_prices = bist_mcp.get_prices("XU100_INDEX", as_of_date, days=140)
+
+    # --- Quant Level-Up Faz 1: BIST Trend ve Rejim Tahmini ---
+    try:
+        trend_forecast = trend_forecaster.predict_market_regime(xu100_prices)
+        predicted_regime = trend_forecast.get("regime")
+    except Exception:
+        trend_forecast = None
+        predicted_regime = None
 
     # --- 7. ownership_quality ---
     ownership_rows = [ownership_mod.fetch_ownership(as_of_date, t, prices_by_ticker[t]) for t in tickers]
@@ -188,8 +222,11 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
 
     # --- adaylari kur ---
     base_candidates = {
-        u["ticker"]: _build_base_candidate(u, fundamentals_by_ticker[u["ticker"]], piotroski_by_ticker,
-                                            sloan_by_ticker, catalyst_by_ticker, ownership_by_ticker)
+        u["ticker"]: _build_base_candidate(
+            u, fundamentals_by_ticker[u["ticker"]], piotroski_by_ticker,
+            sloan_by_ticker, catalyst_by_ticker, ownership_by_ticker,
+            current_price=(prices_by_ticker[u["ticker"]][-1]["close"] if prices_by_ticker.get(u["ticker"]) else None)
+        )
         for u in eligible
     }
 
@@ -213,14 +250,28 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
 
         recent_swing_low = min((p["low"] for p in price_rows[-20:] if p.get("low") is not None), default=None) if price_rows else None
 
+        # Quant Level-Up Faz 2 & 3: 12-1 Ay Momentum ve Amihud Likidite Modeli
+        mom_metrics = momentum_mod.compute_momentum_metrics(price_rows, xu100_prices)
+        illiq = universe_mod.calculate_amihud_illiquidity(price_rows)
+
         # --- uzun vade: target_price_engine ---
         lt = dict(base)
         lt["entry_price"] = current_price
         lt["current_price"] = current_price
         lt["price_source"] = price_source
         lt["volatility_60d"] = last.get("volatility_60d")
+        lt["mom_12_1_pct"] = mom_metrics.get("mom_12_1_pct")
+        lt["trend_smoothness_r2"] = mom_metrics.get("trend_smoothness_r2")
+        lt["rs_xu100_60d_pct"] = mom_metrics.get("rs_xu100_60d_pct")
+        lt["momentum_score"] = mom_metrics.get("momentum_score")
+        lt["amihud_illiq"] = illiq
+        if (not lt.get("shares_outstanding") or lt["shares_outstanding"] <= 0) and lt.get("market_cap") and current_price > 0:
+            lt["shares_outstanding"] = lt["market_cap"] / current_price
         lt_target = targets_mod.compute_long_term_target(lt, all_lt_for_peers, macro_snapshot=macro)
         lt["target_price"] = lt_target["target_price"]
+        lt["terminal_fair_value"] = targets_mod.bist_tick_round(lt_target.get("terminal_fair_value"))
+        lt["volatility_cone_ceiling"] = lt_target.get("volatility_cone_ceiling")
+        lt["scenario_probabilities"] = lt_target.get("scenario_probabilities")
         lt["fair_value_low"] = lt_target.get("fair_value_low")
         lt["fair_value_base"] = lt_target.get("fair_value_base")
         lt["fair_value_high"] = lt_target.get("fair_value_high")
@@ -231,9 +282,17 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["valuation_quality_leg"] = lt_target.get("quality_leg")
         if lt["target_price"] is None:
             continue
+        lt["target_price"] = targets_mod.bist_tick_round(lt["target_price"])
+        if lt.get("fair_value_low") is not None:
+            lt["fair_value_low"] = targets_mod.bist_tick_round(lt["fair_value_low"])
+        if lt.get("fair_value_high") is not None:
+            lt["fair_value_high"] = targets_mod.bist_tick_round(lt["fair_value_high"])
+        if lt.get("fair_value_base") is not None:
+            lt["fair_value_base"] = targets_mod.bist_tick_round(lt["fair_value_base"])
         hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro,
                                            bid=bid_ask["bid"], ask=bid_ask["ask"],
-                                           volume_ratio_20d=last.get("volume_ratio_20d"))
+                                           volume_ratio_20d=last.get("volume_ratio_20d"),
+                                           amihud_illiq=illiq)
         lt.update(hurdle_lt)
         lt["horizon_days"] = 180
         # Dinamik Risk Yonetimi (v12 roadmap P0-1: entry_low, entry_high, stop_loss, position_size_pct)
@@ -243,9 +302,10 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             recent_swing_low=recent_swing_low,
             avg_volume_tl_20d=base.get("avg_volume_tl_20d"),
         )
-        lt["entry_low"] = lt_risk["entry_low"]
-        lt["entry_high"] = lt_risk["entry_high"]
-        lt["stop_loss"] = lt_risk["stop_loss"]
+        lt["entry_price"] = targets_mod.bist_tick_round(current_price)
+        lt["entry_low"] = targets_mod.bist_tick_round(lt_risk["entry_low"])
+        lt["entry_high"] = targets_mod.bist_tick_round(lt_risk["entry_high"])
+        lt["stop_loss"] = targets_mod.bist_tick_round(lt_risk["stop_loss"])
         lt["position_size_pct"] = lt_risk["position_size_pct"]
 
         beta_lt = beta_hurdle_mod.calculate_beta_adjusted_hurdle(
@@ -281,21 +341,29 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             recent_swing_low=recent_swing_low)
         st.update(short_target)
         # Dinamik Risk Yonetimi (v12 roadmap P0-1)
-        st["entry_low"] = short_target["entry_low"]
-        st["entry_high"] = short_target["entry_high"]
-        st["stop_loss"] = short_target["dynamic_stop_loss"]
+        st["entry_low"] = targets_mod.bist_tick_round(short_target["entry_low"])
+        st["entry_high"] = targets_mod.bist_tick_round(short_target["entry_high"])
+        st["stop_loss"] = targets_mod.bist_tick_round(short_target["dynamic_stop_loss"])
+        st["target_price"] = targets_mod.bist_tick_round(short_target["target_price"])
         st["position_size_pct"] = short_target["position_size_pct"]
-        st["fair_value_low"] = short_target["entry_low"]
-        st["fair_value_base"] = short_target["target_price"]
-        st["fair_value_high"] = short_target["target_price"]
+        st["fair_value_low"] = st["entry_low"]
+        st["fair_value_base"] = st["target_price"]
+        st["fair_value_high"] = st["target_price"]
         st["valuation_method"] = "Kısa Vade Momentum & ATR Kanalı"
-        st["current_price"] = current_price
+        st["current_price"] = targets_mod.bist_tick_round(current_price)
+        st["entry_price"] = st["current_price"]
         st["price_source"] = price_source
         st["volume_ratio_20d"] = last.get("volume_ratio_20d")
         st["volatility_60d"] = last.get("volatility_60d")
-        hurdle_st = hurdle_mod.compute_all(short_target["entry_price"], short_target["target_price"], 20, macro,
+        st["mom_12_1_pct"] = mom_metrics.get("mom_12_1_pct")
+        st["trend_smoothness_r2"] = mom_metrics.get("trend_smoothness_r2")
+        st["rs_xu100_60d_pct"] = mom_metrics.get("rs_xu100_60d_pct")
+        st["momentum_score"] = mom_metrics.get("momentum_score")
+        st["amihud_illiq"] = illiq
+        hurdle_st = hurdle_mod.compute_all(st["entry_price"], st["target_price"], 20, macro,
                                            bid=bid_ask["bid"], ask=bid_ask["ask"],
-                                           volume_ratio_20d=last.get("volume_ratio_20d"))
+                                           volume_ratio_20d=last.get("volume_ratio_20d"),
+                                           amihud_illiq=illiq)
         st.update(hurdle_st)
         # beta_metrics tablosunda (as_of_date, ticker) TEK bir satir vardir (spec:
         # database_schema.constraints); hurdle_rate_beta_adjusted_pct zaten ufuktan
@@ -314,20 +382,45 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             c["ownership_z"] = ownership_mod.compute_ownership_z(c, bucket_list)
             c["low_vol_z"] = volatility_mod.compute_low_vol_z(c, bucket_list)
 
-    # --- scoring (hard_filters + final_score + candidate_state) ---
+    # --- scoring (hard_filters + final_score + candidate_state + Quant Level-Up Faz 1 Rejim Agirliklari) ---
     as_of_date_cutoff = as_of_date
-    scored = scoring_mod.score_candidates(as_of_date, all_candidates, as_of_date_cutoff)
+    scored = scoring_mod.score_candidates(as_of_date, all_candidates, as_of_date_cutoff, regime=predicted_regime)
 
     # --- concentration_check + correlation_diagnostic (yalnizca gecen adaylar uzerinde) ---
     passing = [c for c in scored if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")]
     concentration_warnings = concentration_mod.check_concentration(passing)
     correlation_mod.compute_correlation_flags(as_of_date, {c["ticker"]: prices_by_ticker[c["ticker"]] for c in passing})
 
+    # --- Quant Level-Up Faz 4 & 5: HRP Portfoy & Faktor Katki Disclosures ---
+    if passing:
+        factor_disclosure.compute_and_save_factor_contributions(
+            passing,
+            as_of_date=as_of_date,
+            weights=scoring_mod.get_regime_weights(predicted_regime),
+            save_to_db=True,
+        )
+        portfolio_result = portfolio_mod.optimize_portfolio(
+            passing,
+            prices_by_ticker,
+            method="hrp",
+            as_of_date=as_of_date,
+            max_sector_weight=0.30,
+            save_to_db=True,
+        )
+    else:
+        portfolio_result = {}
+
     # --- predictions kaydi + thesis_invalidation kosullari ---
     _persist_predictions_and_invalidation(as_of_date, passing)
 
     # --- payload (decision_diff_engine dahil, bkz. core/payload.py) ---
-    payload = payload_mod.build_report_payload(as_of_date, concentration_warnings=concentration_warnings)
+    payload = payload_mod.build_report_payload(
+        as_of_date,
+        concentration_warnings=concentration_warnings,
+        portfolio_summary=portfolio_result,
+        trend_forecast=trend_forecast,
+        passing_candidates=passing,
+    )
     decision_diff = payload["decision_diff"]
 
     # --- thesis_card ---
@@ -345,6 +438,8 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "as_of_date": as_of_date,
         "regime": regime_result["snapshot"] | {"as_of_date": as_of_date},
         "regime_taxonomy_tag": taxonomy["display_tag"],
+        "trend_forecast": trend_forecast,
+        "portfolio_result": portfolio_result,
         "decision_diff": decision_diff,
         "concentration_warnings": concentration_warnings,
         "long_term_candidates": lt_display,
@@ -448,6 +543,7 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
     if rows:
         conn = db.get_connection()
         try:
+            conn.execute("DELETE FROM predictions WHERE as_of_date=?", (as_of_date,))
             conn.executemany(
                 """INSERT INTO predictions (as_of_date, ticker, bucket, entry_price, target_price,
                    stop_loss, horizon_days, expected_roi_pct, hurdle_rate_pct, excess_over_hurdle_pct,

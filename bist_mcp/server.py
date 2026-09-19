@@ -84,6 +84,20 @@ def get_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profile
     return md.mock_fundamentals(ticker, as_of_date, regulator, ratio_profile)
 
 
+def get_financial_report_published_at(ticker: str, period_end: str) -> str | None:
+    """point_in_time_publication_lag: verilen donem sonu (period_end) icin
+    GERCEK KAP 'Finansal Rapor' bildirim tarihini dondurur.
+
+    Canli modda gercek bildirimlerden bulunur; eslesen bildirim yoksa None
+    doner (UYDURULMAZ). Mock modda basitlestirilmis varsayim (period_end)
+    korunur -- mock veri deterministik/test amaclidir, gercek gecikme
+    modellemesi gerektirmez."""
+    if _live_enabled():
+        from core import live_data as ld
+        return ld.live_financial_report_published_at(ticker, period_end)
+    return period_end
+
+
 def get_piotroski_raw_criteria(ticker: str, as_of_date: str, ratio_profile: str | None = None) -> dict:
     if _live_enabled():
         from core import live_data as ld

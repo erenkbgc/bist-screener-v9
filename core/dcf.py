@@ -125,12 +125,24 @@ def calculate_dcf_reference(as_of_date: str, ticker: str, fcf_ttm: float | None,
             fair_value_low, fair_value_high = min(scenarios), max(scenarios)
             premium_low = ((fair_value_low / current_price) - 1) * 100 if current_price else None
             premium_high = ((fair_value_high / current_price) - 1) * 100 if current_price else None
-            row = {"as_of_date": as_of_date, "ticker": ticker, "fcf_per_share": fcf_per_share,
-                   "wacc_pct": wacc, "growth_low_pct": GROWTH_LOW_PCT, "growth_base_pct": GROWTH_BASE_PCT,
-                   "growth_high_pct": GROWTH_HIGH_PCT, "terminal_growth_pct": g,
-                   "fair_value_low": fair_value_low, "fair_value_high": fair_value_high,
-                   "premium_discount_low_pct": premium_low, "premium_discount_high_pct": premium_high,
-                   "null_reason": None}
+
+            # OUTLIER GUARD: Eger hesaplanan adil deger mevcut fiyatin 3 katini asarsa
+            # (premium > %200) veya 0.2 katindan dusukse, bu tek seferlik bir nakit akimi
+            # sicramasi veya veri anomalisidir. Tekil Gordon modeli bu uc noktalarda guvenilmezdir.
+            if current_price and (fair_value_high > current_price * 3.0 or fair_value_low < current_price * 0.2):
+                row = {"as_of_date": as_of_date, "ticker": ticker, "fcf_per_share": fcf_per_share,
+                       "wacc_pct": wacc, "growth_low_pct": GROWTH_LOW_PCT, "growth_base_pct": GROWTH_BASE_PCT,
+                       "growth_high_pct": GROWTH_HIGH_PCT, "terminal_growth_pct": g,
+                       "fair_value_low": None, "fair_value_high": None,
+                       "premium_discount_low_pct": None, "premium_discount_high_pct": None,
+                       "null_reason": "outlier_valuation"}
+            else:
+                row = {"as_of_date": as_of_date, "ticker": ticker, "fcf_per_share": fcf_per_share,
+                       "wacc_pct": wacc, "growth_low_pct": GROWTH_LOW_PCT, "growth_base_pct": GROWTH_BASE_PCT,
+                       "growth_high_pct": GROWTH_HIGH_PCT, "terminal_growth_pct": g,
+                       "fair_value_low": fair_value_low, "fair_value_high": fair_value_high,
+                       "premium_discount_low_pct": premium_low, "premium_discount_high_pct": premium_high,
+                       "null_reason": None}
 
     conn = db.get_connection()
     try:

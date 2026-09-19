@@ -88,3 +88,38 @@ def eligible_tickers(as_of_date: str) -> list[dict]:
         (as_of_date,),
     )
     return [dict(r) for r in rows]
+
+
+def calculate_amihud_illiquidity(price_rows: list[dict], window_days: int = 20) -> float | None:
+    """Amihud (2002) Illiquidity Ratio hesaplar (Quant Level-Up Faz 3).
+    
+    ILLIQ = (1 / D) * sum( |R_t| / (Volume_t * Close_t) ) * 10^6
+    
+    Bu metrik, 1 milyon TL'lik islem hacminin hisse fiyatinda yarattigi mutlak yuzdesel
+    fiyat etkisini (price impact) gosterir. Sig hisselerde ILLIQ yuksek, likit hisselerde dusuktur.
+    """
+    if not price_rows or len(price_rows) < 5:
+        return None
+
+    recent_bars = price_rows[-window_days:]
+    daily_impacts: list[float] = []
+
+    for i in range(1, len(recent_bars)):
+        p_prev = recent_bars[i - 1].get("close")
+        p_curr = recent_bars[i].get("close")
+        vol = recent_bars[i].get("volume")
+
+        if p_prev is None or p_curr is None or vol is None or p_prev <= 0 or p_curr <= 0 or vol <= 0:
+            continue
+
+        ret = abs((p_curr - p_prev) / p_prev)
+        turnover_tl = vol * p_curr
+        if turnover_tl > 0:
+            impact = (ret / turnover_tl) * 1_000_000.0
+            daily_impacts.append(impact)
+
+    if not daily_impacts or len(daily_impacts) < 3:
+        return None
+
+    return round(float(sum(daily_impacts) / len(daily_impacts)), 4)
+

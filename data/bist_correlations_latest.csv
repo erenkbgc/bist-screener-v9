@@ -1,0 +1,36 @@
+ticker,sector,correlation,beta,r_squared,beta_down,beta_up,downside_bias,annual_vol_pct,obs_count
+AKBNK,Bankacilik,0.76,1.41,0.577,1.51,1.66,-0.15,46.6,179
+GARAN,Bankacilik,0.763,1.2,0.581,1.36,1.45,-0.1,39.6,179
+ISCTR,Bankacilik,0.762,1.25,0.581,1.44,1.49,-0.05,41.3,179
+YKBNK,Bankacilik,0.762,1.42,0.58,1.56,1.7,-0.13,46.9,179
+HALKB,Bankacilik,0.49,1.17,0.24,0.97,1.53,-0.56,59.8,179
+VAKBN,Bankacilik,0.657,1.22,0.432,1.14,1.33,-0.18,46.7,179
+KCHOL,Holding,0.751,0.98,0.564,0.98,1.17,-0.19,32.9,179
+SAHOL,Holding,0.821,1.21,0.674,1.17,1.45,-0.29,37.1,179
+DOHOL,Holding,0.634,0.95,0.402,1.05,1.19,-0.13,37.7,179
+ALARK,Holding,0.606,0.88,0.367,0.9,1.06,-0.16,36.5,179
+EREGL,Sanayi & Uretim,0.647,1.07,0.419,1.41,0.91,0.5,41.6,179
+SISE,Sanayi & Uretim,0.723,1.25,0.523,1.1,1.29,-0.19,43.6,179
+FROTO,Sanayi & Uretim,0.761,1.03,0.58,0.88,1.09,-0.21,34.1,179
+TOASO,Sanayi & Uretim,0.621,1.0,0.385,0.51,1.33,-0.81,40.6,179
+ARCLK,Sanayi & Uretim,0.728,0.89,0.53,0.84,0.95,-0.1,30.8,179
+TUPRS,Enerji & Rafineri,0.222,0.36,0.049,0.34,-0.03,0.36,41.0,179
+AYGAZ,Enerji & Rafineri,0.242,0.41,0.059,0.49,0.22,0.26,42.8,179
+AKSEN,Enerji & Rafineri,0.472,0.94,0.223,1.21,0.83,0.38,50.0,179
+ENJSA,Enerji & Rafineri,0.545,0.82,0.297,0.91,0.69,0.21,37.7,179
+THYAO,Havacilik & Ulastirma,0.729,0.98,0.532,0.89,1.25,-0.36,33.7,179
+PGSUS,Havacilik & Ulastirma,0.759,0.96,0.575,0.88,1.17,-0.29,31.9,179
+TAVHL,Havacilik & Ulastirma,0.631,1.05,0.398,0.74,1.17,-0.43,41.8,179
+BIMAS,Perakende & Tuketime Dayali,0.287,0.77,0.083,0.66,1.33,-0.67,67.4,179
+MGROS,Perakende & Tuketime Dayali,0.544,0.76,0.296,0.68,0.81,-0.12,35.3,179
+SOKM,Perakende & Tuketime Dayali,0.548,0.83,0.301,0.81,1.01,-0.21,38.1,179
+CCOLA,Perakende & Tuketime Dayali,0.433,0.69,0.187,0.63,0.69,-0.06,40.0,179
+ASELS,Savunma & Teknoloji,0.578,1.19,0.334,0.66,1.21,-0.55,51.8,179
+LOGO,Savunma & Teknoloji,0.546,0.77,0.299,0.85,0.73,0.13,35.3,179
+TCELL,Telekomunikasyon,0.696,0.95,0.484,0.82,0.9,-0.08,34.4,179
+TTKOM,Telekomunikasyon,0.705,1.08,0.497,1.33,0.89,0.44,38.6,179
+EKGYO,Gayrimenkul (GYO),0.737,1.31,0.542,1.19,1.29,-0.1,44.8,179
+KOZAL,Madencilik & Emtia,0.599,1.43,0.359,1.22,1.43,-0.2,60.1,179
+ASTOR,Yuksek Beta / Buyume,0.553,1.44,0.306,1.63,1.18,0.45,65.3,179
+KONTR,Yuksek Beta / Buyume,0.243,0.81,0.059,1.22,0.24,0.98,84.1,178
+YEOTK,Yuksek Beta / Buyume,0.265,1.01,0.07,0.91,0.47,0.44,96.4,179

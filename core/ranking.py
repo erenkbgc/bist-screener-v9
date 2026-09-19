@@ -80,7 +80,11 @@ def _group_candidates(candidates: list[dict], level: str) -> dict[tuple, list[di
     return groups
 
 
-def build_peer_group(candidate: dict, all_candidates: list[dict]) -> tuple[list[dict], str, str]:
+def build_peer_group(
+    candidate: dict,
+    all_candidates: list[dict],
+    min_peer_n: int = MIN_PEER_N,
+) -> tuple[list[dict], str, str]:
     """min_peer_n'e ulasana kadar sector -> supersector -> market'e geri duser.
 
     Ayni reporting_basis ve ratio_profile icindeki sirketlerle sinirlidir (P1, P5).
@@ -95,7 +99,7 @@ def build_peer_group(candidate: dict, all_candidates: list[dict]) -> tuple[list[
             peers = [c for c in same_basis_profile if c["supersector"] == candidate["supersector"]]
         else:
             peers = same_basis_profile
-        if len(peers) >= MIN_PEER_N:
+        if len(peers) >= min_peer_n:
             return peers, level, CONFIDENCE_MAPPING[level]
     # hicbir seviye min_peer_n'e ulasamadi -> en genis seviyeyi (market) dondur ama confidence=insufficient_peers
     return same_basis_profile, "none", CONFIDENCE_MAPPING["none"]
@@ -112,9 +116,13 @@ def score_metric_z(candidate_value: float, peer_values: list[float], direction: 
     return z if direction == "higher_better" else -z
 
 
-def compute_valuation_z(candidate: dict, all_candidates: list[dict]) -> dict:
+def compute_valuation_z(
+    candidate: dict,
+    all_candidates: list[dict],
+    min_peer_n: int = MIN_PEER_N,
+) -> dict:
     profile = RATIO_PROFILES[candidate["ratio_profile"]]
-    peers, peer_level, confidence = build_peer_group(candidate, all_candidates)
+    peers, peer_level, confidence = build_peer_group(candidate, all_candidates, min_peer_n)
     # dead_hard_filters_repair (v12 T0-2): forbidden_metrics su ana kadar
     # yalnizca DEKORATIF bir alandi -- hicbir kod bakmiyordu, zararsizdi cunku
     # ev_ebitda/ev_sales zaten kalici None'di (bkz. ev_ebitda_net_debt_recovery).
@@ -154,5 +162,5 @@ def compute_sector_neutral_valuation(
     - Supersector de < 5 ise market geneline duser.
     Cikti: valuation_z_sector_neutral.
     """
-    return compute_valuation_z(candidate, all_candidates)
+    return compute_valuation_z(candidate, all_candidates, min_peer_n)
 

@@ -121,3 +121,37 @@ def test_live_fundamentals_stays_unresolved_when_at_least_one_statement_availabl
 
     f = ld.live_fundamentals("PARTIAL_TEST", "2026-09-17", "BDDK", "bank")
     assert f["reporting_basis"] is None
+
+
+def _fake_kap_disclosures(*rows):
+    return pd.DataFrame(rows, columns=["Date", "Title", "URL"])
+
+
+def test_live_financial_report_published_at_finds_real_lagged_disclosure(monkeypatch):
+    """point_in_time_publication_lag: canli olcum (2026-09-19, FORTE) -- gercek
+    'Finansal Rapor' bildirimi donem sonundan (2026-06-30) 37 gun sonra
+    (2026-08-06) geldi. period_end doner DEGIL."""
+    df = _fake_kap_disclosures(
+        ("16.09.2026 10:32:56", "Pay Bazında Devre Kesici Bildirimi", "u1"),
+        ("06.08.2026 18:19:25", "Finansal Rapor", "u2"),
+        ("11.05.2026 18:11:29", "Finansal Rapor", "u3"),  # onceki donem, daha uzak
+    )
+    monkeypatch.setattr(ld, "_financial_report_disclosures_cached", lambda ticker: df)
+    result = ld.live_financial_report_published_at("FORTE", "2026-06-30")
+    assert result == "2026-08-06"
+
+
+def test_live_financial_report_published_at_returns_none_when_no_disclosures(monkeypatch):
+    monkeypatch.setattr(ld, "_financial_report_disclosures_cached", lambda ticker: None)
+    assert ld.live_financial_report_published_at("ZZZZ", "2026-06-30") is None
+
+
+def test_live_financial_report_published_at_ignores_out_of_window_matches(monkeypatch):
+    """Donem sonundan 150 gunden fazla sonra (baska bir doneme ait olasi) veya
+    ONCESINDE gelen 'Finansal Rapor' bildirimleri eslesmemeli."""
+    df = _fake_kap_disclosures(
+        ("01.01.2026 10:00:00", "Finansal Rapor", "u1"),  # period_end'den ONCE
+        ("01.03.2027 10:00:00", "Finansal Rapor", "u2"),  # 150 gunden fazla sonra
+    )
+    monkeypatch.setattr(ld, "_financial_report_disclosures_cached", lambda ticker: df)
+    assert ld.live_financial_report_published_at("FORTE", "2026-06-30") is None

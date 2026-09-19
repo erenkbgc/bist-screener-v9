@@ -310,6 +310,9 @@ def get_connection(read_only: bool = False) -> sqlite3.Connection:
         conn = sqlite3.connect(uri, uri=True)
     else:
         conn = sqlite3.connect(str(DB_PATH))
+        conn.executescript(SCHEMA)
+        _migrate_existing_tables(conn)
+        conn.commit()
     conn.row_factory = sqlite3.Row
     return conn
 

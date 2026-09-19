@@ -133,10 +133,12 @@ def explain_candidate_score(candidate: dict, weights: dict[str, float] | None = 
 def compute_and_save_factor_contributions(
     candidates: list[dict],
     as_of_date: str,
+    weights: dict[str, float] | None = None,
     save_to_db: bool = True,
 ) -> list[dict]:
     """Aday listesindeki tum puanlanmis sirketler icin faktor katki analizini hesaplar ve DB'ye yazar."""
-    weights = load_scoring_weights()
+    if weights is None:
+        weights = load_scoring_weights()
     results: list[dict] = []
     db_rows: list[tuple] = []
     now_iso = datetime.now(timezone.utc).isoformat()

@@ -21,6 +21,11 @@ from core.dcf import (
     GROWTH_BASE_PCT,
     GROWTH_HIGH_PCT,
 )
+from core.weight_optimizer import (
+    compute_harmonic_mean,
+    derive_scenario_probabilities,
+    load_optimized_weights,
+)
 
 _ERP_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "equity_risk_premium.yaml"
 _WEIGHTS_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "weights.yaml"
@@ -43,17 +48,38 @@ def load_erp_config() -> dict:
     }
 
 
-def load_triangle_weights() -> dict:
+def load_triangle_weights(use_optimized: bool = False) -> dict:
+    if use_optimized:
+        opt = load_optimized_weights()
+        if opt and "valuation_triangle_weights" in opt:
+            return opt["valuation_triangle_weights"]
     if _WEIGHTS_CONFIG_PATH.exists():
         with open(_WEIGHTS_CONFIG_PATH, encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
+            if data.get("use_optimized_weights"):
+                opt = load_optimized_weights()
+                if opt and "valuation_triangle_weights" in opt:
+                    return opt["valuation_triangle_weights"]
             return data.get("valuation_triangle_weights", DEFAULT_TRIANGLE_WEIGHTS)
     return DEFAULT_TRIANGLE_WEIGHTS
 
 
-def _peer_median(peers: list[dict], metric: str) -> float | None:
+def _peer_agg(peers: list[dict], metric: str) -> float | None:
+    """Carpan rasyolarinda yansiz Harmonik Ortalama, diger metriklerde medyan."""
     values = [p[metric] for p in peers if p.get(metric) is not None and p[metric] == p[metric]]
-    return median(values) if values else None
+    if not values:
+        return None
+    # F/K, FD/FAVOK, PD/DD payinda fiyat tasidigi icin Harmonik Ortalama kullanilir
+    if metric in ("pe", "ev_ebitda", "pb"):
+        h_mean = compute_harmonic_mean(values)
+        if h_mean is not None:
+            return h_mean
+    return median(values)
+
+
+def _peer_median(peers: list[dict], metric: str) -> float | None:
+    # Geriye donuk tam uyumluluk ve diger metrikler icin
+    return _peer_agg(peers, metric)
 
 
 # ---------------------------------------------------------------------------
@@ -112,6 +138,10 @@ def compute_dcf_leg(candidate: dict, macro_snapshot: dict | None = None) -> dict
     if beta is None:
         beta = 1.0  # default beta
 
+    entry_price = candidate.get("entry_price") or candidate.get("current_price") or 0.0
+    if (not shares or shares <= 0) and entry_price > 0 and market_cap and market_cap > 0:
+        shares = market_cap / entry_price
+
     if not fcf_ttm or fcf_ttm <= 0 or not shares or shares <= 0 or not market_cap or market_cap <= 0:
         return None
 
@@ -147,6 +177,10 @@ def compute_dcf_leg(candidate: dict, macro_snapshot: dict | None = None) -> dict
     if not valid_vals:
         return None
 
+    # Outlier guard: DCF adil degeri mevcut fiyatin 3 katini asamaz (> %200 prim) veya 0.2 katindan kucuk olamaz
+    if entry_price > 0 and (max(valid_vals) > entry_price * 3.0 or min(valid_vals) < entry_price * 0.2):
+        return None
+
     return {
         "fair_value_low": min(valid_vals),
         "fair_value_base": fv_base if fv_base else sum(valid_vals) / len(valid_vals),
@@ -171,6 +205,8 @@ def compute_peers_leg(candidate: dict, peers: list[dict]) -> dict | None:
     ratio_profile = candidate.get("ratio_profile", "industrial")
     entry_price = candidate.get("entry_price") or candidate.get("current_price") or 0.0
     shares = candidate.get("shares_outstanding") or candidate.get("_shares_outstanding")
+    if (not shares or shares <= 0) and entry_price > 0 and candidate.get("market_cap"):
+        shares = candidate["market_cap"] / entry_price
 
     legs_detail = {}
 
@@ -219,7 +255,16 @@ def compute_peers_leg(candidate: dict, peers: list[dict]) -> dict | None:
                 target_disc = nav_disc_med if (nav_disc_med is not None and 0 <= nav_disc_med < 0.90) else 0.35
                 legs_detail["reit_nav"] = nav_per_share * (1 - target_disc)
 
-    valid_vals = [v for v in legs_detail.values() if v is not None and v > 0]
+    # Outlier guard: her bir emsal carpan bileseni mevcut fiyattan 3.5 kattan fazla veya 0.2 kattan dusuk sapamaz
+    filtered_legs = {}
+    for k, v in legs_detail.items():
+        if v is None or v <= 0:
+            continue
+        if entry_price > 0 and (v > entry_price * 3.5 or v < entry_price * 0.2):
+            continue
+        filtered_legs[k] = v
+
+    valid_vals = [v for v in filtered_legs.values() if v is not None and v > 0]
     if not valid_vals:
         return None
 
@@ -232,7 +277,7 @@ def compute_peers_leg(candidate: dict, peers: list[dict]) -> dict | None:
         "fair_value_base": base,
         "fair_value_high": high,
         "legs_used": len(valid_vals),
-        "legs_detail": legs_detail,
+        "legs_detail": filtered_legs,
         "eligible": True,
     }
 
@@ -273,6 +318,8 @@ def compute_quality_leg(candidate: dict, macro_snapshot: dict | None = None) -> 
         # Justified P/B = ROE / Cost of Equity
         justified_pb = max(0.5, min(4.0, (roe / 100.0) / (cost_of_equity / 100.0)))
         anchor = bvps * justified_pb
+        if entry_price > 0:
+            anchor = max(entry_price * 0.3, min(entry_price * 2.5, anchor))
     elif entry_price > 0:
         anchor = entry_price
     else:
@@ -334,6 +381,7 @@ def compute_valuation_triangle(
     peers: list[dict],
     macro_snapshot: dict | None = None,
     custom_weights: dict | None = None,
+    prob_up: float | None = None,
 ) -> dict:
     """Degerleme Ucgeni sentezi:
     DCF (%40) + Emsal Carpanlar (%35) + Kalite Primi (%25).
@@ -370,6 +418,7 @@ def compute_valuation_triangle(
             "peers_leg": None,
             "quality_leg": None,
             "legs_used": 0,
+            "scenario_probabilities": None,
         }
 
     # Normalize active weights to sum to 1.0
@@ -379,6 +428,41 @@ def compute_valuation_triangle(
     fv_base = sum(normalized_weights[k] * leg["fair_value_base"] for k, (_, leg) in active_legs.items())
     fv_low = sum(normalized_weights[k] * leg["fair_value_low"] for k, (_, leg) in active_legs.items())
     fv_high = sum(normalized_weights[k] * leg["fair_value_high"] for k, (_, leg) in active_legs.items())
+
+    # Rejim ve Trend olasilik agirlikli sentetik hedef sentezi (sifir manuel agirlik)
+    effective_prob_up = prob_up
+    if effective_prob_up is None and macro_snapshot:
+        effective_prob_up = macro_snapshot.get("prob_up")
+    if effective_prob_up is None:
+        effective_prob_up = candidate.get("prob_up")
+
+    if effective_prob_up is not None:
+        scenario_probs = derive_scenario_probabilities(effective_prob_up)
+        target_price = (
+            scenario_probs["bull"] * fv_high
+            + scenario_probs["base"] * fv_base
+            + scenario_probs["bear"] * fv_low
+        )
+    else:
+        scenario_probs = {"bull": 0.0, "base": 1.0, "bear": 0.0}
+        target_price = fv_base
+
+    # Outlier guard: Sentetik hedef fiyat fiyatin 2.5 katini asamaz (> %150) veya 0.3 katindan kucuk olamaz
+    entry_price = candidate.get("entry_price") or candidate.get("current_price") or 0.0
+    if entry_price > 0 and (target_price > entry_price * 2.5 or target_price < entry_price * 0.3):
+        return {
+            "target_price": None,
+            "fair_value_low": None,
+            "fair_value_base": None,
+            "fair_value_high": None,
+            "valuation_method": "none",
+            "weights_used": {},
+            "dcf_leg": None,
+            "peers_leg": None,
+            "quality_leg": None,
+            "legs_used": 0,
+            "scenario_probabilities": None,
+        }
 
     # Build descriptive valuation method string
     method_parts = []
@@ -391,7 +475,7 @@ def compute_valuation_triangle(
     valuation_method = f"Değerleme Üçgeni ({' + '.join(method_parts)})"
 
     return {
-        "target_price": fv_base,
+        "target_price": target_price,
         "fair_value_low": round(fv_low, 2),
         "fair_value_base": round(fv_base, 2),
         "fair_value_high": round(fv_high, 2),
@@ -400,6 +484,7 @@ def compute_valuation_triangle(
         "dcf_leg": dcf_leg,
         "peers_leg": peers_leg,
         "quality_leg": quality_leg,
+        "scenario_probabilities": scenario_probs,
         "legs_used": sum(
             (peers_leg.get("legs_used", 1) if k == "peers" else 1)
             for k in active_legs

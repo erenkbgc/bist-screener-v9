@@ -37,9 +37,11 @@ def check_dividend_sustainability(as_of_date: str, ticker: str, fundamentals_row
     else:
         coverage = dividend_paid_ttm / fcf_ttm
         null_reason = None
-        net_debt_ebitda = (fundamentals_row["net_debt"] / raw["ebitda_ttm"]) if raw.get("ebitda_ttm") else None
-        high_leverage_risk = (net_debt_ebitda is not None and net_debt_ebitda > HIGH_LEVERAGE_NET_DEBT_EBITDA
-                               and trend == "artiyor")
+        net_debt = fundamentals_row.get("net_debt")
+        ebitda_ttm = raw.get("ebitda_ttm")
+        net_debt_ebitda = (net_debt / ebitda_ttm) if (ebitda_ttm and ebitda_ttm > 0 and net_debt is not None) else None
+        distressed_debt = (ebitda_ttm is not None and ebitda_ttm <= 0 and net_debt is not None and net_debt > 0)
+        high_leverage_risk = ((net_debt_ebitda is not None and net_debt_ebitda > HIGH_LEVERAGE_NET_DEBT_EBITDA) or distressed_debt) and trend == "artiyor"
         passes = coverage >= 1 and not high_leverage_risk
 
     row = {

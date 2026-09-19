@@ -14,12 +14,26 @@ half_life_days:
   insider_sell: 30
   vbts_measure_applied: 10
   vbts_measure_expiring: 5
+  trading_ban: 10
   secondary_offering: 30
   management_change: 60
   material_event_other: 20
+  dividend_distribution: 30
+  circuit_breaker: 3
 
 categories:
-  financial_report: {weight: 3, sign: by_surprise}
+  # sign: neutral (DEGISTIRILDI, 2026-09-19) -- "by_surprise" gercek EPS
+  # beklenti/gerceklesen karsilastirmasi gerektirir; canli dogrulama (borsapy,
+  # AKBNK/THYAO/ASELS) earnings_dates icin "EPS Estimate"/"Reported EPS" HER
+  # ZAMAN None donduruyor (Is Yatirim ucretsiz kaynaginda bu veri yok).
+  # Onceki "by_surprise" ayari core/live_data.py::_CATEGORY_RULES'daki
+  # sabit impact_sign="positive" ile birlesince HER finansal rapor bildirimini
+  # (evrendeki EN YUKSEK agirlik=3, EN UZUN yari omur=75 gun ile) kosulsuz
+  # POZITIF katalizor olarak sayiyordu -- gercek kar acikla/kacir bilgisi
+  # olmadan SESSIZCE UYDURULAN bir yon sinyaliydi. Gercek bir EPS-beklenti
+  # kaynagi bulunana kadar durustce notr birakilir (bkz. TODO.md
+  # kap_earnings_surprise_data_source_gap).
+  financial_report: {weight: 3, sign: neutral}
   new_business_or_tender: {weight: 2, sign: positive}
   share_buyback: {weight: 2, sign: positive}
   rights_issue: {weight: 2, sign: negative}
@@ -28,6 +42,9 @@ categories:
   insider_sell: {weight: 2, sign: negative}
   vbts_measure_applied: {weight: 3, sign: negative}
   vbts_measure_expiring: {weight: 2, sign: volatility_event}
+  trading_ban: {weight: 3, sign: negative}
   secondary_offering: {weight: 2, sign: negative}
   management_change: {weight: 1, sign: neutral}
   material_event_other: {weight: 1, sign: neutral}
+  dividend_distribution: {weight: 2, sign: positive}
+  circuit_breaker: {weight: 1, sign: volatility_event}

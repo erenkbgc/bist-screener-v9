@@ -35,14 +35,17 @@ def bid_ask_spread_bps(bid: float | None, ask: float | None) -> float | None:
 
 
 def net_expected_roi_pct(expected_roi_pct: float, hurdle_rate_pct: float, spread_bps: float | None,
-                         volume_ratio_20d: float | None) -> dict:
+                         volume_ratio_20d: float | None, amihud_illiq: float | None = None) -> dict:
     """spread_bps veya volume_ratio_20d (kayma varsayimi icin) yoksa net_*
     alanlari None kalir -- eksik maliyet varsayimiyla YANLISLIKLA iyimser bir
     net getiri GOSTERILMEZ (durustluk kurali, bkz. dosya-basi notu)."""
     if spread_bps is None or not volume_ratio_20d:
         return {"net_expected_roi_pct": None, "net_excess_over_hurdle_pct": None, "transaction_cost_pct": None}
     costs = load_transaction_costs()
-    slippage_bps = costs["base_slippage_bps"] / max(volume_ratio_20d, 0.1)
+    base_slippage = costs["base_slippage_bps"] / max(volume_ratio_20d, 0.1)
+    # Amihud likidite riski ek kayma maliyeti (Quant Level-Up Faz 3):
+    illiq_addon = min(amihud_illiq * 25.0, 50.0) if amihud_illiq is not None and amihud_illiq > 0 else 0.0
+    slippage_bps = base_slippage + illiq_addon
     total_cost_pct = (spread_bps + costs["commission_bps"] + slippage_bps) / 100
     return {
         "net_expected_roi_pct": expected_roi_pct - total_cost_pct,
@@ -84,7 +87,8 @@ def expected_usdtry_at_horizon(usdtry_spot: float, usdtry_12m_expectation: float
 
 def compute_all(entry_price: float, target_price: float, horizon_days: int, macro: dict,
                 bid: float | None = None, ask: float | None = None,
-                volume_ratio_20d: float | None = None) -> dict:
+                volume_ratio_20d: float | None = None,
+                amihud_illiq: float | None = None) -> dict:
     # risk_free_annual (bond_2y_pct) sert gecidin (excess_over_hurdle_pct) tek
     # girdisidir ve HER ZAMAN gercek/mock veriden dolu gelir. real_return_pct
     # ve usd_return_pct ise yalnizca BILGI amaclidir; canli modda TCMB anket
@@ -110,7 +114,7 @@ def compute_all(entry_price: float, target_price: float, horizon_days: int, macr
         usd_ret = usd_return_pct(entry_price, target_price, usdtry_spot, exp_usdtry)
 
     spread_bps = bid_ask_spread_bps(bid, ask)
-    net_costs = net_expected_roi_pct(roi, hurdle, spread_bps, volume_ratio_20d)
+    net_costs = net_expected_roi_pct(roi, hurdle, spread_bps, volume_ratio_20d, amihud_illiq=amihud_illiq)
 
     return {
         "hurdle_rate_pct": hurdle, "expected_roi_pct": roi, "excess_over_hurdle_pct": excess,

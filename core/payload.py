@@ -15,7 +15,13 @@ from core.evaluate import summarize_outcomes
 from core.decision_diff import diff_against_previous_run
 
 
-def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | None = None) -> dict:
+def build_report_payload(
+    as_of_date: str,
+    concentration_warnings: list[dict] | None = None,
+    portfolio_summary: dict | None = None,
+    trend_forecast: dict | None = None,
+    passing_candidates: list[dict] | None = None,
+) -> dict:
     as_of_date_cutoff = as_of_date
 
     regime = db.query("SELECT * FROM regime_log WHERE as_of_date=?", (as_of_date,))
@@ -34,6 +40,8 @@ def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | N
         (as_of_date, as_of_date_cutoff),
     )
     universe = db.query("SELECT * FROM universe_snapshot WHERE as_of_date=?", (as_of_date,))
+    factor_contributions = db.query("SELECT * FROM factor_contributions WHERE as_of_date=?", (as_of_date,))
+    portfolio_allocations = db.query("SELECT * FROM portfolio_allocations WHERE as_of_date=?", (as_of_date,))
     eligible_count = db.query(
         "SELECT COUNT(*) AS n FROM universe_snapshot WHERE as_of_date=? AND exclusion_reason IS NULL",
         (as_of_date,),
@@ -62,6 +70,10 @@ def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | N
 
     weights = load_weights()
 
+    from core.weight_optimizer import load_optimized_weights
+    opt = load_optimized_weights()
+    tri_weights = (opt.get("valuation_triangle_weights") if opt else None) or weights.get("valuation_triangle_weights", {})
+
     payload = {
         "as_of_date": as_of_date,
         "weights": {
@@ -69,15 +81,21 @@ def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | N
             "catalyst_score": weights["scoring_weights"]["catalyst_score"],
             "ownership_quality_z": weights["scoring_weights"]["ownership_quality_z"],
             "low_vol_z": weights["scoring_weights"]["low_vol_z"],
+        },
+        "reference_inputs": {
+            "policy_rate_pct": regime[0]["policy_rate_pct"] if regime else None,
+            "bond_2y_pct": regime[0]["bond_2y_pct"] if regime else None,
+            "cpi_yoy_pct": regime[0]["cpi_yoy_pct"] if regime else None,
+            "usdtry_spot": regime[0]["usdtry_spot"] if regime else None,
             "piotroski_normalized_score_threshold": weights["piotroski"]["normalized_score_threshold"],
             "equity_risk_premium_pct": load_equity_risk_premium_pct(),
             "dcf_growth_low_pct": GROWTH_LOW_PCT,
             "dcf_growth_base_pct": GROWTH_BASE_PCT,
             "dcf_growth_high_pct": GROWTH_HIGH_PCT,
             "dcf_corporate_tax_rate_pct": load_corporate_tax_rate_pct(),
-            "valuation_triangle_dcf_pct": weights.get("valuation_triangle_weights", {}).get("dcf", 0.40) * 100,
-            "valuation_triangle_peers_pct": weights.get("valuation_triangle_weights", {}).get("peer_multiples", 0.35) * 100,
-            "valuation_triangle_quality_pct": weights.get("valuation_triangle_weights", {}).get("quality_premium", 0.25) * 100,
+            "valuation_triangle_dcf_pct": tri_weights.get("dcf", 0.40) * 100,
+            "valuation_triangle_peers_pct": tri_weights.get("peer_multiples", 0.35) * 100,
+            "valuation_triangle_quality_pct": tri_weights.get("quality_premium", 0.25) * 100,
         },
         "regime": as_dicts(regime)[0] if regime else None,
         "scores": as_dicts(scores),
@@ -94,10 +112,11 @@ def build_report_payload(as_of_date: str, concentration_warnings: list[dict] | N
         "correlation_flags": as_dicts(correlation_flags),
         "dividend_sustainability": as_dicts(dividend_sustainability),
         "invalidation_triggered": as_dicts(invalidation_triggered),
-        # concentration_check (core/concentration.py) DB'ye yazilmaz, run.py
-        # icinde transient hesaplanir -- yine de mesaj metnine gomdugu `pct`
-        # sayisi report/validate.py::find_orphan_numbers'in gorebilmesi icin
-        # payload'a acikca eklenir (no_number_without_source kurali).
+        "factor_contributions": as_dicts(factor_contributions),
+        "portfolio_allocations": as_dicts(portfolio_allocations),
+        "portfolio_summary": portfolio_summary or {},
+        "trend_forecast": trend_forecast or {},
+        "passing_candidates": passing_candidates or [],
         "concentration_warnings": concentration_warnings or [],
         "no_action_today": not any(s["candidate_state"] in ("STRONG_OPPORTUNITY", "OPPORTUNITY") for s in scores),
         "unscored_count": unscored_count,

@@ -1,0 +1,79 @@
+name: BIST Haftalik Agirlik Optimizasyonu & Kalibrasyon
+
+on:
+  schedule:
+    # Her Pazar 18:00 UTC (21:00 TSI) - Pazartesi piyasa acilisi oncesi guncel kalibrasyon
+    - cron: "0 18 * * 0"
+  workflow_dispatch:
+    inputs:
+      period:
+        description: "Kalibrasyon icin tarihsel veri derinligi (orn: 2y, 5y)"
+        required: false
+        default: "5y"
+
+concurrency:
+  group: bist-weekly-optimize
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    name: Sifir Manuel Agirlik Kalibrasyonu
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Depoyu Klonla
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 Kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Bagimliliklari Kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Kalibrasyon ve Optimizasyonu Calistir
+        run: |
+          PERIOD="${{ inputs.period }}"
+          if [ -z "$PERIOD" ]; then
+            PERIOD="5y"
+          fi
+          python3 scripts/optimize_weights.py --period "$PERIOD"
+
+      - name: Birim Testleri Dogrula
+        run: |
+          pytest -v tests/test_weight_optimizer.py tests/test_targets_realistic.py
+
+      - name: Guncel Agirliklari Repoya Commit Et
+        if: always()
+        run: |
+          git config user.name "bist-optimizer-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add config/weights_optimized.json
+          if git diff --cached --quiet; then
+            echo "Commit edilecek agirlik degisikligi yok."
+            exit 0
+          fi
+          git commit -m "chore(weights): BIST haftalik kantitatif kalibrasyon guncellemesi [skip ci]"
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Agirliklar basariyla repoya push edildi."
+              exit 0
+            fi
+            echo "Push reddedildi (deneme $attempt/5), origin/master ile rebase deneniyor..."
+            git fetch origin master
+            if ! git rebase origin/master; then
+              git rebase --abort
+              echo "Rebase basarisiz oldu, manuel mudahale gerekiyor."
+              exit 1
+            fi
+          done
+          echo "5 denemeden sonra push basarisiz oldu."
+          exit 1

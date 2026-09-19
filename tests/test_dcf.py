@@ -103,3 +103,20 @@ def test_dcf_small_positive_spread_is_also_unstable(temp_db):
     )
     assert result["null_reason"] == "unstable_denominator"
     assert result["fair_value_low"] is None
+
+
+def test_dcf_outlier_guard_rejects_extreme_valuations(temp_db):
+    """Outlier guard: Eger fcf_ttm cok yuksekse ve hesaplanan adil deger mevcut fiyatin
+    3 katini asarsa (orn. fiyat 50 iken fair value 300+ ise), model bunu tekillik/veri
+    anomalisi olarak gorup null_reason='outlier_valuation' ile reddeder."""
+    # fcf_ttm=1e10 (10 milyar TL), shares=1e8 -> fcf_ps = 100 TL.
+    # risk_free=20, beta=1, erp=5 -> wacc=25. spread=20.
+    # fcf_next * 1.05 / 0.20 = 100 * 1.05 * 1.05 / 0.20 = 551 TL (fiyat 50 TL iken 11x kat!).
+    result = calculate_dcf_reference(
+        "2026-09-10", "OUTL", fcf_ttm=1e10, shares_outstanding=1e8, current_price=50.0,
+        beta=1.0, risk_free_annual_pct=20.0, market_cap=5e9, net_debt=0.0,
+        financial_expenses_ttm=None,
+    )
+    assert result["null_reason"] == "outlier_valuation"
+    assert result["fair_value_low"] is None
+    assert result["fair_value_high"] is None

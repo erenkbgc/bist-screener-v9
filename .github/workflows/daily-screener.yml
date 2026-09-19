@@ -93,7 +93,7 @@ jobs:
         run: |
           git config user.name "bist-screener-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/bist_history.db data/reports/
+          git add data/bist_history.db data/reports/ config/weights_optimized.json
           if git diff --cached --quiet; then
             echo "commit edilecek degisiklik yok"
             exit 0

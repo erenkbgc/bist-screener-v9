@@ -15,9 +15,6 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
     usdtry_spot = macro.get("usdtry_spot")
 
     period_end = _quarter_end_before(as_of_date)
-    published_at = period_end  # basitlestirilmis mock varsayimi: bilanco donem sonunda aciklanir
-    available_at = published_at
-    effective_at = published_at
     ingested_at = datetime.now(timezone.utc).isoformat()
 
     # bist_mcp.server._live_enabled() ile AYNI kural: "source" alani sabit
@@ -39,6 +36,15 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
         if f.get("reporting_basis") == "unknown":
             reporting_basis = "unknown"
         f["reporting_basis"] = reporting_basis
+
+        # point_in_time_publication_lag: gercek beyanlar donem sonundan (period_end)
+        # 5-10 hafta sonra gelir; canli modda GERCEK KAP "Finansal Rapor" tarihi
+        # kullanilir. Eslesen bildirim yoksa UYDURULMAZ (None) -- asagidaki
+        # effective_at None kaldiginda core/scoring.py::hard_filters_passed'daki
+        # point_in_time kontrolu adayi guvenlik icin eler.
+        published_at = bist_mcp.get_financial_report_published_at(ticker, period_end)
+        available_at = published_at
+        effective_at = published_at
 
         fcf_yield_usd = None
         null_reason = None
@@ -77,7 +83,12 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
                ON CONFLICT(as_of_date, ticker) DO UPDATE SET
                  reporting_basis=excluded.reporting_basis, pe=excluded.pe, pb=excluded.pb,
                  ev_ebitda=excluded.ev_ebitda, ev_sales=excluded.ev_sales, roe=excluded.roe,
-                 fcf_yield_usd=excluded.fcf_yield_usd, null_reason=excluded.null_reason""",
+                 eps_ttm=excluded.eps_ttm, ebitda_ttm=excluded.ebitda_ttm, net_debt=excluded.net_debt,
+                 nav_discount=excluded.nav_discount, dividend_per_share_ttm=excluded.dividend_per_share_ttm,
+                 payout_ratio=excluded.payout_ratio, fcf_ttm=excluded.fcf_ttm,
+                 fcf_yield_usd=excluded.fcf_yield_usd, null_reason=excluded.null_reason,
+                 source=excluded.source, published_at=excluded.published_at, available_at=excluded.available_at,
+                 effective_at=excluded.effective_at, ingested_at=excluded.ingested_at""",
             [{k: v for k, v in r.items() if k != "_raw"} for r in rows],
         )
         conn.commit()

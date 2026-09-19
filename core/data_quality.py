@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
@@ -18,6 +19,10 @@ from typing import Any
 from core import db
 
 logger = logging.getLogger(__name__)
+
+
+def _live_enabled() -> bool:
+    return os.environ.get("BIST_DATA_MODE", "mock").strip().lower() == "live"
 
 # =====================================================================
 # 1. SURVIVORSHIP BIAS & DELISTED STOCKS ARCHIVE
@@ -223,6 +228,20 @@ def is_delisted(ticker: str, as_of_date: str | None = None) -> bool:
     return info["delist_date"] <= as_of_date
 
 
+# delisted_stocks.sector'da saklanan BIST sektor kodlarindan ratio_profile/supersector
+# turetir (core/universe.py'deki canli evren siniflandirmasiyla tutarli).
+_DELISTED_SECTOR_RATIO_PROFILE = {
+    "XBANK": "bank",
+    "XSGRT": "insurance",
+    "XHOLD": "holding",
+    "XGMYO": "reit",
+}
+_DELISTED_SECTOR_SUPERSECTOR = {
+    "XBANK": "XUMAL", "XFINK": "XUMAL", "XSGRT": "XUMAL", "XHOLD": "XUMAL",
+    "XYORT": "XUMAL", "XGMYO": "XUMAL", "XILTM": "XUTEK", "XBLSM": "XUTEK",
+}
+
+
 def get_survivorship_free_universe(
     as_of_date: str,
     active_universe: list[dict] | None = None,
@@ -242,8 +261,8 @@ def get_survivorship_free_universe(
                 "ticker": d["ticker"],
                 "name": d["company_name"],
                 "sector": d["sector"],
-                "supersector": "XUSIN",
-                "ratio_profile": "industrial",
+                "supersector": _DELISTED_SECTOR_SUPERSECTOR.get(d["sector"], "XUSIN"),
+                "ratio_profile": _DELISTED_SECTOR_RATIO_PROFILE.get(d["sector"], "industrial"),
                 "regulator": "SPK",
                 "is_delisted": False,
                 "delisted_future_date": d["delist_date"],
@@ -314,7 +333,10 @@ def fetch_corporate_actions(ticker: str, as_of_date: str | None = None) -> list[
             return [a for a in cached if a["action_date"] <= as_of_date]
         return cached
 
-    # 2. Canli veri cekimi (borsapy uzerinden)
+    # 2. Canli veri cekimi (borsapy uzerinden) -- yalnizca BIST_DATA_MODE=live iken
+    if not _live_enabled():
+        return []
+
     try:
         import borsapy as bp
         t = bp.Ticker(ticker)
@@ -540,6 +562,7 @@ def audit_ticker_data_quality(
     stale_streak = 0
     max_stale_streak = 0
     missing_days_count = 0
+    invalid_bar_count = 0
 
     if not price_rows:
         delist_info = get_delist_info(ticker)
@@ -590,12 +613,18 @@ def audit_ticker_data_quality(
         curr_date = r["date"]
 
         # 1. Sanity Kontrolleri (Negative / Inverted prices)
+        bar_invalid = False
         if c <= 0 or o <= 0 or h <= 0 or l <= 0:
             issues.append(f"{curr_date}: Gecersiz sifir veya negatif fiyat (O:{o}, H:{h}, L:{l}, C:{c}).")
+            bar_invalid = True
         if h < l:
             issues.append(f"{curr_date}: High ({h}) Low'dan ({l}) kucuk.")
+            bar_invalid = True
         if c > h or c < l:
             issues.append(f"{curr_date}: Close ({c}) [Low, High] araligi disinda.")
+            bar_invalid = True
+        if bar_invalid:
+            invalid_bar_count += 1
 
         # 2. Sifir Hacim
         if v == 0.0:
@@ -653,6 +682,7 @@ def audit_ticker_data_quality(
     score = 100.0
     unexplained_jumps = [j for j in suspicious_jumps if not j.explained_by_action]
     score -= len(unexplained_jumps) * 15.0
+    score -= min(40.0, invalid_bar_count * 20.0)
     if max_zero_vol_streak >= 3:
         score -= min(30.0, max_zero_vol_streak * 5.0)
     if max_stale_streak >= 5:
@@ -663,7 +693,7 @@ def audit_ticker_data_quality(
         score -= 20.0
 
     quality_score = max(0.0, min(100.0, round(score, 1)))
-    is_clean = (quality_score >= 75.0) and (len(unexplained_jumps) == 0)
+    is_clean = (quality_score >= 75.0) and (len(unexplained_jumps) == 0) and (invalid_bar_count == 0)
 
     report = DataQualityReport(
         ticker=ticker,

@@ -882,6 +882,18 @@
             <span class="metric-val">%{{ c.retail_pct | fmt }}</span>
           </div>
           {% endif %}
+          {% if c.momentum_score is not none %}
+          <div class="metric-entry">
+            <span class="metric-key">Momentum Skoru (12-1 Ay)</span>
+            <span class="metric-val">{{ c.momentum_score | fmt }}</span>
+          </div>
+          {% endif %}
+          {% if c.amihud_illiq is not none %}
+          <div class="metric-entry">
+            <span class="metric-key">Amihud Likidite Riski (ILLIQ)</span>
+            <span class="metric-val">{{ c.amihud_illiq | fmt }}</span>
+          </div>
+          {% endif %}
         </div>
 
         {% if c.upcoming_events %}
@@ -951,6 +963,35 @@
         </ul>
       </div>
       {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ============================== HRP PORTFOY DAGILIMI & RISK ============================== -->
+  {% if portfolio_result and portfolio_result.recommended_portfolio_weights %}
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">Hiyerarsik Risk Paritesi (HRP) Model Portfoy Agirliklari</h2>
+      <div class="section-desc">Kovaryans matrisinin agac kumelemesi (López de Prado) ve sektor tavan kisiti (%30) ile optimize edilmis dengeli risk dagilimi. Model Portfoy Beklenen Getirisi: +%{{ portfolio_result.portfolio_expected_return_pct | fmt }}, Yillik Volatilite: %{{ portfolio_result.portfolio_volatility_pct | fmt }}, Beklenen Kuyruk Riski (%95 CVaR): %{{ portfolio_result.cvar_95_pct | fmt }}.</div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table-exec">
+        <thead>
+          <tr>
+            <th>Hisse</th>
+            <th class="col-num">Onerilen Portfoy Agirligi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ticker, w in portfolio_result.recommended_portfolio_weights.items() %}
+          <tr>
+            <td style="font-weight:700; color:#0f172a;">{{ ticker }}</td>
+            <td class="col-num" style="font-weight:700; color:#059669;">%{{ w | fmt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
   {% endif %}

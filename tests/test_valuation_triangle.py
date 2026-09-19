@@ -245,3 +245,49 @@ def test_compute_long_term_target_integration():
     assert res["fair_value_high"] is not None
     assert "valuation_method" in res
     assert res["horizon_days"] == 180
+
+
+def test_peers_leg_filters_out_extreme_multiple_outlier():
+    """Emsal carpanlarda bir carpan (orn. bozuk EBITDA veya net borc nedeniyle)
+    mevcut fiyatin 3.5 katindan fazla adil deger uretirse, ortalamayi bozmamasi icin
+    bilesen bazinda filtrelenir."""
+    peers = [
+        {"ticker": "P1", "pe": 10.0, "pb": 2.0, "ev_ebitda": 20.0, "nav_discount": None},
+    ]
+    candidate = {
+        "ticker": "OUTL_PEER",
+        "ratio_profile": "industrial",
+        "entry_price": 50.0,
+        "current_price": 50.0,
+        "eps_ttm": 5.0,  # PE leg = 10 * 5 = 50.0 (1.0x price)
+        "pb": 2.0,       # PB leg = 50.0 (1.0x price)
+        "ebitda_ttm": 1_000_000_000.0,
+        "net_debt": 0.0,
+        "shares_outstanding": 1_000_000.0,  # EV/EBITDA leg = 20 * 1B / 1M = 20,000 TL (400x price!)
+    }
+    leg = compute_peers_leg(candidate, peers)
+    assert leg is not None
+    # 20,000 TL'lik EV/EBITDA elenmeli, yalnizca PE ve PB kalmali
+    assert "ev_ebitda" not in leg["legs_detail"]
+    assert "pe" in leg["legs_detail"]
+    assert "pb" in leg["legs_detail"]
+    assert leg["legs_used"] == 2
+    assert abs(leg["fair_value_base"] - 50.0) < 1.0
+
+
+def test_valuation_triangle_rejects_synthesized_extreme_target():
+    """Eger sentetik hedef fiyat tum bilesenler sonucunda mevcut fiyatin
+    2.5 katini asarsa (+%150 prim), sentetik sonuc None doner."""
+    candidate = {
+        "ticker": "EXTREME",
+        "ratio_profile": "industrial",
+        "entry_price": 10.0,
+        "current_price": 10.0,
+        "eps_ttm": 50.0,  # Peer median PE 10 ile 500 TL uretir (> 2.5x price)
+        "roe": 100.0,
+        "pb": 0.1,
+    }
+    peers = [{"ticker": "P1", "pe": 10.0, "pb": 5.0, "ev_ebitda": 10.0}]
+    vt = compute_valuation_triangle(candidate, peers)
+    assert vt["target_price"] is None
+    assert vt["valuation_method"] == "none"

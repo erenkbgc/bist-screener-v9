@@ -49,6 +49,36 @@ def test_unfetchable_statements_force_unknown_basis_even_with_valid_regulator(te
     assert rows[0]["null_reason"] == "unknown_reporting_basis"
 
 
+def test_published_at_uses_real_disclosure_date_not_period_end(temp_db, monkeypatch):
+    """point_in_time_publication_lag: canli modda published_at/effective_at
+    GERCEK KAP bildirim tarihinden gelmeli, period_end'e ESIT OLMAMALI (eskiden
+    "basitlestirilmis mock varsayimi" canli modda da yururlukteydi -- gercek
+    beyanlar donem sonundan haftalar sonra gelir, P11_lookahead_bias ihlali)."""
+    monkeypatch.setattr(bist_mcp, "get_fundamentals",
+                         lambda *a, **k: _fake_fundamentals_ok(reporting_basis=None))
+    monkeypatch.setattr(bist_mcp, "get_financial_report_published_at",
+                         lambda ticker, period_end: "2026-08-06")
+    rows = fetch_and_store_fundamentals("2026-09-10", [_universe_row("FORTE")])
+    assert rows[0]["period_end"] == "2026-06-30"
+    assert rows[0]["published_at"] == "2026-08-06"
+    assert rows[0]["available_at"] == "2026-08-06"
+    assert rows[0]["effective_at"] == "2026-08-06"
+
+
+def test_published_at_none_when_no_real_disclosure_found(temp_db, monkeypatch):
+    """Eslesen bir gercek KAP bildirimi bulunamazsa (agsal hata, kapsam disi
+    pencere) published_at/effective_at None kalmali -- UYDURULMAZ. Asagi akista
+    core/scoring.py::hard_filters_passed'daki point_in_time kontrolu bu None'i
+    guvenlik icin eler (bkz. tests/test_scoring.py)."""
+    monkeypatch.setattr(bist_mcp, "get_fundamentals",
+                         lambda *a, **k: _fake_fundamentals_ok(reporting_basis=None))
+    monkeypatch.setattr(bist_mcp, "get_financial_report_published_at",
+                         lambda ticker, period_end: None)
+    rows = fetch_and_store_fundamentals("2026-09-10", [_universe_row("ZZZZ")])
+    assert rows[0]["published_at"] is None
+    assert rows[0]["effective_at"] is None
+
+
 def test_unknown_ratio_across_universe_reflects_real_fetch_failures(temp_db, monkeypatch):
     """basis_guard.unknown_ratio (run.py'nin %30 halt kapisi) artik GERCEK
     veri yoklugunu yansitmali, sadece regulator dagilimini degil."""

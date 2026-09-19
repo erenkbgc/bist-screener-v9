@@ -107,7 +107,8 @@ class WalkForwardEngine:
             if delist_info and date_str >= delist_info["delist_date"]:
                 if in_position:
                     recovery_pct = float(delist_info.get("terminal_recovery_pct", 0.0))
-                    exit_price = pos_entry_price * (recovery_pct / 100.0)
+                    last_price = float(delist_info.get("last_price") or pos_entry_price)
+                    exit_price = last_price * (recovery_pct / 100.0)
                     exit_reason = f"delisted_{delist_info.get('delist_reason', 'bankruptcy')}"
                     gross_proceeds = pos_shares * exit_price
                     exit_comm = gross_proceeds * (self.commission_pct / 100.0)
@@ -136,6 +137,12 @@ class WalkForwardEngine:
                     in_position = False
                     pos_shares = 0.0
                     days_in_trade = 0
+                equity_curve.append({
+                    "date": date_str,
+                    "equity": round(capital, 2),
+                    "cash": round(capital, 2),
+                    "in_position": False,
+                })
                 continue
 
             # 1. Mevcut pozisyonu kontrol et (Exit kontrolu)
@@ -230,7 +237,7 @@ class WalkForwardEngine:
                 is_setup = (close_p >= sma20 * 0.98) and (vol_ratio >= 0.8)
                 if is_setup and atr20 > 0:
                     past_window = self.price_rows[max(0, i - 19) : i + 1]
-                    recent_lows = [p["low"] for p in past_window if p.get("low") is not None]
+                    recent_lows = [p.get("adj_low", p.get("low")) for p in past_window if p.get("adj_low", p.get("low")) is not None]
                     recent_swing = min(recent_lows) if recent_lows else None
 
                     risk = compute_dynamic_risk_levels(
@@ -261,7 +268,7 @@ class WalkForwardEngine:
 
         if in_position:
             last_bar = self.price_rows[-1]
-            exit_price = last_bar["close"] * (1.0 - self.slippage_pct / 100.0)
+            exit_price = last_bar.get("adj_close", last_bar["close"]) * (1.0 - self.slippage_pct / 100.0)
             gross = pos_shares * exit_price
             comm = gross * (self.commission_pct / 100.0)
             capital += (gross - comm)

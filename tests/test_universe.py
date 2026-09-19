@@ -54,3 +54,22 @@ def test_low_volume_excludes(temp_db, monkeypatch):
 
     rows = universe_mod.build_universe("2026-09-10")
     assert rows[0]["exclusion_reason"] == "min_volume_tl"
+
+
+def test_amihud_illiquidity_calculation():
+    # 1. Likit hisse (buyuk hacim, kucuk getiri -> cok kucuk ILLIQ)
+    liquid_bars = [
+        {"close": 100.0 + i * 0.1, "volume": 1_000_000} for i in range(25)
+    ]
+    illiq_liquid = universe_mod.calculate_amihud_illiquidity(liquid_bars)
+    assert illiq_liquid is not None
+    assert illiq_liquid < 0.05  # Cok dusuk fiyat etkisi
+
+    # 2. Sig hisse (kucuk hacim, sert getiri -> yuksek ILLIQ)
+    illiquid_bars = [
+        {"close": 50.0 + (5.0 if i % 2 == 0 else -5.0), "volume": 2_000} for i in range(25)
+    ]
+    illiq_illiquid = universe_mod.calculate_amihud_illiquidity(illiquid_bars)
+    assert illiq_illiquid is not None
+    assert illiq_illiquid > illiq_liquid * 100
+

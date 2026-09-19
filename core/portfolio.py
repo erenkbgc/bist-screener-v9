@@ -15,6 +15,9 @@ from datetime import datetime, timezone
 from typing import Any
 
 import numpy as np
+import pandas as pd
+import scipy.cluster.hierarchy as sch
+import scipy.spatial.distance as scd
 
 from core import db
 
@@ -301,6 +304,120 @@ def optimize_max_sharpe(
     return w_capped, cap_applied
 
 
+def get_quasi_diag(link: np.ndarray) -> list[int]:
+    """Hierarchical tree linkage matrisinden sirali yaprak indekslerini (quasi-diagonal) dondurur."""
+    link = link.astype(int)
+    sort_ix = [int(link[-1, 0]), int(link[-1, 1])]
+    num_items = int(link[-1, 3])
+    while any(i >= num_items for i in sort_ix):
+        new_sort_ix = []
+        for item in sort_ix:
+            if item >= num_items:
+                idx = item - num_items
+                new_sort_ix.extend([int(link[idx, 0]), int(link[idx, 1])])
+            else:
+                new_sort_ix.append(item)
+        sort_ix = new_sort_ix
+    return sort_ix
+
+
+def get_cluster_var(cov: np.ndarray, c_items: list[int]) -> float:
+    """Bir kume icindeki hisselerin ters varyans agirlikli portfoy varyansini hesaplar."""
+    sub_cov = cov[np.ix_(c_items, c_items)]
+    inv_diag = 1.0 / np.maximum(1e-8, np.diag(sub_cov))
+    w = inv_diag / np.sum(inv_diag)
+    c_var = float(w @ sub_cov @ w)
+    return max(1e-8, c_var)
+
+
+def get_rec_bisection(cov: np.ndarray, sort_ix: list[int]) -> np.ndarray:
+    """Siralanmis yapraklar uzerinde ozyinelemeli ikili bolme ile HRP agirliklarini hesaplar."""
+    weights = pd.Series(1.0, index=sort_ix)
+    c_items = [sort_ix]
+    while len(c_items) > 0:
+        c_items = [i[j:k] for i in c_items for j, k in ((0, len(i) // 2), (len(i) // 2, len(i))) if len(i) > 1]
+        for i in range(0, len(c_items), 2):
+            c1 = c_items[i]
+            c2 = c_items[i + 1]
+            v1 = get_cluster_var(cov, c1)
+            v2 = get_cluster_var(cov, c2)
+            denom = v1 + v2
+            alpha = 1.0 - (v1 / denom) if denom > 0 else 0.5
+            weights[c1] *= alpha
+            weights[c2] *= (1.0 - alpha)
+    return weights.sort_index().values
+
+
+def optimize_hrp(
+    cov_matrix: np.ndarray,
+    sectors: list[str],
+    max_sector_weight: float = DEFAULT_MAX_SECTOR_WEIGHT,
+) -> tuple[np.ndarray, bool]:
+    """Hierarchical Risk Parity (HRP) Portfoyu (Marcos López de Prado 2016, Quant Level-Up Faz 4).
+    
+    1. Agac Tabanli Kumeleme (Tree Clustering): Korelasyon uzakligi d = sqrt(0.5 * (1 - rho))
+    2. Yari-Kosegenlestirme (Quasi-Diagonalization): Dendrogram yaprak siralamasi
+    3. Ozyinelemeli Ikili Bolme (Recursive Bisection): Kumeler arasi risk paylasimi
+    4. Sektor Tavan Kisiti (%30)
+    """
+    n = cov_matrix.shape[0]
+    if n <= 1:
+        return np.ones(n, dtype=float), False
+
+    # 1. Korelasyon ve Mesafe Matrisi
+    vols = np.sqrt(np.maximum(1e-8, np.diag(cov_matrix)))
+    outer_vols = np.outer(vols, vols)
+    corr = np.clip(cov_matrix / np.maximum(1e-8, outer_vols), -1.0, 1.0)
+    np.fill_diagonal(corr, 1.0)
+
+    # Mesafe: d_{i,j} = sqrt(0.5 * (1 - rho_{i,j}))
+    dist = np.sqrt(np.clip(0.5 * (1.0 - corr), 0.0, 1.0))
+    np.fill_diagonal(dist, 0.0)
+
+    try:
+        condensed_dist = scd.squareform(dist, checks=False)
+        link = sch.linkage(condensed_dist, method="single")
+        sort_ix = get_quasi_diag(link)
+        w_raw = get_rec_bisection(cov_matrix, sort_ix)
+    except Exception as e:
+        logger.warning("HRP kumeleme hatasi, risk parity'e fallback yapiliyor: %s", e)
+        return optimize_risk_parity(cov_matrix, sectors, max_sector_weight=max_sector_weight)
+
+    w_capped, cap_applied = apply_sector_caps(w_raw, sectors, max_sector_weight=max_sector_weight)
+    return w_capped, cap_applied
+
+
+def compute_portfolio_cvar(
+    weights: np.ndarray,
+    returns_matrix: np.ndarray,
+    confidence: float = 0.95,
+) -> float:
+    """Portfoy icin %95 Kosullu Riske Maruz Deger (CVaR / Expected Shortfall) hesaplar.
+    
+    returns_matrix: (T, N) boyutlu gunluk getiri matrisi.
+    weights: (N,) boyutlu portfoy agirlik vektoru.
+    
+    Donus: Gunluk yuzde bazinda ortalama kuyruk kaybi (pozitif risk degeri, or. %2.35).
+    """
+    if len(weights) == 0 or returns_matrix.size == 0:
+        return 0.0
+
+    port_returns = returns_matrix @ weights
+    if len(port_returns) < 5:
+        return 0.0
+
+    alpha = 1.0 - confidence
+    var_threshold = float(np.percentile(port_returns, alpha * 100))
+
+    tail_returns = port_returns[port_returns <= var_threshold]
+    if len(tail_returns) == 0:
+        cvar = -var_threshold
+    else:
+        cvar = -float(np.mean(tail_returns))
+
+    return round(max(0.0, cvar * 100.0), 2)
+
+
 # =====================================================================
 # 4. ANA OPTIMIZASYON AKISI & DB ENTEGRASYONU
 # =====================================================================
@@ -308,7 +425,7 @@ def optimize_max_sharpe(
 def optimize_portfolio(
     candidates: list[dict],
     price_series_by_ticker: dict[str, list[dict]],
-    method: str = "risk_parity",  # 'risk_parity' | 'min_variance' | 'max_sharpe'
+    method: str = "hrp",  # 'hrp' (varsayilan) | 'risk_parity' | 'min_variance' | 'max_sharpe'
     as_of_date: str = "2026-09-17",
     risk_free_rate_pct: float = 40.0,
     max_sector_weight: float = DEFAULT_MAX_SECTOR_WEIGHT,
@@ -325,6 +442,7 @@ def optimize_portfolio(
             "portfolio_expected_return_pct": 0.0,
             "portfolio_volatility_pct": 0.0,
             "sharpe_ratio": 0.0,
+            "cvar_95_pct": 0.0,
             "active_candidates_count": 0,
             "dropped_correlated_pairs": [],
             "sector_cap_applied": False,
@@ -357,6 +475,7 @@ def optimize_portfolio(
             "portfolio_expected_return_pct": exp_roi,
             "portfolio_volatility_pct": 25.0,
             "sharpe_ratio": round((exp_roi - risk_free_rate_pct) / 25.0, 2),
+            "cvar_95_pct": 0.0,
             "active_candidates_count": 1,
             "dropped_correlated_pairs": dropped_info,
             "sector_cap_applied": False,
@@ -366,6 +485,36 @@ def optimize_portfolio(
     _, cov_matrix, vols = calculate_returns_and_covariance(active_tickers, price_series_by_ticker, window_days=60)
 
     n = len(active_tickers)
+
+    if cov_matrix.size == 0:
+        # Hicbir adayin yeterli (>=15 bar) fiyat gecmisi yok: kovaryans hesaplanamaz.
+        # Optimizasyona (bos matrisle index hatasi verir) girmek yerine esit
+        # agirlikli portfoyle guvenli sekilde devam et.
+        equal_w = 100.0 / n
+        sector_allocs_fallback: dict[str, float] = {}
+        for t in active_tickers:
+            c_item = next(c for c in filtered_candidates if c["ticker"] == t)
+            sec = c_item.get("sector", "BILINMIYOR")
+            sector_allocs_fallback[sec] = round(sector_allocs_fallback.get(sec, 0.0) + equal_w, 2)
+        avg_exp_roi = float(np.mean([
+            float(next(c for c in filtered_candidates if c["ticker"] == t).get("expected_roi_pct", 0.0) or 0.0)
+            for t in active_tickers
+        ]))
+        return {
+            "as_of_date": as_of_date,
+            "method": method,
+            "recommended_portfolio_weights": {t: round(equal_w, 2) for t in active_tickers},
+            "sector_allocations_pct": sector_allocs_fallback,
+            "portfolio_expected_return_pct": round(avg_exp_roi, 2),
+            "portfolio_volatility_pct": 25.0,
+            "sharpe_ratio": round((avg_exp_roi - risk_free_rate_pct) / 25.0, 2),
+            "cvar_95_pct": 0.0,
+            "active_candidates_count": n,
+            "dropped_correlated_pairs": dropped_info,
+            "sector_cap_applied": False,
+            "data_quality_note": "insufficient_price_history_equal_weight_fallback",
+        }
+
     sectors = [next(c.get("sector", "BILINMIYOR") for c in filtered_candidates if c["ticker"] == t) for t in active_tickers]
 
     # Beklenen getiri vektoru (adaylarin expected_roi_pct degeri veya yoksa tarihsel getiri proxy'si)
@@ -376,11 +525,13 @@ def optimize_portfolio(
         roi = c_item.get("expected_roi_pct")
         if roi is not None and roi > 0:
             exp_returns.append(float(roi) / 100.0)
+        elif t in returns_dict:
+            # Gecmis ortalama getiri proxy -- gercek (negatif dahil) trend korunur, yapay taban uygulanmaz.
+            annualized_ret = float(np.mean(returns_dict[t])) * ANNUAL_TRADING_DAYS
+            exp_returns.append(annualized_ret)
         else:
-            # Gecmis ortalama getiri proxy
-            r_arr = returns_dict.get(t, np.array([0.0]))
-            annualized_ret = float(np.mean(r_arr)) * ANNUAL_TRADING_DAYS
-            exp_returns.append(max(0.10, annualized_ret))
+            # Fiyat gecmisi hic yok: notr bir varsayilan kullan.
+            exp_returns.append(0.10)
     exp_ret_arr = np.array(exp_returns, dtype=float)
 
     # 3. Secilen metod ile optimizasyon
@@ -390,8 +541,10 @@ def optimize_portfolio(
         weights, cap_applied = optimize_max_sharpe(
             exp_ret_arr, cov_matrix, sectors, risk_free_rate=rf_dec, max_sector_weight=max_sector_weight
         )
-    else:  # risk_parity (varsayilan)
+    elif method == "risk_parity":
         weights, cap_applied = optimize_risk_parity(cov_matrix, sectors, max_sector_weight=max_sector_weight)
+    else:  # hrp (varsayilan ve birincil motor)
+        weights, cap_applied = optimize_hrp(cov_matrix, sectors, max_sector_weight=max_sector_weight)
 
     # 4. Sonuclari formatla
     weights_pct = {active_tickers[i]: round(float(weights[i]) * 100.0, 2) for i in range(n)}
@@ -408,6 +561,14 @@ def optimize_portfolio(
     port_vol_pct = round(np.sqrt(max(1e-8, port_var)) * 100.0, 2)
     sharpe = round((port_exp_ret_pct - risk_free_rate_pct) / max(1.0, port_vol_pct), 2)
 
+    # %95 CVaR (Expected Shortfall) hesabi
+    min_len = min(len(returns_dict[t]) for t in active_tickers) if active_tickers else 0
+    if min_len >= 5:
+        returns_mat = np.column_stack([returns_dict[t][-min_len:] for t in active_tickers])
+        cvar_95 = compute_portfolio_cvar(weights, returns_mat, confidence=0.95)
+    else:
+        cvar_95 = 0.0
+
     result = {
         "as_of_date": as_of_date,
         "method": method,
@@ -416,6 +577,7 @@ def optimize_portfolio(
         "portfolio_expected_return_pct": port_exp_ret_pct,
         "portfolio_volatility_pct": port_vol_pct,
         "sharpe_ratio": sharpe,
+        "cvar_95_pct": cvar_95,
         "active_candidates_count": n,
         "dropped_correlated_pairs": dropped_info,
         "sector_cap_applied": cap_applied,

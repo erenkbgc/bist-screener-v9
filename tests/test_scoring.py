@@ -48,6 +48,15 @@ def test_effective_at_after_cutoff_fails_point_in_time():
     assert reason == "point_in_time"
 
 
+def test_effective_at_none_fails_point_in_time_without_crashing():
+    """point_in_time_publication_lag: gercek KAP bildirim tarihi bulunamadiginda
+    (bkz. core/fundamentals.py) effective_at None kalir. None <= str karsilastirmasi
+    TypeError firlatmamali; aday guvenlik icin elenmeli (UYDURULMAZ)."""
+    passed, reason = hard_filters_passed(_base_candidate(effective_at=None), 0.55, "2026-09-10")
+    assert passed is False
+    assert reason == "point_in_time"
+
+
 def test_short_term_requires_volume_breakout():
     c = _base_candidate(bucket="short_term", volume_ratio_20d=1.0)
     passed, reason = hard_filters_passed(c, 0.55, "2026-09-10")
@@ -69,6 +78,19 @@ def test_excess_over_beta_hurdle_not_in_hard_filters():
     assert passed is True
 
 
+def test_hard_filters_fail_on_outlier_roi():
+    """180 gunluk gercekci olmayan asiri getiri vaatleri (> %200) guvenlik icin elenir."""
+    c_outlier = _base_candidate(expected_roi_pct=1596.0)
+    passed, reason = hard_filters_passed(c_outlier, 0.55, "2026-09-10")
+    assert passed is False
+    assert reason == "outlier_roi"
+
+    c_ok = _base_candidate(expected_roi_pct=45.0)
+    passed_ok, reason_ok = hard_filters_passed(c_ok, 0.55, "2026-09-10")
+    assert passed_ok is True
+    assert reason_ok is None
+
+
 def test_run_level_state_no_action_today_when_nothing_passes():
     scored = [{"candidate_state": "NO_ACTION"}, {"candidate_state": "WATCHLIST"}]
     assert run_level_state(scored) == "NO_ACTION_TODAY"
@@ -77,3 +99,24 @@ def test_run_level_state_no_action_today_when_nothing_passes():
 def test_run_level_state_normal_when_opportunity_exists():
     scored = [{"candidate_state": "NO_ACTION"}, {"candidate_state": "OPPORTUNITY"}]
     assert run_level_state(scored) == "NORMAL"
+
+
+def test_get_regime_weights():
+    from core.scoring import get_regime_weights
+
+    # Tanimsiz rejim: temel agirliklar donmeli
+    w_default = get_regime_weights(None)
+    assert w_default["valuation_z"] == 0.50
+    assert w_default["catalyst_score"] == 0.25
+
+    # STRONG_BULL: Katalizor/momentum artmali
+    w_bull = get_regime_weights("STRONG_BULL")
+    assert w_bull["catalyst_score"] > w_default["catalyst_score"]
+    assert abs(sum(w_bull.values()) - 1.0) < 1e-4
+
+    # STRONG_BEAR: Kalite ve Düşük Volatilite artmali
+    w_bear = get_regime_weights("STRONG_BEAR")
+    assert w_bear["low_vol_z"] > w_default["low_vol_z"]
+    assert w_bear["ownership_quality_z"] > w_default["ownership_quality_z"]
+    assert abs(sum(w_bear.values()) - 1.0) < 1e-4
+

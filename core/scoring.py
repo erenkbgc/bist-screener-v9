@@ -11,7 +11,8 @@ from pathlib import Path
 import yaml
 
 from core import db
-from core.ranking import compute_valuation_z, percentile_rank
+from core.ranking import compute_sector_neutral_valuation, percentile_rank
+from core.weight_optimizer import load_optimized_weights
 
 _WEIGHTS_PATH = Path(__file__).resolve().parent.parent / "config" / "weights.yaml"
 
@@ -19,6 +20,39 @@ _WEIGHTS_PATH = Path(__file__).resolve().parent.parent / "config" / "weights.yam
 def load_weights() -> dict:
     with open(_WEIGHTS_PATH, encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+def get_regime_weights(regime: str | None = None, weights_cfg: dict | None = None, use_optimized: bool = False) -> dict[str, float]:
+    """Piyasa rejimine gore dinamik faktor agirliklarini dondurur (Quant Level-Up Faz 1).
+    
+    1. Oncelik: use_optimized=True ise veri-gudumlu test edilip optimize edilmis faktor agirliklari.
+    2. Oncelik: Konfigurasyon tablosu (weights.yaml).
+    """
+    if use_optimized:
+        opt = load_optimized_weights()
+        if opt:
+            if regime and "regime_scoring_weights" in opt and regime in opt["regime_scoring_weights"]:
+                rw = opt["regime_scoring_weights"][regime]
+                tot = sum(float(v) for v in rw.values())
+                return {k: float(v) / tot for k, v in rw.items()} if tot > 0 else rw
+            if not regime and "scoring_weights" in opt:
+                base_opt = opt["scoring_weights"]
+                tot = sum(float(v) for v in base_opt.values())
+                return {k: float(v) / tot for k, v in base_opt.items()} if tot > 0 else base_opt
+
+    if weights_cfg is None:
+        weights_cfg = load_weights()
+    base_w = dict(weights_cfg.get("scoring_weights", {}))
+    if not regime:
+        return {k: float(v) for k, v in base_w.items()}
+    regime_map = weights_cfg.get("regime_scoring_weights", {})
+    if regime in regime_map:
+        rw = regime_map[regime]
+        tot = sum(float(v) for v in rw.values())
+        if tot > 0:
+            return {k: float(v) / tot for k, v in rw.items()}
+        return {k: float(v) for k, v in rw.items()}
+    return {k: float(v) for k, v in base_w.items()}
 
 
 def _is_quarantined(as_of_date: str, ticker: str) -> bool:
@@ -37,7 +71,9 @@ def hard_filters_passed(candidate: dict, piotroski_threshold: float, as_of_date_
         # elenir (sahte bir "gecti" varsayimi yapilmaz).
         (candidate["free_float_pct"] is not None and candidate["free_float_pct"] >= 15, "free_float_pct"),
         (candidate["excess_over_hurdle_pct"] is not None and candidate["excess_over_hurdle_pct"] > 0, "hurdle"),
-        (candidate["effective_at"] <= as_of_date_cutoff, "point_in_time"),
+        # Outlier ROI guard: 180 gunluk gercekci olmayan asiri getiri vaatleri (> %200) guvenlik icin elenir
+        (candidate.get("expected_roi_pct") is None or candidate["expected_roi_pct"] <= 200.0, "outlier_roi"),
+        (candidate["effective_at"] is not None and candidate["effective_at"] <= as_of_date_cutoff, "point_in_time"),
         (candidate["piotroski_normalized_score"] is not None
          and candidate["piotroski_normalized_score"] >= piotroski_threshold, "piotroski"),
     ]
@@ -51,13 +87,13 @@ def hard_filters_passed(candidate: dict, piotroski_threshold: float, as_of_date_
     return True, None
 
 
-def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cutoff: str) -> list[dict]:
+def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cutoff: str, regime: str | None = None) -> list[dict]:
     """raw_candidates: her biri fundamentals + universe + ownership + catalyst + hurdle + piotroski
     alanlarini zaten birlestirilmis halde tasir (bkz. run.py). bucket alani 'long_term' veya
     'short_term' olmalidir.
     """
     weights = load_weights()
-    w = weights["scoring_weights"]
+    w = get_regime_weights(regime, weights)
     piotroski_threshold = weights["piotroski"]["normalized_score_threshold"]
     top_n = weights["top_n_per_bucket"]
 
@@ -70,7 +106,7 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
             scored.append(c)
             continue
 
-        val = compute_valuation_z(c, [x for x in raw_candidates if x["bucket"] == c["bucket"]])
+        val = compute_sector_neutral_valuation(c, [x for x in raw_candidates if x["bucket"] == c["bucket"]])
         c["valuation_z"] = val["valuation_z"]
         c["valuation_z_sector_neutral"] = val.get("valuation_z_sector_neutral", val["valuation_z"])
         c["peer_group_used"] = val["peer_group_used"]
@@ -91,6 +127,8 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
                        + w["ownership_quality_z"] * (c["ownership_z"] or 0)
                        + w["low_vol_z"] * (c.get("low_vol_z") or 0))
         c["final_score"] = final_score
+        c["scoring_weights_used"] = w
+        c["market_regime_used"] = regime
         c["filtered_by"] = None
         c["candidate_state"] = "WATCHLIST"  # asagidaki dilim/confidence mantigiyla kesinlestirilecek gecici deger
         scored.append(c)

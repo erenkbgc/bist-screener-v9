@@ -1,4 +1,53 @@
-# BIST Screener — v10/v11/v12/v13 Yol Haritasi (To-Do)
+# BIST Screener — v10/v11/v12/v13/v14 Yol Haritasi (To-Do)
+
+## v14 Kurumsal Kantitatif Mimari & Sifir Manuel Agirlik (2026-09-19) — TAMAMLANDI
+
+- [x] **1. Makine Ogrenmesi ile BIST Trend & Yon Tahmin Motoru (`core/trend_forecaster.py`)** — TAMAMLANDI (2026-09-19).
+  - Out-of-fold ensemble (RandomForest + LogisticRegression) ve 3-fold TimeSeriesSplit capraz dogrulama.
+  - 25+ makro ve teknik gosterge: USD/TRY kuru, BIST 100 endeksi, RSI(14), MACD(12,26,9), Bollinger Bant genisligi ve %B, ATR(14), ADX(14), 20/50/200 gunluk HO egimleri, hacim anomalileri.
+  - SciPy SLSQP optimizasyonu ile Out-of-Fold Brier loss minimizasyonu (sabit agirlik yerine veri bazli ensemble).
+  - Walk-forward backtest simülasyon araci: `scripts/run_trend_forecast_backtest.py`.
+  - Testler: `tests/test_trend_forecaster.py` (5/5 basarili).
+
+- [x] **2. Sifir Manuel Agirlik Motoru (`core/weight_optimizer.py`)** — TAMAMLANDI (2026-09-19).
+  - Kapali form trinomial senaryo olasiliklari: ML artis olasiligi $p$ sartli $P(\text{Bull})=p^2, P(\text{Bear})=(1-p)^2, P(\text{Base})=2p(1-p)$; toplam kesinlikle 1.0.
+  - Carpanlarda sapmasiz harmonik ortalama (`compute_harmonic_mean`): Asiri yuksek carpiklik ve kucuk karli sirketlerin F/K, FD/FAVOK, PD/DD carpanlarini yapay sisirmesini onleyen matematiksel dogruluk.
+  - Bounded SLSQP Brier Score minimizasyonu ile ML ensemble agirlik kalibrasyonu.
+  - Granger-Ramanathan L2-kisitli tahmin kombinasyonu (`optimize_valuation_weights`): DCF, Emsal Carpanlar ve Kalite Primi degerlemelerini tarihsel getiri hatasini minimize edecek sekilde katsayilandirma.
+  - Bilgi Orani (Information Ratio) faktor agirliklandirmasi (`optimize_factor_weights`): Spearman rank korelasyonu (IC) ve istikrar olcutu ($IR = \overline{IC}/\sigma_{IC}$) ile skorlama agirliklarini belirleme.
+  - JSON kalibrasyon depolama ve yukleme (`config/weights_optimized.json`).
+  - CLI optimizasyon araci: `scripts/optimize_weights.py` (5 yillik 1.825 barda test edilip kalibre edildi).
+  - Testler: `tests/test_weight_optimizer.py` (7/7 basarili).
+
+- [x] **3. Gercekci Hedef Fiyat & Volatilite Konisi Motoru (`core/targets.py`)** — TAMAMLANDI (2026-09-19).
+  - Black-Scholes Geometrik Brown Hareketi $z^* = 2.50\sigma$ volatilite konisi tavani (`compute_volatility_cone_envelope`).
+  - Ornstein-Uhlenbeck ortalamaya donus yakınsama hizi ($\alpha^* = 32\%$ ampirik BIST fiyati olusum hizi) ile 180 gunluk gercekci hedef hesaplama (`compute_long_term_target`).
+  - Sifir hayali getiri ilkesi: Asiri sisirilmis +%150 DCF hedeflerini reel piyasa gercekligine baglama; sinirsiz degerleme degeri `terminal_fair_value` alaninda seffafca korunur.
+  - Kisa vadeli hedefte 60 gunluk swing high ve ust Bollinger Band tavani (`compute_short_term_target`).
+  - Testler: `tests/test_targets_realistic.py` (4/4 basarili).
+
+- [x] **4. 12-1 Momentum ve Trend Duzgunlugu Motoru (`core/momentum.py`)** — TAMAMLANDI (2026-09-19).
+  - Jegadeesh & Titman (1993) 12-1 ay momentum anomalisi (son 21 gunluk kisa vadeli asiri tepkiyi dislayip 252 gunluk egilimi olcme).
+  - Log fiyat lineer regresyon $R^2$ trend duzgunlugu: Testere piyasasindaki spekulatif ani sicramalari eleyen kalite filtresi.
+  - Amihud illikidite orani ve ceza carpanı ($|Return| / Volume_{TL}$): Dusuk hacimli tahtalarda yapay momentum fiyatlamasini engelleyen likidite filtresi.
+  - Testler: `tests/test_momentum.py` (7/7 basarili).
+
+- [x] **5. Hiyerarsik Risk Paritesi (HRP) Portfoy Optimizasyonu (`core/portfolio.py`)** — TAMAMLANDI (2026-09-19).
+  - Marcos Lopez de Prado (2016) dendrogram tabanli kumeleme ve agac siralamasi (`compute_hrp_weights`).
+  - Kovaryans matrisinin tersini almadan (inversion-free), tekillik ve coklu dogrusallik risklerini sifirlayan kurumsal portfoy dagilimi.
+  - Testler: `tests/test_hrp_portfolio.py` (3/3 basarili).
+
+- [x] **6. GitHub Actions CI/CD & Otomatik Test / Haftalik Kalibrasyon** — TAMAMLANDI (2026-09-19).
+  - `.github/workflows/ci.yml`: Her push ve pull request'te 240 testin tamamini calistiran surekli entegrasyon hatti.
+  - `.github/workflows/weekly-optimize.yml`: Her Pazar 21:00 TSI otomatik olarak 5 yillik BIST verisiyle tum agirliklari yeniden kalibre eden ve repo'ya commit eden self-learning is akisi.
+  - `requirements.txt`: Bilimsel kutuphaneler (`numpy`, `pandas`, `scipy`, `scikit-learn`) eksiksiz sabitlendi.
+
+- [x] **7. README.md Kurumsal Kantitatif Guncellemesi** — TAMAMLANDI (2026-09-19).
+  - `240 passing` ve `v14 institutional quant` rozetleri.
+  - Ucgen degerleme, ML TrendForecaster, Volatilite Konisi ve HRP modullerini gosteren guncel Mermaid mimari semasi.
+  - CLI komutlari ve bilimsel metodoloji kilavuzu.
+
+---
 
 ## v13 Stratejik Yol Haritasi ve Oncelik Siralamasi (2026-09-17)
 
@@ -124,14 +173,69 @@ SONRAYA alindi.
   (4) `KNOWN_LIMITATIONS_TR` ve sablona nominal mali tablo ve donem-karsilastirmali aktif devir
   hizi sinirlamasi ifsasi eklendi; `report/validate.py`'ye "29" eklendi.
   `tests/test_basis_guard.py` ve `tests/test_piotroski.py` genisletildi.
-- [ ] **point_in_time_publication_lag** (3-4 gun) — `core/fundamentals.py:18`
-  `published_at = period_end` ("basitlestirilmis mock varsayimi") CANLI
-  modda da yururlukte; gercek beyanlar 6-10 hafta sonra gelir ->
-  P11_lookahead_bias ihlali. `live_kap_disclosures` zaten gercek
-  `published_at` uretiyor, `_earnings_dates_cached` zaten cache'leniyor
-  ama yanlis tuketiciye (`live_upcoming_events`) bagli — bunlar
-  `effective_at` turetmek icin yeniden kullanilmali. KAP toplu API
-  (asagida onaylandi) bunu tek sorguda saglayabilir.
+- [x] **point_in_time_publication_lag** — TAMAMLANDI (2026-09-19).
+  Kok neden dogrulandi: `_earnings_dates_cached` (`Ticker.earnings_dates`)
+  yalnizca GELECEK planlanan bilanco tarihlerini iceriyor (canli test,
+  FORTE: yalnizca 2026-11-09/2027-03-11 gorunuyor, GECMIS bildirim YOK) --
+  TODO'nun onerdigi "yeniden kullan" yaklasimi calismiyordu, gecmis
+  yayinlanma tarihi icin uygun degil. Bunun yerine `Ticker.news` (KAP
+  bildirimleri) kullanildi, ANCAK varsayilan `limit=20` aktif hisselerde
+  (pay alim-satim/devre kesici bildirimleriyle dolu) gercek "Finansal
+  Rapor" bildirimini pencerenin disina itiyordu (canli test, FORTE:
+  limit=20'de YOK, limit=200'de 4 donem geriye kadar var) -- bu yuzden
+  `core/live_data.py::_financial_report_disclosures_cached` KAP
+  saglayicisindan dogrudan `limit=200` ile ceker.
+  `core/live_data.py::live_financial_report_published_at(ticker, period_end)`:
+  Title'i "Finansal Rapor" ile eslesen, period_end'den 0-150 gun SONRA
+  gelen EN YAKIN bildirimi bulur; eslesme yoksa None (UYDURULMAZ).
+  `bist_mcp/server.py::get_financial_report_published_at` (live/mock
+  dispatch, mock modda eski basitlestirilmis varsayim korunur) ve
+  `core/fundamentals.py::fetch_and_store_fundamentals` (artik ticker
+  basina, dongu ICINDE cagriliyor) entegre edildi.
+  `core/scoring.py::hard_filters_passed`'daki `point_in_time` kontrolu
+  `effective_at is None` durumunu (TypeError yerine) guvenli sekilde
+  eleyecek sekilde duzeltildi.
+  Canli dogrulama (2026-09-19, 3 hisse, `BIST_DATA_MODE=live`):
+  FORTE period_end=2026-06-30 -> published_at=2026-08-06 (37 gun gecikme),
+  AKBNK -> 2026-07-28 (28 gun), THYAO -> 2026-08-05 (36 gun). Onceki
+  varsayim (published_at=period_end, 0 gun gecikme) her ucunde de
+  P11_lookahead_bias ihlaliydi.
+  Testler: `tests/test_fundamentals.py` (2 yeni), `tests/test_scoring.py`
+  (1 yeni, None-safety), `tests/test_live_data.py` (3 yeni) eklendi;
+  tam suite 196->202 test, tumu geciyor.
+- [x] **kap_catalyst_sentiment_live_calibration** — TAMAMLANDI (2026-09-19).
+  Kullanici istegi: "KAP haberlerini analiz edip sentiment skoru
+  verebilsek... testlerini 3 canli hisse ile yap". Mekanizma zaten
+  MEVCUTTU (`core/catalysts.py::fetch_kap_catalysts`, `final_score`'un
+  bir parcasi, `weights.yaml`), kural-tabanli (LLM DEGIL,
+  `no_free_text_interpretation_of_kap`) -- ama canli 3-hisse testinde
+  (FORTE/AKBNK/THYAO, 2026-09-19) HER bildirim `material_event_other`
+  (notr) kategorisine dusuyordu: `_CATEGORY_RULES` regex'leri gercek KAP
+  basliklariyla (5 hisse, ~250 bildirimlik ornek) HICBIR ZAMAN
+  eslesmiyordu -- sentiment sinyali fiilen tamamen etkisizdi.
+  (1) `financial_report` icin `sign: by_surprise` -> `sign: neutral`:
+  canli dogrulama (`Ticker.earnings_dates`, AKBNK/THYAO/ASELS) EPS
+  Estimate/Reported EPS'nin HER ZAMAN None geldigini gosterdi; eskiden
+  `_CATEGORY_RULES`'daki sabit `impact_sign="positive"` ile birlesince
+  HER kar aciklamasi (agirlik=3, en yuksek; yari omur=75 gun, en uzun)
+  kosulsuz POZITIF sayiliyordu -- gercek kar acikla/kacir bilgisi olmadan
+  SESSIZCE UYDURULAN bir yon sinyali (bkz. `kap_earnings_surprise_data_
+  source_gap` arastirma notu).
+  (2) Regex kapsam bosluklari (5 hisselik canli ornekte gozlemlenen gercek
+  basliklardan): `share_buyback` "geri alım" -> "geri alı" (cekimli
+  bicimleri de yakalar), `new_business_or_tender`'a "iş ilişkisi" eklendi
+  (ornekte 31 bildirim, EN SIK ikinci baslik, eskiden HIC yakalanmiyordu),
+  yeni kategoriler: `trading_ban` (SPK islem yasagi, negative, agirlik=3),
+  `dividend_distribution` (kar payi dagitim, positive, agirlik=2),
+  `circuit_breaker` (devre kesici, volatility_event, EN SIK ucuncu baslik
+  -- 42 bildirim, eskiden hicbir kategoriye girmiyordu).
+  Canli once/sonra karsilastirma (2026-09-19, 3 hisse, 30 gun pencere):
+  ONCE: FORTE/AKBNK/THYAO ucu de catalyst_score=0.0, volatility_event=
+  False (tamamen etkisiz). SONRA: FORTE catalyst_score=0.0965 (gercek
+  "Yeni İş İlişkisi" sinyali), ucu de volatility_event=True (gercek devre
+  kesici bildirimleri artik yakalaniyor).
+  Testler: `tests/test_catalysts.py` (yeni dosya, 6 test -- modul daha
+  once HIC test edilmiyordu). Tam suite 202->208 test, tumu geciyor.
 - [ ] **nominal_real_consistency_in_valuation_addons** (2 gun) — Canli
   olcum (2026-09-17): `bond_2y=%40.61` nominal iskonto + `g=%5.0`
   (dusuk-enflasyon rejimi terminal buyume) ayni formulde -> spread ~40pp
@@ -143,13 +247,17 @@ SONRAYA alindi.
 
 ### Tier 1 — kapsam bosluklari (P1, Tier 0 canli dogrulanmadan baslatilmaz)
 
-- [ ] **ev_ebitda_net_debt_recovery** (2-3 gun) — DB kaniti: `ev_ebitda`
-  ve `net_debt` 1606/1606 satirda `None` (borsapy ust kaynak kazimasi
-  bu alanlari pratikte hic doldurmuyor). Industrial profilinin 7
-  metriginden 3'u, `targets.py` EV/FAVOK bacagi ve
-  `dividend_sustainability` kaldirac kontrolu bu yuzden olu. Bilanco/
-  gelir tablosu bilesenlerinden dogrudan hesaplanabilir (net borc =
-  finansal borclar - nakit; FAVOK = faaliyet kari + amortisman).
+- [x] **ev_ebitda_net_debt_recovery** — TAMAMLANDI (2026-09-19).
+  - Bilanço (`bs`), Gelir Tablosu (`inc`) ve Nakit Akım Tablosu (`cf`) kalemlerinden doğrudan hesaplama eklendi (`core/live_data.py::live_fundamentals`).
+  - Net Borç = (Kısa + Uzun Vadeli Finansal Borçlar) - (Nakit ve Nakit Benzerleri). Net nakit pozisyonu negatif değer olarak tam korunur (örn. TUPRS -67.1B TL).
+  - FAVÖK = Esas Faaliyet Kârı (EBIT) + |Amortisman ve İtfa Payları|.
+  - EV (Firma Değeri) = Piyasa Değeri + Net Borç; EV/EBITDA ve EV/Sales çarpanları pozitif EV ve pozitif EBITDA korumasıyla güvenli hesaplanır.
+  - Banka ve sigorta şirketlerinde sanayi borç/FAVÖK metrikleri (`bank`, `insurance`) kesinlikle None kalır.
+  - `run.py::_net_debt_ebitda` ebitda <= 0 durumunda negatif kaldıraç yanılgısını engellemek için None dönecek şekilde korundu.
+  - `core/dividend_sustainability.py` ebitda <= 0 iken pozitif borç varsa yüksek kaldıraç riski üretir.
+  - `core/fundamentals.py` DB upsert ON CONFLICT güncellemesine ebitda_ttm, net_debt ve diğer temel alanlar dahil edildi.
+  - Canlı doğrulama (THYAO: EV/EBITDA 6.40x, FROTO: 6.25x, TUPRS: Net Borç -67.11B TL, AKBNK: None).
+  - Testler: `tests/test_ev_ebitda_recovery.py` (7/7 başarılı, tam suite 247/247 geçiyor).
 - [ ] **reit_ffo_and_holding_nav** (4-5 gun) — 62 GYO tickeri yalnizca
   PD/DD ile siralaniyor (`ffo_yield`/`nav_discount` hep None -> reit
   profili fiilen 1/3 metrik). 69 holding tickeri `nav_discount` hep None
@@ -187,6 +295,17 @@ SONRAYA alindi.
 - **`tms29_exit_watch`**: Turkiye IAS 29 listesinden ciktiginda yeni bir
   baz kirigi olusacak; `basis_guard` tarih/konfig-duyarli hale getirilip
   periyodik izlenmeli.
+- **`kap_earnings_surprise_data_source_gap`** (2026-09-19 tespit edildi):
+  `core/catalysts.py`'nin `sign: by_surprise` mekanizmasi gercek EPS
+  beklenti/gerceklesen (Reported EPS vs EPS Estimate) verisi gerektirir;
+  canli dogrulama (AKBNK/THYAO/ASELS, `Ticker.earnings_dates`) bu alanlarin
+  Is Yatirim ucretsiz kaynaginda HER ZAMAN None geldigini gosterdi.
+  `financial_report` kategorisi bu yuzden gecici olarak `sign: neutral`'a
+  cekildi (bkz. `config/catalyst_decay.yaml` yorumu) -- eskiden sabit
+  "positive" ile en yuksek agirlikli (3) ve en uzun yari omurlu (75 gun)
+  kategori HER kar aciklamasini kosulsuz olumlu katalizor sayiyordu.
+  Gercek bir ucretsiz EPS-beklenti kaynagi (foreks, fintables, vs.)
+  bulunursa `by_surprise` yeniden aktiflestirilebilir.
 
 ### Bu oturumda onaylanan yeni veri kaynaklari
 

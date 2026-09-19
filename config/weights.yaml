@@ -29,3 +29,33 @@ valuation_triangle_weights:
   peer_multiples: 0.35
   quality_premium: 0.25
 
+# Rejim-Duyarli Dinamik Faktor Agirliklari (Quant Level-Up Faz 1)
+# Piyasa rejimine gore faktörlerin agirlik dagilimi (Asness et al., AQR 2017).
+regime_scoring_weights:
+  STRONG_BULL:
+    valuation_z: 0.35
+    catalyst_score: 0.35
+    ownership_quality_z: 0.15
+    low_vol_z: 0.15
+  MILD_BULL:
+    valuation_z: 0.45
+    catalyst_score: 0.25
+    ownership_quality_z: 0.15
+    low_vol_z: 0.15
+  CORRECTION_CHOPPY:
+    valuation_z: 0.45
+    catalyst_score: 0.15
+    ownership_quality_z: 0.25
+    low_vol_z: 0.15
+  OVERSOLD_REVERSAL:
+    valuation_z: 0.55
+    catalyst_score: 0.15
+    ownership_quality_z: 0.20
+    low_vol_z: 0.10
+  STRONG_BEAR:
+    valuation_z: 0.35
+    catalyst_score: 0.10
+    ownership_quality_z: 0.30
+    low_vol_z: 0.25
+
+
