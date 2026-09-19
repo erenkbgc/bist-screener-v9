@@ -147,9 +147,9 @@ Academic literature in emerging markets (López de Prado, Doğan & Büyükkor) d
 
 In accordance with institutional quantitative standards, **all manual, subjective, and arbitrary weights have been eliminated** across the pipeline (`core/weight_optimizer.py`):
 
-1. **Closed-Form Trinomial Transition Probabilities**:
-   Instead of hardcoded YAML lookup tables, scenario probabilities are derived continuously from the ML model's calibrated upward probability $p = \text{prob\_up} \in [0, 1]$:
-   $$P(\text{Bull}) = p^2, \quad P(\text{Bear}) = (1 - p)^2, \quad P(\text{Base}) = 2p(1 - p)$$
+1. Closed-Form Trinomial Transition Probabilities: Instead of hardcoded YAML lookup tables, scenario probabilities are derived continuously from the ML model's calibrated upward probability $p = \mathrm{prob\_up} \in [0, 1]$:
+$$P(\text{Bull}) = p^2, \quad P(\text{Bear}) = (1 - p)^2, \quad P(\text{Base}) = 2p(1 - p)$$
+
    Strictly normalized ($\sum P_i = 1.0$), smooth, and mathematically consistent.
 2. **Granger-Ramanathan Forecast Combination**:
    Valuation Triangle leg weights (DCF vs. Peers vs. Quality) are solved via constrained quadratic programming (SLSQP) on historical forecast errors (MSPE), giving higher weight to models with lower historical prediction variance.
