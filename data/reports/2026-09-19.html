@@ -1,0 +1,4525 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIST Strateji ve Hisse Raporu - 2026-09-19</title>
+<style>
+  /* ========== BASE RESET & INSTITUTIONAL TYPOGRAPHY ========== */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 13.5px;
+    padding: 24px 12px;
+  }
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ========== CARDS & CONTAINERS ========== */
+  .card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 24px 26px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  }
+  .card-flush {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* ========== EXECUTIVE HEADER ========== */
+  .header-card {
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 28px 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+  }
+  .header-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    margin-bottom: 8px;
+    line-height: 1.25;
+  }
+  .header-subtitle {
+    font-size: 13px;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .macro-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .macro-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .macro-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  .macro-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+  }
+  .macro-pill-alert {
+    display: inline-block;
+    background: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  /* ========== SECTION TITLES ========== */
+  .section-header {
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: "";
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: #2563eb;
+    border-radius: 2px;
+  }
+  .section-desc {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+    padding-left: 12px;
+  }
+
+  /* ========== STATUS BADGES ========== */
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .badge-STRONG_OPPORTUNITY { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .badge-OPPORTUNITY        { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+  .badge-WATCHLIST          { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+  .badge-NO_ACTION          { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  .badge-QUARANTINE         { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+  /* ========== TABLES ========== */
+  .table-responsive {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+  .table-exec {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    text-align: left;
+  }
+  .table-exec th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+  }
+  .table-exec td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+  }
+  .table-exec tr:last-child td {
+    border-bottom: none;
+  }
+  .table-exec tr:hover td {
+    background: #f8fafc;
+  }
+
+  .col-ticker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col-ticker {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.01em;
+  }
+  .col-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .col-roi {
+    text-align: right;
+    font-weight: 800;
+    color: #059669;
+    font-variant-numeric: tabular-nums;
+  }
+  .col-stop {
+    text-align: right;
+    font-weight: 700;
+    color: #dc2626;
+    font-variant-numeric: tabular-nums;
+  }
+  .col-range {
+    text-align: right;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .col-sub {
+    display: block;
+    font-size: 10.5px;
+    color: #94a3b8;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  /* ========== QUICK COPY CONTAINER ========== */
+  .quick-copy-wrapper {
+    margin-top: 14px;
+  }
+  .quick-copy-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .quick-copy-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+  }
+  .quick-copy-box {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11.5px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    border: 1px solid #1e293b;
+  }
+
+  /* ========== CANDIDATE DOSSIER CARD ========== */
+  .dossier-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+  .dossier-header {
+    background: #f8fafc;
+    padding: 12px 18px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .dossier-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .dossier-ticker {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.02em;
+  }
+  .dossier-peer {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+  }
+  .dossier-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: #334155;
+    font-variant-numeric: tabular-nums;
+  }
+  .dossier-strip-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .dossier-strip-item b {
+    color: #0f172a;
+  }
+
+  .dossier-body {
+    padding: 16px 18px;
+  }
+  .dossier-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .dossier-callout-thesis {
+    background: #f8fafc;
+    border-left: 3px solid #2563eb;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #334155;
+  }
+  .dossier-callout-thesis b {
+    color: #0f172a;
+  }
+  .dossier-callout-thesis ul {
+    margin-top: 6px;
+    padding-left: 16px;
+    color: #475569;
+    font-size: 12px;
+  }
+  .dossier-callout-thesis li {
+    margin-bottom: 3px;
+  }
+
+  .dossier-callout-risk {
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #78350f;
+  }
+  .dossier-callout-risk b {
+    color: #451a03;
+  }
+  .dossier-invalidation {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: #92400e;
+    background: rgba(245, 158, 11, 0.12);
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  /* Key Metrics Micro-Table */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 6px 16px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 11.5px;
+    margin-top: 10px;
+  }
+  .metric-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #edf2f7;
+    padding: 4px 0;
+  }
+  .metric-entry:last-child {
+    border-bottom: none;
+  }
+  .metric-key {
+    color: #64748b;
+  }
+  .metric-val {
+    font-weight: 700;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dossier-note {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .dossier-note b {
+    color: #334155;
+  }
+
+  /* Reference Models Box */
+  .ref-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+  .ref-box b {
+    color: #1e293b;
+  }
+
+  /* Warning Box */
+  .warn-card {
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #92400e;
+  }
+  .warn-card b {
+    color: #78350f;
+  }
+  .warn-card ul {
+    margin: 4px 0 0;
+    padding-left: 16px;
+  }
+
+  /* Invalidation Triggered Box */
+  .alert-card {
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+    border-radius: 0 6px 6px 0;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 12.5px;
+    color: #991b1b;
+  }
+  .alert-card b {
+    color: #7f1d1d;
+  }
+  .alert-card ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+
+  /* Evaluation & Diff Sections */
+  .eval-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 10px;
+  }
+  .eval-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+  }
+  .eval-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    font-variant-numeric: tabular-nums;
+  }
+  .eval-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Accordion for Secondary Items */
+  details.exec-details {
+    margin-top: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+  details.exec-details > summary {
+    cursor: pointer;
+    padding: 10px 14px;
+    background: #f8fafc;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    user-select: none;
+    outline: none;
+  }
+  details.exec-details > summary:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+  }
+  details.exec-details > .details-content {
+    padding: 14px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  /* Filter list */
+  .filter-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+  .filter-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+  }
+  .filter-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+  }
+  .filter-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Empty states */
+  .empty-state {
+    padding: 24px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 12.5px;
+  }
+
+  /* ========== FOOTER ========== */
+  .footer {
+    padding: 16px 8px;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.7;
+    text-align: justify;
+  }
+  .footer p {
+    margin-bottom: 8px;
+  }
+  .footer-divider {
+    border-top: 1px solid #cbd5e1;
+    margin: 12px 0;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 680px) {
+    body { padding: 12px 6px; }
+    .card, .header-card { padding: 18px 16px; }
+    .header-title { font-size: 19px; }
+    .dossier-grid { grid-template-columns: 1fr; }
+    .dossier-strip { flex-wrap: wrap; gap: 8px; }
+    .dossier-header { flex-direction: column; align-items: flex-start; }
+    .macro-grid { grid-template-columns: 1fr 1fr; }
+    .table-exec { min-width: 520px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============================== EXECUTIVE HEADER ============================== -->
+  <div class="header-card">
+    <div class="header-meta">
+      <span>Borsa Istanbul Model Portfoy &amp; Tarama Raporu</span>
+      <span>2026-09-19</span>
+    </div>
+    <h1 class="header-title">BIST Strateji ve Model Portfoy Bulteni</h1>
+    <div class="header-subtitle">
+        Piyasa Rejimi: <b style="color:#ffffff;">unknown_real_rate + plateau_inflation + stable</b>. Cok faktorlu degerleme ve risk modelleri cercevesinde one cikan firsatlar asagida ozetlenmistir.
+    </div>
+
+    <div class="macro-grid">
+      <div class="macro-item">
+        <span class="macro-lbl">BIST 100</span>
+        <span class="macro-val">13284.42</span>
+      </div>
+      <div class="macro-item">
+        <span class="macro-lbl">Politika Faizi</span>
+        <span class="macro-val">%-</span>
+      </div>
+      <div class="macro-item">
+        <span class="macro-lbl">2Y Gosterge</span>
+        <span class="macro-val">%40.11</span>
+      </div>
+      <div class="macro-item">
+        <span class="macro-lbl">Yillik TUFE</span>
+        <span class="macro-val">%-</span>
+      </div>
+      <div class="macro-item">
+        <span class="macro-lbl">USD/TRY</span>
+        <span class="macro-val">48.79</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== BOZULAN TEZLER UYARISI ============================== -->
+  <div class="alert-card">
+    <b>Bozulan Tez Bildirimi:</b> Asagidaki hisselerde onceden belirlenmis tez bozulma kosullari tetiklenmistir (Dogrudan satis sinyali degildir, model risk kontroludur):
+    <ul>
+      <li><b>CIMSA</b>: piotroski_normalized_score &lt; 0.3 gerceklesti (Guncel deger: )</li>
+      <li><b>DOAS</b>: piotroski_normalized_score &lt; 0.3 gerceklesti (Guncel deger: )</li>
+      <li><b>PETKM</b>: piotroski_normalized_score &lt; 0.3 gerceklesti (Guncel deger: )</li>
+    </ul>
+  </div>
+
+  <!-- ============================== 1. UZUN VADELI FIRSATLAR ============================== -->
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">1. Uzun Vadeli Firsatlar (60 – 180 Gun)</h2>
+      <div class="section-desc">Sektorel goreli degerleme, Piotroski kalite filtresi ve Degerleme Ucgeni modellerine dayali stratejik pozisyonlar.</div>
+    </div>
+
+    <div class="empty-state">Bugun icin uzun vadeli model portfoy adayi bulunmamaktadir.</div>
+  </div>
+
+  <!-- ============================== 2. KISA VADELI FIRSATLAR ============================== -->
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">2. Kisa Vadeli Firsatlar (5 – 20 Gun)</h2>
+      <div class="section-desc">20 gunluk hareketli ortalamaya geri cekilme, ATR volatilite kanali ve hacim teyitli taktiksel pozisyonlar.</div>
+    </div>
+
+    <div class="empty-state">Bugun icin kisa vadeli taktiksel aday bulunmamaktadir.</div>
+  </div>
+
+  <!-- ============================== 3. ADAY BAZLI YATIRIM TEZLERI ============================== -->
+
+  <!-- ============================== 4. PORTFOY & MAKRO DEGISIMLER ============================== -->
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">4. Portfoy ve Makro Degisimler</h2>
+      <div class="section-desc">Onceki kosuya gore listeye yeni giren/cikan hisseler, makro guncellemeler ve yogunlasma uyarilari.</div>
+    </div>
+
+    <div style="font-size:12.5px; color:#334155; line-height:1.6;">
+      <div style="margin-bottom:6px;"><b>Portfoye Yeni Giren:</b> KOZAL</div>
+
+      <div style="margin-bottom:6px;"><b>Portfoyden Cikan:</b> A1CAP, ADESE, AKBNK, AKFYE, ALBRK, ARCLK, ASGYO, ATAKP, AVOD, AYDEM, AYEN, BAGFS, BAKAB, BASGZ, BERA, BIMAS, BMSTL, CEMTS, CEOEM, CONSE, DESPC, DEVA, DMRGD, DYOBY, DZGYO, EDIP, ENERY, ENTRA, FORTE, FROTO, GLRYH, GLYHO, GOZDE, GSDHO, HATEK, IHGZT, IZMDC, KIMMR, KORDS, KRDMA, KRDMD, KRSTL, KRVGD, KZBGY, LOGO, MARTI, MAVI, MERCN, MERIT, MNDRS, MPARK, NTGAZ, NTHOL, OZGYO, PENGD, PETUN, PGSUS, PNSUT, RTALB, SAHOL, SRVGY, SURGY, TEKTU, TMSN, TRENJ, TRGYO, TRMET, TURSG, ULKER, ULUUN, USAK, VKGYO, VRGYO, YATAS, YGGYO</div>
+
+
+      <div style="margin-top:10px;"><b>Makro Gosterge Degisimleri:</b>
+bond_2y_pct: 40.61 &rarr; 40.11; usdtry_spot: 48.83 &rarr; 48.79; xu100_level: 13509.76 &rarr; 13284.42      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================== HRP PORTFOY DAGILIMI & RISK ============================== -->
+
+  <!-- ============================== 5. MODEL TAHMIN IZLEME ============================== -->
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">5. Model Tahmin Izleme Ozeti</h2>
+      <div class="section-desc">Canli takip ozetidir. T+5/T+20/T+60/T+180 ufuklari gunluk secilen adaylarda ortusur (180 gunluk uzun vadeli tezler 20 gunluk kisa vadeli adaylarla ayni donemde secilebilir); N gunluk takip N bagimsiz gozlem anlamina gelmez. Her ufuk asagida AYRI gosterilir, tek bir birlesik basari orani verilmez.</div>
+    </div>
+
+    <table class="eval-table">
+      <thead>
+        <tr>
+          <th>Ufuk (Gun)</th>
+          <th>Gozlem Sayisi</th>
+          <th>Isabet Orani</th>
+          <th>Medyan Fazla Getiri</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================== 6. KAPSAM DISI & FILTRE ============================== -->
+  <div class="card">
+    <details class="exec-details">
+      <summary>Filtreye Takilan / Kapsam Disi Hisseler (987 Uygun Olmayan + 53 Skorlanamayan)</summary>
+      <div class="details-content">
+        <div style="font-size:11.5px; color:#64748b; margin-bottom:10px;">
+          53 adet hisse eksik veri, baz belirsizligi veya yetersiz esler grubu nedeniyle skorlanamamistir.
+        </div>
+        <table class="filter-table">
+          <thead>
+            <tr>
+              <th>Hisse</th>
+              <th>Filtrelenme Gerekcesi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">A1CAP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">A1YEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ACSEL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ADESE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AEFES</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AFYON</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AGESA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AGHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AGROT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AHGAZ</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AHSGY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKBNK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKCNS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKENR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKFGY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKFIS</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKFYE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKGRT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKHAN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKSA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKSEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKSGY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKSUE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALARK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALBRK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALCAR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALCTL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALFAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALKA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALKIM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALTNY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALVES</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ANGEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ANHYT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ANSGR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARASE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARCLK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARDYZ</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARENA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARFYE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARSAN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARTMS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARZUM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ASGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ASTOR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ASUZU</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ATAKP</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ATATP</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ATATR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AVGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AVHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AVOD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AVPGY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AYDEM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AYEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AYGAZ</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AZTEK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BAGFS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BAKAB</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BALSU</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BANVT</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BASGZ</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BEGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BERA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BESLR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BESTE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BEYAZ</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BIENY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BIGCH</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BIGTK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BIMAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BINHO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BJKAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BLCYT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BLUME</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BMSCH</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BNTAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BOBET</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BORLS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BORSK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BOSSA</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRISA</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRKVY</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRLSM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRSAN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRYAT</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BSOKE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BTCIM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BUCIM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BULGS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BURCE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BVSAN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BYDNR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CANTE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CATES</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CCOLA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CELHA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CEMAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CEMTS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CEOEM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CGCAM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CIMSA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CLEBI</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CMBTN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CONSE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CRDFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CRFSA</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CUSAN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CVKMD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CWENE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DAGI</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DAPGM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DARDL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DCTTR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DENGE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DERHL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DERIM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DESA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DESPC</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DEVA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DGATE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DGNMO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DITAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DMRGD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DMSAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DNISI</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOCO</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOFER</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOKTA</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DUNYH</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DURDO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DURKN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DZGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EBEBK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ECILC</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ECOGR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ECZYT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EDATA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EDIP</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EFOR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGEEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGEGY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGEPO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGGUB</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGPRO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EKGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EKOS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EKSUN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ELITE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EMKEL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EMPAE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENDAE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENERY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENJSA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENKAI</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENSRI</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENTRA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ERCB</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EREGL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ESCAR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ESCOM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ESEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ETILR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ETYAT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EUKYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EUPWR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EUREN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EYGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FADE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FENER</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FLAP</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FMIZP</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FONET</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FORMT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FORTE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FRIGO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FRMPL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FROTO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GARAN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GARFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GEDIK</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GEDZA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GENIL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GENKM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GENTS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GEREL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GESAN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GIPTA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GLCVY</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GLRMK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GLRYH</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GLYHO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GMTAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GOKNR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GOLTS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GOODY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GOZDE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GRSEL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GRTHO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GSDDE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GSDHO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GSRAY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GUBRF</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GWIND</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GZNMI</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HALKB</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HATEK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HATSN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HDFGS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HEDEF</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HEKTS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HKTM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HLGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HOROZ</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HRKET</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HTTBT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HUNER</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ICBCT</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IEYHO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IHGZT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IHLAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IHLGM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IMASM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INDES</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INFO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INGRM</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INTEM</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INVEO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INVES</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISCTR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISDMR</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISFIN</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISGSY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISKPL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISMEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IZENR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IZINV</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IZMDC</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">JANTS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KAPLM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KAREL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KARSN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KARTN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KATMR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KBORU</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KCAER</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KCHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KERVN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KFEIN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KIMMR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLKIM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLMSN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLRHO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLSER</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLSYN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLYPV</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KMPUR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KNFRT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KOCMT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KONKA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KONYA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KOPOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KORDS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KOTON</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRDMA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRDMB</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRDMD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRONT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRPLS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRSTL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRVGD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KTSKR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KUTPO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KUVVA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KZBGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KZGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LIDER</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LIDFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LILAK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LINK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LKMNH</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LMKDC</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LOGO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LRSHO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LXGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LYDHO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LYDYE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MAALT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MACKO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MAKIM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MAKTK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MARBL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MARTI</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MAVI</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MCARD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MEGMT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MEKAG</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MERCN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MERIT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MERKO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">METRO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MEYSU</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MGROS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MHRGY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MIATK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MNDRS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MOBTL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MOGAN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MOPAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MPARK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MRGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MRSHL</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MSGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MTRKS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NATEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NETAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NETCD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NTGAZ</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NTHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NUGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NUHCM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OBAMS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OBASE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ODAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ODINE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OFSYM</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ONCSM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ONRYT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ORGE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OSMEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OSTIM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OTTO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OYAKC</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OYYAT</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OZGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OZKGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OZSUB</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OZYSR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PAGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PAHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PAPIL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PARSN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PATEK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PENGD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PENTA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PETKM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PETUN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PGSUS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PINSU</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PKART</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PKENT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PLTUR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PNLSN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PNSUT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">POLHO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PRDGS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PRKAB</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PRKME</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PSDTC</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PSGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">QUAGR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RALYH</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RAYSG</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RGYAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RTALB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RUBNS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RUZYE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RYGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RYSAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SAFKR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SAHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SANEL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SANFM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SANKO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SARKY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SASA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SAYAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SEGMN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SEGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SEKUR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SELEC</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SELVA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SERNT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SISE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SKBNK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SKTAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SKYLP</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SKYMD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SMART</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SMRTG</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SMRVA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SNGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SNICA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SOKE</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SOKM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SUNTK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SURGY</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SUWEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TABGD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TARKM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TATEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TATGD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TAVHL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TBORG</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TCELL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TCKRC</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TDGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TEHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TEKTU</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TERA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TEZOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TGSAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">THYAO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TKFEN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TKNSA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TLMAN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TMPOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TMSN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TNZTP</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TOASO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRALT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRCAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRENJ</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRMET</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TSGYO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TSKB</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TSPOR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TTKOM</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TTRAK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TUKAS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TUPRS</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TUREX</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TURGG</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TURSG</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">UCAYM</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">UFUK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ULKER</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ULUFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">UNLU</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">USAK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">USHOL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKBN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKFN</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKKO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VANGD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VBTYZ</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VERUS</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VESTL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VKGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VRGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VSNMD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YAPRK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YATAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YAYLA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YEOTK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YESIL</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YGGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YIGIT</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YKBNK</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YKSLN</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YUNSA</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YYLGD</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ZEDUR</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ZGYO</td>
+              <td>hurdle</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ZOREN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ZRGYO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">A1CAP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">A1YEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ACSEL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ADESE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AEFES</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AFYON</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AGESA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AGHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AGROT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AHGAZ</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AHSGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKBNK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKCNS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKENR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKFGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKFIS</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKFYE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKGRT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKHAN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKSA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKSEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKSGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AKSUE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALARK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALBRK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALCAR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALCTL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALFAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALKA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALKIM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALTNY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ALVES</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ANGEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ANHYT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ANSGR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARASE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARCLK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARDYZ</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARENA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARFYE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARSAN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARTMS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ARZUM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ASGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ASTOR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ASUZU</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ATAKP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ATATP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ATATR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AVGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AVHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AVOD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AVPGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AYDEM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AYEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AYGAZ</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">AZTEK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BAGFS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BAKAB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BALSU</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BANVT</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BASGZ</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BEGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BERA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BESLR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BESTE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BEYAZ</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BIENY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BIGCH</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BIGTK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BIMAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BINHO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BJKAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BLCYT</td>
+              <td>outlier_roi</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BLUME</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BMSCH</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BNTAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BOBET</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BORLS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BORSK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BOSSA</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRISA</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRKVY</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRLSM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRSAN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BRYAT</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BSOKE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BTCIM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BUCIM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BULGS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BURCE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BVSAN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">BYDNR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CANTE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CATES</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CCOLA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CELHA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CEMAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CEMTS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CEOEM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CGCAM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CIMSA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CLEBI</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CMBTN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CONSE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CRDFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CRFSA</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CUSAN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CVKMD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">CWENE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DAGI</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DAPGM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DARDL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DCTTR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DENGE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DERHL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DERIM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DESA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DESPC</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DEVA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DGATE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DGNMO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DITAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DMRGD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DMSAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DNISI</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOCO</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOFER</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DOKTA</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DUNYH</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DURDO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DURKN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">DZGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EBEBK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ECILC</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ECOGR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ECZYT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EDATA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EDIP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EFOR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGEEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGEGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGEPO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGGUB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EGPRO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EKGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EKOS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EKSUN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ELITE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EMKEL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EMPAE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENDAE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENERY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENJSA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENKAI</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENSRI</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ENTRA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ERCB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EREGL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ESCAR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ESCOM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ESEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ETILR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ETYAT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EUKYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EUPWR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EUREN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">EYGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FADE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FENER</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FLAP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FMIZP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FONET</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FORMT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FORTE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FRIGO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FRMPL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">FROTO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GARAN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GARFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GEDIK</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GEDZA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GENIL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GENKM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GENTS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GEREL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GESAN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GIPTA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GLCVY</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GLRMK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GLRYH</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GLYHO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GMTAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GOKNR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GOLTS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GOODY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GOZDE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GRSEL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GRTHO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GSDDE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GSDHO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GSRAY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GUBRF</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GWIND</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">GZNMI</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HALKB</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HATEK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HATSN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HDFGS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HEDEF</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HEKTS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HKTM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HLGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HOROZ</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HRKET</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HTTBT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">HUNER</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ICBCT</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IEYHO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IHGZT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IHLAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IHLGM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IMASM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INDES</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INFO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INGRM</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INTEM</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INVEO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">INVES</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISCTR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISDMR</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISFIN</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISGSY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISKPL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ISMEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IZENR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IZINV</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">IZMDC</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">JANTS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KAPLM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KAREL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KARSN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KARTN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KATMR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KBORU</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KCAER</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KCHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KERVN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KFEIN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KIMMR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLKIM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLMSN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLRHO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLSER</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLSYN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KLYPV</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KMPUR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KNFRT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KOCMT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KONKA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KONYA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KOPOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KORDS</td>
+              <td>outlier_roi</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KOTON</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRDMA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRDMB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRDMD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRONT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRPLS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRSTL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KRVGD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KTSKR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KUTPO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KUVVA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KZBGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">KZGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LIDER</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LIDFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LILAK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LINK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LKMNH</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LMKDC</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LOGO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LRSHO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LXGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LYDHO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">LYDYE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MAALT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MACKO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MAKIM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MAKTK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MARBL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MARTI</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MAVI</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MCARD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MEGMT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MEKAG</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MERCN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MERIT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MERKO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">METRO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MEYSU</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MGROS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MHRGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MIATK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MNDRS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MOBTL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MOGAN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MOPAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MPARK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MRGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MRSHL</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MSGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">MTRKS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NATEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NETAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NETCD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NTGAZ</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NTHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NUGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">NUHCM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OBAMS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OBASE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ODAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ODINE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OFSYM</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ONCSM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ONRYT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ORGE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OSMEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OSTIM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OTTO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OYAKC</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OYYAT</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OZGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OZKGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OZSUB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">OZYSR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PAGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PAHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PAPIL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PARSN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PATEK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PENGD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PENTA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PETKM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PETUN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PGSUS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PINSU</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PKART</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PKENT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PLTUR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PNLSN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PNSUT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">POLHO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PRDGS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PRKAB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PRKME</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PSDTC</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">PSGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">QUAGR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RALYH</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RAYSG</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RGYAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RTALB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RUBNS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RUZYE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RYGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">RYSAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SAFKR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SAHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SANEL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SANFM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SANKO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SARKY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SASA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SAYAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SEGMN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SEGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SEKUR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SELEC</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SELVA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SERNT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SISE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SKBNK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SKTAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SKYLP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SKYMD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SMART</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SMRTG</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SMRVA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SNGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SNICA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SOKE</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SOKM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SUNTK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SURGY</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">SUWEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TABGD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TARKM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TATEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TATGD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TAVHL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TBORG</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TCELL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TCKRC</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TDGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TEHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TEKTU</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TERA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TEZOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TGSAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">THYAO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TKFEN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TKNSA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TLMAN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TMPOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TMSN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TNZTP</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TOASO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRALT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRCAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRENJ</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TRMET</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TSGYO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TSKB</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TSPOR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TTKOM</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TTRAK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TUKAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TUPRS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TUREX</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TURGG</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">TURSG</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">UCAYM</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">UFUK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ULKER</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ULUFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">UNLU</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">USAK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">USHOL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKBN</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKFA</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKFN</td>
+              <td>reporting_basis</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VAKKO</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VANGD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VBTYZ</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VERUS</td>
+              <td>free_float_pct</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VESTL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VKGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VRGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">VSNMD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YAPRK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YATAS</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YAYLA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YEOTK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YESIL</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YGGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YIGIT</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YKBNK</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YKSLN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YUNSA</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">YYLGD</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ZEDUR</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ZGYO</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ZOREN</td>
+              <td>point_in_time</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700; color:#0f172a;">ZRGYO</td>
+              <td>free_float_pct</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============================== FOOTER & DISCLAIMERS ============================== -->
+  <div class="footer">
+    <p><b>final_score</b> = 0.50 &times; valuation_z + 0.25 &times; catalyst_score + 0.15 &times; ownership_quality_z + 0.10 &times; low_vol_z. Piotroski esigi: , ERP: %. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <div class="footer-divider"></div>
+    <p>BILINEN SINIRLAMA: VBTS/tedbir filtresi (Volatilite Bazli Tedbir Sistemi) su an gercek bir veri kaynagina baglanmadigi icin PASIF durumdadir -- tum adaylar tedbir_level=0 (tedbirsiz) varsayilir. Borsa Istanbul&#39;un guncel tedbir/VBTS listesi bu raporun DISINDA, bagimsiz olarak kontrol edilmelidir. Mali tablolar ucuncu taraf kaynaktan (Is Yatirim) nominal/tarihi maliyetle saglanmaktadir (TMS 29 enflasyon duzeltmesiz); yuksek enflasyon ortaminda donemler arasi aktif devir hizi kriteri (Piotroski kriter 9) enflasyon kirlenmesi nedeniyle hesaplanamaz (None) kabul edilmistir.</p>
+    <p>Bu bulten ve dashboard kisisel kullanim icin otomatik olarak uretilmistir. Yatirim danismanligi degildir, alim satim tavsiyesi icermez. Skorlama agirliklari ve esikleri (0.50/0.25/0.15/0.10, Piotroski esigi, equity risk premium) denenmemis baslangic varsayimlaridir, gecmis veriyle kalibre edilmemistir. Gecmis tahmin izleme ozeti bir backtest degildir, canli takiptir; ortusen zaman ufuklari nedeniyle bagimsiz gozlem sayisi dusuktur. Hedef fiyatlar sektor ici goreli degerleme ve teknik hesaplamalardan turetilmistir. Gordon buyume referansi deneysel bir modeldir ve ana karara girmez. Veriler ucuncu taraf kaynaklardan alinmistir ve hatali olabilir.</p>
+  </div>
+
+</div>
+</body>
+</html>
