@@ -288,7 +288,10 @@ Signals do not rely on market orders (`entry_price = current_price`) or leave st
 
 - **Fixed Fractional Position Sizing (`position_size_pct`)**:
   Positions are sized inversely to risk distance per share, keeping account portfolio risk strictly within the target budget (1%–2%, default 1.5%):
-  $$\text{position\\_size\\_pct} = \min\left(25.0\%,\, \frac{\text{account\\_risk\\_pct}}{\text{risk\\_per\\_share} \,/\, \text{effective\\_entry}}\right)$$
+ $$
+\text{position\_size\_pct}
+= \min\left(25.0\%, \frac{\text{account\_risk\_pct}}{\text{risk\_per\_share}/\text{effective\_entry}}\right)
+$$
 
 ### Hierarchical Risk Parity (HRP) & Portfolio Optimization
 
