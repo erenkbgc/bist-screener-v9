@@ -1,5 +1,5 @@
 {
-  "optimized_at": "2026-09-18T23:59:41.142430+00:00",
+  "optimized_at": "2026-09-20T20:27:04.986234+00:00",
   "sample_bars": 1825,
   "methodology": "Quant Zero-Manual Weights (Brier Loss, IC-IR, Granger-Ramanathan, Volatility Cones)",
   "calibrated_z_score": 2.5,
