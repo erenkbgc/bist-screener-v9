@@ -164,15 +164,15 @@ Base weights (`config/weights.yaml`):
 
 | Factor | Weight | Definition |
 |---|---|---|
-| `valuation_z` | 0.40 | Sector-neutral valuation z-score |
-| `catalyst_score` | 0.20 | Rule-based KAP catalyst score with time decay |
-| `ownership_quality_z` | 0.12 | Ownership-structure z-score |
-| `low_vol_z` | 0.08 | z-score of $`-\sigma_{60d}`$ within the bucket (low-risk anomaly) |
-| `momentum_z` | 0.20 | z-score of `momentum_score` within the bucket (value-momentum mix, Asness, Moskowitz & Pedersen 2013) |
+| `valuation_z` | 0.50 | Sector-neutral valuation z-score |
+| `catalyst_score` | 0.25 | Rule-based KAP catalyst score with time decay |
+| `ownership_quality_z` | 0.15 | Ownership-structure z-score |
+| `low_vol_z` | 0.10 | z-score of $`-\sigma_{60d}`$ within the bucket (low-risk anomaly) |
+| `momentum_z` | 0.00 | z-score of `momentum_score` within the bucket; computed and shown, but weight set to 0 after the factor backtest (12-1 momentum has no cross-sectional effect in BIST, see [Backtests & Evidence](#backtests--evidence)) |
 
-The ML regime (see [ML Trend Forecaster](#ml-trend-forecaster--market-regime)) selects a row of `regime_scoring_weights` (for example, `OVERSOLD_REVERSAL` has momentum 0.05 to avoid momentum crashes, Daniel & Moskowitz 2016). Each row is normalised to sum to 1.
+The ML regime (see [ML Trend Forecaster](#ml-trend-forecaster--market-regime)) selects a row of `regime_scoring_weights` Momentum is 0 in every regime row. Each row is normalised to sum to 1. The regime rows themselves are not tested yet.
 
-**All weights are uncalibrated priors.** `config/weights_optimized.json` also contains "optimised" scoring weights, but they were fitted on a single XU100 series with technical proxies, so the pipeline does **not** use them (`use_optimized=False`).
+**Only the value/low-vol/momentum split has backtest evidence** (factor backtest below). `catalyst_score` and `ownership_quality_z` have no history and stay uncalibrated priors. `config/weights_optimized.json` also contains "optimised" scoring weights, but they were fitted on a single XU100 series with technical proxies, so the pipeline does **not** use them (`use_optimized=False`).
 
 **Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data, Piotroski normalised score ≥ 0.34. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
 
@@ -343,7 +343,9 @@ This regime selects the scoring-weight row. The separate `regime_taxonomy` (macr
 - Excludes banks, insurance, pension, factoring, leasing, brokers, and real-estate funds (different templates).
 - Output: `data/research/*.parquet` (gitignored, rebuilt by the script).
 
-Validated on 5 tickers: 811 monthly rows, 2013-03 → 2026-09, no extraction failures.
+Full build: 583 non-financial tickers, 0 failures, 24,089 quarter rows, 58,223 monthly factor rows (2012-09 → 2026-09).
+
+borsapy 0.11 joins its 4-quarter batches on row labels. Duplicated labels (for example short- and long-term `Finansal Borçlar`) therefore multiply per batch (2^15 copies over 15 batches). `build_pit_panel.py` fetches the batches itself and aligns rows by (label, occurrence) (`pit_panel.merge_statement_batches`).
 
 ---
 
@@ -360,6 +362,24 @@ All backtests use only past data at each decision point and report t-statistics.
 | RRG Improving | 23.1% | +0.6% | lags EW | — |
 
 Conclusion: the RRG "Improving" quadrant alone is **not** a buy signal. Sector momentum (the Leading side) beat EW, but the result is below the multiple-testing threshold. The Excel and email texts say this.
+
+**Cross-sectional factors** (`scripts/backtest_factor_model.py`; 528 non-financial tickers, 2013-04 → 2026-09, 162 months, least-liquid 30% dropped each month, median 230 names; Newey-West t; pass rule: $`|t| > 3`$ and same sign in 2016–2020 and 2021–2026):
+
+| Signal | Rank-IC (1m) | t | ICIR | Top quintile − universe, net 20 bps |
+|---|---|---|---|---|
+| Value (mean of B/M, E/P, S/P, EBIT/EV) | 0.056 | 7.2 | 0.56 | +8.8%/yr (t = 3.8) |
+| Low volatility (`vol60`) | 0.075 | 7.3 | 0.57 | −2.5%/yr |
+| SUE (earnings surprise) | 0.040 | 5.6 | 0.46 | +5.1%/yr |
+| 12-1 momentum | 0.007 | 0.7 | 0.06 | −3.5%/yr |
+
+Score proxy (value + low-vol + momentum with the `weights.yaml` weights; catalyst and ownership have no history):
+
+| Weights | IC | Net top quintile | Turnover | Max DD |
+|---|---|---|---|---|
+| value .40, momentum .20, low-vol .08 (old) | 0.059 | +5.5%/yr | 23% | −40% |
+| value .50, low-vol .10, momentum 0 (current) | 0.075 | +6.2%/yr | 17% | −27% |
+
+Conclusion: value is the strongest and most stable factor. Low volatility predicts well, but its effect comes from avoiding high-volatility losers, not from the long-only top quintile. A high-vol exclusion filter was not robust, so it was not added. Momentum adds turnover without signal, so its weight is now 0. SUE is significant but not in the live score yet. Limits: survivorship bias (today's listing), nominal TL returns, and the proxy uses raw multiples while live `valuation_z` is sector-neutral.
 
 **Entry rules** (`scripts/backtest_entry_levels.py`; 40 liquid tickers, ~2 years, 1,883 signals, 0.5% round-trip cost, stop assumed first when stop and target hit in the same bar):
 
@@ -554,8 +574,8 @@ Current plan (root cause: the stock-level model has never been backtested cross-
 
 - [x] **Step 1:** point-in-time fundamentals panel (`core/pit_panel.py`)
 - [x] **Step 2:** adjusted prices for all return calculations
-- [ ] **Step 3:** `backtest_factor_model.py`: monthly rebalance, rank-IC, Fama-MacBeth, sub-periods 2016–2020 vs. 2021–2026, Harvey-Liu-Zhu $`t > 3`$
-- [ ] **Step 4:** IC-IR shrinkage calibration of `weights.yaml`, only for significant factors
+- [x] **Step 3:** `backtest_factor_model.py`: monthly rebalance, rank-IC, Fama-MacBeth, sub-periods 2016–2020 vs. 2021–2026, Harvey-Liu-Zhu $`t > 3`$
+- [ ] **Step 4:** IC-IR shrinkage calibration of `weights.yaml`, only for significant factors (first step done: momentum set to 0; next: SUE in the live score)
 - [ ] **Step 5:** Ledoit-Wolf covariance, ADV-based position limits, square-root market impact
 - [ ] **Step 6:** data health checks in `run.py` (empty index series, stale prices), config hash per report
 

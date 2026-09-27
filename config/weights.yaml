@@ -5,18 +5,26 @@
 # bu degerleri kendi basina ogrenmez/degistirmez.
 
 scoring_weights:
-  # momentum_z (2026-09-27 eklendi): skor yalnizca ucuzluga bakiyordu; yillik
-  # %70 dusmus, carpanlari bu yuzden dusuk hisseler (deger tuzagi) ust siraya
-  # cikiyordu. Deger-momentum kombinasyonu (Asness, Moskowitz & Pedersen 2013)
-  # iki faktorun negatif korelasyonundan faydalanir. Digerlerinden oransal
-  # dusuldu. priors_are_disclosed: kalibre EDILMEMIS baslangic varsayimi.
-  valuation_z: 0.40
-  catalyst_score: 0.20
-  ownership_quality_z: 0.12
-  # low_vol_z (2026-09-16 eklendi): BIST literaturunde gozlenen "dusuk risk
-  # anomalisi"ne dayanan baslangic varsayimi; HENUZ kalibre edilmedi.
-  low_vol_z: 0.08
-  momentum_z: 0.20
+  # 2026-09-27 kesitsel backtest (scripts/backtest_factor_model.py; 528 hisse,
+  # 2013-04..2026-09, aylik; rapor data/reports/backtest_factor_model_2026-09-27.json):
+  #   - deger (bm/ep/sp/ey): rank-IC 0.056, t 7.2, iki alt donemde de pozitif.
+  #   - dusuk volatilite (vol60): rank-IC 0.075, t 7.3.
+  #   - momentum 12-1: rank-IC 0.007, t 0.7; cok degiskenli Fama-MacBeth t 0.02.
+  # Ayni panelde vekil skor karsilastirmasi (catalyst/ownership icin gecmis veri yok):
+  #   deger .40 + momentum .20 + low_vol .08 -> IC 0.059, net ust dilim +5.5%/yil,
+  #     devir %23, max DD -40%
+  #   deger .50 + low_vol .10 (momentum 0)   -> IC 0.075, net +6.2%/yil,
+  #     devir %17, max DD -27%
+  # Bu yuzden momentum_z agirligi 0'a cekildi, digerleri momentum oncesi
+  # degerlerine dondu. catalyst/ownership agirliklari hala DENENMEMIS
+  # BASLANGIC VARSAYIMIDIR (priors_are_disclosed).
+  # Sinirlar: hayatta kalma yanliligi (bugunku liste), nominal TL, canli
+  # valuation_z sektor-notr akran carpanidir, backtest vekili ham carpandir.
+  valuation_z: 0.50
+  catalyst_score: 0.25
+  ownership_quality_z: 0.15
+  low_vol_z: 0.10
+  momentum_z: 0.00
 
 piotroski:
   normalized_score_threshold: 0.55  # STRONG_OPPORTUNITY kademesi icin kalite esigi
@@ -48,6 +56,8 @@ valuation_triangle_weights:
 # Rejim-Duyarli Dinamik Faktor Agirliklari (Quant Level-Up Faz 1)
 # Piyasa rejimine gore faktörlerin agirlik dagilimi (Asness et al., AQR 2017).
 # momentum_z rejim toplamina eklenir, get_regime_weights normalize eder.
+# 2026-09-27: momentum_z tum rejimlerde 0 (kesitsel backtest'te etkisiz, bkz.
+# scoring_weights notu). Rejim agirliklarinin kendisi HENUZ test edilmedi.
 # OVERSOLD_REVERSAL'da dusuk: momentum dip donuslerinde cokme egilimli
 # (Daniel & Moskowitz 2016 'momentum crashes').
 regime_scoring_weights:
@@ -56,30 +66,30 @@ regime_scoring_weights:
     catalyst_score: 0.35
     ownership_quality_z: 0.15
     low_vol_z: 0.15
-    momentum_z: 0.25
+    momentum_z: 0.00
   MILD_BULL:
     valuation_z: 0.45
     catalyst_score: 0.25
     ownership_quality_z: 0.15
     low_vol_z: 0.15
-    momentum_z: 0.20
+    momentum_z: 0.00
   CORRECTION_CHOPPY:
     valuation_z: 0.45
     catalyst_score: 0.15
     ownership_quality_z: 0.25
     low_vol_z: 0.15
-    momentum_z: 0.15
+    momentum_z: 0.00
   OVERSOLD_REVERSAL:
     valuation_z: 0.55
     catalyst_score: 0.15
     ownership_quality_z: 0.20
     low_vol_z: 0.10
-    momentum_z: 0.05
+    momentum_z: 0.00
   STRONG_BEAR:
     valuation_z: 0.35
     catalyst_score: 0.10
     ownership_quality_z: 0.30
     low_vol_z: 0.25
-    momentum_z: 0.15
+    momentum_z: 0.00
 
 

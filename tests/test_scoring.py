@@ -106,9 +106,9 @@ def test_get_regime_weights():
 
     # Tanimsiz rejim: temel agirliklar donmeli
     w_default = get_regime_weights(None)
-    assert w_default["valuation_z"] == 0.40
-    assert w_default["catalyst_score"] == 0.20
-    assert w_default["momentum_z"] == 0.20
+    assert w_default["valuation_z"] == 0.50
+    assert w_default["catalyst_score"] == 0.25
+    assert w_default["momentum_z"] == 0.0
 
     # STRONG_BULL: Katalizor/momentum artmali
     w_bull = get_regime_weights("STRONG_BULL")

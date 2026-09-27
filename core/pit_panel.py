@@ -51,6 +51,31 @@ FINANCIAL_SECTORS = {
 }
 
 
+def merge_statement_batches(batches: list[pd.DataFrame]) -> pd.DataFrame:
+    """Donem batch'lerini yan yana birlestirir.
+
+    borsapy 0.11 batch'leri satir ADI uzerinden ``join`` eder; ayni ad birden
+    fazla geciyorsa (orn. kisa ve uzun vadeli "Finansal Borçlar") her batch
+    satir sayisini katlar -- 15 batch'te 2^15 kopya ve toplanan kalemlerde
+    cop degerler. Burada satir, (ad, batch icindeki sira) ile eslenir.
+    """
+    keyed = []
+    for df in batches:
+        if df is None or df.empty:
+            continue
+        occ = df.groupby(level=0).cumcount()
+        keyed.append(df.set_index([df.index, occ]))
+    if not keyed:
+        return pd.DataFrame()
+    result = keyed[0]
+    for extra in keyed[1:]:
+        new_cols = [c for c in extra.columns if c not in result.columns]
+        if new_cols:
+            result = result.join(extra[new_cols], how="outer", sort=False)
+    result.index = result.index.get_level_values(0)
+    return result
+
+
 def _pick(df: pd.DataFrame, labels: tuple[str, ...], sum_dupes: bool) -> pd.Series | None:
     idx = pd.Index([str(i).strip() for i in df.index])
     for lbl in labels:
