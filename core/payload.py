@@ -71,9 +71,11 @@ def build_report_payload(
 
     weights = load_weights()
 
-    from core.weight_optimizer import load_optimized_weights
-    opt = load_optimized_weights()
-    tri_weights = (opt.get("valuation_triangle_weights") if opt else None) or weights.get("valuation_triangle_weights", {})
+    # Hesaplamanin kullandigi AYNI fonksiyon (core/valuation_triangle.py).
+    # Onceden burada weights_optimized.json okunuyordu: bulten 0.05/0.49/0.46
+    # gosterirken hesap weights.yaml'daki 0.40/0.35/0.25 ile yapiliyordu.
+    from core.valuation_triangle import load_triangle_weights
+    tri_weights = load_triangle_weights()
 
     payload = {
         "as_of_date": as_of_date,
