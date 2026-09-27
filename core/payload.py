@@ -21,6 +21,7 @@ def build_report_payload(
     portfolio_summary: dict | None = None,
     trend_forecast: dict | None = None,
     passing_candidates: list[dict] | None = None,
+    sector_rotation: dict | None = None,
 ) -> dict:
     as_of_date_cutoff = as_of_date
 
@@ -81,6 +82,7 @@ def build_report_payload(
             "catalyst_score": weights["scoring_weights"]["catalyst_score"],
             "ownership_quality_z": weights["scoring_weights"]["ownership_quality_z"],
             "low_vol_z": weights["scoring_weights"]["low_vol_z"],
+            "momentum_z": weights["scoring_weights"].get("momentum_z", 0.0),
         },
         "reference_inputs": {
             "policy_rate_pct": regime[0]["policy_rate_pct"] if regime else None,
@@ -119,6 +121,7 @@ def build_report_payload(
         "trend_forecast": trend_forecast or {},
         "passing_candidates": passing_candidates or [],
         "concentration_warnings": concentration_warnings or [],
+        "sector_rotation": sector_rotation or {},
         "no_action_today": not any(s["candidate_state"] in ("STRONG_OPPORTUNITY", "OPPORTUNITY") for s in scores),
         "unscored_count": unscored_count,
         "no_action_count": no_action_count,

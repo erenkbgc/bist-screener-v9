@@ -290,6 +290,13 @@ CREATE TABLE IF NOT EXISTS portfolio_allocations (
     PRIMARY KEY (as_of_date, ticker, method)
 );
 
+CREATE TABLE IF NOT EXISTS sector_rotation (
+    as_of_date TEXT, index_code TEXT, week_end TEXT,
+    rs_ratio REAL, rs_momentum REAL, quadrant TEXT,
+    weeks_in_quadrant INTEGER, future_star INTEGER,
+    PRIMARY KEY (as_of_date, index_code)
+);
+
 CREATE TABLE IF NOT EXISTS factor_contributions (
     as_of_date TEXT,
     ticker TEXT,
