@@ -279,6 +279,8 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["amihud_illiq"] = illiq
         if (not lt.get("shares_outstanding") or lt["shares_outstanding"] <= 0) and lt.get("market_cap") and current_price > 0:
             lt["shares_outstanding"] = lt["market_cap"] / current_price
+        # Beta hedef fiyattan ONCE: ozsermaye maliyeti (CAPM) hisse betasini kullanir.
+        lt["beta_60_120d"] = beta_hurdle_mod.calculate_beta(price_rows, xu100_prices) if xu100_prices else None
         lt_target = targets_mod.compute_long_term_target(lt, all_lt_for_peers, macro_snapshot=macro)
         lt["target_price"] = lt_target["target_price"]
         lt["target_hit_prob_pct"] = lt_target.get("target_hit_prob_pct")
@@ -302,10 +304,12 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             lt["fair_value_high"] = targets_mod.bist_tick_round(lt["fair_value_high"])
         if lt.get("fair_value_base") is not None:
             lt["fair_value_base"] = targets_mod.bist_tick_round(lt["fair_value_base"])
+        lt["expected_dividend_horizon"] = lt_target.get("expected_dividend_horizon") or 0.0
         hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro,
                                            bid=bid_ask["bid"], ask=bid_ask["ask"],
                                            volume_ratio_20d=last.get("volume_ratio_20d"),
-                                           amihud_illiq=illiq)
+                                           amihud_illiq=illiq,
+                                           dividend_per_share=lt["expected_dividend_horizon"])
         lt.update(hurdle_lt)
         lt["horizon_days"] = 180
         # Dinamik Risk Yonetimi (v12 roadmap P0-1: entry_low, entry_high, stop_loss, position_size_pct)
@@ -322,7 +326,8 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["position_size_pct"] = lt_risk["position_size_pct"]
 
         beta_lt = beta_hurdle_mod.calculate_beta_adjusted_hurdle(
-            as_of_date, t, price_rows, macro["bond_2y_pct"], hurdle_lt["expected_roi_pct"]
+            as_of_date, t, price_rows, macro["bond_2y_pct"], hurdle_lt["expected_roi_pct"],
+            market_prices=xu100_prices, horizon_days=180,
         )
         lt["excess_over_beta_hurdle_pct"] = beta_lt["excess_over_beta_hurdle_pct"]
         lt["beta_60_120d"] = beta_lt["beta_60_120d"]

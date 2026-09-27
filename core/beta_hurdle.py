@@ -12,7 +12,6 @@ from pathlib import Path
 import yaml
 
 from core import db
-from core.mock_data import mock_prices
 
 _ERP_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "equity_risk_premium.yaml"
 
@@ -26,18 +25,24 @@ def _daily_returns(closes: list[float]) -> list[float]:
     return [(closes[i] / closes[i - 1] - 1) for i in range(1, len(closes)) if closes[i - 1]]
 
 
-def calculate_beta(stock_prices: list[dict], market_prices: list[dict]) -> float | None:
-    """60-120 gunluk gunluk getiri serisi, XU100'e karsi regresyon egimi (OLS slope)."""
-    n = min(len(stock_prices), len(market_prices))
-    if n < 60:
+def calculate_beta(stock_prices: list[dict], market_prices: list[dict], max_obs: int = 120) -> float | None:
+    """Son <=120 gunluk getiri, XU100'e karsi OLS egimi. Seriler TARIHE gore
+    hizalanir (eskiden son n satir konumsal eslesiyordu; tatil/eksik gun
+    kaymasi getirileri yanlis gunlerle eslestirebiliyordu)."""
+    if all("date" in p for p in stock_prices) and all("date" in p for p in market_prices):
+        m_by_date = {p["date"]: p["close"] for p in market_prices if p.get("close")}
+        pairs = [(p["close"], m_by_date[p["date"]]) for p in stock_prices
+                 if p.get("close") and p["date"] in m_by_date]
+    else:  # tarihsiz seri (eski cagrilar/testler): son n satir konumsal
+        n = min(len(stock_prices), len(market_prices))
+        pairs = [(a["close"], b["close"]) for a, b in zip(stock_prices[-n:], market_prices[-n:])
+                 if a.get("close") and b.get("close")]
+    pairs = pairs[-(max_obs + 1):]
+    if len(pairs) < 61:
         return None
-    stock_closes = [p["close"] for p in stock_prices[-n:]]
-    market_closes = [p["close"] for p in market_prices[-n:]]
-    r_stock = _daily_returns(stock_closes)
-    r_market = _daily_returns(market_closes)
+    r_stock = _daily_returns([a for a, _ in pairs])
+    r_market = _daily_returns([b for _, b in pairs])
     m = min(len(r_stock), len(r_market))
-    if m < 59:
-        return None
     r_stock, r_market = r_stock[-m:], r_market[-m:]
     mean_s = sum(r_stock) / m
     mean_m = sum(r_market) / m
@@ -48,17 +53,30 @@ def calculate_beta(stock_prices: list[dict], market_prices: list[dict]) -> float
     return cov / var_m
 
 
+def blume_adjusted_beta(beta: float | None) -> float | None:
+    """Blume (1971): beta'lar zamanla 1'e yakinsar; 0.67*ham + 0.33.
+    Ozsermaye maliyetinde ham tahmin yerine kullanilir (tahmin gurultusunu azaltir)."""
+    return None if beta is None else 0.67 * beta + 0.33
+
+
 def calculate_beta_adjusted_hurdle(as_of_date: str, ticker: str, stock_prices: list[dict],
-                                     risk_free_annual_pct: float, expected_roi_pct: float) -> dict:
-    market_prices = mock_prices("XU100_INDEX", as_of_date, days=140)
-    beta = calculate_beta(stock_prices, market_prices)
+                                     risk_free_annual_pct: float, expected_roi_pct: float,
+                                     market_prices: list[dict] | None = None,
+                                     horizon_days: int = 180) -> dict:
+    """market_prices verilmezse (eski cagri) mock XU100'e DUSULMEZ; beta None kalir.
+    Eskiden canli modda bile mock_prices("XU100_INDEX") kullaniliyordu (sahte beta).
+    Hurdle yillik k_e'nin ufka bilesik olceklenmis halidir: expected_roi_pct
+    ufuk getirisi oldugu icin birimler ayni olmali (eskiden yillik ~%45 ile
+    180 gunluk getiri karsilastiriliyordu)."""
+    beta = calculate_beta(stock_prices, market_prices) if market_prices else None
     erp = load_equity_risk_premium_pct()
 
     if beta is None:
         row = {"as_of_date": as_of_date, "ticker": ticker, "beta_60_120d": None,
                "hurdle_rate_beta_adjusted_pct": None, "excess_over_beta_hurdle_pct": None}
     else:
-        hurdle_beta_adj = risk_free_annual_pct + beta * erp
+        k_e_annual = risk_free_annual_pct + blume_adjusted_beta(beta) * erp
+        hurdle_beta_adj = ((1 + k_e_annual / 100) ** (horizon_days / 365) - 1) * 100
         row = {
             "as_of_date": as_of_date, "ticker": ticker, "beta_60_120d": beta,
             "hurdle_rate_beta_adjusted_pct": hurdle_beta_adj,

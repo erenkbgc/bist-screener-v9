@@ -147,7 +147,8 @@ def compute_long_term_target(
 
     # Yalnizca hissede volatilite/ATR bilgisi mevcutsa (gercek piyasa verisi) koni ve yakinsama uygula
     if current_price > 0 and raw_target is not None and (volatility_60d or atr20):
-        k_e = cost_of_equity_pct(rf_rate, candidate.get("beta_60_120d"))
+        from core.beta_hurdle import blume_adjusted_beta
+        k_e = cost_of_equity_pct(rf_rate, blume_adjusted_beta(candidate.get("beta_60_120d")))
         ceiling = compute_volatility_cone_envelope(
             current_price=current_price,
             volatility_60d=volatility_60d,
@@ -165,7 +166,11 @@ def compute_long_term_target(
         # Onceki "0.4 * TUFE * h" suruklenmesi keyfiydi ve canli modda TUFE
         # None oldugunda sabit %25'e dusuyordu (uydurma girdi).
         growth = (1.0 + k_e / 100.0) ** (180.0 / 365.0)
-        projected = (current_price + alpha * (raw_target - current_price)) * growth
+        # Fiyat hedefi = ileri deger - ufuk icinde odenecek temettu (k_e toplam
+        # getiridir; temettu fiyattan duser). Temettu hurdle kapisinda toplam
+        # getiriye geri eklenir (core/hurdle.py::compute_all dividend_per_share).
+        expected_dividend = max(0.0, float(candidate.get("dividend_per_share_ttm") or 0.0)) * (180.0 / 365.0)
+        projected = (current_price + alpha * (raw_target - current_price)) * growth - expected_dividend
         if ceiling and ceiling > current_price:
             actionable_target = min(projected, ceiling)
         else:
@@ -175,10 +180,12 @@ def compute_long_term_target(
         hit_prob = target_hit_probability_pct(current_price, actionable_target, projected, volatility_60d)
     else:
         hit_prob = None
+        expected_dividend = 0.0
 
     return {
         "target_price": actionable_target,
         "target_hit_prob_pct": hit_prob,
+        "expected_dividend_horizon": round(expected_dividend, 4),
         "terminal_fair_value": raw_target,
         "volatility_cone_ceiling": ceiling,
         "fair_value_low": triangle["fair_value_low"],
