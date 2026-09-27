@@ -21,7 +21,8 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
     # "bist-data (mock)" olarak yaziliyordu -- BIST_DATA_MODE=live'de bile.
     # Bu, DB'de gercek/canli veriyi mock sanip yanlis kok-neden aramasina
     # yol acabilir (bkz. 2026-09-13 hedef fiyat anomalisi teshisi).
-    source_label = "bist-data (live)" if bist_mcp._live_enabled() else "bist-data (mock)"
+    live_mode = bist_mcp._live_enabled()
+    source_label = "bist-data (live)" if live_mode else "bist-data (mock)"
 
     rows = []
     for u in universe_rows:
@@ -45,6 +46,16 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
         published_at = bist_mcp.get_financial_report_published_at(ticker, period_end)
         available_at = published_at
         effective_at = published_at
+        pit_source = "kap_financial_report" if published_at else None
+        # Canli modda veri as_of_date gunu API'den CEKILDI: o gun gozlenebilir
+        # oldugu kesin, ileriye bakis olamaz. KAP tarihi alinamazsa (GitHub
+        # runner'larindan KAP baglantisi sik kopuyor: "Server disconnected
+        # without sending a response"; 2026-09-20..27 kosularinin 4'unde 527/527
+        # hisse bu yuzden point_in_time'dan elendi) gozlem tarihi kullanilir.
+        # published_at uydurulmaz (None kalir); kaynak pit_source'ta acikca yazar.
+        if effective_at is None and live_mode:
+            available_at = effective_at = as_of_date
+            pit_source = "observed_at_ingest"
 
         fcf_yield_usd = None
         null_reason = None
@@ -64,7 +75,7 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
             "dividend_per_share_ttm": f["dividend_per_share_ttm"], "payout_ratio": f["payout_ratio"],
             "fcf_ttm": f["fcf_ttm"], "fcf_yield_usd": fcf_yield_usd, "null_reason": null_reason,
             "source": source_label, "published_at": published_at, "available_at": available_at,
-            "effective_at": effective_at, "ingested_at": ingested_at,
+            "effective_at": effective_at, "ingested_at": ingested_at, "pit_source": pit_source,
             # skorlama disi ham alanlar, sonraki motorlar icin bellekte tasinir (DB'ye yazilmaz)
             "_raw": f,
         }
@@ -76,10 +87,12 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
             """INSERT INTO fundamentals
                (as_of_date, ticker, period_end, reporting_basis, pe, pb, ev_ebitda, ev_sales, roe,
                 eps_ttm, ebitda_ttm, net_debt, nav_discount, dividend_per_share_ttm, payout_ratio,
-                fcf_ttm, fcf_yield_usd, null_reason, source, published_at, available_at, effective_at, ingested_at)
+                fcf_ttm, fcf_yield_usd, null_reason, source, published_at, available_at, effective_at, ingested_at,
+                pit_source)
                VALUES (:as_of_date, :ticker, :period_end, :reporting_basis, :pe, :pb, :ev_ebitda, :ev_sales, :roe,
                        :eps_ttm, :ebitda_ttm, :net_debt, :nav_discount, :dividend_per_share_ttm, :payout_ratio,
-                       :fcf_ttm, :fcf_yield_usd, :null_reason, :source, :published_at, :available_at, :effective_at, :ingested_at)
+                       :fcf_ttm, :fcf_yield_usd, :null_reason, :source, :published_at, :available_at, :effective_at, :ingested_at,
+                       :pit_source)
                ON CONFLICT(as_of_date, ticker) DO UPDATE SET
                  reporting_basis=excluded.reporting_basis, pe=excluded.pe, pb=excluded.pb,
                  ev_ebitda=excluded.ev_ebitda, ev_sales=excluded.ev_sales, roe=excluded.roe,
@@ -88,12 +101,19 @@ def fetch_and_store_fundamentals(as_of_date: str, universe_rows: list[dict]) -> 
                  payout_ratio=excluded.payout_ratio, fcf_ttm=excluded.fcf_ttm,
                  fcf_yield_usd=excluded.fcf_yield_usd, null_reason=excluded.null_reason,
                  source=excluded.source, published_at=excluded.published_at, available_at=excluded.available_at,
-                 effective_at=excluded.effective_at, ingested_at=excluded.ingested_at""",
+                 effective_at=excluded.effective_at, ingested_at=excluded.ingested_at,
+                 pit_source=excluded.pit_source""",
             [{k: v for k, v in r.items() if k != "_raw"} for r in rows],
         )
         conn.commit()
     finally:
         conn.close()
+
+    if live_mode and rows:
+        n_obs = sum(1 for r in rows if r["pit_source"] == "observed_at_ingest")
+        if n_obs:
+            print(f"[fundamentals] KAP finansal rapor tarihi {n_obs}/{len(rows)} hissede alinamadi; "
+                  "effective_at = gozlem tarihi (pit_source=observed_at_ingest).", flush=True)
 
     return rows
 
