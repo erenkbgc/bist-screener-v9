@@ -73,3 +73,12 @@ def test_peer_fair_value_ratio_guards_and_fallback():
     r = fb.peer_fair_value_ratio(pd.DataFrame(rows))
     assert np.isnan(r.loc[6, "fv_ratio"])  # tum bacaklar negatif -> degerlenemez
     assert np.allclose(r.loc[:5, "fv_ratio"], 1.0)
+
+
+def test_sector_neutralize_small_sector_falls_back_to_market():
+    rows = [{"date": 1, "sector": "BIG", "x": float(i)} for i in range(5)] + \
+           [{"date": 1, "sector": "TINY", "x": 10.0}]
+    df = pd.DataFrame(rows)
+    r = fb.sector_neutralize(df, "x")
+    assert np.allclose(r[:5], np.arange(5) - 2.0)          # sektor ortalamasi 2
+    assert abs(r[5] - (10.0 - df["x"].mean())) < 1e-12      # piyasa ortalamasina gore

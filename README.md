@@ -379,6 +379,8 @@ Score proxy (value + low-vol + momentum with the `weights.yaml` weights; catalys
 | value .40, momentum .20, low-vol .08 (old) | 0.059 | +5.5%/yr | 23% | −40% |
 | value .50, low-vol .10, momentum 0 (current) | 0.075 | +6.2%/yr | 17% | −27% |
 
+Sector-neutral check. The live `valuation_z` compares each stock with its sector peers, while the table above uses raw multiples. The value composite demeaned within each sector (sectors with at least 5 names) scores rank-IC 0.050 (t = 6.6) and a net top quintile of +9.1%/yr (t = 4.1), against 0.056 and +8.8%/yr for the raw version, so the evidence carries over to the live score. Adding SUE (weight 0.15) to the sector-neutral proxy raises IC to 0.076 but lowers the net top quintile from +7.4% to +6.8%/yr and raises turnover from 19% to 23%. It hurts in 2016–2020 and helps in 2021–2026, so SUE stays out of the live score for now.
+
 Conclusion: value is the strongest and most stable factor. Low volatility predicts well, but its effect comes from avoiding high-volatility losers, not from the long-only top quintile. A high-vol exclusion filter was not robust, so it was not added. Momentum adds turnover without signal, so its weight is now 0. SUE is significant but not in the live score yet. Limits: survivorship bias (today's listing), nominal TL returns, and the proxy uses raw multiples while live `valuation_z` is sector-neutral.
 
 **Target prices** (`scripts/backtest_target_accuracy.py`; the live peer leg rebuilt point-in-time, 468 tickers excluding holdings, 2013-04 → 2026-09; excess = return minus the cross-sectional mean):
