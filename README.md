@@ -588,7 +588,7 @@ Current plan (root cause: the stock-level model has never been backtested cross-
 - [x] **Step 3:** `backtest_factor_model.py`: monthly rebalance, rank-IC, Fama-MacBeth, sub-periods 2016–2020 vs. 2021–2026, Harvey-Liu-Zhu $`t > 3`$
 - [ ] **Step 4:** IC-IR shrinkage calibration of `weights.yaml`, only for significant factors (first step done: momentum set to 0; next: SUE in the live score)
 - [ ] **Step 5:** Ledoit-Wolf covariance, ADV-based position limits, square-root market impact
-- [ ] **Step 6:** data health checks in `run.py` (empty index series, stale prices), config hash per report
+- [x] **Step 6:** data health gate (`core/run_health.py`): fundamentals and price coverage, empty index series, macro presence, data-driven filter share, KAP availability, and a config hash per run, stored in `run_health` and shown as a banner in the bulletin
 
 Done recently: sector rotation RRG + Excel + backtest, mobile email with attachments, lognormal target-hit probability, live XU100 beta with Blume adjustment, dividend-aware targets, KAP FinBERT layer, support/resistance levels (information only).
 

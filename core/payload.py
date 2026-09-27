@@ -22,6 +22,7 @@ def build_report_payload(
     trend_forecast: dict | None = None,
     passing_candidates: list[dict] | None = None,
     sector_rotation: dict | None = None,
+    run_health: dict | None = None,
 ) -> dict:
     as_of_date_cutoff = as_of_date
 
@@ -78,6 +79,7 @@ def build_report_payload(
     tri_weights = load_triangle_weights()
 
     payload = {
+        "run_health": run_health,
         "as_of_date": as_of_date,
         "weights": {
             "valuation_z": weights["scoring_weights"]["valuation_z"],
