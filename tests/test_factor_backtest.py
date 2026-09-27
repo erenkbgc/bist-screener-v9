@@ -50,3 +50,26 @@ def test_newey_west_matches_plain_t_without_lags():
     m, t, n = fb.newey_west_t(x, 0)
     plain = x.mean() / (x.std(ddof=0) / np.sqrt(len(x)))
     assert n == 500 and abs(t - plain) < 1e-9
+
+
+def test_peer_fair_value_ratio_harmonic_mean():
+    # 5 akran, hepsinin E/P'si ayni -> HM(P/E)*E/P = 1 (adil fiyatli)
+    base = {"sector": "X", "mcap": 100.0, "net_debt": 0.0, "bm": 0.5, "ey": 0.1}
+    m = pd.DataFrame([{**base, "ep": 0.1} for _ in range(5)])
+    r = fb.peer_fair_value_ratio(m)
+    assert np.allclose(r["fv_ratio"], 1.0)
+    # E/P'si akranlarin iki kati olan hisse ~2 kat pe bacagi alir
+    m.loc[0, "ep"] = 0.2
+    hm = 1 / m["ep"].mean()  # 1/0.12
+    r = fb.peer_fair_value_ratio(m)
+    # pe bacagi hm*0.2; pb ve ev_ebit bacaklari 1.0 -> ortalama
+    assert abs(r.loc[0, "fv_ratio"] - (hm * 0.2 + 1.0 + 1.0) / 3) < 1e-9
+    assert r.loc[0, "fv_ratio"] > r.loc[1, "fv_ratio"]
+
+
+def test_peer_fair_value_ratio_guards_and_fallback():
+    base = {"mcap": 100.0, "net_debt": 0.0, "bm": 0.5, "ey": 0.1, "ep": 0.1}
+    rows = [{**base, "sector": "BIG"} for _ in range(6)] + [{**base, "sector": "TINY", "ep": -0.1, "bm": -1, "ey": -0.1}]
+    r = fb.peer_fair_value_ratio(pd.DataFrame(rows))
+    assert np.isnan(r.loc[6, "fv_ratio"])  # tum bacaklar negatif -> degerlenemez
+    assert np.allclose(r.loc[:5, "fv_ratio"], 1.0)
