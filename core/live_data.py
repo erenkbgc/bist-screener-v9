@@ -793,6 +793,12 @@ _CATEGORY_RULES: list[tuple[str, str, re.Pattern]] = [
     # SPK/Borsa tarafindan konulan islem yasagi -- vbts kadar ciddi bir
     # regulatuar kisitlama (canli dogrulama: "SPK İşlem Yasağı Nedeniyle Pay
     # Duyurusu", 5 hisselik ornekte 15 bildirim).
+    # DIKKAT: "SPK Islem Yasagi Nedeniyle Pay Duyurusu" SIRKETE yasak DEGILDIR;
+    # SPK'nin islem yasagi getirdigi YATIRIMCILARIN elindeki paylari listeleyen
+    # toplu MKK duyurusudur ve tek bildirimde ~100 sirkete (THYAO, ASELS, EREGL...)
+    # iliştirilir (KAP 1666319, 2026-09-21). Eski desen bunu trading_ban/negatif/
+    # agirlik 3 sayip blue chip'lere sahte negatif katalizor yaziyordu. Bu tur
+    # toplu duyurular _NOISE_TITLE_RE ile once elenir.
     ("trading_ban", "negative", re.compile(r"işlem yasağı", re.I)),
     ("secondary_offering", "neutral", re.compile(r"halka arz|ikincil", re.I)),
     ("management_change", "neutral", re.compile(r"yönetim kurulu|genel müdür", re.I)),
@@ -810,8 +816,16 @@ _CATEGORY_RULES: list[tuple[str, str, re.Pattern]] = [
 _DEFAULT_CATEGORY = "material_event_other"
 
 
+# Sirkete ozgu olmayan toplu/rutin bildirimler: yon sinyali tasimaz.
+# "Temerrut Islemi": Takasbank temerrut islem bildirimi (yatirimci kaynakli).
+_NOISE_TITLE_RE = re.compile(r"işlem yasağı nedeniyle pay duyurusu|temerrüt işlemi", re.I)
+_NOISE_CATEGORY = "market_notice_noise"
+
+
 def _categorize_kap_title(title: str) -> tuple[str, str]:
     """KURAL TABANLI (regex/anahtar kelime), LLM DEGIL: no_free_text_interpretation_of_kap."""
+    if _NOISE_TITLE_RE.search(title or ""):
+        return _NOISE_CATEGORY, "neutral"
     for category, sign, pattern in _CATEGORY_RULES:
         if pattern.search(title or ""):
             return category, sign
@@ -841,7 +855,10 @@ def live_kap_disclosures(tickers: list[str], as_of_date: str, lookback_days: int
                 "category": category,
                 "title": category,  # gercek serbest metin LLM'e gitmez, yalnizca kategori tasinir
                 "summary": "Kural-tabanli (regex) siniflandirici ile deterministik kategoriye indirgendi.",
-                "impact_sign": sign if sign in ("positive", "negative") else "positive",
+                # notr kategoriler "neutral" saklanir; eskiden "positive"e zorlaniyordu
+                # (DB'de 2154 material_event_other 'positive' gorunuyordu). Skor bunu
+                # okumaz (config sign'i kullanir), ama rapor/ dashboard yaniltiyordu.
+                "impact_sign": sign,
                 "url": r.get("URL") or "",
                 "published_at": published_dt.isoformat(),
                 "available_at": published_dt.isoformat(),

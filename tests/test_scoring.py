@@ -106,8 +106,9 @@ def test_get_regime_weights():
 
     # Tanimsiz rejim: temel agirliklar donmeli
     w_default = get_regime_weights(None)
-    assert w_default["valuation_z"] == 0.50
-    assert w_default["catalyst_score"] == 0.25
+    assert w_default["valuation_z"] == 0.40
+    assert w_default["catalyst_score"] == 0.20
+    assert w_default["momentum_z"] == 0.20
 
     # STRONG_BULL: Katalizor/momentum artmali
     w_bull = get_regime_weights("STRONG_BULL")
@@ -120,3 +121,28 @@ def test_get_regime_weights():
     assert w_bear["ownership_quality_z"] > w_default["ownership_quality_z"]
     assert abs(sum(w_bear.values()) - 1.0) < 1e-4
 
+
+
+def test_value_trap_blocks_strong_opportunity(temp_db):
+    # Ucuz ama dusen hisse (12-1 momentum < 0, trend asagi) en ust dilimde olsa
+    # bile STRONG_OPPORTUNITY alamaz. Ayni hisse momentum pozitifken alabilir.
+    from core.scoring import score_candidates
+
+    def pool(trap_mom, trap_trend):
+        cands = []
+        for i in range(6):
+            cheap = i == 0
+            cands.append(dict(
+                _base_candidate(), ticker=f"T{i}", ratio_profile="industrial", sector="S1",
+                supersector="X", reporting_basis="adjusted",
+                pe=3.0 if cheap else 12.0, pb=0.4 if cheap else 2.0, ev_ebitda=3.0 if cheap else 10.0,
+                catalyst_score=0.0, ownership_z=0.0, low_vol_z=0.0, momentum_z=0.0,
+                mom_12_1_pct=trap_mom if cheap else 10.0,
+                trend_smoothness_r2=trap_trend if cheap else 0.3))
+        return {c["ticker"]: c for c in score_candidates("2026-09-10", cands, "2026-09-10")}
+
+    trap = pool(-60.0, -0.8)["T0"]
+    assert trap["value_trap_risk"] is True
+    assert trap["candidate_state"] != "STRONG_OPPORTUNITY"
+    healthy = pool(15.0, 0.5)["T0"]
+    assert healthy["value_trap_risk"] is False

@@ -221,8 +221,12 @@ def calibrate_volatility_cone_and_convergence(
     ret_1d = np.diff(close) / close[:-1]
     vol_60d = pd.Series(ret_1d).rolling(60).std().values * np.sqrt(252)
 
+    # horizon_days burada IS GUNU (bar) ofsetidir, bu yuzden T = h/252.
+    # Drift core/targets.py::compute_volatility_cone_envelope ile ayni: ln(1 + k_e),
+    # k_e = rf + ERP (beta=1). Eski "rf*0.5" keyfiydi ve koni ile tutarsizdi.
+    from core.targets import cost_of_equity_pct
     T = horizon_days / 252.0
-    mu = (risk_free_annual_pct / 100.0) * 0.5  # muhafazakar suruklenme
+    mu = np.log(1.0 + cost_of_equity_pct(risk_free_annual_pct) / 100.0)
 
     normalized_excursions = []
     reversion_fractions = []
@@ -249,6 +253,10 @@ def calibrate_volatility_cone_and_convergence(
     z_calibrated = float(np.percentile(normalized_excursions, 95.0))
     z_calibrated = max(1.20, min(2.50, z_calibrated))
 
+    # UYARI: bu bir yakinsama hizi DEGIL, medyan mutlak 180 gunluk getiridir.
+    # Gercek alpha (adil deger acigini kapatma orani) gecmis adil deger
+    # tahminleri + gerceklesen fiyat ister; outcomes tablosu dolunca yeniden
+    # kalibre edilmeli (bkz. memory: scoring weights not calibrated).
     alpha_calibrated = float(np.median(reversion_fractions)) if reversion_fractions else 0.40
     alpha_calibrated = max(0.20, min(0.60, alpha_calibrated))
 

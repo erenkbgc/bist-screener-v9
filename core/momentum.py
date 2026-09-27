@@ -157,3 +157,26 @@ def compute_momentum_metrics(
         "rs_xu100_60d_pct": rs_60,
         "momentum_score": round(score, 1),
     }
+
+
+def compute_momentum_z(candidate: dict, population: list[dict]) -> float:
+    """Kesitsel momentum z-skoru (bucket ici), momentum_score uzerinden.
+
+    Deger faktorunu dengeler: sadece ucuzluga bakan skor, yillik %70 dusmus ve
+    carpanlari bu yuzden "ucuz" gorunen hisseleri (deger tuzagi) one cikariyordu.
+    compute_low_vol_z ile ayni kural: None degerler havuza 0 olarak girmez."""
+    pool = [o["momentum_score"] for o in population if o.get("momentum_score") is not None]
+    if candidate.get("momentum_score") is None or len(pool) < 2:
+        return 0.0
+    mu = float(np.mean(pool))
+    sigma = float(np.std(pool))
+    if sigma == 0:
+        return 0.0
+    return (candidate["momentum_score"] - mu) / sigma
+
+
+def is_value_trap_risk(candidate: dict) -> bool:
+    """12-1 momentum negatif VE 120 gunluk log-fiyat trendi asagi (isaretli R^2 < 0)."""
+    mom = candidate.get("mom_12_1_pct")
+    trend = candidate.get("trend_smoothness_r2")
+    return mom is not None and trend is not None and mom < 0 and trend < 0

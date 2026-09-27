@@ -24,6 +24,16 @@ import pytest
 from core import db
 
 
+@pytest.fixture(autouse=True)
+def _isolate_production_db(tmp_path, monkeypatch):
+    """temp_db istemeyen testler de uretim DB'sine (data/bist_history.db)
+    YAZAMAZ. 2026-09-27: 13 test (backtest, data_quality, portfolio, HRP,
+    factor_disclosure) mock satirlari dogrudan gercek gecmis DB'ye yaziyordu;
+    core/db.py::_assert_not_mock_into_production bunu yakaladi."""
+    monkeypatch.setattr(db, "DB_PATH", tmp_path / "isolated.db")
+    yield
+
+
 @pytest.fixture()
 def temp_db(tmp_path, monkeypatch):
     """Her teste izole, gecici bir SQLite veritabani verir."""

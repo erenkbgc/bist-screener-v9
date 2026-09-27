@@ -5,19 +5,27 @@
 # bu degerleri kendi basina ogrenmez/degistirmez.
 
 scoring_weights:
-  valuation_z: 0.50
-  catalyst_score: 0.25
-  ownership_quality_z: 0.15
+  # momentum_z (2026-09-27 eklendi): skor yalnizca ucuzluga bakiyordu; yillik
+  # %70 dusmus, carpanlari bu yuzden dusuk hisseler (deger tuzagi) ust siraya
+  # cikiyordu. Deger-momentum kombinasyonu (Asness, Moskowitz & Pedersen 2013)
+  # iki faktorun negatif korelasyonundan faydalanir. Digerlerinden oransal
+  # dusuldu. priors_are_disclosed: kalibre EDILMEMIS baslangic varsayimi.
+  valuation_z: 0.40
+  catalyst_score: 0.20
+  ownership_quality_z: 0.12
   # low_vol_z (2026-09-16 eklendi): BIST literaturunde gozlenen "dusuk risk
-  # anomalisi"ne (dusuk volatiliteli hisselerin risk-ayarli olarak yuksek
-  # volatiliteli hisseleri gecmesi) dayanan bir baslangic varsayimi. Diger
-  # ucu gibi HENUZ bu projenin kendi outcomes verisiyle kalibre edilmedi;
-  # en kucuk agirlikla (yeni/dogrulanmamis) baslatildi, digerlerinden
-  # oransal olarak dusuldu (valuation 0.55->0.50, catalyst 0.30->0.25).
-  low_vol_z: 0.10
+  # anomalisi"ne dayanan baslangic varsayimi; HENUZ kalibre edilmedi.
+  low_vol_z: 0.08
+  momentum_z: 0.20
 
 piotroski:
-  normalized_score_threshold: 0.55  # 9 kriterin normalize edilmis skorunda gecme esigi
+  normalized_score_threshold: 0.55  # STRONG_OPPORTUNITY kademesi icin kalite esigi
+  # Sert filtre (hard_filters) esigi. Piotroski (2000) ayrimi: F 8-9 yuksek,
+  # 0-3 dusuk, orta bant notr. 0.55 sert filtre olarak medyan firmayi eliyordu
+  # (evrenin ~%20'si yalnizca bu kapidan dustu; ornek THYAO 4/8=0.50). Nominal
+  # (TMS 29 disi) beslemede kriter 3/5/6/8 enflasyonla bozuldugu icin orta bant
+  # sinyali zayif. Sert kapi yalnizca dusuk kaliteyi (<=3/9 esdegeri) eler.
+  hard_filter_min_score: 0.34
 
 top_n_per_bucket: 4
 
@@ -31,31 +39,39 @@ valuation_triangle_weights:
 
 # Rejim-Duyarli Dinamik Faktor Agirliklari (Quant Level-Up Faz 1)
 # Piyasa rejimine gore faktörlerin agirlik dagilimi (Asness et al., AQR 2017).
+# momentum_z rejim toplamina eklenir, get_regime_weights normalize eder.
+# OVERSOLD_REVERSAL'da dusuk: momentum dip donuslerinde cokme egilimli
+# (Daniel & Moskowitz 2016 'momentum crashes').
 regime_scoring_weights:
   STRONG_BULL:
     valuation_z: 0.35
     catalyst_score: 0.35
     ownership_quality_z: 0.15
     low_vol_z: 0.15
+    momentum_z: 0.25
   MILD_BULL:
     valuation_z: 0.45
     catalyst_score: 0.25
     ownership_quality_z: 0.15
     low_vol_z: 0.15
+    momentum_z: 0.20
   CORRECTION_CHOPPY:
     valuation_z: 0.45
     catalyst_score: 0.15
     ownership_quality_z: 0.25
     low_vol_z: 0.15
+    momentum_z: 0.15
   OVERSOLD_REVERSAL:
     valuation_z: 0.55
     catalyst_score: 0.15
     ownership_quality_z: 0.20
     low_vol_z: 0.10
+    momentum_z: 0.05
   STRONG_BEAR:
     valuation_z: 0.35
     catalyst_score: 0.10
     ownership_quality_z: 0.30
     low_vol_z: 0.25
+    momentum_z: 0.15
 
 

@@ -12,6 +12,7 @@ import yaml
 
 from core import db
 from core.ranking import compute_sector_neutral_valuation, percentile_rank
+from core.momentum import is_value_trap_risk
 from core.weight_optimizer import load_optimized_weights
 
 _WEIGHTS_PATH = Path(__file__).resolve().parent.parent / "config" / "weights.yaml"
@@ -95,6 +96,7 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
     weights = load_weights()
     w = get_regime_weights(regime, weights)
     piotroski_threshold = weights["piotroski"]["normalized_score_threshold"]
+    piotroski_hard_min = weights["piotroski"].get("hard_filter_min_score", piotroski_threshold)
     top_n = weights["top_n_per_bucket"]
 
     scored: list[dict] = []
@@ -112,8 +114,9 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
         c["peer_group_used"] = val["peer_group_used"]
         c["peer_n"] = val["peer_n"]
         c["confidence"] = val["confidence"]
+        c["value_trap_risk"] = is_value_trap_risk(c)
 
-        passed, filtered_by = hard_filters_passed(c, piotroski_threshold, as_of_date_cutoff)
+        passed, filtered_by = hard_filters_passed(c, piotroski_hard_min, as_of_date_cutoff)
 
         if not passed:
             c["candidate_state"] = "NO_ACTION"
@@ -125,7 +128,8 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
         final_score = (w["valuation_z"] * (c["valuation_z"] or 0)
                        + w["catalyst_score"] * (c["catalyst_score"] or 0)
                        + w["ownership_quality_z"] * (c["ownership_z"] or 0)
-                       + w["low_vol_z"] * (c.get("low_vol_z") or 0))
+                       + w["low_vol_z"] * (c.get("low_vol_z") or 0)
+                       + w.get("momentum_z", 0.0) * (c.get("momentum_z") or 0))
         c["final_score"] = final_score
         c["scoring_weights_used"] = w
         c["market_regime_used"] = regime
@@ -145,7 +149,7 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
             top_tier = percentile_rank(c["final_score"], pool) >= 0.75 if len(pool) >= 2 else True
             positive_margin = c["excess_over_hurdle_pct"] > 0
             if c["confidence"] == "high" and top_tier and positive_margin and \
-                    c["piotroski_normalized_score"] >= piotroski_threshold:
+                    c["piotroski_normalized_score"] >= piotroski_threshold and not c["value_trap_risk"]:
                 c["candidate_state"] = "STRONG_OPPORTUNITY"
             elif positive_margin and (not top_tier or c["confidence"] == "degraded"):
                 c["candidate_state"] = "OPPORTUNITY"
@@ -167,7 +171,7 @@ def _persist(as_of_date: str, scored: list[dict]) -> None:
         "as_of_date": as_of_date, "ticker": c["ticker"], "bucket": c["bucket"],
         "candidate_state": c["candidate_state"], "valuation_z": c.get("valuation_z"),
         "catalyst_score": c.get("catalyst_score"), "ownership_z": c.get("ownership_z"),
-        "low_vol_z": c.get("low_vol_z"),
+        "low_vol_z": c.get("low_vol_z"), "momentum_z": c.get("momentum_z"),
         "final_score": c.get("final_score"), "peer_group_used": c.get("peer_group_used"),
         "peer_n": c.get("peer_n"), "confidence": c.get("confidence"), "filtered_by": c.get("filtered_by"),
         "valuation_z_sector_neutral": c.get("valuation_z_sector_neutral"),
@@ -176,10 +180,10 @@ def _persist(as_of_date: str, scored: list[dict]) -> None:
     try:
         conn.executemany(
             """INSERT INTO scores (as_of_date, ticker, bucket, candidate_state, valuation_z,
-               catalyst_score, ownership_z, low_vol_z, final_score, peer_group_used, peer_n,
+               catalyst_score, ownership_z, low_vol_z, momentum_z, final_score, peer_group_used, peer_n,
                confidence, filtered_by, valuation_z_sector_neutral)
                VALUES (:as_of_date, :ticker, :bucket, :candidate_state, :valuation_z, :catalyst_score,
-                       :ownership_z, :low_vol_z, :final_score, :peer_group_used, :peer_n, :confidence,
+                       :ownership_z, :low_vol_z, :momentum_z, :final_score, :peer_group_used, :peer_n, :confidence,
                        :filtered_by, :valuation_z_sector_neutral)""",
             rows,
         )
