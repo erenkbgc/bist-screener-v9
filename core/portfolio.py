@@ -45,7 +45,7 @@ def calculate_returns_and_covariance(
         bars = price_series_by_ticker.get(t, [])
         if len(bars) < 15:
             continue
-        closes = [float(b["close"]) for b in bars[-window_days:] if b.get("close")]
+        closes = [float(b.get("adj_close") or b["close"]) for b in bars[-window_days:] if b.get("close")]
         if len(closes) < 15:
             continue
         arr = np.array(closes, dtype=float)
