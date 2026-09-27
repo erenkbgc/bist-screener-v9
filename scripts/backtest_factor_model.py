@@ -53,6 +53,8 @@ def add_composites(df: pd.DataFrame) -> pd.DataFrame:
     w = yaml.safe_load((ROOT / "config" / "weights.yaml").read_text(encoding="utf-8"))["scoring_weights"]
     df = df.copy()
     df["value_z"] = df[[f + "_z" for f in VALUE]].mean(axis=1)
+    # Canli valuation_z sektor-notr; ham bilesenle ayni kanitin tasinip tasinmadigini gosterir.
+    df["value_sn_z"] = fb.sector_neutralize(df, "value_z")
     parts = {"value_z": w["valuation_z"], "mom_12_1_z": w["momentum_z"], "vol60_z": w["low_vol_z"]}
     tot = sum(parts.values())
     df["model_proxy_z"] = sum(df[c].fillna(0) * v / tot for c, v in parts.items())
@@ -110,7 +112,7 @@ def main() -> None:
           f"{len(per_month)} ay, aylik evren medyan {int(per_month.median())} hisse "
           f"(likidite alt %{int(100 * args.liq_drop)} atildi)\n")
 
-    signals = [f + "_z" for f in FACTORS] + ["value_z", "model_proxy_z"]
+    signals = [f + "_z" for f in FACTORS] + ["value_z", "value_sn_z", "model_proxy_z"]
     rows = []
     for col in signals:
         r = {"signal": col.removesuffix("_z")}

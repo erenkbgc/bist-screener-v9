@@ -61,6 +61,15 @@ def prepare(panel: pd.DataFrame, factors: list[str], liq_drop_pct: float = 0.3,
     return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
 
 
+def sector_neutralize(df: pd.DataFrame, col: str, min_n: int = 5) -> pd.Series:
+    """Her ay sektor ortalamasindan fark (canli valuation_z sektor-notr akran
+    karsilastirmasinin vekili). min_n'den kucuk sektorler tum kesite gore."""
+    g = df.groupby(["date", "sector"])[col]
+    within = df[col] - g.transform("mean")
+    market = df[col] - df.groupby("date")[col].transform("mean")
+    return within.where(g.transform("count") >= min_n, market)
+
+
 def newey_west_t(x: pd.Series | np.ndarray, lags: int) -> tuple[float, float, int]:
     """Ortalama, HAC t-istatistigi (Bartlett cekirdegi), gozlem sayisi."""
     x = np.asarray(pd.Series(x).dropna(), dtype=float)
