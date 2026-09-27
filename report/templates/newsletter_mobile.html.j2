@@ -24,6 +24,12 @@
       {% if c.stop_loss is not none %}
       <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Stop</td><td style="padding:5px 0; text-align:right; font-weight:600; color:#b91c1c; border-top:1px solid #f1f5f9;">{{ c.stop_loss | fmt }}</td></tr>
       {% endif %}
+      {% if c.nearest_support is not none or c.nearest_resistance is not none %}
+      <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Destek / direnç</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">{{ c.nearest_support | fmt if c.nearest_support is not none else '—' }} / {{ c.nearest_resistance | fmt if c.nearest_resistance is not none else '—' }}</td></tr>
+      {% endif %}
+      {% if c.resistance_before_target %}
+      <tr><td colspan="2" style="padding:5px 0; color:#b45309; font-size:12px; border-top:1px solid #f1f5f9;">Hedef yolunda direnç var ({{ c.nearest_resistance | fmt }}); kırılmadan hedef zorlaşabilir.</td></tr>
+      {% endif %}
       {% if c.position_size_pct is not none %}
       <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Pozisyon</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">%{{ c.position_size_pct | fmt }}</td></tr>
       {% endif %}

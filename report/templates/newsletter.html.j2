@@ -816,6 +816,11 @@
           {% if c.position_size_pct is not none %}
           <span class="dossier-strip-item">Poz: <b>%{{ c.position_size_pct | fmt }}</b></span>
           {% endif %}
+          {% if c.sr_levels and (c.sr_levels.supports or c.sr_levels.resistances) %}
+          <span class="dossier-strip-item">Destek: <b>{{ c.sr_levels.supports | map('fmt') | join(' / ') if c.sr_levels.supports else '—' }}</b></span>
+          <span class="dossier-strip-item">Direnç: <b>{{ c.sr_levels.resistances | map('fmt') | join(' / ') if c.sr_levels.resistances else '—' }}</b></span>
+          {% if c.sr_levels.vwap20 is not none %}<span class="dossier-strip-item">VWAP20: <b>{{ c.sr_levels.vwap20 | fmt }}</b></span>{% endif %}
+          {% endif %}
         </div>
       </div>
 

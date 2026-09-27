@@ -232,8 +232,14 @@ def compute_dynamic_risk_levels(
     account_risk_pct: float = 1.5,
     max_position_size_pct: float = 25.0,
     avg_volume_tl_20d: float | None = None,
+    level_plan: dict | None = None,
 ) -> dict:
     """Dinamik Entry / Stop-Loss / Position Sizing (v12 roadmap P0-1).
+
+    level_plan (core/levels.py::plan_entry) verilir ve destek bulunmussa bant
+    ve stop fiyat yapisina gore kurulur; stop mesafesi [1, 3] ATR disina
+    cikarsa ATR kuralina geri donulur (asiri genis stop pozisyonu sifira
+    yaklastirir, asiri dar stop gurultuyle tetiklenir).
 
     Kurallar ve Formuller:
     - entry_low = current_price - 0.5 * ATR20 (BIST tick rounded)
@@ -268,6 +274,22 @@ def compute_dynamic_risk_levels(
         stop_loss = round(min(base_stop, recent_swing_low), 2)
     else:
         stop_loss = round(base_stop, 2)
+
+    entry_method = "atr_band"
+    if level_plan and level_plan.get("method") in ("support", "breakout_retest"):
+        lv_low = bist_tick_round(round(max(0.01, level_plan["entry_low"]), 2))
+        lv_high = bist_tick_round(round(max(level_plan["entry_high"], level_plan["entry_low"]), 2))
+        lv_eff = bist_tick_round(round(0.5 * lv_low + 0.5 * lv_high, 2))
+        # likidite tamponu seviye stopuna da uygulanir (ince defterde spread gurultusu)
+        lv_stop = level_plan["stop"] - 0.5 * (buffer_mult - 1.0) * effective_atr
+        dist_atr = (lv_eff - lv_stop) / effective_atr
+        if dist_atr < 1.0:
+            lv_stop = lv_eff - 1.0 * effective_atr
+            dist_atr = 1.0
+        if dist_atr <= 3.0:
+            entry_low, entry_high, effective_entry = lv_low, lv_high, lv_eff
+            stop_loss = round(lv_stop, 2)
+            entry_method = level_plan["method"]
     stop_loss = max(0.01, stop_loss)
     stop_loss = bist_tick_round(stop_loss)
 
@@ -290,6 +312,7 @@ def compute_dynamic_risk_levels(
         "risk_per_share": risk_per_share,
         "risk_pct": round(risk_pct * 100, 2),
         "liquidity_buffer_multiplier": buffer_mult,
+        "entry_method": entry_method,
     }
 
 
@@ -297,14 +320,20 @@ def compute_short_term_target(current_price: float, atr20: float, sma20: float,
                               avg_volume_tl_20d: float | None = None,
                               recent_swing_low: float | None = None,
                               recent_swing_high: float | None = None,
-                              upper_bb: float | None = None) -> dict:
+                              upper_bb: float | None = None,
+                              level_plan: dict | None = None) -> dict:
     buffer_mult = _liquidity_buffer_multiplier(avg_volume_tl_20d)
     risk = compute_dynamic_risk_levels(
         current_price=current_price,
         atr20=atr20,
         recent_swing_low=recent_swing_low,
         avg_volume_tl_20d=avg_volume_tl_20d,
+        level_plan=level_plan,
     )
+    # Hacim profili/pivot direnci: kar-al emirleri seviyenin hemen onunde
+    # kumelenir (Osler 2003) -> hedef direncin altinda tavanlanir.
+    if level_plan and level_plan.get("target") and level_plan["target"] > current_price:
+        recent_swing_high = min(recent_swing_high, level_plan["target"]) if recent_swing_high else level_plan["target"]
     raw_target = current_price + 2.5 * buffer_mult * atr20
     target_price = bist_tick_round(round(raw_target, 2))
 
@@ -322,8 +351,10 @@ def compute_short_term_target(current_price: float, atr20: float, sma20: float,
     stop_loss = bist_tick_round(round(raw_stop, 2))
 
     # Risk / Kazanc (Reward-to-Risk) Orani
-    risk_dist = max(0.01, current_price - risk["stop_loss"])
-    reward_dist = max(0.0, target_price - current_price)
+    # odul/risk kademeli alim fiyatindan (effective_entry) olculur: emir
+    # bant icinde dolar, anlik fiyattan degil.
+    risk_dist = max(0.01, risk["effective_entry"] - risk["stop_loss"])
+    reward_dist = max(0.0, target_price - risk["effective_entry"])
     risk_reward_ratio = round(reward_dist / risk_dist, 2)
 
     return {
@@ -341,5 +372,6 @@ def compute_short_term_target(current_price: float, atr20: float, sma20: float,
         "take_profit_1": bist_tick_round(round(min(target_price, current_price + 1.5 * buffer_mult * atr20), 2)),
         "take_profit_2": target_price,
         "structural_ceiling": structural_ceiling,
+        "entry_method": risk["entry_method"],
     }
 

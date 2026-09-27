@@ -50,6 +50,7 @@ from core import events as events_mod
 from core import ownership as ownership_mod
 from core import volatility as volatility_mod
 from core import targets as targets_mod
+from core import levels as levels_mod
 from core import hurdle as hurdle_mod
 from core import beta_hurdle as beta_hurdle_mod
 from core import dividend_sustainability as div_sustain_mod
@@ -261,6 +262,17 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         bid_ask = bist_mcp.get_bid_ask(t)  # v10 roadmap: transaction_cost_model girdisi
 
         recent_swing_low = min((p["low"] for p in price_rows[-20:] if p.get("low") is not None), default=None) if price_rows else None
+        # Destek/direnc (pivot + hacim profili) ve hacim onayli kirilim: YALNIZCA
+        # BILGI. scripts/backtest_entry_levels.py (40 hisse, 2y, 1883 sinyal):
+        # hedefi dirence tavanlamak islem basi getiriyi dusurdu (hisse bazli
+        # t=-2.95), destekten giris/yapisal stop ATR bandindan farksiz (t=-0.65).
+        # Kanit cikana kadar giris/stop/hedef ATR kuraliyla uretilir.
+        atr_now = last.get("atr20")
+        sr_levels = levels_mod.find_levels(price_rows, atr_now) if atr_now else {"supports": [], "resistances": []}
+        level_plan = levels_mod.plan_entry(
+            current_price, atr_now, sr_levels,
+            breakout_zone=levels_mod.recent_breakout(price_rows, sr_levels, atr_now) if atr_now else None,
+        ) if atr_now else None
 
         # Quant Level-Up Faz 2 & 3: 12-1 Ay Momentum ve Amihud Likidite Modeli
         mom_metrics = momentum_mod.compute_momentum_metrics(price_rows, xu100_prices)
@@ -319,6 +331,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             recent_swing_low=recent_swing_low,
             avg_volume_tl_20d=base.get("avg_volume_tl_20d"),
         )
+        _annotate_levels(lt, sr_levels, level_plan)
         lt["entry_price"] = targets_mod.bist_tick_round(current_price)
         lt["entry_low"] = targets_mod.bist_tick_round(lt_risk["entry_low"])
         lt["entry_high"] = targets_mod.bist_tick_round(lt_risk["entry_high"])
@@ -371,6 +384,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         st["current_price"] = targets_mod.bist_tick_round(current_price)
         st["entry_price"] = st["current_price"]
         st["price_source"] = price_source
+        _annotate_levels(st, sr_levels, level_plan)
         st["volume_ratio_20d"] = last.get("volume_ratio_20d")
         st["volatility_60d"] = last.get("volatility_60d")
         st["mom_12_1_pct"] = mom_metrics.get("mom_12_1_pct")
@@ -597,6 +611,21 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
             conn.commit()
         finally:
             conn.close()
+
+
+def _annotate_levels(c: dict, sr_levels: dict, level_plan: dict | None) -> None:
+    """Destek/direnc bilgisi (karar kuralina BAGLI DEGIL, bkz. core/levels.py).
+    Rapor: en yakin destek/direnc ve hedefin yolunda direnc olup olmadigi."""
+    summary = levels_mod.summarize(sr_levels)
+    c["sr_levels"] = summary
+    c["level_plan_method"] = (level_plan or {}).get("method")
+    sup = summary["supports"][0] if summary["supports"] else None
+    res = summary["resistances"][0] if summary["resistances"] else None
+    c["nearest_support"] = targets_mod.bist_tick_round(sup) if sup else None
+    c["nearest_resistance"] = targets_mod.bist_tick_round(res) if res else None
+    target = c.get("target_price")
+    c["resistance_before_target"] = bool(res and target and c.get("current_price")
+                                         and c["current_price"] < res < target)
 
 
 def _dispatch(as_of_date: str, html_content: str, payload: dict, detail_html: str | None = None) -> bool:

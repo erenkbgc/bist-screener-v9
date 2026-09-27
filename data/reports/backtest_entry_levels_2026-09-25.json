@@ -1,0 +1,86 @@
+{
+  "as_of": "2026-09-25",
+  "tickers": 40,
+  "failed": [],
+  "cost_pct_round_trip": 0.5,
+  "new_method_counts": {
+    "support": 1279,
+    "breakout_retest": 295,
+    "atr_band": 309
+  },
+  "variants": {
+    "old": {
+      "signals": 1883,
+      "trades": 1841,
+      "fill_rate_pct": 97.8,
+      "mean_ret_pct": 0.729,
+      "median_ret_pct": 4.36,
+      "hit_rate_pct": 57.4,
+      "stop_rate_pct": 28.2,
+      "target_rate_pct": 48.2,
+      "mean_risk_pct": 10.72,
+      "mean_R": 0.096,
+      "per_signal_ret_pct": 0.713,
+      "t_stat_trade": 3.7
+    },
+    "new": {
+      "signals": 1883,
+      "trades": 1630,
+      "fill_rate_pct": 86.6,
+      "mean_ret_pct": 0.264,
+      "median_ret_pct": 1.41,
+      "hit_rate_pct": 60.1,
+      "stop_rate_pct": 35.0,
+      "target_rate_pct": 56.6,
+      "mean_risk_pct": 7.03,
+      "mean_R": 0.005,
+      "per_signal_ret_pct": 0.229,
+      "t_stat_trade": 1.76
+    },
+    "new_entry_old_target": {
+      "signals": 1883,
+      "trades": 1630,
+      "fill_rate_pct": 86.6,
+      "mean_ret_pct": 0.635,
+      "median_ret_pct": -0.907,
+      "hit_rate_pct": 48.5,
+      "stop_rate_pct": 44.4,
+      "target_rate_pct": 41.5,
+      "mean_risk_pct": 7.03,
+      "mean_R": 0.074,
+      "per_signal_ret_pct": 0.549,
+      "t_stat_trade": 3.5
+    },
+    "old_entry_new_target": {
+      "signals": 1883,
+      "trades": 1841,
+      "fill_rate_pct": 97.8,
+      "mean_ret_pct": 0.352,
+      "median_ret_pct": 2.064,
+      "hit_rate_pct": 68.0,
+      "stop_rate_pct": 22.3,
+      "target_rate_pct": 64.6,
+      "mean_risk_pct": 10.72,
+      "mean_R": 0.033,
+      "per_signal_ret_pct": 0.345,
+      "t_stat_trade": 2.16
+    }
+  },
+  "per_ticker_vs_old": {
+    "new": {
+      "mean_diff_pct": -0.429,
+      "t": -2.82,
+      "tickers_better_pct": 22.5
+    },
+    "new_entry_old_target": {
+      "mean_diff_pct": -0.073,
+      "t": -0.65,
+      "tickers_better_pct": 45.0
+    },
+    "old_entry_new_target": {
+      "mean_diff_pct": -0.35,
+      "t": -2.95,
+      "tickers_better_pct": 22.5
+    }
+  }
+}
