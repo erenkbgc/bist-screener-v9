@@ -56,6 +56,19 @@ def get_regime_weights(regime: str | None = None, weights_cfg: dict | None = Non
     return {k: float(v) for k, v in base_w.items()}
 
 
+def redistribute_catalyst_weight(w: dict[str, float]) -> dict[str, float]:
+    """Katalizor verisi YOKSA (KAP cekilemedi) agirligi digerlerine oransal dagitir.
+    Toplam agirlik korunur; boylece skorlar veri olan hisselerle ayni olcekte kalir.
+    Veri varken bildirim olmamasi (skor 0) bu duruma GIRMEZ."""
+    wc = float(w.get("catalyst_score", 0.0))
+    rest = {k: v for k, v in w.items() if k != "catalyst_score"}
+    rest_sum = sum(rest.values())
+    if wc <= 0 or rest_sum <= 0:
+        return dict(w)
+    scale = (rest_sum + wc) / rest_sum
+    return {**{k: v * scale for k, v in rest.items()}, "catalyst_score": 0.0}
+
+
 def _is_quarantined(as_of_date: str, ticker: str) -> bool:
     rows = db.query("SELECT 1 FROM quarantine WHERE as_of_date=? AND ticker=? LIMIT 1", (as_of_date, ticker))
     return bool(rows)
@@ -132,13 +145,14 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
             scored.append(c)
             continue
 
-        final_score = (w["valuation_z"] * (c["valuation_z"] or 0)
-                       + w["catalyst_score"] * (c["catalyst_score"] or 0)
-                       + w["ownership_quality_z"] * (c["ownership_z"] or 0)
-                       + w["low_vol_z"] * (c.get("low_vol_z") or 0)
-                       + w.get("momentum_z", 0.0) * (c.get("momentum_z") or 0))
+        wc = w if c.get("catalyst_available", True) else redistribute_catalyst_weight(w)
+        final_score = (wc["valuation_z"] * (c["valuation_z"] or 0)
+                       + wc["catalyst_score"] * (c["catalyst_score"] or 0)
+                       + wc["ownership_quality_z"] * (c["ownership_z"] or 0)
+                       + wc["low_vol_z"] * (c.get("low_vol_z") or 0)
+                       + wc.get("momentum_z", 0.0) * (c.get("momentum_z") or 0))
         c["final_score"] = final_score
-        c["scoring_weights_used"] = w
+        c["scoring_weights_used"] = wc
         c["market_regime_used"] = regime
         c["filtered_by"] = None
         c["candidate_state"] = "WATCHLIST"  # asagidaki dilim/confidence mantigiyla kesinlestirilecek gecici deger

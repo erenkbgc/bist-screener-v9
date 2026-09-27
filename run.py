@@ -70,6 +70,7 @@ from core import portfolio as portfolio_mod
 from core import factor_disclosure
 from core import sector_rotation as sector_rotation_mod
 from bist_mcp import server as bist_mcp
+from kap_web_mcp import server as kap_web_mcp
 from report import render as report_render
 from report import validate as report_validate
 
@@ -143,6 +144,7 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
         "piotroski_normalized_score": pio.get("normalized_score"),
         "sloan_flag": bool(sl.get("elevated_risk_flag")), "sloan_peer_percentile": sl.get("peer_percentile"),
         "catalyst_score": cat.get("catalyst_score", 0.0),
+        "catalyst_available": cat.get("catalyst_available", True),
         "retail_pct": own.get("retail_pct"), "free_float_pct": own.get("free_float_pct"),
         "institutional_pct": own.get("institutional_pct"), "foreign_pct": own.get("foreign_pct"),
         "investor_count_change_1m": own.get("investor_count_change_1m"),
@@ -206,6 +208,12 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     # --- 6. catalysts + event_calendar_engine ---
     tickers = [u["ticker"] for u in eligible]
     catalyst_by_ticker = catalysts_mod.fetch_kap_catalysts(as_of_date, tickers, lookback_days=14)
+    # KAP cekilemeyen hissede katalizor 0 "notr haber" degil "veri yok"tur;
+    # skorlama bu hisselerde katalizor agirligini digerlerine dagitir.
+    kap_available = kap_web_mcp.disclosures_available(tickers)
+    for t in tickers:
+        catalyst_by_ticker.setdefault(t, {"catalyst_score": 0.0, "volatility_event": False, "events": []})
+        catalyst_by_ticker[t]["catalyst_available"] = kap_available.get(t, True)
     events_by_ticker = events_mod.fetch_upcoming_events(as_of_date, tickers)
 
     # --- prices (hurdle/beta/target/correlation icin ortak girdi) ---
@@ -451,7 +459,8 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
 
     # --- veri saglik kapisi (roadmap Adim 6; bkz. core/run_health.py) ---
     health = run_health_mod.assess(
-        as_of_date, prices=run_health_mod.price_stats(as_of_date, prices_by_ticker, xu100_prices))
+        as_of_date, prices=run_health_mod.price_stats(as_of_date, prices_by_ticker, xu100_prices),
+        catalyst_available=kap_available)
     run_health_mod.persist(health)
     print(f"[run_health] {health['status']} issues={health['issues']} config={health['config_hash']} "
           f"metrics={health['metrics']}", flush=True)
