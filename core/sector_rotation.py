@@ -94,20 +94,27 @@ def quadrant(rs_ratio: float, rs_momentum: float) -> str:
     return "Improving" if rs_momentum >= 100 else "Lagging"
 
 
+def rrg_series(sector_closes: pd.Series, bench_closes: pd.Series,
+               ratio_window: int = RATIO_WINDOW_WEEKS,
+               momentum_lag: int = MOMENTUM_LAG_WEEKS) -> pd.DataFrame:
+    """Haftalik RS-Ratio (r) / RS-Momentum (m) serisi. Yalnizca gecmise bakan
+    rolling pencereler kullanilir: t haftasindaki deger t'den sonraki veriyi
+    icermez (backtest'te ileriye bakis yok)."""
+    sec, ben = _weekly(sector_closes), _weekly(bench_closes)
+    df = pd.concat({"s": sec, "b": ben}, axis=1, join="inner").dropna()
+    rs = 100.0 * df["s"] / df["b"]
+    ratio = 100.0 + (rs - rs.rolling(ratio_window).mean()) / rs.rolling(ratio_window).std()
+    d = ratio - ratio.shift(momentum_lag)
+    mom = 100.0 + (d - d.rolling(ratio_window).mean()) / d.rolling(ratio_window).std()
+    return pd.concat({"r": ratio, "m": mom}, axis=1).dropna()
+
+
 def compute_rrg(sector_closes: pd.Series, bench_closes: pd.Series,
                 ratio_window: int = RATIO_WINDOW_WEEKS,
                 momentum_lag: int = MOMENTUM_LAG_WEEKS) -> dict | None:
     """Gunluk kapanis serilerinden (DatetimeIndex) son haftanin RRG noktasi.
     Yetersiz gecmiste None doner (sahte bir kadran uretilmez)."""
-    sec, ben = _weekly(sector_closes), _weekly(bench_closes)
-    df = pd.concat({"s": sec, "b": ben}, axis=1, join="inner").dropna()
-    if len(df) < 2 * ratio_window + momentum_lag:
-        return None
-    rs = 100.0 * df["s"] / df["b"]
-    ratio = 100.0 + (rs - rs.rolling(ratio_window).mean()) / rs.rolling(ratio_window).std()
-    d = ratio - ratio.shift(momentum_lag)
-    mom = 100.0 + (d - d.rolling(ratio_window).mean()) / d.rolling(ratio_window).std()
-    pts = pd.concat({"r": ratio, "m": mom}, axis=1).dropna()
+    pts = rrg_series(sector_closes, bench_closes, ratio_window, momentum_lag)
     if len(pts) < FRESH_WEEKS + 1:
         return None
     quads = [quadrant(r, m) for r, m in zip(pts["r"], pts["m"])]

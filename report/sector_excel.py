@@ -32,11 +32,15 @@ SECTOR_NAMES_TR = {
 QUADRANT_ORDER = ["Improving", "Leading", "Weakening", "Lagging"]
 QUADRANT_TR = {"Leading": "Lider", "Improving": "İyileşen", "Weakening": "Zayıflayan", "Lagging": "Geride"}
 QUADRANT_FILL = {"Leading": "C6EFCE", "Improving": "DDEBF7", "Weakening": "FFF2CC", "Lagging": "F8CBAD"}
+# Yorumlar backtest kanitina gore (scripts/backtest_sector_rotation.py,
+# 2013-2026, 23 sektor endeksi): Iyilesen/erken ivme sepetleri esit agirlikli
+# sektor sepetinin yilda ~%5-8 GERISINDE kaldi; 12-1 sektor momentumu (Lider
+# tarafi) EW'yi ~%9-13 gecti ama coklu test esiginin altinda (t~1.5-1.9).
 QUADRANT_ACTION = {
-    "Improving": "Erken ivme: izle / kademeli giriş",
-    "Leading": "Trend güçlü: taşı, yeni alımda seçici ol",
-    "Weakening": "İvme kayboluyor: kâr al / stopu sıkılaştır",
-    "Lagging": "Zayıf: uzak dur, dönüş sinyali bekle",
+    "Improving": "İvme dönüyor; tek başına alım sinyali değil (backtest: EW gerisinde)",
+    "Leading": "Güçlü göreli trend; momentum tarafı (backtest: EW üstü, anlamlı değil)",
+    "Weakening": "İvme kayboluyor; stopları gözden geçir",
+    "Lagging": "Zayıf göreli güç",
 }
 NEXT_QUADRANT = {"Lagging": "Improving", "Improving": "Leading", "Leading": "Weakening", "Weakening": "Lagging"}
 
@@ -195,6 +199,7 @@ def build_sector_rotation_workbook(as_of_date: str, sector_rotation: dict[str, d
         "RS-Momentum = 100 + z(RS-Ratio'nun 4 haftalık değişimi), 26 hafta pencere",
         "Kadran: Lider (R>100, M>100), İyileşen (R<100, M>100), Zayıflayan (R>100, M<100), Geride (R<100, M<100)",
         "★ Erken ivme: son 3 hafta içinde Geride → İyileşen geçişi",
+        "Backtest (2013–2026, 20 bps maliyet): İyileşen/erken ivme sepetleri eşit ağırlıklı sektör sepetinin yılda ~%5–8 gerisinde; 12-1 sektör momentumu ~%9–13 önünde ama istatistiksel eşiğin altında.",
         "Kaynak: BIST sektör endeksleri (borsapy / TradingView). JdK RRG'nin açık kaynak yaklaşımıdır.",
         "Sınır: pencere uzunlukları kalibre edilmedi; skora dahil değil; geçmiş performans geleceği garanti etmez.",
     ]
