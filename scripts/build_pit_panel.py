@@ -28,10 +28,38 @@ OUT = ROOT / "data" / "research"
 RAW = OUT / "raw"
 
 
+RAW_VERSION = 2  # v1: borsapy'nin kartezyen-sismis tablolari (bkz. pit_panel.merge_statement_batches)
+
+
+def fetch_statement(ticker: str, statement_type: str, last_n: int) -> pd.DataFrame | None:
+    """borsapy ``get_financial_statements`` esdegeri, kartezyen join hatasi olmadan."""
+    from datetime import datetime
+
+    from borsapy._providers.isyatirim import get_isyatirim_provider
+
+    prov = get_isyatirim_provider()
+    periods = prov._get_periods(datetime.now().year, True, count=last_n)
+    step = prov._MAX_PERIODS_PER_CALL
+    batches = []
+    for i in range(0, len(periods), step):
+        try:
+            batches.append(prov._fetch_financial_table(
+                symbol=ticker, financial_group=prov.FINANCIAL_GROUP_INDUSTRIAL,
+                periods=periods[i:i + step], quarterly=True, statement_type=statement_type,
+            ))
+        except Exception:  # noqa: BLE001
+            continue
+    df = pit_panel.merge_statement_batches(batches)
+    if df.empty:
+        return None
+    return df[sorted(df.columns, key=prov._period_sort_key, reverse=True)]
+
+
 def fetch_raw(ticker: str, refresh: bool) -> dict | None:
     path = RAW / f"{ticker}.pkl"
-    if path.exists() and not refresh:
-        return pickle.loads(path.read_bytes())
+    raw = pickle.loads(path.read_bytes()) if path.exists() and not refresh else None
+    if raw is not None and raw.get("version") == RAW_VERSION:
+        return raw
     import borsapy as bp
     t = bp.Ticker(ticker)
 
@@ -40,13 +68,16 @@ def fetch_raw(ticker: str, refresh: bool) -> dict | None:
             return fn(**kw)
         except Exception:
             return None
-    raw = {
-        "bs": safe(t.get_balance_sheet, quarterly=True, last_n=60),
-        "inc": safe(t.get_income_stmt, quarterly=True, last_n=60),
-        "px_raw": safe(t.history, period="max", adjust=False),
-        "px_adj": safe(t.history, period="max", adjust=True),
-        "splits": safe(lambda: t.splits),
-    }
+    if raw is None:
+        raw = {
+            "px_raw": safe(t.history, period="max", adjust=False),
+            "px_adj": safe(t.history, period="max", adjust=True),
+            "splits": safe(lambda: t.splits),
+        }
+    # v1 onbellekte fiyat/bolunme saglam; yalniz tablolar yeniden cekilir
+    raw["bs"] = safe(fetch_statement, ticker=ticker, statement_type="balance_sheet", last_n=60)
+    raw["inc"] = safe(fetch_statement, ticker=ticker, statement_type="income_stmt", last_n=60)
+    raw["version"] = RAW_VERSION
     RAW.mkdir(parents=True, exist_ok=True)
     path.write_bytes(pickle.dumps(raw))
     return raw
