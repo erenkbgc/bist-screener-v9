@@ -118,3 +118,40 @@ def quintile_spread(df: pd.DataFrame, col: str, ret: str, n_q: int = 5,
     if not out.empty:
         out["spread"] = out["top"] - out["bottom"]
     return out
+
+
+def peer_fair_value_ratio(month: pd.DataFrame, min_peers: int = 5,
+                          nav_sectors: frozenset = frozenset({"Gayrimenkul"})) -> pd.DataFrame:
+    """Canli emsal bacaginin (core/valuation_triangle.py::compute_peers_leg)
+    nokta-zamanli yeniden kurulumu; tek bir ay sonu kesiti icin FV/P dondurur.
+
+    Carpanlarin harmonik ortalamasi = 1 / getiri ortalamasi (pozitifler):
+      pe:      FV/P = HM(P/E) * E/P_i
+      pb:      FV/P = HM(P/B) * B/P_i
+      ev_ebit: FV/P = (HM(EV/EBIT) * EBIT_i - net_borc_i) / mcap_i
+    Canlida EV/FAVOK kullanilir; panelde amortisman yok, EBIT vekildir.
+    Akran grubu: ayni sektor (aday dahil, canlidaki gibi) >= min_peers, yoksa tum kesit.
+    Her bacak [0.2, 3.5] disindaysa atilir; sonuc [0.3, 2.5] disindaysa NaN.
+    """
+    m = month.copy()
+    m["ebit"] = m["ey"] * (m["mcap"] + m["net_debt"])
+    out = pd.Series(np.nan, index=m.index)
+    counts = m["sector"].value_counts()
+
+    def _inv_mean(s: pd.Series) -> float:
+        s = s[(s > 0) & np.isfinite(s)]
+        return 1.0 / s.mean() if len(s) else np.nan
+
+    for sec, g in m.groupby("sector"):
+        peers = g if counts[sec] >= min_peers else m
+        hm_pe, hm_pb, hm_ev = _inv_mean(peers["ep"]), _inv_mean(peers["bm"]), _inv_mean(peers["ey"])
+        legs = pd.DataFrame(index=g.index)
+        legs["pe"] = np.where(g["ep"] > 0, hm_pe * g["ep"], np.nan)
+        legs["pb"] = np.where(g["bm"] > 0, hm_pb * g["bm"], np.nan)
+        if sec not in nav_sectors:
+            ev_fv = (hm_ev * g["ebit"] - g["net_debt"]) / g["mcap"]
+            legs["ev_ebit"] = np.where(g["ebit"] > 0, ev_fv, np.nan)
+        legs = legs.where((legs >= 0.2) & (legs <= 3.5))
+        fv = legs.mean(axis=1)
+        out.loc[g.index] = fv.where((fv >= 0.3) & (fv <= 2.5))
+    return pd.DataFrame({"fv_ratio": out})

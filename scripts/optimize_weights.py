@@ -188,6 +188,8 @@ def run_optimization(period: str = "5y") -> dict:
         # hacim orani) turetilir. Kesitsel faktor ve degerleme bacagi agirliklari
         # bu yolla ogrenilemez; production bunlari KULLANMAZ (weights.yaml).
         # Production'da kullanilan tek cikti calibrated_z_score'dur (koni).
+        # calibrated_alpha 2026-09-27'ye kadar core/targets.py'de SESSIZCE kullaniliyordu;
+        # artik kullanilmaz (config/weights.yaml::target_convergence_alpha).
         "calibration_basis": "single_series_technical_proxies",
         "calibrated_z_score": z_star,
         "calibrated_alpha": alpha_star,

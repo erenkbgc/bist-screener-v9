@@ -297,6 +297,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["target_price"] = lt_target["target_price"]
         lt["target_hit_prob_pct"] = lt_target.get("target_hit_prob_pct")
         lt["terminal_fair_value"] = targets_mod.bist_tick_round(lt_target.get("terminal_fair_value"))
+        lt["valuation_excess_pct"] = lt_target.get("valuation_excess_pct")
         lt["volatility_cone_ceiling"] = lt_target.get("volatility_cone_ceiling")
         lt["scenario_probabilities"] = lt_target.get("scenario_probabilities")
         lt["fair_value_low"] = lt_target.get("fair_value_low")

@@ -35,6 +35,16 @@ piotroski:
   # sinyali zayif. Sert kapi yalnizca dusuk kaliteyi (<=3/9 esdegeri) eler.
   hard_filter_min_score: 0.34
 
+# Uzun vade hedefi: beklenen = (P + alpha * (adil deger - P)) * (1 + k_e)^(180/365) - temettu
+# (core/targets.py::compute_long_term_target). alpha = 180 gunde kapanan acik orani.
+# 2026-09-27 kesitsel test (scripts/backtest_target_accuracy.py; emsal bacagi PIT
+# panelde yeniden kuruldu, 468 hisse, 2013-2026): gozlenen alpha 0.031 (t 2.5);
+# 2016-2020 0.053, 2021-2026 0.018. Onceki deger 0.32 (weights_optimized.json,
+# tek XU100 serisi) en ucuz dilimde +25% goreli getiri vaat ediyordu; gerceklesen +1.4%.
+# 0.05 = alt donem tahminlerinin ust ucu (muhafazakar). DCF ve kalite bacaklari,
+# ML senaryo agirliklandirmasi bu testte YOK (bkz. script docstring).
+target_convergence_alpha: 0.05
+
 top_n_per_bucket: 4
 
 # Degerleme Ucgeni (Valuation Triangle) bilesen agirliklari (v13 roadmap P0-3).
