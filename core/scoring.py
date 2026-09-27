@@ -78,6 +78,13 @@ def hard_filters_passed(candidate: dict, piotroski_threshold: float, as_of_date_
         (candidate["piotroski_normalized_score"] is not None
          and candidate["piotroski_normalized_score"] >= piotroski_threshold, "piotroski"),
     ]
+    if candidate["bucket"] == "long_term":
+        # Hurdle (beklenen getiri > rf) CAPM buyumesi yuzunden adil degerin
+        # ALTINDA islem goren hisselerde de gecer. Uzun vade tezi degerlemedir:
+        # senaryo-agirlikli adil deger fiyatin ustunde olmali. Deger None ise
+        # (volatilite/ATR yok, yakinsama uygulanmadi) bu kapi uygulanmaz.
+        v = candidate.get("valuation_excess_pct")
+        checks.append((v is None or v > 0, "valuation_upside"))
     if candidate["bucket"] == "short_term":
         checks.append((candidate.get("volume_ratio_20d") is not None and candidate["volume_ratio_20d"] >= 1.5,
                        "volume_breakout"))

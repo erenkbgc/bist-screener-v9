@@ -146,3 +146,17 @@ def test_value_trap_blocks_strong_opportunity(temp_db):
     assert trap["candidate_state"] != "STRONG_OPPORTUNITY"
     healthy = pool(15.0, 0.5)["T0"]
     assert healthy["value_trap_risk"] is False
+
+
+def test_long_term_fails_without_valuation_upside():
+    # Hurdle gecse bile (CAPM buyumesi) adil degerin altindaki fiyatli hisse elenir.
+    passed, reason = hard_filters_passed(_base_candidate(valuation_excess_pct=-0.5), 0.55, "2026-09-10")
+    assert not passed and reason == "valuation_upside"
+    passed, _ = hard_filters_passed(_base_candidate(valuation_excess_pct=0.5), 0.55, "2026-09-10")
+    assert passed
+
+
+def test_valuation_upside_gate_only_for_long_term():
+    c = _base_candidate(bucket="short_term", volume_ratio_20d=2.0, valuation_excess_pct=-5.0)
+    passed, _ = hard_filters_passed(c, 0.55, "2026-09-10")
+    assert passed

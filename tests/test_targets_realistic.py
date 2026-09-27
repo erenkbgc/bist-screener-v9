@@ -129,3 +129,29 @@ def test_long_term_target_fairly_priced_stock_earns_cost_of_equity():
     k_e = cost_of_equity_pct(rf)
     expected = ((1 + k_e / 100) ** (180 / 365) - 1) * 100
     assert expected > hurdle_rate_pct(rf, 180)
+
+
+def test_convergence_alpha_from_weights_yaml_not_optimized_json():
+    from core.targets import convergence_alpha
+    import yaml
+    from pathlib import Path
+    cfg = yaml.safe_load((Path(__file__).resolve().parent.parent / "config" / "weights.yaml").read_text(encoding="utf-8"))
+    assert convergence_alpha() == cfg["target_convergence_alpha"] == 0.05
+
+
+def test_valuation_excess_is_alpha_times_gap():
+    from core.targets import convergence_alpha
+    candidate = {
+        "ticker": "TEST2", "entry_price": 100.0, "current_price": 100.0,
+        "market_cap": 1_000_000_000.0, "shares_outstanding": 10_000_000.0,
+        "ratio_profile": "industrial", "reporting_basis": "adjusted",
+        "sector": "S1", "supersector": "XUSIN", "pe": 8.0, "eps_ttm": 12.0,
+        "volatility_60d": 0.35 / math.sqrt(252), "atr20": 3.0,
+    }
+    peers = [{"ticker": f"P{i}", "pe": 20.0, "eps_ttm": 10.0, "ratio_profile": "industrial",
+              "reporting_basis": "adjusted", "sector": "S1", "supersector": "XUSIN", "entry_price": 100.0}
+             for i in range(5)]
+    res = compute_long_term_target(candidate, peers + [candidate])
+    fv = res["terminal_fair_value"]
+    assert fv > 100.0
+    assert abs(res["valuation_excess_pct"] - convergence_alpha() * (fv - 100.0)) < 1e-9

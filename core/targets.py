@@ -6,9 +6,12 @@ core/scoring.py ve core/payload.py asamasinda ayrica uygulanir.
 """
 from __future__ import annotations
 
+from pathlib import Path
 from statistics import median
 
 import math
+
+import yaml
 
 from core.ranking import build_peer_group
 from core.valuation_triangle import compute_valuation_triangle, load_erp_config
@@ -21,6 +24,25 @@ LIQUIDITY_FLOOR_TL = 10_000_000
 LIQUIDITY_CEILING_TL = 50_000_000
 # Tabanin hemen ustundeki hisselerde stop/hedef mesafesi en fazla bu kadar genisler.
 MAX_LIQUIDITY_BUFFER = 1.3
+
+
+_WEIGHTS_PATH = Path(__file__).resolve().parent.parent / "config" / "weights.yaml"
+DEFAULT_CONVERGENCE_ALPHA = 0.05
+
+
+def convergence_alpha() -> float:
+    """180 gunde kapanan adil deger acigi orani (config/weights.yaml).
+
+    weights_optimized.json'daki calibrated_alpha KULLANILMAZ: tek XU100
+    serisinden turetilir ve haftalik workflow uzerine yazar. Kesitsel kanit
+    icin bkz. scripts/backtest_target_accuracy.py.
+    """
+    try:
+        with open(_WEIGHTS_PATH, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+        return float(cfg.get("target_convergence_alpha", DEFAULT_CONVERGENCE_ALPHA))
+    except (OSError, ValueError, TypeError):
+        return DEFAULT_CONVERGENCE_ALPHA
 
 
 def _peer_median(peers: list[dict], metric: str) -> float | None:
@@ -157,8 +179,7 @@ def compute_long_term_target(
             risk_free_annual_pct=rf_rate,
             expected_return_annual_pct=k_e,
         )
-        opt = load_optimized_weights()
-        alpha = float(opt.get("calibrated_alpha", 0.40)) if opt else 0.40
+        alpha = convergence_alpha()
 
         # Beklenen fiyat = (bugunku fiyat + alpha * adil deger acigi) * (1 + k_e)^(h/365).
         # Denge (CAPM) altinda adil fiyatli bir hisse k_e kadar nominal getiri
@@ -178,15 +199,21 @@ def compute_long_term_target(
 
         actionable_target = max(0.01, bist_tick_round(round(actionable_target, 2)))
         hit_prob = target_hit_probability_pct(current_price, actionable_target, projected, volatility_60d)
+        # Yalnizca adil deger acigindan gelen beklenen getiri (CAPM buyumesi haric).
+        # Hurdle kapisi k_e > rf oldugu icin neredeyse her hissede gecer; uzun vade
+        # kapisi bu degeri kullanir (core/scoring.py::hard_filters_passed).
+        valuation_excess_pct = alpha * (raw_target - current_price) / current_price * 100.0
     else:
         hit_prob = None
         expected_dividend = 0.0
+        valuation_excess_pct = None
 
     return {
         "target_price": actionable_target,
         "target_hit_prob_pct": hit_prob,
         "expected_dividend_horizon": round(expected_dividend, 4),
         "terminal_fair_value": raw_target,
+        "valuation_excess_pct": valuation_excess_pct,
         "volatility_cone_ceiling": ceiling,
         "fair_value_low": triangle["fair_value_low"],
         "fair_value_base": triangle["fair_value_base"],

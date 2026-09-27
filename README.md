@@ -174,7 +174,7 @@ The ML regime (see [ML Trend Forecaster](#ml-trend-forecaster--market-regime)) s
 
 **Only the value/low-vol/momentum split has backtest evidence** (factor backtest below). `catalyst_score` and `ownership_quality_z` have no history and stay uncalibrated priors. `config/weights_optimized.json` also contains "optimised" scoring weights, but they were fitted on a single XU100 series with technical proxies, so the pipeline does **not** use them (`use_optimized=False`).
 
-**Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data, Piotroski normalised score ≥ 0.34. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
+**Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data, Piotroski normalised score ≥ 0.34. Long-term bucket: additionally `valuation_excess_pct > 0` (scenario-weighted fair value above price). The hurdle gate alone passes almost every stock, because the CAPM drift $`k_e > r_f`$. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
 
 **Candidate state:** `STRONG_OPPORTUNITY` needs high confidence, top quartile of `final_score` in the bucket, a positive hurdle margin, Piotroski ≥ 0.55, and no value-trap flag. Top 4 per bucket are reported.
 
@@ -226,7 +226,7 @@ flowchart LR
 
 - **Cost of equity:** $`k_e = r_f + \beta_{\text{Blume}}\cdot\text{ERP}`$, with $`r_f`$ = 2-year bond yield and ERP = 5% (`config/equity_risk_premium.yaml`).
 - **Drift:** under CAPM, a fairly priced stock earns $`k_e`$. The price target is net of the expected dividend $`D_h = \text{DPS}_{\text{TTM}}\cdot h/365`$, because the price drops by the dividend. The dividend is added back at the hurdle gate.
-- **Partial convergence:** $`\alpha = 0.32`$ (`calibrated_alpha`).
+- **Partial convergence:** $`\alpha = 0.05`$ (`target_convergence_alpha` in `config/weights.yaml`). The cross-sectional target backtest measured 0.031 (t = 2.5); the old value 0.32 came from a single XU100 series. See [Backtests & Evidence](#backtests--evidence).
 - **Volatility cone:** $`\mu = \ln(1+k_e)`$, $`T = 180/365`$, $`z = 2.5`$ (`calibrated_z_score`). $`\sigma_{60d}`$ is the stdev of *daily* returns and is annualised with $`\sqrt{252}`$. Before 2026-09-27 a unit bug treated it as annual, which pinned every ceiling near $`1.2\,P_0`$.
 - **Target-hit probability (model):** lognormal with $`E[S_T]`$ equal to the projected price:
 
@@ -236,7 +236,7 @@ P(S_T \ge K) = \Phi\!\left(\frac{\ln(E/K) - s^2/2}{s}\right),\quad s = \sigma\sq
 
   This is a model probability, not a realised hit rate. Empirical hit rates of analyst targets are about 40–55% (Bradshaw, Brown & Huang 2013).
 
-> $`z`$ and $`\alpha`$ come from `scripts/optimize_weights.py` on a single XU100 series. Treat them as priors until the factor backtest re-estimates them.
+> $`z`$ comes from `scripts/optimize_weights.py` on a single XU100 series. Treat it as a prior. $`\alpha`$ is no longer read from that file.
 
 **Short-term target** (20 days): $`P_0 + 2.5\cdot\text{ATR}_{20}\cdot b`$, where $`b \in [1.0, 1.3]`$ is a liquidity buffer that widens distances for thin books (20-day TL volume between 50M and 10M).
 
@@ -381,6 +381,16 @@ Score proxy (value + low-vol + momentum with the `weights.yaml` weights; catalys
 
 Conclusion: value is the strongest and most stable factor. Low volatility predicts well, but its effect comes from avoiding high-volatility losers, not from the long-only top quintile. A high-vol exclusion filter was not robust, so it was not added. Momentum adds turnover without signal, so its weight is now 0. SUE is significant but not in the live score yet. Limits: survivorship bias (today's listing), nominal TL returns, and the proxy uses raw multiples while live `valuation_z` is sector-neutral.
 
+**Target prices** (`scripts/backtest_target_accuracy.py`; the live peer leg rebuilt point-in-time, 468 tickers excluding holdings, 2013-04 → 2026-09; excess = return minus the cross-sectional mean):
+
+| Period | 6m rank-IC of fair-value gap | t | Observed $`\alpha`$ (6m) | t |
+|---|---|---|---|---|
+| 2013–2026 | 0.059 | 4.6 | 0.031 | 2.5 |
+| 2016–2020 | 0.056 | 2.3 | 0.053 | 2.0 |
+| 2021–2026 | 0.080 | 4.7 | 0.018 | 1.3 |
+
+The fair-value gap ranks stocks correctly, but prices close only about 3% of the gap in 6 months, not 32%. With $`\alpha = 0.32`$, the cheapest quintile implied +25% excess return; the realised excess was +1.4%. $`\alpha`$ is now 0.05.
+
 **Entry rules** (`scripts/backtest_entry_levels.py`; 40 liquid tickers, ~2 years, 1,883 signals, 0.5% round-trip cost, stop assumed first when stop and target hit in the same bar):
 
 | Variant | Mean trade return | Per-ticker diff. vs. ATR band | t |
@@ -447,7 +457,7 @@ The pipeline is idempotent: a second run for the same `as_of_date` after a sent 
 |---|---|---|
 | `ci.yml` | push / PR to `master` | `pytest` (255 tests), config/schema checks |
 | `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry) |
-| `weekly-optimize.yml` | Sunday 18:00 UTC | `scripts/optimize_weights.py` → cone $`z`$, $`\alpha`$, ML ensemble → commit `config/weights_optimized.json` |
+| `weekly-optimize.yml` | Sunday 18:00 UTC | `scripts/optimize_weights.py` → cone $`z`$, ML ensemble → commit `config/weights_optimized.json` |
 
 A full universe run takes about 2.5–3.5 hours. The job timeout is 350 minutes.
 
@@ -534,7 +544,7 @@ pytest tests/ -q
 | File | Content |
 |---|---|
 | `config/weights.yaml` | Scoring weights, regime rows, Piotroski thresholds, valuation triangle weights. **Priors.** |
-| `config/weights_optimized.json` | Weekly optimiser output. Only `calibrated_z_score` and `calibrated_alpha` are used. |
+| `config/weights_optimized.json` | Weekly optimiser output. Only `calibrated_z_score` is used. |
 | `config/equity_risk_premium.yaml` | ERP 5%, TCMB long-term inflation target, corporate tax 25% |
 | `config/transaction_costs.yaml` | Commission 15 bps round trip, base slippage 20 bps |
 | `config/catalyst_decay.yaml` | Catalyst half-lives |
@@ -546,8 +556,9 @@ pytest tests/ -q
 
 | Area | Status |
 |---|---|
-| Factor weights | Uncalibrated. Cross-sectional backtest (rank-IC, Fama-MacBeth) is the next step. |
-| Cone $`z`$ / $`\alpha`$ | Fitted on one index series, not on stock outcomes |
+| Factor weights | Value / low-vol / momentum split backtested. `catalyst_score`, `ownership_quality_z` and regime rows are uncalibrated. |
+| Cone $`z`$ | Fitted on one index series, not on stock outcomes |
+| Target $`\alpha`$ | Estimated from the peer leg only; DCF and quality legs and the ML scenario weights are not tested |
 | Prediction outcomes | `outcomes` table too small for attribution |
 | Financial statements | Nominal (not IAS 29). Inflation distorts some Piotroski criteria and DCF |
 | Banks / insurance | Some ratios not computable. Excluded from the PIT panel |
