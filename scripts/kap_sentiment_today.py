@@ -32,7 +32,22 @@ def main() -> None:
     ap.add_argument("--days", type=int, default=3, help="Geriye kac takvim gunu")
     ap.add_argument("--as-of-date", default=date.today().isoformat())
     ap.add_argument("--limit", type=int, default=30, help="Hisse basina en fazla bildirim")
+    ap.add_argument("--from-payload", default=None,
+                    help="Gunluk tarama payload JSON'u: hisse listesi predictions'tan alinir "
+                         "(otomasyon: yalnizca o gun raporlanan adaylar)")
+    ap.add_argument("--max-tickers", type=int, default=80)
     args = ap.parse_args()
+    if args.from_payload:
+        payload_path = Path(args.from_payload)
+        if not payload_path.exists():
+            print(f"payload yok ({payload_path}), KAP sentiment atlandi")
+            return
+        payload = json.loads(payload_path.read_text(encoding="utf-8"))
+        tickers_from_payload = list(dict.fromkeys(p["ticker"] for p in payload.get("predictions", [])))
+        if not tickers_from_payload:
+            print("payload'da aday yok, KAP sentiment atlandi")
+            return
+        args.tickers = ",".join(tickers_from_payload[:args.max_tickers])
 
     import borsapy as bp
 

@@ -73,6 +73,26 @@ jobs:
           fi
           python run.py --as-of-date ${{ steps.today.outputs.date }} $EXTRA_ARGS
 
+      # KAP FinBERT (bilgi amacli, final_score'a bagli degil): o gun raporlanan
+      # adaylarin son 3 gunluk (hafta sonu dahil) KAP bildirim govdeleri
+      # opus-mt-tr-en + ProsusAI/finbert ile puanlanir -> data/reports/
+      # kap_sentiment_<tarih>.json. Hata taramayi/commit'i DURDURMAZ.
+      - name: HuggingFace model onbellegi
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-opus-mt-tr-en-finbert-v1
+
+      - name: KAP FinBERT duygu analizi
+        continue-on-error: true
+        timeout-minutes: 45
+        run: |
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install -r requirements-nlp.txt
+          python scripts/kap_sentiment_today.py \
+            --as-of-date ${{ steps.today.outputs.date }} --days 3 \
+            --from-payload data/reports/${{ steps.today.outputs.date }}_payload.json
+
       - name: HTML raporu ve payload'i is ciktisi olarak yukle
         if: always()
         uses: actions/upload-artifact@v4
