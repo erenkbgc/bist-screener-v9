@@ -176,6 +176,15 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
 
     _candidate_sheet(wb, "Uzun Vade", long_c, LONG_COLS)
     _candidate_sheet(wb, "Kısa Vade", short_c, SHORT_COLS)
+    if any(c.get("experimental") for c in short_c):
+        wk = wb["Kısa Vade"]
+        wk.insert_rows(1)
+        wk["A1"] = ("DENEYSEL, FIRSAT DEĞİLDİR: kısa vade kuralı geçmiş veride piyasa ortalamasının gerisinde kaldı; "
+                    "önceden kayıtlı alternatiflerin hiçbiri testi geçmedi. Yalnızca izleme.")
+        wk["A1"].font = Font(bold=True, color="9C5700")
+        wk.freeze_panes = "B3"
+        if wk.auto_filter.ref:
+            wk.auto_filter.ref = wk.auto_filter.ref.replace("A1:", "A2:")
 
     from core.targets import convergence_alpha
     w = payload.get("weights") or {}
