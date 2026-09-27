@@ -87,6 +87,23 @@ def compute_volatility_cone_envelope(
     return bist_tick_round(round(upper_bound, 2)) or round(upper_bound, 2)
 
 
+def target_hit_probability_pct(current_price: float, target_price: float, expected_price: float,
+                               volatility_60d: float | None, horizon_days: int = 180) -> float | None:
+    """Lognormal model altinda P(S_T >= hedef): E[S_T] = expected_price olacak
+    sekilde surukleme secilir. Hedef == beklenen fiyat ise sonuc N(-sigma*sqrt(T)/2)
+    (<%50): lognormal medyan ortalamanin altindadir. Bu, hedef fiyatlarin
+    ancak ~%40-55'inin ufuk sonunda gerceklestigi bulgusuyla uyumludur
+    (Bradshaw, Brown & Huang 2013; Asquith, Mikhail & Au 2005). Model
+    olasiligidir, gerceklesme istatistigi DEGILDIR."""
+    if not (current_price and target_price and expected_price and volatility_60d) or volatility_60d <= 0:
+        return None
+    sigma = float(volatility_60d) * math.sqrt(252)
+    T = horizon_days / 365.0
+    s = sigma * math.sqrt(T)
+    d = (math.log(expected_price / target_price) - 0.5 * s * s) / s
+    return round(100.0 * 0.5 * (1.0 + math.erf(d / math.sqrt(2.0))), 1)
+
+
 def cost_of_equity_pct(risk_free_annual_pct: float, beta: float | None = None,
                        equity_risk_premium_pct: float | None = None) -> float:
     """CAPM ozsermaye maliyeti k_e = rf + beta * ERP (yillik, nominal TL).
@@ -155,9 +172,13 @@ def compute_long_term_target(
             actionable_target = projected
 
         actionable_target = max(0.01, bist_tick_round(round(actionable_target, 2)))
+        hit_prob = target_hit_probability_pct(current_price, actionable_target, projected, volatility_60d)
+    else:
+        hit_prob = None
 
     return {
         "target_price": actionable_target,
+        "target_hit_prob_pct": hit_prob,
         "terminal_fair_value": raw_target,
         "volatility_cone_ceiling": ceiling,
         "fair_value_low": triangle["fair_value_low"],

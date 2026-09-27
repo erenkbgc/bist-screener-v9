@@ -1,0 +1,140 @@
+{#- Mobil oncelikli e-posta govdesi. Tum stiller INLINE (Gmail/Outlook <style>
+    ve CSS grid'i siler), tablo tabanli tek sutun, genislik yalnizca style
+    icinde (validation_gate style disindaki sayilari tarar). Detayli rapor ekte. -#}
+{%- set STATE_TR = {"STRONG_OPPORTUNITY": "Güçlü Fırsat", "OPPORTUNITY": "Fırsat", "WATCHLIST": "İzleme"} -%}
+{%- set STATE_BG = {"STRONG_OPPORTUNITY": "#047857", "OPPORTUNITY": "#2563eb", "WATCHLIST": "#64748b"} -%}
+{%- set QUAD_TR = {"Leading": "Lider", "Improving": "İyileşen", "Weakening": "Zayıflayan", "Lagging": "Geride"} -%}
+{%- macro candidate_card(c, short) -%}
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; margin:0 0 12px 0; border-collapse:separate;">
+  <tr><td style="padding:14px 16px 6px 16px;">
+    <span style="font-size:20px; font-weight:800; color:#0f172a; letter-spacing:0.3px;">{{ c.ticker }}</span>
+    <span style="display:inline-block; margin-left:8px; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:700; color:#ffffff; background:{{ STATE_BG.get(c.candidate_state, '#64748b') }}; vertical-align:middle;">{{ STATE_TR.get(c.candidate_state, c.candidate_state) }}</span>
+    {% if c.rrg_future_star %}<span style="display:inline-block; margin-left:4px; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:700; color:#92400e; background:#fef3c7; vertical-align:middle;">&#9733; Sektör ivmesi</span>{% endif %}
+  </td></tr>
+  <tr><td style="padding:4px 16px 10px 16px; font-size:15px; color:#334155;">
+    {{ c.current_price | fmt }} &rarr; <b style="color:#0f172a;">{{ c.target_price | fmt }}</b>
+    <span style="color:{{ '#047857' if (c.expected_roi_pct or 0) >= 0 else '#b91c1c' }}; font-weight:800;">&nbsp;%{{ c.expected_roi_pct | fmt }}</span>
+    <span style="color:#94a3b8; font-size:12px;">&nbsp;· {{ c.horizon_days | fmt }} gün</span>
+  </td></tr>
+  <tr><td style="padding:0 16px 12px 16px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; font-size:13px; color:#334155; border-collapse:collapse;">
+      {% if c.entry_low is not none and c.entry_high is not none %}
+      <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Alış bandı</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">{{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</td></tr>
+      {% endif %}
+      {% if c.stop_loss is not none %}
+      <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Stop</td><td style="padding:5px 0; text-align:right; font-weight:600; color:#b91c1c; border-top:1px solid #f1f5f9;">{{ c.stop_loss | fmt }}</td></tr>
+      {% endif %}
+      {% if c.position_size_pct is not none %}
+      <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Pozisyon</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">%{{ c.position_size_pct | fmt }}</td></tr>
+      {% endif %}
+      {% if not short and c.fair_value_low is not none and c.fair_value_high is not none %}
+      <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Adil değer (bugün)</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">{{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }}</td></tr>
+      {% endif %}
+      {% if not short and c.target_hit_prob_pct is not none %}
+      <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Hedefe ulaşma olasılığı (model)</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">%{{ c.target_hit_prob_pct | fmt }}</td></tr>
+      {% endif %}
+      {% if c.rrg_quadrant %}
+      <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Sektör ({{ c.sector_index }})</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">{{ QUAD_TR.get(c.rrg_quadrant, c.rrg_quadrant) }}</td></tr>
+      {% endif %}
+    </table>
+  </td></tr>
+  {% if not short and (c.why_now or c.main_risk or c.value_trap_risk) %}
+  <tr><td style="padding:0 16px 14px 16px; font-size:13px; line-height:1.5; color:#334155;">
+    {% if c.why_now %}<div style="margin-bottom:4px;"><b style="color:#047857;">Neden şimdi:</b> {{ c.why_now }}</div>{% endif %}
+    {% if c.main_risk %}<div style="margin-bottom:4px;"><b style="color:#b45309;">Ana risk:</b> {{ c.main_risk }}</div>{% endif %}
+    {% if c.value_trap_risk %}<div><b style="color:#b91c1c;">Uyarı:</b> fiyat trendi aşağı, değer tuzağı riski.</div>{% endif %}
+  </td></tr>
+  {% endif %}
+</table>
+{%- endmacro -%}
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>BIST Bülten {{ as_of_date }}</title>
+</head>
+<body style="margin:0; padding:0; background:#f1f5f9; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color:#1e293b; -webkit-text-size-adjust:100%;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; background:#f1f5f9; border-collapse:collapse;">
+<tr><td style="padding:12px 10px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; max-width:600px; margin:0 auto; border-collapse:collapse;">
+
+  <!-- baslik -->
+  <tr><td style="background:#0f172a; border-radius:12px; padding:18px 16px; color:#ffffff;">
+    <div style="font-size:12px; color:#94a3b8;">{{ as_of_date }} · Günlük tarama</div>
+    <div style="font-size:21px; font-weight:800; margin-top:4px; line-height:1.25;">
+      {% if no_action_today %}Bugün işlem sinyali yok{% else %}{{ long_term_candidates | length }} uzun vade · {{ short_term_candidates | length }} kısa vade aday{% endif %}
+    </div>
+    {% if regime_taxonomy_tag and "unknown" not in regime_taxonomy_tag %}<div style="font-size:13px; color:#cbd5e1; margin-top:6px;">Rejim: {{ regime_taxonomy_tag }}</div>{% endif %}
+    {% if regime %}
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; margin-top:12px; border-collapse:collapse;">
+      <tr>
+        <td style="width:33%; padding:8px 6px; background:#1e293b; border-radius:8px; text-align:center;"><div style="font-size:11px; color:#94a3b8;">BIST 100</div><div style="font-size:15px; font-weight:700;">{{ regime.xu100_level | fmt }}</div></td>
+        <td style="width:2%;"></td>
+        <td style="width:31%; padding:8px 6px; background:#1e293b; border-radius:8px; text-align:center;"><div style="font-size:11px; color:#94a3b8;">2Y tahvil</div><div style="font-size:15px; font-weight:700;">%{{ regime.bond_2y_pct | fmt }}</div></td>
+        <td style="width:2%;"></td>
+        <td style="width:32%; padding:8px 6px; background:#1e293b; border-radius:8px; text-align:center;"><div style="font-size:11px; color:#94a3b8;">USD/TRY</div><div style="font-size:15px; font-weight:700;">{{ regime.usdtry_spot | fmt }}</div></td>
+      </tr>
+    </table>
+    {% if regime.short_selling_ban_active %}<div style="margin-top:8px; font-size:12px; color:#fecaca;">Açığa satış yasağı aktif</div>{% endif %}
+    {% endif %}
+  </td></tr>
+  <tr><td style="height:14px; line-height:14px; font-size:0;">&nbsp;</td></tr>
+
+  {% if invalidation_triggered %}
+  <tr><td style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:12px 14px; font-size:13px; color:#7f1d1d;">
+    <b>Tez bozulması:</b>
+    {% for t in invalidation_triggered %}{{ t.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}
+    <div style="font-size:12px; color:#991b1b; margin-top:4px;">Satış sinyali değildir; önceden tanımlı risk koşulu tetiklendi. Ayrıntı ekteki raporda.</div>
+  </td></tr>
+  <tr><td style="height:14px; line-height:14px; font-size:0;">&nbsp;</td></tr>
+  {% endif %}
+
+  <!-- uzun vade -->
+  <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Uzun vade <span style="font-size:12px; font-weight:500; color:#64748b;">(değerleme + kalite)</span></td></tr>
+  <tr><td>
+    {% if long_term_candidates %}
+      {% for c in long_term_candidates %}{{ candidate_card(c, false) }}{% endfor %}
+    {% else %}
+      <div style="background:#ffffff; border:1px dashed #cbd5e1; border-radius:12px; padding:14px; font-size:13px; color:#64748b;">Bugün uzun vadeli aday yok.</div>
+    {% endif %}
+  </td></tr>
+
+  <!-- kisa vade -->
+  <tr><td style="padding:10px 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Kısa vade <span style="font-size:12px; font-weight:500; color:#64748b;">(hacim teyitli teknik)</span></td></tr>
+  <tr><td>
+    {% if short_term_candidates %}
+      {% for c in short_term_candidates %}{{ candidate_card(c, true) }}{% endfor %}
+    {% else %}
+      <div style="background:#ffffff; border:1px dashed #cbd5e1; border-radius:12px; padding:14px; font-size:13px; color:#64748b;">Bugün kısa vadeli aday yok.</div>
+    {% endif %}
+  </td></tr>
+
+  <!-- sektor rotasyonu -->
+  {% if sector_rotation %}
+  {% set stars = sector_rotation | selectattr("future_star") | list %}
+  {% set improving = sector_rotation | selectattr("quadrant", "equalto", "Improving") | list %}
+  {% set leading = sector_rotation | selectattr("quadrant", "equalto", "Leading") | list %}
+  {% set weakening = sector_rotation | selectattr("quadrant", "equalto", "Weakening") | list %}
+  <tr><td style="padding:10px 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Sektör rotasyonu</td></tr>
+  <tr><td style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.6; color:#334155;">
+    {% if stars %}<div><b style="color:#b45309;">&#9733; Erken ivme:</b> {% for r in stars %}{{ r.code }}{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+    {% if improving %}<div><b style="color:#2563eb;">İyileşen:</b> {% for r in improving %}{{ r.code }}{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+    {% if leading %}<div><b style="color:#047857;">Lider:</b> {% for r in leading %}{{ r.code }}{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+    {% if weakening %}<div><b style="color:#b45309;">Zayıflayan:</b> {% for r in weakening %}{{ r.code }}{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+    <div style="font-size:12px; color:#64748b; margin-top:6px;">Grafik ve tam tablo ekteki Excel dosyasında.</div>
+  </td></tr>
+  {% endif %}
+
+  <!-- alt bilgi -->
+  <tr><td style="padding:16px 4px 4px 4px; font-size:12px; color:#64748b; line-height:1.5;">
+    <b>Ekler:</b> detaylı rapor (HTML), sektör rotasyonu (Excel), veri (JSON).
+  </td></tr>
+  <tr><td style="padding:6px 4px 18px 4px; font-size:11px; color:#94a3b8; line-height:1.5;">{{ disclaimer_text }}</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
