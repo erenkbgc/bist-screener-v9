@@ -43,19 +43,22 @@ def fetch_historical_series(period: str = "5y") -> pd.DataFrame:
     except Exception as e:
         logger.warning(f"Canli veri alinamadi: {e}. Yerel/sentetik seriye geciliyor.")
 
-    # Sentetik / orneklem serisi (test ve offline calisma garantisi)
+    # Sentetik / orneklem serisi (test ve offline calisma garantisi).
+    # attrs["synthetic"]: run_optimization bu seriyle agirlik KAYDETMEZ.
     dates = pd.date_range(end=datetime.now(timezone.utc), periods=750, freq="B")
     np.random.seed(42)
     rets = np.random.normal(0.001, 0.018, len(dates))
     prices = 5000.0 * np.exp(np.cumsum(rets))
     vol = np.random.uniform(1e8, 5e8, len(dates))
-    return pd.DataFrame({
+    df = pd.DataFrame({
         "Open": prices * 0.995,
         "High": prices * 1.012,
         "Low": prices * 0.988,
         "Close": prices,
         "Volume": vol,
     }, index=dates)
+    df.attrs["synthetic"] = True
+    return df
 
 
 def run_optimization(period: str = "5y") -> dict:
@@ -180,6 +183,12 @@ def run_optimization(period: str = "5y") -> dict:
         "optimized_at": datetime.now(timezone.utc).isoformat(),
         "sample_bars": len(df),
         "methodology": "Quant Zero-Manual Weights (Brier Loss, IC-IR, Granger-Ramanathan, Volatility Cones)",
+        # Durustluk notu: tum agirliklar TEK bir XU100 zaman serisinden, gercek
+        # faktor/bacak ciktilari yerine teknik vekillerle (SMA uzakligi, RSI,
+        # hacim orani) turetilir. Kesitsel faktor ve degerleme bacagi agirliklari
+        # bu yolla ogrenilemez; production bunlari KULLANMAZ (weights.yaml).
+        # Production'da kullanilan tek cikti calibrated_z_score'dur (koni).
+        "calibration_basis": "single_series_technical_proxies",
         "calibrated_z_score": z_star,
         "calibrated_alpha": alpha_star,
         "ensemble_weights": {"rf": w_rf, "lr": w_lr},
@@ -188,6 +197,9 @@ def run_optimization(period: str = "5y") -> dict:
         "regime_scoring_weights": regime_scoring_weights,
     }
 
+    if df.attrs.get("synthetic"):
+        print("\n[!] Canli XU100 verisi alinamadi; sentetik seriyle uretilen agirliklar KAYDEDILMEDI.")
+        return optimized_payload
     save_optimized_weights(optimized_payload)
     print("\n" + "=" * 80)
     print("[+] BASARILI: Tum agirliklar optimize edildi ve 'config/weights_optimized.json' kaydedildi.")

@@ -32,9 +32,17 @@ top_n_per_bucket: 4
 # Degerleme Ucgeni (Valuation Triangle) bilesen agirliklari (v13 roadmap P0-3).
 # priors_are_disclosed: bu agirliklar akademik ve kurumsal degerleme
 # pratiklerine dayanan baslangic varsayimidir.
+# 2026-09-27: dcf 0.40 -> 0.25, peer 0.35 -> 0.50. Kanit: hedef fiyat
+# isabeti calismalarinda carpan/hibrit yontemler tek basina DCF'den daha
+# isabetli (Hindistan sell-side 2024; Varsova borsasi karsilastirmali yontem).
+# Ayrica bu projedeki DCF nominal TL FCF ve ~%45 WACC ile calisir; terminal
+# deger varsayimlarina asiri duyarlidir. weights_optimized.json'daki
+# "optimize" ucgen agirliklari GERCEK bacak ciktilariyla degil, tek XU100
+# serisinden teknik vekillerle (SMA uzakligi, RSI) uretildigi icin
+# KULLANILMAZ (use_optimized_weights kapali).
 valuation_triangle_weights:
-  dcf: 0.40
-  peer_multiples: 0.35
+  dcf: 0.25
+  peer_multiples: 0.50
   quality_premium: 0.25
 
 # Rejim-Duyarli Dinamik Faktor Agirliklari (Quant Level-Up Faz 1)
