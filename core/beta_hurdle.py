@@ -30,12 +30,13 @@ def calculate_beta(stock_prices: list[dict], market_prices: list[dict], max_obs:
     hizalanir (eskiden son n satir konumsal eslesiyordu; tatil/eksik gun
     kaymasi getirileri yanlis gunlerle eslestirebiliyordu)."""
     if all("date" in p for p in stock_prices) and all("date" in p for p in market_prices):
-        m_by_date = {p["date"]: p["close"] for p in market_prices if p.get("close")}
-        pairs = [(p["close"], m_by_date[p["date"]]) for p in stock_prices
+        m_by_date = {p["date"]: p.get("adj_close") or p["close"] for p in market_prices if p.get("close")}
+        pairs = [(p.get("adj_close") or p["close"], m_by_date[p["date"]]) for p in stock_prices
                  if p.get("close") and p["date"] in m_by_date]
     else:  # tarihsiz seri (eski cagrilar/testler): son n satir konumsal
         n = min(len(stock_prices), len(market_prices))
-        pairs = [(a["close"], b["close"]) for a, b in zip(stock_prices[-n:], market_prices[-n:])
+        pairs = [(a.get("adj_close") or a["close"], b.get("adj_close") or b["close"])
+                 for a, b in zip(stock_prices[-n:], market_prices[-n:])
                  if a.get("close") and b.get("close")]
     pairs = pairs[-(max_obs + 1):]
     if len(pairs) < 61:

@@ -11,3 +11,6 @@ venv/
 # repoya geri commit'ler -- kalici durum (idempotency, regime_log gecmisi,
 # decision_diff, evaluate_past_predictions) boyle korunur. SMTP sifresi gibi
 # sirlar HALA .env'de kalir ve asla commit'lenmez (yukaridaki `.env` satiri).
+
+# Arastirma paneli (scripts/build_pit_panel.py ile yeniden uretilir)
+data/research/

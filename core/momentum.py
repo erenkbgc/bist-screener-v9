@@ -117,12 +117,13 @@ def compute_momentum_metrics(
 ) -> dict:
     """Tek bir hissenin tum momentum bilesenlerini ve 0-100 arasi normalize skorunu uretir."""
     if isinstance(stock_prices, list) and stock_prices and isinstance(stock_prices[0], dict):
-        s_closes = [float(p["close"]) for p in stock_prices if p.get("close") is not None]
+        # duzeltilmis kapanis: bedelsiz gunleri sahte dusus olarak saymaz
+        s_closes = [float(p.get("adj_close") or p["close"]) for p in stock_prices if p.get("close") is not None]
     else:
         s_closes = list(stock_prices) if stock_prices else []
 
     if index_prices and isinstance(index_prices[0], dict):
-        i_closes = [float(p["close"]) for p in index_prices if p.get("close") is not None]
+        i_closes = [float(p.get("adj_close") or p["close"]) for p in index_prices if p.get("close") is not None]
     elif index_prices:
         i_closes = list(index_prices)
     else:

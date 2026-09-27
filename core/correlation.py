@@ -27,7 +27,7 @@ def _pearson(a: list[float], b: list[float]) -> float | None:
 
 def compute_correlation_flags(as_of_date: str, price_series_by_ticker: dict[str, list[dict]]) -> list[dict]:
     tickers = list(price_series_by_ticker.keys())
-    closes = {t: [p["close"] for p in price_series_by_ticker[t][-60:]] for t in tickers}
+    closes = {t: [p.get("adj_close") or p["close"] for p in price_series_by_ticker[t][-60:]] for t in tickers}
     flags = []
     for i, ta in enumerate(tickers):
         for tb in tickers[i + 1:]:

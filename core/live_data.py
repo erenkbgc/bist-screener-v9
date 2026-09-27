@@ -198,6 +198,20 @@ def _history_cached(ticker: str, period: str = "2y"):
 
 
 @lru_cache(maxsize=2048)
+def _history_adj_cached(ticker: str, period: str = "2y"):
+    """Bolunme/bedelsiz DUZELTMELI gecmis. Getiri tabanli hesaplar (momentum,
+    volatilite, beta, kovaryans, ATR/SMA) bunu kullanir: BIST'te sik bedelsiz
+    islemler ham seride sahte ~%50 dusus olarak gorunur (ASELS 2012/2016/2020/
+    2023). Seviyeler (giris/stop/hedef) ham fiyat olceginde kalir."""
+    if ticker.endswith("_INDEX"):
+        return _history_cached(ticker, period)
+    try:
+        return _ticker_obj(ticker).history(period=period, adjust=True)
+    except Exception:
+        return None
+
+
+@lru_cache(maxsize=2048)
 def _news_cached(ticker: str):
     try:
         return _ticker_obj(ticker).news
@@ -347,6 +361,7 @@ def prefetch_all(universe_rows: list[dict]) -> None:
                                     _financial_group_for_profile(u.get("ratio_profile")))
                         for u in universe_rows)
         futures.extend(pool.submit(_history_cached, t, "2y") for t in tickers)
+        futures.extend(pool.submit(_history_adj_cached, t, "2y") for t in tickers)
         for f in futures:
             f.result()  # istisnalar zaten fonksiyon icinde yutuluyor, sadece bekle
 
@@ -448,37 +463,53 @@ def live_prices(ticker: str, as_of_date: str, days: int = 140) -> list[dict]:
         return []
 
     as_of = datetime.strptime(as_of_date, "%Y-%m-%d").date()
+    adj_hist = _history_adj_cached(ticker, "2y")
+    adj_by_date = {}
+    if adj_hist is not None and not adj_hist.empty:
+        for idx, a in adj_hist.iterrows():
+            adj_by_date[idx.date()] = a
     rows = []
     for idx, r in hist.iterrows():
         d = idx.date()
         if d > as_of:
             continue
+        a = adj_by_date.get(d)
+        raw_close = float(r["Close"])
+        # Duzeltilmis OHLC yoksa (endeks, veri eksigi) ham seri kullanilir.
+        adj_close = float(a["Close"]) if a is not None and a["Close"] == a["Close"] and a["Close"] > 0 else raw_close
+        k = adj_close / raw_close if raw_close else 1.0
         rows.append({
             "date": d.isoformat(), "ticker": ticker,
             "open": float(r["Open"]), "high": float(r["High"]),
-            "low": float(r["Low"]), "close": float(r["Close"]),
+            "low": float(r["Low"]), "close": raw_close,
+            "adj_close": adj_close,
+            # duzeltilmis yuksek/dusuk (ham * k): ATR/SMA bedelsiz gunu atlamaz
+            "_adj_high": float(r["High"]) * k, "_adj_low": float(r["Low"]) * k,
             "volume": float(r["Volume"]) if r["Volume"] == r["Volume"] else 0.0,
         })
     rows = rows[-days:]
 
     for i, r in enumerate(rows):
+        # Teknikler duzeltilmis olcekte hesaplanir, sonra i gununun HAM olcegine
+        # cevrilir (to_raw): bedelsiz sonrasi SMA/ATR ~%50 sismez/dusmez.
+        to_raw = r["close"] / r["adj_close"] if r["adj_close"] else 1.0
         window20 = rows[max(0, i - 19):i + 1]
         window50 = rows[max(0, i - 49):i + 1]
-        sma20 = sum(x["close"] for x in window20) / len(window20)
-        sma50 = sum(x["close"] for x in window50) / len(window50)
+        sma20 = sum(x["adj_close"] for x in window20) / len(window20) * to_raw
+        sma50 = sum(x["adj_close"] for x in window50) / len(window50) * to_raw
         trs = []
         for j in range(max(1, i - 19), i + 1):
-            prev_close = rows[j - 1]["close"]
-            tr = max(rows[j]["high"] - rows[j]["low"],
-                     abs(rows[j]["high"] - prev_close),
-                     abs(rows[j]["low"] - prev_close))
+            prev_close = rows[j - 1]["adj_close"]
+            tr = max(rows[j]["_adj_high"] - rows[j]["_adj_low"],
+                     abs(rows[j]["_adj_high"] - prev_close),
+                     abs(rows[j]["_adj_low"] - prev_close))
             trs.append(tr)
-        atr20 = sum(trs) / len(trs) if trs else 0.0
+        atr20 = sum(trs) / len(trs) * to_raw if trs else 0.0
         vol20 = [x["volume"] for x in window20]
         avg_vol20 = sum(vol20) / len(vol20)
         window60 = rows[max(0, i - 59):i + 1]
-        daily_returns60 = [window60[k]["close"] / window60[k - 1]["close"] - 1
-                            for k in range(1, len(window60)) if window60[k - 1]["close"]]
+        daily_returns60 = [window60[k]["adj_close"] / window60[k - 1]["adj_close"] - 1
+                            for k in range(1, len(window60)) if window60[k - 1]["adj_close"]]
         # az sayida gozlemle stdev anlamsiz gurultu uretir; en az 30 gozlem sartiyla
         # hesaplanir, aksi halde None (uydurma/duyarsiz bir deger uretilmez).
         volatility_60d = pstdev(daily_returns60) if len(daily_returns60) >= 30 else None
@@ -487,6 +518,9 @@ def live_prices(ticker: str, as_of_date: str, days: int = 140) -> list[dict]:
         r["atr20"] = atr20
         r["volume_ratio_20d"] = r["volume"] / avg_vol20 if avg_vol20 else None
         r["volatility_60d"] = volatility_60d
+    for r in rows:
+        r.pop("_adj_high", None)
+        r.pop("_adj_low", None)
     return rows
 
 

@@ -105,8 +105,9 @@ def calculate_amihud_illiquidity(price_rows: list[dict], window_days: int = 20) 
     daily_impacts: list[float] = []
 
     for i in range(1, len(recent_bars)):
-        p_prev = recent_bars[i - 1].get("close")
-        p_curr = recent_bars[i].get("close")
+        # getiri duzeltilmis seriden (bedelsiz gunu sahte %50 hareket sayilmaz)
+        p_prev = recent_bars[i - 1].get("adj_close") or recent_bars[i - 1].get("close")
+        p_curr = recent_bars[i].get("adj_close") or recent_bars[i].get("close")
         vol = recent_bars[i].get("volume")
 
         if p_prev is None or p_curr is None or vol is None or p_prev <= 0 or p_curr <= 0 or vol <= 0:
