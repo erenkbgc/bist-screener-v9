@@ -674,6 +674,14 @@ def _dispatch(as_of_date: str, html_content: str, payload: dict, detail_html: st
     except Exception as exc:  # noqa: BLE001
         print(f"[dispatch] sektor rotasyonu Excel'i olusturulamadi (yok sayildi): {exc}")
 
+    # Gunun firsatlari Excel'i: e-postayi acmadan okunacak tek dosya. Hata e-postayi DURDURMAZ.
+    opp_path = None
+    try:
+        from report.opportunities_excel import write_opportunities_excel
+        opp_path = write_opportunities_excel(reports_dir / f"{as_of_date}_firsatlar.xlsx", as_of_date, payload)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[dispatch] firsatlar Excel'i olusturulamadi (yok sayildi): {exc}")
+
     smtp_vars = ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "MAIL_TO", "MAIL_FROM"]
     if not all(os.environ.get(v) for v in smtp_vars):
         print(f"[dispatch] SMTP env degiskenleri eksik, e-posta gonderilmedi. "
@@ -705,6 +713,12 @@ def _dispatch(as_of_date: str, html_content: str, payload: dict, detail_html: st
                                  _subtype="html")
         detail["Content-Disposition"] = f'attachment; filename="BIST_Detayli_Rapor_{as_of_date}.html"'
         msg.attach(detail)
+    if opp_path is not None and opp_path.exists():
+        opp_name = f"BIST_Firsatlar_{as_of_date}.xlsx"
+        opp = MIMEApplication(opp_path.read_bytes(), Name=opp_name,
+                              _subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        opp["Content-Disposition"] = f'attachment; filename="{opp_name}"'
+        msg.attach(opp)
     if excel_path is not None and excel_path.exists():
         xlsx_name = f"BIST_Sektor_Rotasyonu_{as_of_date}.xlsx"
         xlsx = MIMEApplication(excel_path.read_bytes(), Name=xlsx_name,
