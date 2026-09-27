@@ -183,6 +183,14 @@ def _history_cached(ticker: str, period: str = "2y"):
     gecmis kapanisi ~289 TRY donduruyordu). adjust=False ile HAM (duzeltmesiz)
     fiyat istenir -- boylece gecmis seri fast_info.last_price ile AYNI olcekte
     kalir."""
+    # "XU100_INDEX" gibi endeks sembolleri bp.Ticker ile BOS doner (2026-09-27
+    # canli dogrulama: 0 satir). Bu yuzden trend/rejim tahmini, momentum'un
+    # XU100'e goreli gucu ve beta canli modda hic calismiyordu.
+    if ticker.endswith("_INDEX"):
+        try:
+            return bp.Index(ticker[: -len("_INDEX")]).history(period=period)
+        except Exception:
+            return None
     try:
         return _ticker_obj(ticker).history(period=period, adjust=False)
     except Exception:

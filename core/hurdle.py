@@ -90,7 +90,8 @@ def expected_usdtry_at_horizon(usdtry_spot: float, usdtry_12m_expectation: float
 def compute_all(entry_price: float, target_price: float, horizon_days: int, macro: dict,
                 bid: float | None = None, ask: float | None = None,
                 volume_ratio_20d: float | None = None,
-                amihud_illiq: float | None = None) -> dict:
+                amihud_illiq: float | None = None,
+                dividend_per_share: float = 0.0) -> dict:
     # risk_free_annual (bond_2y_pct) sert gecidin (excess_over_hurdle_pct) tek
     # girdisidir ve HER ZAMAN gercek/mock veriden dolu gelir. real_return_pct
     # ve usd_return_pct ise yalnizca BILGI amaclidir; canli modda TCMB anket
@@ -99,7 +100,10 @@ def compute_all(entry_price: float, target_price: float, horizon_days: int, macr
     # uydurma sayi uretmek yerine ilgili alan None birakilir.
     risk_free_annual = macro["bond_2y_pct"]
     hurdle = hurdle_rate_pct(risk_free_annual, horizon_days)
-    roi = expected_roi_pct(entry_price, target_price)
+    # Toplam getiri: fiyat hedefi + ufuk icinde beklenen temettu. rf hurdle'i
+    # (tahvil) de toplam getiridir; yalnizca fiyat getirisi temettucu hisseleri
+    # sistematik olarak cezalandirirdi.
+    roi = expected_roi_pct(entry_price, target_price + (dividend_per_share or 0.0))
     excess = excess_over_hurdle_pct(roi, hurdle)
 
     cpi_yearend = macro.get("cpi_yearend_expectation_pct")
