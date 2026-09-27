@@ -219,6 +219,12 @@ def _news_cached(ticker: str):
         return None
 
 
+def kap_news_available(ticker: str) -> bool:
+    """KAP bildirim listesi CEKILEBILDI mi? None = hata (CI'da KAP baglantisi
+    sik kopuyor); bos DataFrame = cekildi ama bildirim yok (gecerli sonuc)."""
+    return _news_cached(ticker) is not None
+
+
 @lru_cache(maxsize=2048)
 def _earnings_dates_cached(ticker: str):
     try:

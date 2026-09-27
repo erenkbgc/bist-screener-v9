@@ -155,7 +155,8 @@ def compute_and_save_factor_contributions(
         if c.get("final_score") is None and c.get("valuation_z") is None:
             continue
 
-        exp = explain_candidate_score(c, weights)
+        # skorlamada kullanilan agirliklar (katalizor dagitimi dahil) tercih edilir
+        exp = explain_candidate_score(c, c.get("scoring_weights_used") or weights)
         c["factor_attribution"] = exp
         results.append(exp)
 

@@ -89,3 +89,11 @@ def test_price_stats_from_memory_and_empty_index(temp_db):
     h = run_health.assess(D, prices=ps)
     assert h["metrics"]["price_fresh_coverage"] == 0.9
     assert "index_series_empty" in h["issues"] and h["status"] == "FAILED"
+
+
+def test_catalyst_missing_share_degrades(temp_db):
+    _seed()
+    avail = {f"T{i:03d}": i < 30 for i in range(100)}
+    h = run_health.assess(D, catalyst_available=avail)
+    assert h["metrics"]["catalyst_missing_share"] == 0.7
+    assert h["status"] == "DEGRADED" and "catalyst_redistributed" in h["issues"]

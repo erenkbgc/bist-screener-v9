@@ -47,6 +47,15 @@ def get_disclosures(tickers: list[str], as_of_date: str, lookback_days: int = 14
     return out
 
 
+def disclosures_available(tickers: list[str]) -> dict[str, bool]:
+    """Ticker basina KAP bildirim listesinin cekilip cekilemedigi. get_disclosures'tan
+    SONRA cagrilir (canli katmanda onbellekten okur, ek istek atmaz). Mock: hepsi True."""
+    if _live_enabled():
+        from core import live_data as ld
+        return {t: ld.kap_news_available(t) for t in tickers}
+    return {t: True for t in tickers}
+
+
 def get_upcoming_events(tickers: list[str], as_of_date: str) -> list[dict]:
     """BIST rebalans, VIOP vade, lock-up ve resmen ilan edilmis genel kurul/temettu/bilanco tarihlerini ceker.
 

@@ -11,6 +11,7 @@
     {% elif issue == "index_series_empty" %}<li>BIST 100 fiyat serisi boş: beta ve momentum hesaplanamadı.</li>
     {% elif issue == "data_filter_share" %}<li>Adayların %{{ run_health.pct.data_filter_share | fmt }}'i veri eksikliği nedeniyle elendi (eşik %{{ run_health.pct.max_data_filter_share | fmt }}).</li>
     {% elif issue == "kap_unavailable" %}<li>KAP'a erişilemedi: hisselerin %{{ run_health.pct.kap_missing_share | fmt }}'inde rapor tarihi alınamadı. Katalizör skoru eksik olabilir.</li>
+    {% elif issue == "catalyst_redistributed" %}<li>Katalizör verisi hisselerin %{{ run_health.pct.catalyst_missing_share | fmt }}'inde alınamadı; bu hisselerde katalizör ağırlığı diğer faktörlere oransal dağıtıldı.</li>
     {% else %}<li>{{ issue }}</li>{% endif %}
   {% endfor %}
   </ul>
