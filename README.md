@@ -132,7 +132,9 @@ BIST companies issue bonus shares often (ASELS 2012/2016/2020/2023, AKFIS 500% i
 
 SMA20/50 and ATR20 are computed on the adjusted scale and converted back to the raw scale of the same day:
 
-$$\text{SMA}_{20,t} = \frac{1}{20}\sum_{k=0}^{19} \text{adj}_{t-k} \cdot \frac{\text{close}_t}{\text{adj}_t}$$
+```math
+\text{SMA}_{20,t} = \frac{1}{20}\sum_{k=0}^{19} \text{adj}_{t-k} \cdot \frac{\text{close}_t}{\text{adj}_t}
+```
 
 Example (bonus day): BIMAS 100% bonus, raw return −49.1%, adjusted +1.8%. AKFIS 500% bonus, raw −82.2%, adjusted +6.6%.
 
@@ -142,7 +144,9 @@ In live mode the universe is built dynamically (no hardcoded list). Filters: min
 
 Amihud (2002) illiquidity, on adjusted returns:
 
-$$\text{ILLIQ} = \frac{1}{D}\sum_{d=1}^{D}\frac{|R_d|}{\text{VolumeTL}_d}\times 10^6$$
+```math
+\text{ILLIQ} = \frac{1}{D}\sum_{d=1}^{D}\frac{|R_d|}{\text{VolumeTL}_d}\times 10^6
+```
 
 ### Cross-Sectional Ranking & Sector Neutralization
 
@@ -152,7 +156,9 @@ Metrics are ranked within the peer group, not against fixed cutoffs. `valuation_
 
 `core/scoring.py`:
 
-$$\text{final\_score} = w_v\,z_{\text{val}} + w_c\,s_{\text{cat}} + w_o\,z_{\text{own}} + w_l\,z_{\text{lowvol}} + w_m\,z_{\text{mom}}$$
+```math
+\mathrm{final\_score} = w_v\,z_{\text{val}} + w_c\,s_{\text{cat}} + w_o\,z_{\text{own}} + w_l\,z_{\text{lowvol}} + w_m\,z_{\text{mom}}
+```
 
 Base weights (`config/weights.yaml`):
 
@@ -161,7 +167,7 @@ Base weights (`config/weights.yaml`):
 | `valuation_z` | 0.40 | Sector-neutral valuation z-score |
 | `catalyst_score` | 0.20 | Rule-based KAP catalyst score with time decay |
 | `ownership_quality_z` | 0.12 | Ownership-structure z-score |
-| `low_vol_z` | 0.08 | z-score of $-\sigma_{60d}$ within the bucket (low-risk anomaly) |
+| `low_vol_z` | 0.08 | z-score of $`-\sigma_{60d}`$ within the bucket (low-risk anomaly) |
 | `momentum_z` | 0.20 | z-score of `momentum_score` within the bucket (value-momentum mix, Asness, Moskowitz & Pedersen 2013) |
 
 The ML regime (see [ML Trend Forecaster](#ml-trend-forecaster--market-regime)) selects a row of `regime_scoring_weights` (for example, `OVERSOLD_REVERSAL` has momentum 0.05 to avoid momentum crashes, Daniel & Moskowitz 2016). Each row is normalised to sum to 1.
@@ -176,13 +182,15 @@ The ML regime (see [ML Trend Forecaster](#ml-trend-forecaster--market-regime)) s
 
 `core/momentum.py` (Jegadeesh & Titman 1993), on adjusted closes:
 
-- $\text{mom}_{12-1} = P_{t-21}/P_{t-252} - 1$ (skips the last month to avoid short-term reversal).
-- Trend smoothness: signed $R^2$ of $\ln P_\tau = \alpha + \beta\tau + \epsilon$ over 120 days.
+- $`\text{mom}_{12-1} = P_{t-21}/P_{t-252} - 1`$ (skips the last month to avoid short-term reversal).
+- Trend smoothness: signed $`R^2`$ of $`\ln P_\tau = \alpha + \beta\tau + \epsilon`$ over 120 days.
 - `rs_xu100_60d_pct`: 60-day return relative to XU100.
 
-$$\text{momentum\_score} = \text{clip}_{[0,100]}\Big(50 + \text{clip}(0.3\,\text{mom}_{12-1}, \pm25) + 15\,R^2_{\pm} + \text{clip}(0.5\,\text{rs}_{60}, \pm15)\Big)$$
+```math
+\mathrm{momentum\_score} = \text{clip}_{[0,100]}\Big(50 + \text{clip}(0.3\,\text{mom}_{12-1}, \pm25) + 15\,R^2_{\pm} + \text{clip}(0.5\,\text{rs}_{60}, \pm15)\Big)
+```
 
-**Value-trap flag:** $\text{mom}_{12-1} < 0$ and signed $R^2 < 0$. It blocks `STRONG_OPPORTUNITY`.
+**Value-trap flag:** $`\text{mom}_{12-1} < 0`$ and signed $`R^2 < 0`$. It blocks `STRONG_OPPORTUNITY`.
 
 ### Financial Quality
 
@@ -197,15 +205,15 @@ $$\text{momentum\_score} = \text{clip}_{[0,100]}\Big(50 + \text{clip}(0.3\,\text
 |---|---|---|
 | DCF | 0.25 | FCF, WACC (CAPM + cost of debt), low/base/high growth 0/5/10% |
 | Peer multiples | 0.50 | Harmonic mean of peer P/E, EV/EBITDA, P/B (Liu, Nissim & Thomas 2002); banks/insurance/REITs exclude EV/EBITDA |
-| Quality premium | 0.25 | Justified P/B = ROE / $k_e$, with Piotroski, balance sheet, and high-ROE modifiers |
+| Quality premium | 0.25 | Justified P/B = ROE / $`k_e`$, with Piotroski, balance sheet, and high-ROE modifiers |
 
 Why DCF has the lowest weight: studies of target-price accuracy show that multiple-based and hybrid methods are more accurate than DCF alone. Also, the DCF here runs on nominal TL FCF with a WACC of about 45%, which makes it very sensitive to terminal assumptions. If a leg is not available, the remaining weights are re-normalised. GYO and holding companies use NAV.
 
-Scenario probabilities come from the ML probability $p = \text{prob\_up}$: $P(\text{bull}) = p^2$, $P(\text{base}) = 2p(1-p)$, $P(\text{bear}) = (1-p)^2$.
+Scenario probabilities come from the ML probability $`p = \mathrm{prob\_up}`$: $`P(\text{bull}) = p^2`$, $`P(\text{base}) = 2p(1-p)`$, $`P(\text{bear}) = (1-p)^2`$.
 
 ### Target Price Engine
 
-`core/targets.py::compute_long_term_target` separates the **180-day actionable target** from the **terminal fair value** $V^*$ (triangle output, information only).
+`core/targets.py::compute_long_term_target` separates the **180-day actionable target** from the **terminal fair value** $`V^*`$ (triangle output, information only).
 
 ```mermaid
 flowchart LR
@@ -216,27 +224,31 @@ flowchart LR
     T --> A[Actionable target]
 ```
 
-- **Cost of equity:** $k_e = r_f + \beta_{\text{Blume}}\cdot\text{ERP}$, with $r_f$ = 2-year bond yield and ERP = 5% (`config/equity_risk_premium.yaml`).
-- **Drift:** under CAPM, a fairly priced stock earns $k_e$. The price target is net of the expected dividend $D_h = \text{DPS}_{\text{TTM}}\cdot h/365$, because the price drops by the dividend. The dividend is added back at the hurdle gate.
-- **Partial convergence:** $\alpha = 0.32$ (`calibrated_alpha`).
-- **Volatility cone:** $\mu = \ln(1+k_e)$, $T = 180/365$, $z = 2.5$ (`calibrated_z_score`). $\sigma_{60d}$ is the stdev of *daily* returns and is annualised with $\sqrt{252}$. Before 2026-09-27 a unit bug treated it as annual, which pinned every ceiling near $1.2\,P_0$.
-- **Target-hit probability (model):** lognormal with $E[S_T]$ equal to the projected price:
+- **Cost of equity:** $`k_e = r_f + \beta_{\text{Blume}}\cdot\text{ERP}`$, with $`r_f`$ = 2-year bond yield and ERP = 5% (`config/equity_risk_premium.yaml`).
+- **Drift:** under CAPM, a fairly priced stock earns $`k_e`$. The price target is net of the expected dividend $`D_h = \text{DPS}_{\text{TTM}}\cdot h/365`$, because the price drops by the dividend. The dividend is added back at the hurdle gate.
+- **Partial convergence:** $`\alpha = 0.32`$ (`calibrated_alpha`).
+- **Volatility cone:** $`\mu = \ln(1+k_e)`$, $`T = 180/365`$, $`z = 2.5`$ (`calibrated_z_score`). $`\sigma_{60d}`$ is the stdev of *daily* returns and is annualised with $`\sqrt{252}`$. Before 2026-09-27 a unit bug treated it as annual, which pinned every ceiling near $`1.2\,P_0`$.
+- **Target-hit probability (model):** lognormal with $`E[S_T]`$ equal to the projected price:
 
-$$P(S_T \ge K) = \Phi\!\left(\frac{\ln(E/K) - s^2/2}{s}\right),\quad s = \sigma\sqrt{T}$$
+```math
+P(S_T \ge K) = \Phi\!\left(\frac{\ln(E/K) - s^2/2}{s}\right),\quad s = \sigma\sqrt{T}
+```
 
   This is a model probability, not a realised hit rate. Empirical hit rates of analyst targets are about 40–55% (Bradshaw, Brown & Huang 2013).
 
-> $z$ and $\alpha$ come from `scripts/optimize_weights.py` on a single XU100 series. Treat them as priors until the factor backtest re-estimates them.
+> $`z`$ and $`\alpha`$ come from `scripts/optimize_weights.py` on a single XU100 series. Treat them as priors until the factor backtest re-estimates them.
 
-**Short-term target** (20 days): $P_0 + 2.5\cdot\text{ATR}_{20}\cdot b$, where $b \in [1.0, 1.3]$ is a liquidity buffer that widens distances for thin books (20-day TL volume between 50M and 10M).
+**Short-term target** (20 days): $`P_0 + 2.5\cdot\text{ATR}_{20}\cdot b`$, where $`b \in [1.0, 1.3]`$ is a liquidity buffer that widens distances for thin books (20-day TL volume between 50M and 10M).
 
 ### Hurdle Rate, Beta & Transaction Costs
 
-- **Hurdle** (compounded, not linear): $h = \big((1 + r_f)^{T/365} - 1\big)\times 100$. The linear form over-states the hurdle by about 1.5 points at 40% rates over 180 days.
-- **Beta:** OLS on date-aligned daily adjusted returns vs. live XU100 (up to 120 observations), then Blume (1971) adjustment: $\beta_{\text{Blume}} = 0.67\,\beta + 0.33$. The beta-adjusted hurdle is an information field, not a hard filter.
+- **Hurdle** (compounded, not linear): $`h = \big((1 + r_f)^{T/365} - 1\big)\times 100`$. The linear form over-states the hurdle by about 1.5 points at 40% rates over 180 days.
+- **Beta:** OLS on date-aligned daily adjusted returns vs. live XU100 (up to 120 observations), then Blume (1971) adjustment: $`\beta_{\text{Blume}} = 0.67\,\beta + 0.33`$. The beta-adjusted hurdle is an information field, not a hard filter.
 - **Net return (information):**
 
-$$\text{cost}_{\%} = \big(\text{spread}_{bps} + 15 + \tfrac{20}{\max(\text{vol\_ratio}_{20},\,0.1)} + \min(25\cdot\text{ILLIQ},\,50)\big)/100$$
+```math
+\text{cost}_{\%} = \big(\text{spread}_{bps} + 15 + \tfrac{20}{\max(\mathrm{vol\_ratio}_{20},\,0.1)} + \min(25\cdot\text{ILLIQ},\,50)\big)/100
+```
 
   If spread or volume ratio is missing, the `net_*` fields stay `None`. An optimistic cost is never assumed.
 
@@ -244,13 +256,21 @@ $$\text{cost}_{\%} = \big(\text{spread}_{bps} + 15 + \tfrac{20}{\max(\text{vol\_
 
 `core/targets.py::compute_dynamic_risk_levels`. All levels are rounded to the BIST tick table (0.01 / 0.02 / 0.05 / 0.10 TL).
 
-$$\text{entry\_low} = P_0 - 0.5\,\text{ATR}_{20},\qquad \text{entry\_high} = P_0 + 0.2\,\text{ATR}_{20}$$
+```math
+\mathrm{entry\_low} = P_0 - 0.5\,\text{ATR}_{20},\qquad \mathrm{entry\_high} = P_0 + 0.2\,\text{ATR}_{20}
+```
 
-$$\text{effective\_entry} = \tfrac12(\text{entry\_low} + \text{entry\_high}) \quad\text{(50/50 scaled limit orders)}$$
+```math
+\mathrm{effective\_entry} = \tfrac12(\mathrm{entry\_low} + \mathrm{entry\_high}) \quad\text{(50/50 scaled limit orders)}
+```
 
-$$\text{stop} = \min\big(\text{entry\_low} - 1.5\,b\,\text{ATR}_{20},\ \text{swing\_low}_{20}\big)$$
+```math
+\text{stop} = \min\big(\mathrm{entry\_low} - 1.5\,b\,\text{ATR}_{20},\ \mathrm{swing\_low}_{20}\big)
+```
 
-$$\text{position\_size\_pct} = \min\!\left(25,\ \frac{1.5}{(\text{effective\_entry} - \text{stop})/\text{effective\_entry}}\right)$$
+```math
+\mathrm{position\_size\_pct} = \min\!\left(25,\ \frac{1.5}{(\mathrm{effective\_entry} - \text{stop})/\mathrm{effective\_entry}}\right)
+```
 
 The short-term reward/risk ratio is measured from `effective_entry`, not from the spot price.
 
@@ -258,7 +278,7 @@ The short-term reward/risk ratio is measured from `effective_entry`, not from th
 
 `core/levels.py` computes structure-based levels on the adjusted scale, so pre-bonus pivots do not create fake resistance:
 
-1. **Confirmed fractal pivots** (5 bars on each side; the last 5 bars are never used, so there is no look-ahead). Weight = $0.5^{\text{age}/60}\cdot(1 + \min(3, V_i/\bar V))$.
+1. **Confirmed fractal pivots** (5 bars on each side; the last 5 bars are never used, so there is no look-ahead). Weight = $`0.5^{\text{age}/60}\cdot(1 + \min(3, V_i/\bar V))`$.
 2. **Volume profile:** each bar's volume is spread evenly over [low, high] in 60 bins. High-volume nodes (bins above mean + 1 sd and a local maximum) and the POC become extra level candidates. Rationale: S/R levels coincide with order-book depth (Kavajecz & Odders-White 2004).
 3. **Zones:** candidates within 0.5 ATR are merged, and a zone is at most 1 ATR wide.
 4. **Breakout:** a broken resistance counts only with `volume_ratio_20d ≥ 1.5` (Lo, Mamaysky & Wang 2000). After that it acts as support.
@@ -270,9 +290,13 @@ Levels are **not** used for entry, stop, or target, because the backtest did not
 
 `core/sector_rotation.py`, an open approximation of JdK RS-Ratio/RS-Momentum. It uses weekly (Friday) closes of 25 BIST sector indices vs. XU100:
 
-$$\text{RS} = 100\cdot\frac{\text{sector}}{\text{XU100}},\qquad \text{RS-Ratio} = 100 + \frac{\text{RS} - \mu_{26}(\text{RS})}{\sigma_{26}(\text{RS})}$$
+```math
+\text{RS} = 100\cdot\frac{\text{sector}}{\text{XU100}},\qquad \text{RS-Ratio} = 100 + \frac{\text{RS} - \mu_{26}(\text{RS})}{\sigma_{26}(\text{RS})}
+```
 
-$$d_t = \text{RS-Ratio}_t - \text{RS-Ratio}_{t-4},\qquad \text{RS-Momentum} = 100 + \frac{d_t - \mu_{26}(d)}{\sigma_{26}(d)}$$
+```math
+d_t = \text{RS-Ratio}_t - \text{RS-Ratio}_{t-4},\qquad \text{RS-Momentum} = 100 + \frac{d_t - \mu_{26}(d)}{\sigma_{26}(d)}
+```
 
 Quadrants: Leading (R ≥ 100, M ≥ 100), Weakening, Lagging, Improving. A *future star* is a sector that moved Lagging → Improving within the last 3 weeks. RRG is **annotation only** and does not enter `final_score`. The email card shows each candidate's sector quadrant, and the Excel attachment shows where money is moving.
 
@@ -292,7 +316,7 @@ This regime selects the scoring-weight row. The separate `regime_taxonomy` (macr
 
 ### Portfolio Construction (HRP)
 
-`core/portfolio.py`: Hierarchical Risk Parity (López de Prado 2016). Distance $d_{ij} = \sqrt{\tfrac12(1-\rho_{ij})}$, Ward linkage, quasi-diagonalisation, recursive bisection, no matrix inversion. Covariance comes from adjusted returns, and the sector cap is 30%. Risk parity, minimum variance, and max Sharpe are also available.
+`core/portfolio.py`: Hierarchical Risk Parity (López de Prado 2016). Distance $`d_{ij} = \sqrt{\tfrac12(1-\rho_{ij})}`$, Ward linkage, quasi-diagonalisation, recursive bisection, no matrix inversion. Covariance comes from adjusted returns, and the sector cap is 30%. Risk parity, minimum variance, and max Sharpe are also available.
 
 ### Catalysts, KAP & FinBERT Sentiment
 
@@ -312,8 +336,8 @@ This regime selects the scoring-weight row. The separate `regime_taxonomy` (macr
 **Point-in-time fundamentals panel** (`core/pit_panel.py`, `scripts/build_pit_panel.py`), added 2026-09-27:
 
 - Up to 60 quarterly statements per non-financial ticker via `borsapy`.
-- **Publication lag:** a statement is available only from $\text{period end} + 75$ days (Q1–Q3) or $+100$ days (Q4). The panel never uses data before `available_at`.
-- Quarterly flows from YTD tables: $Q_1 = \text{YTD}_1$, $Q_n = \text{YTD}_n - \text{YTD}_{n-1}$. TTM needs 4 consecutive quarters (80–100 day gaps).
+- **Publication lag:** a statement is available only from $`\text{period end} + 75`$ days (Q1–Q3) or $`+100`$ days (Q4). The panel never uses data before `available_at`.
+- Quarterly flows from YTD tables: $`Q_1 = \text{YTD}_1`$, $`Q_n = \text{YTD}_n - \text{YTD}_{n-1}`$. TTM needs 4 consecutive quarters (80–100 day gaps).
 - Share count: paid-in capital, forward-adjusted through later bonus/rights events.
 - Monthly factors: `bm`, `ep`, `sp`, `ey` (EV/EBIT), `gpa`, `roe`, `mom_12_1`, `str_1m`, `vol60`, `tlvol60`, `nsi_rights_12m`, `sue` (Foster, Olsen & Shevlin 1984), with forward returns `fwd_ret_1m`, `fwd_ret_6m`.
 - Excludes banks, insurance, pension, factoring, leasing, brokers, and real-estate funds (different templates).
@@ -403,7 +427,7 @@ The pipeline is idempotent: a second run for the same `as_of_date` after a sent 
 |---|---|---|
 | `ci.yml` | push / PR to `master` | `pytest` (255 tests), config/schema checks |
 | `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry) |
-| `weekly-optimize.yml` | Sunday 18:00 UTC | `scripts/optimize_weights.py` → cone $z$, $\alpha$, ML ensemble → commit `config/weights_optimized.json` |
+| `weekly-optimize.yml` | Sunday 18:00 UTC | `scripts/optimize_weights.py` → cone $`z`$, $`\alpha`$, ML ensemble → commit `config/weights_optimized.json` |
 
 A full universe run takes about 2.5–3.5 hours. The job timeout is 350 minutes.
 
@@ -503,7 +527,7 @@ pytest tests/ -q
 | Area | Status |
 |---|---|
 | Factor weights | Uncalibrated. Cross-sectional backtest (rank-IC, Fama-MacBeth) is the next step. |
-| Cone $z$ / $\alpha$ | Fitted on one index series, not on stock outcomes |
+| Cone $`z`$ / $`\alpha`$ | Fitted on one index series, not on stock outcomes |
 | Prediction outcomes | `outcomes` table too small for attribution |
 | Financial statements | Nominal (not IAS 29). Inflation distorts some Piotroski criteria and DCF |
 | Banks / insurance | Some ratios not computable. Excluded from the PIT panel |
@@ -530,7 +554,7 @@ Current plan (root cause: the stock-level model has never been backtested cross-
 
 - [x] **Step 1:** point-in-time fundamentals panel (`core/pit_panel.py`)
 - [x] **Step 2:** adjusted prices for all return calculations
-- [ ] **Step 3:** `backtest_factor_model.py`: monthly rebalance, rank-IC, Fama-MacBeth, sub-periods 2016–2020 vs. 2021–2026, Harvey-Liu-Zhu $t > 3$
+- [ ] **Step 3:** `backtest_factor_model.py`: monthly rebalance, rank-IC, Fama-MacBeth, sub-periods 2016–2020 vs. 2021–2026, Harvey-Liu-Zhu $`t > 3`$
 - [ ] **Step 4:** IC-IR shrinkage calibration of `weights.yaml`, only for significant factors
 - [ ] **Step 5:** Ledoit-Wolf covariance, ADV-based position limits, square-root market impact
 - [ ] **Step 6:** data health checks in `run.py` (empty index series, stale prices), config hash per report
