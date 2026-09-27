@@ -66,6 +66,15 @@ def _env() -> Environment:
     return env
 
 
+def render_mobile_newsletter(context: dict) -> str:
+    """E-posta govdesi: mobil oncelikli, inline stilli ozet. Detayli rapor
+    (render_newsletter) e-postaya HTML eki olarak eklenir."""
+    template = _env().get_template("newsletter_mobile.html.j2")
+    context = dict(context)
+    context.setdefault("disclaimer_text", DISCLAIMER_TEXT_TR)
+    return template.render(**context)
+
+
 def render_newsletter(context: dict) -> str:
     template = _env().get_template("newsletter.html.j2")
     context = dict(context)

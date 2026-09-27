@@ -281,6 +281,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             lt["shares_outstanding"] = lt["market_cap"] / current_price
         lt_target = targets_mod.compute_long_term_target(lt, all_lt_for_peers, macro_snapshot=macro)
         lt["target_price"] = lt_target["target_price"]
+        lt["target_hit_prob_pct"] = lt_target.get("target_hit_prob_pct")
         lt["terminal_fair_value"] = targets_mod.bist_tick_round(lt_target.get("terminal_fair_value"))
         lt["volatility_cone_ceiling"] = lt_target.get("volatility_cone_ceiling")
         lt["scenario_probabilities"] = lt_target.get("scenario_probabilities")
@@ -471,14 +472,24 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "weights": payload["weights"],
     }
 
-    html_content = report_render.render_newsletter(context)
+    # E-posta govdesi mobil ozet; eski genis rapor ek olarak gider. Validation
+    # gate IKISINE de uygulanir (ikisi de alicinin eline ulasir).
+    detail_html = report_render.render_newsletter(context)
+    html_content = report_render.render_mobile_newsletter(context)
     validation = report_validate.validate_report(html_content, payload)
+    detail_validation = report_validate.validate_report(detail_html, payload)
+    if not detail_validation["is_valid"]:
+        validation = {
+            **validation, "is_valid": False,
+            "orphan_numbers": validation["orphan_numbers"] + detail_validation["orphan_numbers"],
+            "banned_claims_found": validation["banned_claims_found"] + detail_validation["banned_claims_found"],
+        }
 
     email_sent = False
     error_message = None
     if validation["is_valid"]:
         try:
-            email_sent = _dispatch(as_of_date, html_content, payload)
+            email_sent = _dispatch(as_of_date, html_content, payload, detail_html=detail_html)
         except Exception as exc:  # noqa: BLE001 - SMTP/ag hatasi tum kosuyu DUSURMEMELI
             # HTML/payload zaten _dispatch icinde diske yazildi (SMTP denemesinden
             # ONCE); yalnizca teslimat basarisiz oldu. Kosu yine de "completed"
@@ -501,6 +512,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             debug_payload_path = REPORTS_DIR / f"{as_of_date}_INVALID_payload.json"
             REPORTS_DIR.mkdir(parents=True, exist_ok=True)
             debug_html_path.write_text(html_content, encoding="utf-8")
+            (REPORTS_DIR / f"{as_of_date}_INVALID_detay.html").write_text(detail_html, encoding="utf-8")
             debug_payload_path.write_text(
                 _json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
             )
@@ -582,7 +594,7 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
             conn.close()
 
 
-def _dispatch(as_of_date: str, html_content: str, payload: dict) -> bool:
+def _dispatch(as_of_date: str, html_content: str, payload: dict, detail_html: str | None = None) -> bool:
     """delivery kanali: SMTP, ek olarak payload.json (spec: delivery.attachments)."""
     import json
     import os
@@ -593,6 +605,9 @@ def _dispatch(as_of_date: str, html_content: str, payload: dict) -> bool:
     html_path = reports_dir / f"{as_of_date}.html"
     payload_path = reports_dir / f"{as_of_date}_payload.json"
     html_path.write_text(html_content, encoding="utf-8")
+    detail_path = reports_dir / f"{as_of_date}_detay.html"
+    if detail_html is not None:
+        detail_path.write_text(detail_html, encoding="utf-8")
     payload_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
 
     # Sektor rotasyonu Excel eki (yatirimci sunumu). Hata e-postayi DURDURMAZ.
@@ -631,6 +646,11 @@ def _dispatch(as_of_date: str, html_content: str, payload: dict) -> bool:
     attachment = MIMEApplication(payload_path.read_bytes(), Name="payload.json")
     attachment["Content-Disposition"] = 'attachment; filename="payload.json"'
     msg.attach(attachment)
+    if detail_html is not None and detail_path.exists():
+        detail = MIMEApplication(detail_path.read_bytes(), Name=f"BIST_Detayli_Rapor_{as_of_date}.html",
+                                 _subtype="html")
+        detail["Content-Disposition"] = f'attachment; filename="BIST_Detayli_Rapor_{as_of_date}.html"'
+        msg.attach(detail)
     if excel_path is not None and excel_path.exists():
         xlsx_name = f"BIST_Sektor_Rotasyonu_{as_of_date}.xlsx"
         xlsx = MIMEApplication(excel_path.read_bytes(), Name=xlsx_name,
