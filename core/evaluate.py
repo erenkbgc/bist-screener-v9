@@ -37,6 +37,24 @@ BANNED_CLAIMS = ["kanitlanmis edge", "istatistiksel olarak anlamli", "backtest e
                   "dogrulanmis strateji", "sharpe orani"]
 
 
+def _usdtry_on_or_before(date_str: str) -> float | None:
+    rows = db.query("SELECT usdtry_spot FROM regime_log WHERE as_of_date<=? AND usdtry_spot IS NOT NULL "
+                    "ORDER BY as_of_date DESC LIMIT 1", (date_str,))
+    return rows[0]["usdtry_spot"] if rows else None
+
+
+def matured_without_outcome(as_of_date: str, grace_days: int = 3) -> int:
+    """Ufku grace_days'ten once dolmus ama outcomes'a yazilmamis tahmin sayisi
+    (core/run_health.py: sessiz degerlendirme cokusunu yakalar)."""
+    rows = db.query(
+        """SELECT COUNT(*) AS n FROM predictions p
+           WHERE date(p.as_of_date, '+' || p.horizon_days || ' days', '+' || ? || ' days') <= date(?)
+             AND NOT EXISTS (SELECT 1 FROM outcomes o WHERE o.as_of_date=p.as_of_date
+                             AND o.ticker=p.ticker AND o.horizon_days=p.horizon_days)""",
+        (grace_days, as_of_date))
+    return rows[0]["n"] if rows else 0
+
+
 def _already_evaluated(pred_as_of_date: str, ticker: str, horizon_days: int) -> bool:
     rows = db.query(
         "SELECT 1 FROM outcomes WHERE as_of_date=? AND ticker=? AND horizon_days=? LIMIT 1",
@@ -57,6 +75,10 @@ def evaluate_past_predictions(as_of_date: str, lookback_months: int = 6) -> dict
 
     macro_now = macro_mcp.get_macro_snapshot(as_of_date)
     outcomes_rows = []
+    skipped: dict[str, int] = {}
+
+    def _skip(reason: str) -> None:
+        skipped[reason] = skipped.get(reason, 0) + 1
 
     for p in predictions:
         horizon = p["horizon_days"]
@@ -69,26 +91,43 @@ def evaluate_past_predictions(as_of_date: str, lookback_months: int = 6) -> dict
         if _already_evaluated(p["as_of_date"], p["ticker"], horizon):
             continue  # bu tahmin bu ufuk icin daha once degerlendirildi
 
-        prices = bist_mcp.get_prices(p["ticker"], eval_date.isoformat(), days=horizon + 5)
+        # Giris ve cikis AYNI (duzeltilmis) seriden, kapanistan kapanisa: aradaki
+        # bedelsiz/temettu duzeltmesi ham giris fiyatiyla karistirilirsa sahte
+        # kayip/kazanc olusur. Seri bulunamazsa satir atlanir, sonraki kosuda denenir.
+        prices = bist_mcp.get_prices(p["ticker"], eval_date.isoformat(), days=horizon + 15)
         if not prices:
+            _skip("no_prices")
             continue
-        entry, exit_price = p["entry_price"], prices[-1]["close"]
+        entry_rows = [r for r in prices if str(r["date"])[:10] <= p["as_of_date"]]
+        entry = entry_rows[-1]["close"] if entry_rows else p["entry_price"]
+        exit_price = prices[-1]["close"]
+        if not entry or not exit_price:
+            _skip("bad_price")
+            continue
         return_pct = (exit_price - entry) / entry * 100
 
         # v10 roadmap: xu100_benchmark_integration -- gercek XU100 serisiyle
-        # kiyaslar (bkz. macro_mcp.get_index_return_pct / core/live_data.py::
-        # live_index_return_pct). Cekilemezse (agsal hata, bos seri) UYDURMA
-        # bir 0.0 YAZMAZ -- bu satiri atlar, _already_evaluated onu "islendi"
-        # olarak isaretlemedigi icin bir sonraki kosuda tekrar denenir.
+        # kiyaslar. Cekilemezse UYDURMA 0.0 YAZMAZ -- satir atlanir ve
+        # _already_evaluated onu isaretlemedigi icin bir sonraki kosuda tekrar denenir.
         xu100_return_pct = macro_mcp.get_index_return_pct("XU100", p["as_of_date"], eval_date.isoformat())
-        # policy_rate_pct/usdtry_spot canli modda gecici olarak None gelebilir
-        # (bkz. core/live_data.py::live_macro_snapshot); bu durumda da satir
-        # sessizce atlanir (bir sonraki kosuda tekrar denenir), 0 UYDURULMAZ.
-        if xu100_return_pct is None or macro_now.get("policy_rate_pct") is None \
-                or not macro_now.get("usdtry_spot"):
+        if xu100_return_pct is None:
+            _skip("no_xu100")
             continue
-        deposit_return_pct = macro_now["policy_rate_pct"] * (horizon / 365)
-        usd_return_pct = ((exit_price / macro_now["usdtry_spot"]) / (entry / macro_now["usdtry_spot"]) - 1) * 100
+        # Mevduat/risksiz kiyas: tahmin aninda kaydedilen hurdle (2Y tahvil, ufka
+        # bilesik). Onceden bugunun politika faizi kullaniliyordu; canli kaynak
+        # (borsapy.policy_rate) makul aralik disi deger dondugu icin HER satir
+        # atlaniyor ve outcomes hic yazilmiyordu (2026-09-27 teshisi).
+        deposit_return_pct = p["hurdle_rate_pct"] if "hurdle_rate_pct" in p.keys() else None
+        if deposit_return_pct is None and macro_now.get("bond_2y_pct") is not None:
+            deposit_return_pct = ((1 + macro_now["bond_2y_pct"] / 100) ** (horizon / 365) - 1) * 100
+        if deposit_return_pct is None:
+            _skip("no_risk_free")
+            continue
+        # USD getirisi: giris kuru tahmin gunu, cikis kuru degerlendirme gunu
+        # (onceden ikisi de bugunun kuruydu -> USD getirisi = TL getirisi).
+        fx_entry = _usdtry_on_or_before(p["as_of_date"])
+        fx_exit = _usdtry_on_or_before(eval_date.isoformat()) or macro_now.get("usdtry_spot")
+        usd_return_pct = ((exit_price / fx_exit) / (entry / fx_entry) - 1) * 100 if fx_entry and fx_exit else None
 
         outcomes_rows.append({
             "as_of_date": p["as_of_date"], "ticker": p["ticker"], "horizon_days": horizon,
@@ -98,6 +137,9 @@ def evaluate_past_predictions(as_of_date: str, lookback_months: int = 6) -> dict
             "excess_vs_deposit_pct": return_pct - deposit_return_pct,
             "evaluated_at": as_of_date,
         })
+
+    if outcomes_rows or skipped:
+        print(f"[evaluate] {len(outcomes_rows)} sonuc yazildi; atlanan: {skipped or 'yok'}", flush=True)
 
     if outcomes_rows:
         conn = db.get_connection()

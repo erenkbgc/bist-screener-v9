@@ -97,3 +97,14 @@ def test_catalyst_missing_share_degrades(temp_db):
     h = run_health.assess(D, catalyst_available=avail)
     assert h["metrics"]["catalyst_missing_share"] == 0.7
     assert h["status"] == "DEGRADED" and "catalyst_redistributed" in h["issues"]
+
+
+def test_outcomes_stalled_degrades(temp_db):
+    _seed()
+    conn = db.get_connection()
+    conn.execute("""INSERT INTO predictions (as_of_date, ticker, bucket, entry_price, horizon_days)
+                    VALUES ('2026-09-01', 'T001', 'short_term', 10, 20)""")
+    conn.commit(); conn.close()
+    h = run_health.assess(D)
+    assert h["metrics"]["matured_without_outcome"] == 1
+    assert "outcomes_stalled" in h["issues"] and h["status"] == "DEGRADED"

@@ -38,6 +38,11 @@ MAX_KAP_MISSING_SHARE = 0.50
 PRICE_FRESH_DAYS = 5
 
 
+def _matured_without_outcome(as_of_date: str) -> int:
+    from core.evaluate import matured_without_outcome
+    return matured_without_outcome(as_of_date)
+
+
 def config_hash() -> str:
     """Skoru etkileyen config dosyalarinin kisa SHA-256 ozeti (rapor-config eslesmesi)."""
     h = hashlib.sha256()
@@ -98,6 +103,7 @@ def assess(as_of_date: str, prices: dict | None = None,
         "xu100_present": bool(regime and regime[0]["xu100_level"]),
         "bond_2y_present": bool(regime and regime[0]["bond_2y_pct"] is not None),
         "index_series_present": index_ok,
+        "matured_without_outcome": _matured_without_outcome(as_of_date),
         "catalyst_missing_share": (_share(sum(1 for v in catalyst_available.values() if not v),
                                           len(catalyst_available)) if catalyst_available else None),
     }
@@ -128,6 +134,8 @@ def assess(as_of_date: str, prices: dict | None = None,
         degraded.append("kap_unavailable")
     if metrics["catalyst_missing_share"] is not None and metrics["catalyst_missing_share"] > MAX_KAP_MISSING_SHARE:
         degraded.append("catalyst_redistributed")
+    if metrics["matured_without_outcome"]:
+        degraded.append("outcomes_stalled")
 
     status = "FAILED" if failed else ("DEGRADED" if degraded else "OK")
     # Bultende gosterilen yuzdeler payload'dan gelmeli (report/validate.py orphan kontrolu).

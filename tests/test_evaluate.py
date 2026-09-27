@@ -94,3 +94,47 @@ def test_row_skipped_when_index_return_unavailable(temp_db, monkeypatch):
 
     rows = db.query("SELECT * FROM outcomes WHERE ticker=?", ("BBB",))
     assert rows == []
+
+
+def test_outcome_written_when_policy_rate_missing(temp_db, monkeypatch):
+    """2026-09-27 teshisi: canli politika faizi (borsapy.policy_rate) makul aralik
+    disi -> None; eski kod HER satiri atliyordu, outcomes hic yazilmiyordu.
+    Risksiz kiyas artik tahmin anindaki hurdle_rate_pct (2Y tahvil)."""
+    from macro_mcp import server as macro_mcp
+    real = macro_mcp.get_macro_snapshot
+    monkeypatch.setattr(macro_mcp, "get_macro_snapshot",
+                        lambda d: {**real(d), "policy_rate_pct": None})
+    _insert_matured_prediction("2026-01-05", "PPP", 20, 100.0)
+    evaluate_past_predictions("2026-01-25")
+    rows = db.query("SELECT * FROM outcomes WHERE ticker='PPP'")
+    assert len(rows) == 1
+    assert rows[0]["deposit_return_pct"] == 5  # fikstur hurdle_rate_pct
+    assert rows[0]["excess_vs_deposit_pct"] == rows[0]["return_pct"] - 5
+
+
+def test_return_uses_series_close_and_usd_uses_two_fx_dates(temp_db):
+    from bist_mcp import server as bist_mcp
+    _insert_matured_prediction("2026-01-05", "FXX", 20, 999.0)  # ham giris fiyati seriyle uyusmuyor
+    conn = db.get_connection()
+    conn.execute("INSERT INTO regime_log (as_of_date, usdtry_spot) VALUES ('2026-01-05', 40.0)")
+    conn.execute("INSERT INTO regime_log (as_of_date, usdtry_spot) VALUES ('2026-01-25', 44.0)")
+    conn.commit(); conn.close()
+    evaluate_past_predictions("2026-01-25")
+    row = db.query("SELECT * FROM outcomes WHERE ticker='FXX'")[0]
+    series = bist_mcp.get_prices("FXX", "2026-01-25", days=35)
+    entry = [r for r in series if r["date"] <= "2026-01-05"][-1]["close"]
+    exit_ = series[-1]["close"]
+    assert abs(row["return_pct"] - (exit_ / entry - 1) * 100) < 1e-9
+    expected_usd = ((exit_ / 44.0) / (entry / 40.0) - 1) * 100
+    assert abs(row["usd_return_pct"] - expected_usd) < 1e-9
+    assert row["usd_return_pct"] != row["return_pct"]
+
+
+def test_matured_without_outcome_counts_stalled_predictions(temp_db):
+    from core.evaluate import matured_without_outcome
+    _insert_matured_prediction("2026-01-05", "OLD", 20, 100.0)   # 01-25 doldu
+    _insert_matured_prediction("2026-01-20", "NEW", 20, 100.0)   # 02-09 dolacak
+    assert matured_without_outcome("2026-01-29") == 1            # 01-25 + 3 gun <= 01-29
+    assert matured_without_outcome("2026-01-26") == 0            # grace icinde
+    evaluate_past_predictions("2026-01-29")
+    assert matured_without_outcome("2026-01-29") == 0
