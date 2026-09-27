@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS fundamentals (
     dividend_per_share_ttm REAL, payout_ratio REAL, fcf_ttm REAL,
     fcf_yield_usd REAL, null_reason TEXT, source TEXT,
     published_at TEXT, available_at TEXT, effective_at TEXT, ingested_at TEXT,
+    pit_source TEXT,
     PRIMARY KEY (as_of_date, ticker)
 );
 
@@ -368,6 +369,9 @@ _TABLE_MIGRATIONS = {
     ],
     "prices": [
         ("volatility_60d", "REAL"),
+    ],
+    "fundamentals": [
+        ("pit_source", "TEXT"),
     ],
     "scores": [
         ("low_vol_z", "REAL"),

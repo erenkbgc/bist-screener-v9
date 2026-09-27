@@ -66,7 +66,7 @@ def test_published_at_uses_real_disclosure_date_not_period_end(temp_db, monkeypa
 
 
 def test_published_at_none_when_no_real_disclosure_found(temp_db, monkeypatch):
-    """Eslesen bir gercek KAP bildirimi bulunamazsa (agsal hata, kapsam disi
+    """Mock modda: eslesen bir gercek KAP bildirimi bulunamazsa (agsal hata, kapsam disi
     pencere) published_at/effective_at None kalmali -- UYDURULMAZ. Asagi akista
     core/scoring.py::hard_filters_passed'daki point_in_time kontrolu bu None'i
     guvenlik icin eler (bkz. tests/test_scoring.py)."""
@@ -98,3 +98,30 @@ def test_unknown_ratio_across_universe_reflects_real_fetch_failures(temp_db, mon
         _universe_row("EEE", regulator="SPK_TFRS"),
     ])
     assert basis_guard.unknown_ratio(rows) == 2 / 3
+
+
+def test_live_mode_missing_kap_date_uses_observation_date(temp_db, monkeypatch):
+    """Canli modda KAP tarihi alinamazsa (CI'da KAP baglantisi kopuyor) veri
+    as_of_date gunu gozlenmistir: effective_at = as_of_date, published_at
+    uydurulmaz. Aksi halde 2026-09-20..27'de oldugu gibi tum evren
+    point_in_time kapisindan elenir."""
+    monkeypatch.setattr(bist_mcp, "_live_enabled", lambda: True)
+    monkeypatch.setattr(bist_mcp, "get_fundamentals",
+                         lambda *a, **k: _fake_fundamentals_ok(reporting_basis=None))
+    monkeypatch.setattr(bist_mcp, "get_financial_report_published_at",
+                         lambda ticker, period_end: None)
+    rows = fetch_and_store_fundamentals("2026-10-02", [_universe_row("KAPDOWN")])
+    assert rows[0]["published_at"] is None
+    assert rows[0]["effective_at"] == rows[0]["available_at"] == "2026-10-02"
+    assert rows[0]["pit_source"] == "observed_at_ingest"
+
+
+def test_live_mode_real_kap_date_preferred(temp_db, monkeypatch):
+    monkeypatch.setattr(bist_mcp, "_live_enabled", lambda: True)
+    monkeypatch.setattr(bist_mcp, "get_fundamentals",
+                         lambda *a, **k: _fake_fundamentals_ok(reporting_basis=None))
+    monkeypatch.setattr(bist_mcp, "get_financial_report_published_at",
+                         lambda ticker, period_end: "2026-08-06")
+    rows = fetch_and_store_fundamentals("2026-09-10", [_universe_row("KAPUP")])
+    assert rows[0]["effective_at"] == "2026-08-06"
+    assert rows[0]["pit_source"] == "kap_financial_report"
