@@ -888,6 +888,18 @@
             <span class="metric-val">{{ c.momentum_score | fmt }}</span>
           </div>
           {% endif %}
+          {% if c.rrg_quadrant %}
+          <div class="metric-entry">
+            <span class="metric-key">Sektor Rotasyonu ({{ c.sector_index }})</span>
+            <span class="metric-val">{{ c.rrg_quadrant }}{% if c.rrg_future_star %} &#9733;{% endif %}</span>
+          </div>
+          {% endif %}
+          {% if c.value_trap_risk %}
+          <div class="metric-entry">
+            <span class="metric-key">Deger Tuzagi Riski</span>
+            <span class="metric-val">Negatif 12-1 momentum ve dusen trend</span>
+          </div>
+          {% endif %}
           {% if c.amihud_illiq is not none %}
           <div class="metric-entry">
             <span class="metric-key">Amihud Likidite Riski (ILLIQ)</span>
@@ -964,6 +976,22 @@
       </div>
       {% endif %}
     </div>
+  </div>
+  {% endif %}
+
+  <!-- ============================== SEKTOR ROTASYONU (RRG) ============================== -->
+  {% if sector_rotation %}
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">Sektor Rotasyonu (RRG, XU100'e gore)</h2>
+      <div class="section-desc">Haftalik RS-Ratio / RS-Momentum (100 merkezli). &#9733; = son haftalarda Lagging'den Improving'e gecen erken ivme sektoru. Bilgi amaclidir, skora dahil degildir.</div>
+    </div>
+    <table style="width:100%; font-size:12px; border-collapse:collapse;">
+      <tr style="text-align:left; color:#64748b;"><th>Endeks</th><th>Kadran</th><th>RS-Ratio</th><th>RS-Momentum</th><th>Hafta</th></tr>
+      {% for r in sector_rotation %}
+      <tr><td>{{ r.code }}{% if r.future_star %} &#9733;{% endif %}</td><td>{{ r.quadrant }}</td><td>{{ r.rs_ratio | fmt }}</td><td>{{ r.rs_momentum | fmt }}</td><td>{{ r.weeks_in_quadrant | fmt }}</td></tr>
+      {% endfor %}
+    </table>
   </div>
   {% endif %}
 
@@ -1061,7 +1089,7 @@
 
   <!-- ============================== FOOTER & DISCLAIMERS ============================== -->
   <div class="footer">
-    <p><b>final_score</b> = {{ weights.valuation_z | fmt }} &times; valuation_z + {{ weights.catalyst_score | fmt }} &times; catalyst_score + {{ weights.ownership_quality_z | fmt }} &times; ownership_quality_z + {{ weights.low_vol_z | fmt }} &times; low_vol_z. Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p><b>final_score</b> = {{ weights.valuation_z | fmt }} &times; valuation_z + {{ weights.catalyst_score | fmt }} &times; catalyst_score + {{ weights.ownership_quality_z | fmt }} &times; ownership_quality_z + {{ weights.low_vol_z | fmt }} &times; low_vol_z + {{ weights.momentum_z | fmt }} &times; momentum_z (rejime gore normalize edilir). Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
     {% if weights.dcf_growth_low_pct is defined and weights.dcf_growth_low_pct is not none %}
     <p>DCF Referansi (deneysel, ana karara girmez) buyume senaryolari: dusuk %{{ weights.dcf_growth_low_pct | fmt }} / baz %{{ weights.dcf_growth_base_pct | fmt }} / yuksek %{{ weights.dcf_growth_high_pct | fmt }}, kurumlar vergisi orani %{{ weights.dcf_corporate_tax_rate_pct | fmt }}. Buyume senaryolari DENENMEMIS VARSAYIMDIR; kurumlar vergisi orani resmi/yasal orandir.</p>
     {% endif %}

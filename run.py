@@ -66,6 +66,7 @@ from core import momentum as momentum_mod
 from core import trend_forecaster
 from core import portfolio as portfolio_mod
 from core import factor_disclosure
+from core import sector_rotation as sector_rotation_mod
 from bist_mcp import server as bist_mcp
 from report import render as report_render
 from report import validate as report_validate
@@ -218,6 +219,14 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     except Exception:
         trend_forecast = None
         predicted_regime = None
+
+    # --- sektor rotasyonu (RRG, bilgi amacli; skora bagli degil) ---
+    try:
+        sector_rotation = sector_rotation_mod.compute_sector_rotation(as_of_date)
+        sector_rotation_mod.persist(as_of_date, sector_rotation)
+    except Exception as exc:  # noqa: BLE001 - endeks verisi alinamazsa tarama durmamali
+        print(f"[sector_rotation] atlandi: {exc}")
+        sector_rotation = {}
 
     # --- 7. ownership_quality ---
     ownership_rows = [ownership_mod.fetch_ownership(as_of_date, t, prices_by_ticker[t]) for t in tickers]
@@ -378,6 +387,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         short_term_candidates.append(st)
 
     all_candidates = long_term_candidates + short_term_candidates
+    sector_rotation_mod.annotate_candidates(all_candidates, sector_rotation)
 
     # --- ownership_z + low_vol_z (kesitsel, bucket ici) ---
     for bucket_list in (long_term_candidates, short_term_candidates):
@@ -424,6 +434,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         portfolio_summary=portfolio_result,
         trend_forecast=trend_forecast,
         passing_candidates=passing,
+        sector_rotation=sector_rotation,
     )
     decision_diff = payload["decision_diff"]
 
@@ -446,6 +457,9 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "portfolio_result": portfolio_result,
         "decision_diff": decision_diff,
         "concentration_warnings": concentration_warnings,
+        "sector_rotation": sorted(
+            ({"code": k, **v} for k, v in sector_rotation.items()),
+            key=lambda r: (["Improving", "Leading", "Weakening", "Lagging"].index(r["quadrant"]), -r["rs_momentum"])),
         "long_term_candidates": lt_display,
         "short_term_candidates": [c for c in short_term_candidates if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")],
         "filtered_candidates": filtered_candidates,
@@ -581,6 +595,16 @@ def _dispatch(as_of_date: str, html_content: str, payload: dict) -> bool:
     html_path.write_text(html_content, encoding="utf-8")
     payload_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
 
+    # Sektor rotasyonu Excel eki (yatirimci sunumu). Hata e-postayi DURDURMAZ.
+    excel_path = None
+    try:
+        from report.sector_excel import write_sector_rotation_excel
+        excel_path = write_sector_rotation_excel(
+            reports_dir / f"{as_of_date}_sektor_rotasyonu.xlsx", as_of_date,
+            payload.get("sector_rotation") or {}, payload.get("passing_candidates") or [])
+    except Exception as exc:  # noqa: BLE001
+        print(f"[dispatch] sektor rotasyonu Excel'i olusturulamadi (yok sayildi): {exc}")
+
     smtp_vars = ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "MAIL_TO", "MAIL_FROM"]
     if not all(os.environ.get(v) for v in smtp_vars):
         print(f"[dispatch] SMTP env degiskenleri eksik, e-posta gonderilmedi. "
@@ -607,6 +631,12 @@ def _dispatch(as_of_date: str, html_content: str, payload: dict) -> bool:
     attachment = MIMEApplication(payload_path.read_bytes(), Name="payload.json")
     attachment["Content-Disposition"] = 'attachment; filename="payload.json"'
     msg.attach(attachment)
+    if excel_path is not None and excel_path.exists():
+        xlsx_name = f"BIST_Sektor_Rotasyonu_{as_of_date}.xlsx"
+        xlsx = MIMEApplication(excel_path.read_bytes(), Name=xlsx_name,
+                               _subtype="vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        xlsx["Content-Disposition"] = f'attachment; filename="{xlsx_name}"'
+        msg.attach(xlsx)
 
     with smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ["SMTP_PORT"])) as server:
         server.starttls()
