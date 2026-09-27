@@ -2,22 +2,24 @@
 
 # Autonomous BIST AI Screener
 
-**A deterministic, data-driven, multi-factor equity screening and quantitative backtesting system for Borsa İstanbul.**
+**A deterministic, multi-factor equity screening and research system for Borsa İstanbul.**
 
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-247%20passing-brightgreen)
-![Backtest](https://img.shields.io/badge/backtest-walk--forward%20%7C%20backtrader-blueviolet)
-![Status](https://img.shields.io/badge/status-active%20research%20v14%20institutional%20quant-orange)
-
+![Tests](https://img.shields.io/badge/tests-255%20passing-brightgreen)
+![Backtest](https://img.shields.io/badge/backtest-walk--forward-blueviolet)
+![Status](https://img.shields.io/badge/status-research%20%E2%80%94%20weights%20uncalibrated-orange)
 
 </div>
 
 ---
 
 > **Disclaimer**
-> This project is intended for research and decision-support purposes only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns produced by the system are model outputs, not guarantees of future performance.
+> This project is for research and decision support only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns are model outputs, not guarantees of future performance.
+
+> **Calibration status (2026-09-27)**
+> The scoring weights in `config/weights.yaml` are **untested starting assumptions**. The stock-level factor model has not yet been backtested cross-sectionally; the point-in-time panel that makes this possible was added on 2026-09-27 (see [Research Infrastructure](#research-infrastructure)). The `outcomes` table (realised results of past predictions) is still too small for live attribution.
 
 ---
 
@@ -26,70 +28,63 @@
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Analysis Layers](#analysis-layers)
-  - [Machine Learning Trend & Direction Forecasting (TrendForecaster)](#machine-learning-trend--direction-forecasting-trendforecaster)
-  - [Zero-Manual Weights & Empirical Calibration](#zero-manual-weights--empirical-calibration)
-  - [Realistic Target Price Engine & Volatility Cones](#realistic-target-price-engine--volatility-cones)
-  - [Market Regime](#market-regime)
+  - [Price Data: Raw vs. Adjusted](#price-data-raw-vs-adjusted)
   - [Universe Construction & Amihud Illiquidity](#universe-construction--amihud-illiquidity)
   - [Cross-Sectional Ranking & Sector Neutralization](#cross-sectional-ranking--sector-neutralization)
-  - [12-1 Momentum & Trend Smoothness ($R^2$)](#12-1-momentum--trend-smoothness-r2)
+  - [Scoring Model](#scoring-model)
+  - [12-1 Momentum & Trend Smoothness](#12-1-momentum--trend-smoothness)
   - [Financial Quality](#financial-quality)
-  - [Multi-Factor Valuation Triangle (Harmonic Multiples)](#multi-factor-valuation-triangle-değerleme-üçgeni)
-  - [Factor Disclosure & Attribution](#factor-disclosure--attribution)
-  - [Hurdle Rate & Liquidity Friction](#hurdle-rate)
-  - [Dynamic Risk Management & Position Sizing](#dynamic-risk-management--position-sizing)
-  - [Hierarchical Risk Parity (HRP) & Portfolio Optimization](#hierarchical-risk-parity-hrp--portfolio-optimization)
-  - [Corporate Actions Calendar](#corporate-actions-calendar)
-  - [Catalysts & KAP](#catalysts--kap)
-  - [Dividend Sustainability](#dividend-sustainability)
-  - [Ownership Analysis](#ownership-analysis)
-- [Data Quality & Survivorship Bias](#data-quality--survivorship-bias)
-- [Walk-Forward Backtesting Engine](#walk-forward-backtesting-engine)
-- [GitHub Actions CI/CD & Automated Calibration](#github-actions-cicd--automated-calibration)
+  - [Valuation Triangle](#valuation-triangle)
+  - [Target Price Engine](#target-price-engine)
+  - [Hurdle Rate, Beta & Transaction Costs](#hurdle-rate-beta--transaction-costs)
+  - [Entry Band, Stop-Loss & Position Sizing](#entry-band-stop-loss--position-sizing)
+  - [Support / Resistance & Volume Profile (Information Only)](#support--resistance--volume-profile-information-only)
+  - [Sector Rotation (RRG)](#sector-rotation-rrg)
+  - [ML Trend Forecaster & Market Regime](#ml-trend-forecaster--market-regime)
+  - [Portfolio Construction (HRP)](#portfolio-construction-hrp)
+  - [Catalysts, KAP & FinBERT Sentiment](#catalysts-kap--finbert-sentiment)
+  - [Corporate Actions, Dividends & Ownership](#corporate-actions-dividends--ownership)
+- [Research Infrastructure](#research-infrastructure)
+- [Backtests & Evidence](#backtests--evidence)
+- [Reports & Delivery](#reports--delivery)
 - [Validation Gate](#validation-gate)
 - [Execution Pipeline](#execution-pipeline)
+- [GitHub Actions](#github-actions)
 - [Project Structure](#project-structure)
 - [Installation](#installation)
 - [Operating Modes](#operating-modes)
-  - [Mock Mode](#mock-mode)
-  - [Live Mode](#live-mode)
-- [Running the Screener](#running-the-screener)
-- [Running Backtests](#running-backtests)
-- [Dashboard](#dashboard)
-- [Automated Daily Execution](#automated-daily-execution)
-- [MCP Servers](#mcp-servers)
+- [Running](#running)
 - [Testing](#testing)
-- [Reproducibility](#reproducibility)
 - [Configuration](#configuration)
 - [Known Limitations](#known-limitations)
 - [Design Principles](#design-principles)
 - [Roadmap](#roadmap)
-- [Contributing](#contributing)
 - [License](#license)
 
 ---
 
 ## Overview
 
-`bist-screener` evaluates BIST-listed companies across multiple dimensions simultaneously — market regime, financial quality, valuation, catalysts, ownership structure, dividend sustainability, dynamic risk management, and expected return — rather than relying on any single metric.
+`bist-screener` evaluates BIST-listed companies on several dimensions at once: valuation, catalysts, ownership, volatility, momentum, financial quality, and expected return against a hurdle rate. It does not rely on any single metric.
 
 The system runs as a daily pipeline and produces:
 
 | Output | Description |
 |---|---|
-| HTML Newsletter | Clean stacked summary tables, WhatsApp-ready Quick-Copy snippet, and collapsible candidate thesis cards |
-| JSON Payload | Structured, fully auditable machine-readable results |
-| Streamlit Dashboard | Read-only interactive visualization layer |
-| Backtesting Engine | Walk-forward simulation engine with Backtrader integration, tracking CAGR, Sharpe, Sortino, MDD, and trade logs in SQLite |
+| Mobile email body | Single-column, inline-styled summary: candidate cards with target, entry band, stop, position size, support/resistance, sector quadrant |
+| Detailed HTML report (attachment) | Full tables, thesis dossiers, methodology, WhatsApp-ready quick-copy block |
+| Sector rotation Excel (attachment) | RRG summary, 5-week tail chart, data table, method sheet |
+| JSON payload (attachment) | Every number shown in the reports, machine-readable and auditable |
+| KAP sentiment JSON | FinBERT scores of recent disclosures for reported candidates |
+| Streamlit dashboard | Read-only visualisation of the SQLite history |
 
 **Core commitments:**
 
-- Deterministic calculations — same input, same output
-- Explicit data provenance — model output is never disguised as external consensus
-- Peer-relative analysis instead of universal fixed thresholds
-- Conservative, explicit handling of missing data (no silent estimation)
-- Strict separation between data acquisition and analytical logic
-- Mandatory validation before any report is dispatched
+- Deterministic calculations: same input, same output.
+- Missing data stays `None`; it is never estimated silently.
+- Peer-relative ranking instead of universal fixed thresholds.
+- Priors are disclosed as priors; evidence is reported with its t-statistic.
+- No report is sent unless every number in it traces back to the payload.
 
 ---
 
@@ -97,374 +92,320 @@ The system runs as a daily pipeline and produces:
 
 ```mermaid
 flowchart TD
-    subgraph SRC["Data Sources"]
-        A1[BIST Market Data]
-        A2[KAP Disclosures]
-        A3[Macro Data]
+    subgraph SRC["Data Sources (borsapy / MCP servers)"]
+        A1[OHLCV raw + adjusted]
+        A2[Quarterly statements]
+        A3[KAP disclosures]
+        A4[Macro: TCMB, bonds, USDTRY]
+        A5[Sector indices + XU100]
     end
 
-    SRC --> B[Universe Construction]
-    B --> C[Data Quality & Basis Guard]
-    C --> D[Cross-Sectional Ranking]
-    D --> E1[Piotroski F-Score]
-    D --> E2[Sloan Accrual]
-    E1 --> F[Catalysts & Event Classification]
-    E2 --> F
-    F --> G[Ownership & Dividend Analysis]
-    G --> H[Valuation Engine]
-    H --> I[Beta-Adjusted Hurdle Rate]
-    I --> J[Dynamic Risk Sizing: Entry Bands / Stop-Loss]
-    J --> K[Risk & Concentration Diagnostics]
-    K --> L[Decision Diff]
-    L --> M[Thesis Card]
-    M --> N{Validation Gate}
-    N -- valid --> O[JSON Payload]
-    N -- valid --> P[HTML Newsletter]
-    P --> Q[Read-Only Dashboard]
-    N -- invalid --> R[Halt — Not Dispatched]
-
-    subgraph SIM["Backtesting Subsystem"]
-        BT1[Walk-Forward Engine] --> BT2[Backtrader Integration]
-        BT2 --> BT3[(SQLite: backtest_results & trades)]
-    end
-    SRC -.-> SIM
+    SRC --> B[Universe + Amihud liquidity]
+    B --> C[Data quality & basis guard]
+    C --> D[Piotroski / Sloan / catalysts / ownership]
+    D --> E[Valuation triangle -> target price engine]
+    E --> F[Hurdle: rf, Blume beta, costs]
+    F --> G[Entry band / stop / position size]
+    G --> H[Cross-sectional z-scores + regime weights]
+    H --> I[Hard filters -> final_score -> candidate_state]
+    I --> J[Concentration, correlation, HRP]
+    A5 --> K[Sector rotation RRG]
+    K -. annotation only .-> I
+    J --> L[Payload -> thesis cards]
+    L --> M{Validation gate}
+    M -- valid --> N[Email + attachments]
+    M -- invalid --> O[Halt]
 ```
 
 ---
 
 ## Analysis Layers
 
-### Machine Learning Trend & Direction Forecasting (TrendForecaster)
+### Price Data: Raw vs. Adjusted
 
-Academic literature in emerging markets (López de Prado, Doğan & Büyükkor) demonstrates that macroeconomic regimes and market momentum significantly condition asset return distributions. `core/trend_forecaster.py` integrates an end-to-end Machine Learning walk-forward forecasting engine:
+BIST companies issue bonus shares often (ASELS 2012/2016/2020/2023, AKFIS 500% in 2026). In the raw price series such an event looks like a −50% to −83% crash. `core/live_data.py::live_prices()` therefore returns two series:
 
-- **Rich Feature Engineering (25+ Features)**: Multi-timeframe moving average distance (`dist_sma20`, `dist_sma50`, `dist_sma200`), momentum velocity (`ret_5d` to `ret_60d`), normalized RSI (`rsi_norm`), MACD histogram, realized volatility ratios (`vol_ratio`), Bollinger Band width, and drawdown from 52-week high.
-- **Ensemble Meta-Learner (Random Forest + Logistic Regression)**: Rather than static heuristics, model weights are optimized via 3-fold TimeSeriesSplit cross-validation to minimize out-of-fold Brier Loss.
-- **5-State Market Regime Classification**: Classifies BIST 100 into `STRONG_BULL`, `MILD_BULL`, `CORRECTION_CHOPPY`, `OVERSOLD_REVERSAL`, and `STRONG_BEAR`.
-- **Zero Lookahead-Bias Walk-Forward Backtesting**: Verified across 1,800+ trading bars with expanding training windows.
+| Field | Source | Used for |
+|---|---|---|
+| `close` | `borsapy` history, `adjust=False` | Price levels: market cap, P/E, entry, stop, target |
+| `adj_close` | `borsapy` history, `adjust=True` | Every return: momentum, beta, correlation, covariance, volatility, Amihud |
 
-### Zero-Manual Weights & Empirical Calibration
+SMA20/50 and ATR20 are computed on the adjusted scale and converted back to the raw scale of the same day:
 
-In accordance with institutional quantitative standards, **all manual, subjective, and arbitrary weights have been eliminated** across the pipeline (`core/weight_optimizer.py`):
+$$\text{SMA}_{20,t} = \frac{1}{20}\sum_{k=0}^{19} \text{adj}_{t-k} \cdot \frac{\text{close}_t}{\text{adj}_t}$$
 
-1. Closed-Form Trinomial Transition Probabilities: Instead of hardcoded YAML lookup tables, scenario probabilities are derived continuously from the ML model's calibrated upward probability $p = \mathrm{prob\_up} \in [0, 1]$:
-$$P(\text{Bull}) = p^2, \quad P(\text{Bear}) = (1 - p)^2, \quad P(\text{Base}) = 2p(1 - p)$$
+Example (bonus day): BIMAS 100% bonus, raw return −49.1%, adjusted +1.8%. AKFIS 500% bonus, raw −82.2%, adjusted +6.6%.
 
-   Strictly normalized ($\sum P_i = 1.0$), smooth, and mathematically consistent.
-2. **Granger-Ramanathan Forecast Combination**:
-   Valuation Triangle leg weights (DCF vs. Peers vs. Quality) are solved via constrained quadratic programming (SLSQP) on historical forecast errors (MSPE), giving higher weight to models with lower historical prediction variance.
-3. **Information Coefficient (IC) Factor Weighting**:
-   Factor scoring weights are calculated from rolling Spearman rank correlation ($IC$) and Information Ratio ($IR = \overline{IC}/\sigma_{IC}$ adapting factor allocations dynamically to each market regime.
-4. **Unbiased Harmonic Mean Multiples**:
-   P/E, EV/EBITDA, and P/B peer ratios carry price in the numerator; the system applies the harmonic mean ($H = \frac{N}{\sum 1/x_i}$) to eliminate upward bias caused by small-earnings outliers (Liu, Nissim & Thomas 2002).
+### Universe Construction & Amihud Illiquidity
 
-### Realistic Target Price Engine & Volatility Cones
+In live mode the universe is built dynamically (no hardcoded list). Filters: minimum 20-day average TL volume (default 10M TL), listing history, trading restrictions (tedbir/VBTS), data completeness, and reporting basis.
 
-To prevent unrealistic target prices (+150% to +7000% anomalies), `core/targets.py` separates **180-Day Actionable Targets** from **Multi-Year Terminal Fair Value**:
+Amihud (2002) illiquidity, on adjusted returns:
 
-```mermaid
-flowchart TD
-    A[Valuation Triangle] --> B[Intrinsic Steady-State Value V*]
-    B --> C[Ornstein-Uhlenbeck Partial Convergence: α* = 32%]
-    C --> D[Projected Horizon Price P_proj]
-    E[Realized 60d Volatility σ] --> F[Black-Scholes Volatility Cone Ceiling: z* = 2.50σ]
-    D --> G{Cone Clamping}
-    F --> G
-    G --> H[Actionable 180-Day Target Price]
-    B -.-> I[Terminal Fair Value - Information Only]
-```
+$$\text{ILLIQ} = \frac{1}{D}\sum_{d=1}^{D}\frac{|R_d|}{\text{VolumeTL}_d}\times 10^6$$
 
-- **Black-Scholes Volatility Cones**: An actionable 180-day price target cannot exceed the statistical $2.50\sigma$ upper boundary:
-  $$\text{Upper Envelope} = P_0 \cdot \exp\left( (\mu - 0.5\sigma^2)T + z^* \sigma \sqrt{T} \right)$$
-- **Empirical Market Convergence Speed ($\alpha^* = 32\%$)**: Academic research confirms that fundamental mispricings close over an 18–36 month half-life; in 180 days, market prices realistically capture approximately 32% of the valuation gap, plus nominal inflation drift.
-- **Structural Resistance Clamping**: Short-term tactical targets are bound by the stock's 60-day swing high and upper Bollinger Band ($SMA_{20} + 2\sigma$), preventing targets above major institutional supply zones.
+### Cross-Sectional Ranking & Sector Neutralization
 
-### Market Regime
+Metrics are ranked within the peer group, not against fixed cutoffs. `valuation_z` is standardised inside the sector. If a sector has fewer than 5 peers, it falls back to the supersector (`XUMAL`, `XUSIN`, `XUHIZ`, `XUTEK`). Too few peers gives `confidence = insufficient_peers`, which is a hard filter.
 
-A dedicated market-regime layer tracks prevailing macro and market conditions. This information provides **context** for the screening process and is used in reporting — it is deliberately **not** fed back into the core ranking score. This isolation between regime taxonomy and scoring is intentional and covered by dedicated tests.
+### Scoring Model
 
-### Universe Construction
+`core/scoring.py`:
 
-In live mode, the BIST universe is built dynamically rather than from a hardcoded ticker list. Filtering criteria include:
+$$\text{final\_score} = w_v\,z_{\text{val}} + w_c\,s_{\text{cat}} + w_o\,z_{\text{own}} + w_l\,z_{\text{lowvol}} + w_m\,z_{\text{mom}}$$
 
-- Minimum trading volume
-- Minimum listing history
-- Data quality and completeness
-- Trading restrictions (tedbir / VBTS)
-- Peer-group eligibility
-- Reporting basis compatibility
+Base weights (`config/weights.yaml`):
 
-### Cross-Sectional Ranking
+| Factor | Weight | Definition |
+|---|---|---|
+| `valuation_z` | 0.40 | Sector-neutral valuation z-score |
+| `catalyst_score` | 0.20 | Rule-based KAP catalyst score with time decay |
+| `ownership_quality_z` | 0.12 | Ownership-structure z-score |
+| `low_vol_z` | 0.08 | z-score of $-\sigma_{60d}$ within the bucket (low-risk anomaly) |
+| `momentum_z` | 0.20 | z-score of `momentum_score` within the bucket (value-momentum mix, Asness, Moskowitz & Pedersen 2013) |
 
-Rather than applying fixed universal thresholds (e.g. *"P/E < 10 = attractive"*), the system ranks companies **within their peer group**:
+The ML regime (see [ML Trend Forecaster](#ml-trend-forecaster--market-regime)) selects a row of `regime_scoring_weights` (for example, `OVERSOLD_REVERSAL` has momentum 0.05 to avoid momentum crashes, Daniel & Moskowitz 2016). Each row is normalised to sum to 1.
 
-```mermaid
-flowchart LR
-    A[Raw Metric] --> B[Peer Group]
-    B --> C[Percentile / Z-Score]
-    C --> D[Normalized Signal]
-    D --> E[Composite Ranking]
-```
+**All weights are uncalibrated priors.** `config/weights_optimized.json` also contains "optimised" scoring weights, but they were fitted on a single XU100 series with technical proxies, so the pipeline does **not** use them (`use_optimized=False`).
 
-This accounts for the fact that different sectors naturally carry different valuation multiples and financial characteristics.
+**Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data, Piotroski normalised score ≥ 0.34. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
 
-- **Sector Neutralization (`valuation_z_sector_neutral`)**: Valuations are standardized within specific sectors. If a niche subsector has fewer than 5 active peers (`peer_n < 5`, e.g. insurance or specialized financials), it gracefully falls back to supersector normalization (`XUMAL`, `XUSIN`, `XUHIZ`, `XUTEK`) rather than premature market-wide contamination.
+**Candidate state:** `STRONG_OPPORTUNITY` needs high confidence, top quartile of `final_score` in the bucket, a positive hurdle margin, Piotroski ≥ 0.55, and no value-trap flag. Top 4 per bucket are reported.
 
-### 12-1 Momentum & Trend Smoothness ($R^2$)
+### 12-1 Momentum & Trend Smoothness
 
-Following Jegadeesh & Titman (1993) and Moskowitz et al. (AQR), standard short-term momentum suffers from 1-month reversal anomalies (bid-ask bounce and microstructural noise). `core/momentum.py` incorporates institutional momentum architecture:
+`core/momentum.py` (Jegadeesh & Titman 1993), on adjusted closes:
 
-- **12-1 Intermediate Momentum (`mom_12_1_pct`)**: Measures 252-day price appreciation excluding the most recent 21 trading days ($\frac{P_{t-21}}{P_{t-252}} - 1$), capturing persistent institutional drift while avoiding mean-reverting short-term noise.
-- **Trend Smoothness ($R^2$)**: Quantifies quality of momentum via linear log-price regression:
-  $$\ln(P_{\tau}) = \alpha + \beta \tau + \epsilon_{\tau} \implies R^2 \in [0, 1]$$
-  Stocks with high $R^2$ (smooth compounders) receive full momentum premium, while volatile, erratic movers with low $R^2$ are heavily discounted.
-- **Relative Strength to Benchmark (`rs_xu100_60d_pct`)**: Rolling 60-day alpha relative to BIST 100 index.
+- $\text{mom}_{12-1} = P_{t-21}/P_{t-252} - 1$ (skips the last month to avoid short-term reversal).
+- Trend smoothness: signed $R^2$ of $\ln P_\tau = \alpha + \beta\tau + \epsilon$ over 120 days.
+- `rs_xu100_60d_pct`: 60-day return relative to XU100.
+
+$$\text{momentum\_score} = \text{clip}_{[0,100]}\Big(50 + \text{clip}(0.3\,\text{mom}_{12-1}, \pm25) + 15\,R^2_{\pm} + \text{clip}(0.5\,\text{rs}_{60}, \pm15)\Big)$$
+
+**Value-trap flag:** $\text{mom}_{12-1} < 0$ and signed $R^2 < 0$. It blocks `STRONG_OPPORTUNITY`.
 
 ### Financial Quality
 
-**Piotroski F-Score** — a 9-criteria assessment covering profitability, cash flow, leverage, liquidity, and operational efficiency.
+- **Piotroski F-Score** (9 criteria, normalised to [0, 1]). The hard filter at 0.34 removes only low quality (≤ 3/9). With a nominal (non-IAS 29) feed, criteria 3/5/6/8 are distorted by inflation, so the middle band carries weak signal.
+- **Sloan accrual**: gap between accounting earnings and cash flow.
 
-**Sloan Accrual** — measures the extent to which reported earnings are backed by actual cash generation, surfacing divergence between accounting earnings and cash flow.
+### Valuation Triangle
 
-### Multi-Factor Valuation Triangle (Değerleme Üçgeni)
+`core/valuation_triangle.py`, weights from `config/weights.yaml` (single source):
 
-Single-metric valuations are fragile: peer multiples mislead at cyclical tops, and standalone DCF models are hyper-sensitive to growth assumptions. The system synthesizes three independent valuation pillars into an institutional-grade fair value range:
+| Leg | Weight | Method |
+|---|---|---|
+| DCF | 0.25 | FCF, WACC (CAPM + cost of debt), low/base/high growth 0/5/10% |
+| Peer multiples | 0.50 | Harmonic mean of peer P/E, EV/EBITDA, P/B (Liu, Nissim & Thomas 2002); banks/insurance/REITs exclude EV/EBITDA |
+| Quality premium | 0.25 | Justified P/B = ROE / $k_e$, with Piotroski, balance sheet, and high-ROE modifiers |
 
-```mermaid
-flowchart TD
-    A[Valuation Triangle] --> B[DCF: 40%]
-    A --> C[Peer Multiples: 35%]
-    A --> D[Quality Premium: 25%]
-    B --> E[WACC + Terminal Growth Scenarios]
-    C --> F[Sector Median P/E, EV/EBITDA, P/B, NAV]
-    D --> G[ROE vs Cost of Capital + Piotroski + Net Cash]
-    E --> H[Weighted Fair Value Range: Low / Base / High]
-    F --> H
-    G --> H
-```
+Why DCF has the lowest weight: studies of target-price accuracy show that multiple-based and hybrid methods are more accurate than DCF alone. Also, the DCF here runs on nominal TL FCF with a WACC of about 45%, which makes it very sensitive to terminal assumptions. If a leg is not available, the remaining weights are re-normalised. GYO and holding companies use NAV.
 
-- **DCF Leg (40% Weight)**:
-  - Discounted cash flow utilizing WACC (weighted cost of equity via CAPM + cost of debt) and TCMB long-term inflation target.
-  - Multi-scenario growth modeling: Low (0%), Base (5%), and High (10%) FCF expansion.
-- **Peer Multiples Leg (35% Weight)**:
-  - Sector/peer-relative multiples: P/E, EV/EBITDA, and P/B.
-  - Sourced via unbiased **Harmonic Mean** to eliminate upward outlier distortion.
-  - Tailored metric constraints: banks, insurance, and REITs automatically exclude EV/EBITDA.
-- **Quality Premium Leg (25% Weight)**:
-  - Economic rent / EVA anchor: Justified $\text{P/B} = \text{ROE} / \text{Cost of Equity}$.
-  - Fundamental modifiers: Piotroski F-Score (+10% / -10%), Net Debt / Balance Sheet Strength (+10% / -10%), and High-ROE rent (+5%).
-- **Dynamic Normalization**:
-  If a leg is unavailable (e.g. negative FCF or non-computable metrics), the remaining available weights re-normalize proportionally so that no valid data point is discarded.
-- **Outputs**:
-  Produces `fair_value_low`, `fair_value_base`, `fair_value_high`, and `valuation_method`, with `target_price = fair_value_base`.
+Scenario probabilities come from the ML probability $p = \text{prob\_up}$: $P(\text{bull}) = p^2$, $P(\text{base}) = 2p(1-p)$, $P(\text{bear}) = (1-p)^2$.
 
-### Factor Disclosure & Attribution
+### Target Price Engine
 
-Every score is 100% transparent. The system decomposes `final_score` into its exact factor contributions:
-$$\text{final\\_score} = 0.50 \times \text{valuation\\_z} + 0.25 \times \text{catalyst\\_score} + 0.15 \times \text{ownership\\_z} + 0.10 \times \text{low\\_vol\\_z}$$
-For each candidate, a deterministic natural language explanation details *"what increased and what suppressed this score"*, isolating primary drivers and risks into the `factor_contributions` table.
-
-### Hurdle Rate & Amihud Illiquidity Friction
-
-Expected return is never assessed in isolation — it is compared against a required-return benchmark:
-
-- **Beta-Adjusted Hurdle**: $r_f \cdot \frac{T}{365} + \beta \cdot \text{ERP} \cdot \frac{T}{365}$.
-- **Amihud (2002) Illiquidity & Market Impact Risk (`amihud_illiq`)**:
-  $$\text{ILLIQ} = \frac{1}{D} \sum_{d=1}^D \frac{|R_d|}{\text{VolumeTL}_d} \times 10^6$$
-  Thinly traded stocks require higher expected compensation; execution models apply dynamic slippage penalties scaling up to 50 bps based on empirical Amihud illiquidity.
-
-### Dynamic Risk Management & Position Sizing
-
-Signals do not rely on market orders (`entry_price = current_price`) or leave stop-losses null. Every candidate produces disciplined execution and risk parameters:
-
-- **Stepped Entry Band (`entry_low`, `entry_high`)**:
-  $$\text{entry\\_low} = \text{current\\_price} - 0.5 \times \text{ATR20}$$
-  $$\text{entry\\_high} = \text{current\\_price} + 0.2 \times \text{ATR20}$$
-  Accumulation is scaled 50% at the lower band and 50% at the upper band ($\text{effective\\_entry} = 0.5 \times \text{entry\\_low} + 0.5 \times \text{entry\\_high}$).
-
-- **Dynamic Stop-Loss (`stop_loss`)**:
-  $$\text{stop\\_loss} = \text{entry\\_low} - 1.5 \times \text{ATR20}$$
-  If a recent 20-day swing low provides an established support level below entry, the stop-loss dynamically anchors to $\min(\text{base\\_stop}, \text{swing\\_low})$ for robust protection.
-
-- **Fixed Fractional Position Sizing (`position_size_pct`)**:
-  Positions are sized inversely to risk distance per share, keeping account portfolio risk strictly within the target budget (1%–2%, default 1.5%):
- $$
-\text{position\_size\_pct}
-= \min\left(25.0\%, \frac{\text{account\_risk\_pct}}{\text{risk\_per\_share}/\text{effective\_entry}}\right)
-$$
-
-### Hierarchical Risk Parity (HRP) & Portfolio Optimization
-
-To move from standalone signals to resilient portfolio construction, `core/portfolio.py` integrates Marcos López de Prado's **Hierarchical Risk Parity (HRP)** alongside classical convex optimizers:
-
-```mermaid
-flowchart TD
-    A[Asset Return Covariance Matrix] --> B["Distance Metric: d(i,j) = sqrt(0.5*(1-rho(i,j)))"]
-    B --> C["Hierarchical Tree Clustering: Ward Linkage"]
-    C --> D["Quasi-Diagonalization and Recursive Bisection"]
-    D --> E["HRP Allocation Weights - Zero Matrix Inversion"]
-```
-
-- **Zero Inversion Singularity**: Classical Markowitz mean-variance optimization fails when the covariance matrix is ill-conditioned. HRP uses graph theory and hierarchical clustering, completely eliminating unstable matrix inversions.
-- **Four Allocation Profiles**:
-  - **Hierarchical Risk Parity (HRP)**: Tree-clustered risk parity allocating capital across structural market clusters.
-  - **Risk Parity (Inverse Volatility)**: Allocates inversely to individual asset standard deviation ($\sigma_i$).
-  - **Minimum Variance**: Solves $\min w^T \Sigma w$ via bounded simplex projection.
-  - **Maximum Sharpe**: Tangency portfolio maximizing $(w^T \mu - r_f) / \sigma_p$.
-- **Sector Cap ($\le 30.0\%$)**: Hard non-linear simplex ceiling preventing any single sector from dominating portfolio risk.
-
-### Corporate Actions Calendar
-
-Corporate actions significantly alter nominal market prices:
-- **`event_calendar` Database**: Tracks cash dividends, bonus share issues (bedelsiz), rights issues (bedelli), and general assemblies.
-- **Automatic Link to Price Adjustments**: Feeds into the historical price adjustment engine.
-- **Signal Warnings**: Generates high-priority alerts (`check_signal_corporate_action_warnings`) for any recommendation whose trade horizon intersects an upcoming corporate action.
-
-### Catalysts & KAP
-
-KAP (Public Disclosure Platform) filings are classified using a **rule-based / regex** approach — not an LLM-based prediction model. This choice prioritizes deterministic, reproducible, and transparent classification over probabilistic inference.
-
-### Dividend Sustainability
-
-Dividend distributions are evaluated for sustainability using available financial data, feeding into the broader company-quality assessment rather than acting as a standalone ranking signal.
-
-### Ownership Analysis
-
-An ownership-quality layer incorporates available shareholder-structure information where data permits. Missing ownership data is never treated as an implicit positive or negative signal.
-
----
-
-## Data Quality & Survivorship Bias
-
-> **Missing data is not positive data. Survivorship bias is the silent killer of quantitative models.**
-
-The data layer is built on three rigorous integrity principles:
-
-1. **Explicit Missing Data Handling**:
-   When a value cannot be reliably sourced:
-   ```python
-   if data_is_missing:
-       value = None
-   ```
-   ...rather than being estimated or inferred. Companies with incomplete statements are flagged with `reporting_basis = "unknown"` and safely halted by guardrails.
-
-2. **Survivorship Bias Elimination (`delisted_stocks`)**:
-   Backtesting only on currently listed stocks introduces severe survivorship bias (overstating returns by ignoring bankruptcies). The system maintains an archive of historical delistings (`delisted_stocks` table including `ASYAB`, `GENYH`, `MEMS`, `ESEM`, `MANGO`, `ARTI`, `UKIM`, `BISAS`, `DENIZ`, etc.). When backtesting historically, `get_survivorship_free_universe` reconstructs the active universe as of that date, forcing positions in bankrupted stocks to experience 100% terminal liquidation losses.
-
-3. **Continuous Price Adjustments & Auditing (`core/data_quality.py`)**:
-   - **CRSP Standard Backward Adjustments**: Automatically adjusts historical prices for bonus share splits ($1 / (1+R)$) and cash dividends ($(P_{cum} - D) / P_{cum}$), preventing artificial -50% drawdowns in backtests.
-   - **Quality Auditor (`audit_ticker_data_quality`)**: Audits price series for BIST circuit-breaker violations (>10.5% unexplained jumps), flat price freezes, zero-volume streaks, and calendar gaps, producing a transparent `0–100` data quality score.
+`core/targets.py::compute_long_term_target` separates the **180-day actionable target** from the **terminal fair value** $V^*$ (triangle output, information only).
 
 ```mermaid
 flowchart LR
-    A[Raw OHLCV + Events] --> B[Corporate Actions Engine]
-    B --> C[CRSP Backward Adjustment]
-    C --> D[Data Quality Auditor: 0-100 Score]
-    D --> E[Survivorship-Free Universe Reconstructor]
+    V[Fair value V*] --> P["Projected = (P0 + α(V* − P0))·(1+k_e)^(h/365) − D_h"]
+    S[σ = σ_daily·√252] --> C["Cone ceiling = P0·exp((μ − σ²/2)T + zσ√T)"]
+    P --> T{min}
+    C --> T
+    T --> A[Actionable target]
 ```
+
+- **Cost of equity:** $k_e = r_f + \beta_{\text{Blume}}\cdot\text{ERP}$, with $r_f$ = 2-year bond yield and ERP = 5% (`config/equity_risk_premium.yaml`).
+- **Drift:** under CAPM, a fairly priced stock earns $k_e$. The price target is net of the expected dividend $D_h = \text{DPS}_{\text{TTM}}\cdot h/365$, because the price drops by the dividend. The dividend is added back at the hurdle gate.
+- **Partial convergence:** $\alpha = 0.32$ (`calibrated_alpha`).
+- **Volatility cone:** $\mu = \ln(1+k_e)$, $T = 180/365$, $z = 2.5$ (`calibrated_z_score`). $\sigma_{60d}$ is the stdev of *daily* returns and is annualised with $\sqrt{252}$. Before 2026-09-27 a unit bug treated it as annual, which pinned every ceiling near $1.2\,P_0$.
+- **Target-hit probability (model):** lognormal with $E[S_T]$ equal to the projected price:
+
+$$P(S_T \ge K) = \Phi\!\left(\frac{\ln(E/K) - s^2/2}{s}\right),\quad s = \sigma\sqrt{T}$$
+
+  This is a model probability, not a realised hit rate. Empirical hit rates of analyst targets are about 40–55% (Bradshaw, Brown & Huang 2013).
+
+> $z$ and $\alpha$ come from `scripts/optimize_weights.py` on a single XU100 series. Treat them as priors until the factor backtest re-estimates them.
+
+**Short-term target** (20 days): $P_0 + 2.5\cdot\text{ATR}_{20}\cdot b$, where $b \in [1.0, 1.3]$ is a liquidity buffer that widens distances for thin books (20-day TL volume between 50M and 10M).
+
+### Hurdle Rate, Beta & Transaction Costs
+
+- **Hurdle** (compounded, not linear): $h = \big((1 + r_f)^{T/365} - 1\big)\times 100$. The linear form over-states the hurdle by about 1.5 points at 40% rates over 180 days.
+- **Beta:** OLS on date-aligned daily adjusted returns vs. live XU100 (up to 120 observations), then Blume (1971) adjustment: $\beta_{\text{Blume}} = 0.67\,\beta + 0.33$. The beta-adjusted hurdle is an information field, not a hard filter.
+- **Net return (information):**
+
+$$\text{cost}_{\%} = \big(\text{spread}_{bps} + 15 + \tfrac{20}{\max(\text{vol\_ratio}_{20},\,0.1)} + \min(25\cdot\text{ILLIQ},\,50)\big)/100$$
+
+  If spread or volume ratio is missing, the `net_*` fields stay `None`. An optimistic cost is never assumed.
+
+### Entry Band, Stop-Loss & Position Sizing
+
+`core/targets.py::compute_dynamic_risk_levels`. All levels are rounded to the BIST tick table (0.01 / 0.02 / 0.05 / 0.10 TL).
+
+$$\text{entry\_low} = P_0 - 0.5\,\text{ATR}_{20},\qquad \text{entry\_high} = P_0 + 0.2\,\text{ATR}_{20}$$
+
+$$\text{effective\_entry} = \tfrac12(\text{entry\_low} + \text{entry\_high}) \quad\text{(50/50 scaled limit orders)}$$
+
+$$\text{stop} = \min\big(\text{entry\_low} - 1.5\,b\,\text{ATR}_{20},\ \text{swing\_low}_{20}\big)$$
+
+$$\text{position\_size\_pct} = \min\!\left(25,\ \frac{1.5}{(\text{effective\_entry} - \text{stop})/\text{effective\_entry}}\right)$$
+
+The short-term reward/risk ratio is measured from `effective_entry`, not from the spot price.
+
+### Support / Resistance & Volume Profile (Information Only)
+
+`core/levels.py` computes structure-based levels on the adjusted scale, so pre-bonus pivots do not create fake resistance:
+
+1. **Confirmed fractal pivots** (5 bars on each side; the last 5 bars are never used, so there is no look-ahead). Weight = $0.5^{\text{age}/60}\cdot(1 + \min(3, V_i/\bar V))$.
+2. **Volume profile:** each bar's volume is spread evenly over [low, high] in 60 bins. High-volume nodes (bins above mean + 1 sd and a local maximum) and the POC become extra level candidates. Rationale: S/R levels coincide with order-book depth (Kavajecz & Odders-White 2004).
+3. **Zones:** candidates within 0.5 ATR are merged, and a zone is at most 1 ATR wide.
+4. **Breakout:** a broken resistance counts only with `volume_ratio_20d ≥ 1.5` (Lo, Mamaysky & Wang 2000). After that it acts as support.
+5. **VWAP20** is shown as an execution reference (Berkowitz, Logue & Noser 1988).
+
+Levels are **not** used for entry, stop, or target, because the backtest did not support it (see [Backtests & Evidence](#backtests--evidence)). The reports show the nearest support/resistance, a *"resistance before target"* warning, and VWAP20. `compute_dynamic_risk_levels(level_plan=...)` and `compute_short_term_target(level_plan=...)` implement the level-based rules for future research.
+
+### Sector Rotation (RRG)
+
+`core/sector_rotation.py`, an open approximation of JdK RS-Ratio/RS-Momentum. It uses weekly (Friday) closes of 25 BIST sector indices vs. XU100:
+
+$$\text{RS} = 100\cdot\frac{\text{sector}}{\text{XU100}},\qquad \text{RS-Ratio} = 100 + \frac{\text{RS} - \mu_{26}(\text{RS})}{\sigma_{26}(\text{RS})}$$
+
+$$d_t = \text{RS-Ratio}_t - \text{RS-Ratio}_{t-4},\qquad \text{RS-Momentum} = 100 + \frac{d_t - \mu_{26}(d)}{\sigma_{26}(d)}$$
+
+Quadrants: Leading (R ≥ 100, M ≥ 100), Weakening, Lagging, Improving. A *future star* is a sector that moved Lagging → Improving within the last 3 weeks. RRG is **annotation only** and does not enter `final_score`. The email card shows each candidate's sector quadrant, and the Excel attachment shows where money is moving.
+
+### ML Trend Forecaster & Market Regime
+
+`core/trend_forecaster.py`: 25+ technical features on XU100 (SMA distances, 5–60d returns, RSI, MACD, volatility ratios, Bollinger width, 52-week drawdown). It uses a Random Forest + Logistic Regression ensemble whose weights come from 3-fold `TimeSeriesSplit` Brier loss (current: LR 0.95, RF 0.05). Output `prob_up` → regime:
+
+| Regime | Rule |
+|---|---|
+| `OVERSOLD_REVERSAL` | RSI < 36 and −6% < distance to SMA200 < 2% |
+| `STRONG_BULL` | `prob_up` ≥ 0.62 and distance to SMA50 > −1% |
+| `MILD_BULL` | `prob_up` ≥ 0.52 |
+| `STRONG_BEAR` | `prob_up` < 0.40 and distance to SMA50 < −3% |
+| `CORRECTION_CHOPPY` | otherwise |
+
+This regime selects the scoring-weight row. The separate `regime_taxonomy` (macro labels in the report) is isolated from scoring by a static test.
+
+### Portfolio Construction (HRP)
+
+`core/portfolio.py`: Hierarchical Risk Parity (López de Prado 2016). Distance $d_{ij} = \sqrt{\tfrac12(1-\rho_{ij})}$, Ward linkage, quasi-diagonalisation, recursive bisection, no matrix inversion. Covariance comes from adjusted returns, and the sector cap is 30%. Risk parity, minimum variance, and max Sharpe are also available.
+
+### Catalysts, KAP & FinBERT Sentiment
+
+- **Catalyst score:** rule/regex classification of KAP titles, with time decay (`config/catalyst_decay.yaml`). It is deterministic and reproducible.
+- **FinBERT layer** (`core/kap_sentiment.py`, `scripts/kap_sentiment_today.py`): disclosure bodies from the last 3 days → `opus-mt-tr-en` translation → `ProsusAI/finbert`. Runs daily in CI after the screener and writes `data/reports/kap_sentiment_<date>.json`. **Information only**, not in `final_score`.
+
+### Corporate Actions, Dividends & Ownership
+
+- `event_calendar`: dividends, bonus/rights issues, general assemblies. A warning is raised when the trade horizon crosses an event.
+- Dividend sustainability (streak, payout) and a Gordon reference value.
+- Ownership quality where data exists. Missing data is never treated as a signal.
 
 ---
 
-## Walk-Forward Backtesting Engine
+## Research Infrastructure
 
-To bridge the gap between forward-looking prediction tracking and historical strategy validation, the system provides an event-driven **Walk-Forward Backtesting Engine** paired with **Backtrader** integration:
+**Point-in-time fundamentals panel** (`core/pit_panel.py`, `scripts/build_pit_panel.py`), added 2026-09-27:
 
-- **Zero Look-Ahead Bias**: Signals and dynamic risk bands are evaluated strictly on information available on or before each trading bar (`effective_at <= bar_date`).
-- **Realistic Execution Friction**: Default trading costs incorporate institutional friction — **0.15% commission** + **0.10% slippage** per trade.
-- **Institutional Metrics**: Calculates Compounded Annual Growth Rate (**CAGR**), **Sharpe Ratio** (annualized vs. risk-free rate), **Sortino Ratio** (downside deviation), **Max Drawdown (MDD)**, **Hit Rate (% profitable trades)**, and **Profit Factor**.
-- **Full Traceability**: Every simulated trade, entry/exit timestamp, dynamic stop trigger, and trade return is persisted into SQLite tables (`backtest_results` and `backtest_trades`).
+- Up to 60 quarterly statements per non-financial ticker via `borsapy`.
+- **Publication lag:** a statement is available only from $\text{period end} + 75$ days (Q1–Q3) or $+100$ days (Q4). The panel never uses data before `available_at`.
+- Quarterly flows from YTD tables: $Q_1 = \text{YTD}_1$, $Q_n = \text{YTD}_n - \text{YTD}_{n-1}$. TTM needs 4 consecutive quarters (80–100 day gaps).
+- Share count: paid-in capital, forward-adjusted through later bonus/rights events.
+- Monthly factors: `bm`, `ep`, `sp`, `ey` (EV/EBIT), `gpa`, `roe`, `mom_12_1`, `str_1m`, `vol60`, `tlvol60`, `nsi_rights_12m`, `sue` (Foster, Olsen & Shevlin 1984), with forward returns `fwd_ret_1m`, `fwd_ret_6m`.
+- Excludes banks, insurance, pension, factoring, leasing, brokers, and real-estate funds (different templates).
+- Output: `data/research/*.parquet` (gitignored, rebuilt by the script).
 
-```mermaid
-flowchart LR
-    A[Historical OHLCV + Signals] --> B[Walk-Forward Engine]
-    B --> C[Friction: 0.15% Comm + 0.10% Slip]
-    C --> D[Backtrader Cerebro Runner]
-    D --> E[Metrics: CAGR / Sharpe / Sortino / MDD]
-    E --> F[(SQLite: backtest_results & trades)]
-```
+Validated on 5 tickers: 811 monthly rows, 2013-03 → 2026-09, no extraction failures.
 
 ---
 
-## GitHub Actions CI/CD & Automated Calibration
+## Backtests & Evidence
 
-The repository is equipped with fully automated continuous integration, calibration, and screening pipelines:
+All backtests use only past data at each decision point and report t-statistics. Multiple testing is kept visible: Bonferroni thresholds are shown next to the results.
 
-```mermaid
-flowchart TD
-    subgraph CI["1. Continuous Integration (.github/workflows/ci.yml)"]
-        PR["Push / Pull Request"] --> T1["Python 3.12 Setup"]
-        T1 --> T2["pip install -r requirements.txt"]
-        T2 --> T3["240 Automated Tests - pytest"]
-        T3 --> T4["Config & Schema Integrity Check"]
-        T4 --> T5["Pass Gate - Safe to Merge"]
-    end
+**Sector rotation** (`scripts/backtest_sector_rotation.py`; 23 sector indices, 2012-03 → 2026-09, monthly rebalance, 20 bps cost, Bonferroni t = 2.91):
 
-    subgraph CAL["2. Weekly Calibration (.github/workflows/weekly-optimize.yml)"]
-        CRON["Every Sunday 18:00 UTC (21:00 TSI)"] --> O1["Fetch 5y BIST History (borsapy)"]
-        O1 --> O2["Run scripts/optimize_weights.py"]
-        O2 --> O3["Calibrate Volatility Cones: z* and α*"]
-        O3 --> O4["Optimize ML Ensemble & Factor IR"]
-        O4 --> O5["Commit & Push: config/weights_optimized.json"]
-    end
+| Strategy | CAGR | Active vs. XU100 | Active vs. equal-weight sectors | t vs. EW |
+|---|---|---|---|---|
+| Equal-weight sectors | 30.6% | +8.1% (t = 2.29) | — | — |
+| 12-1 sector momentum, top 3 | 38.2% | +15.7% | +8.6% | 1.53 |
+| RRG Improving | 23.1% | +0.6% | lags EW | — |
 
-    subgraph RUN["3. Daily Screening (.github/workflows/daily-screener.yml)"]
-        SCHED["Mon-Fri 15:30 UTC / 18:30 TSI"] --> D1["Execute run.py"]
-        D1 --> D2["Build HTML Newsletter & JSON Payload"]
-        D2 --> D3["Zero-Orphan Validation Gate"]
-        D3 --> D4["Dispatch Email & Commit Database"]
-    end
-```
+Conclusion: the RRG "Improving" quadrant alone is **not** a buy signal. Sector momentum (the Leading side) beat EW, but the result is below the multiple-testing threshold. The Excel and email texts say this.
 
-- **CI Pipeline (`ci.yml`)**: Runs all 240 unit tests on every push and PR to `master`, guaranteeing zero regression, zero orphan numbers, and zero banned statements.
-- **Weekly Self-Calibration (`weekly-optimize.yml`)**: Recalibrates ML ensemble weights, trinomial scenario distributions, Granger-Ramanathan valuation weights, and volatility cones from 5-year BIST data without human intervention.
-- **Daily Screener (`daily-screener.yml`)**: Autonomous daily production run at 18:30 Europe/Istanbul, dispatching verified newsletters.
+**Entry rules** (`scripts/backtest_entry_levels.py`; 40 liquid tickers, ~2 years, 1,883 signals, 0.5% round-trip cost, stop assumed first when stop and target hit in the same bar):
+
+| Variant | Mean trade return | Per-ticker diff. vs. ATR band | t |
+|---|---|---|---|
+| ATR band (current) | +0.73% | — | — |
+| Full support/resistance rule | +0.26% | −0.43 pp | −2.82 |
+| Support entry + structural stop, ATR target | +0.64% | −0.07 pp | −0.65 |
+| ATR entry, target capped at resistance | +0.35% | −0.35 pp | −2.95 |
+
+Conclusion: capping targets at resistance raised the hit rate (57% → 68%) but cut winners. Support entries lowered risk per trade (10.7% → 7.0%) without a significant return gain. The ATR rules stay in place.
+
+**Single-ticker walk-forward engine** (`core/backtest.py`, optional Backtrader): 0.15% commission, 0.10% slippage, delisting losses from `delisted_stocks`. It reports CAGR, Sharpe, Sortino, max drawdown, hit rate, and profit factor. Results are saved to `backtest_results` / `backtest_trades`.
+
+---
+
+## Reports & Delivery
+
+`run.py::_dispatch` writes to `data/reports/` and sends one email (SMTP):
+
+| Part | File |
+|---|---|
+| Body | Mobile-first inline HTML (`report/templates/newsletter_mobile.html.j2`) |
+| Attachment | `BIST_Detayli_Rapor_<date>.html` (`newsletter.html.j2`) |
+| Attachment | `BIST_Sektor_Rotasyonu_<date>.xlsx` (`report/sector_excel.py`: Summary, RRG chart, Tail, Method) |
+| Attachment | `payload.json` |
+
+If the Excel file cannot be built, the email is still sent.
 
 ---
 
 ## Validation Gate
 
-Every report passes through a validation stage before dispatch. Numerical values in the HTML report are cross-checked against the underlying JSON payload:
-
-```mermaid
-flowchart TD
-    A[HTML Report] --> B{Validation Gate}
-    B -- "Value exists in payload" --> C[Dispatch]
-    B -- "Value not found / inconsistent" --> D[Halt]
-```
-
-This prevents unsourced or inconsistent figures from ever being published.
+`report/validate.py`: every numeric token in the HTML, outside styles, comments, and ISO dates, must exist in the payload's number set (formatted by `core/payload.py::format_number`). A small whitelist covers structural constants such as horizon days. Banned claims ("kanıtlanmış edge", "backtest edilmiş", "Sharpe oranı", ...) also stop the dispatch.
 
 ---
 
 ## Execution Pipeline
 
-`run.py` executes the analysis in a fixed, ordered sequence:
-
 ```mermaid
 flowchart TD
-    A[regime_monitor] --> B[regime_taxonomy]
+    A[regime_monitor + trend_forecaster] --> B[sector_rotation]
     B --> C[universe]
-    C --> D[basis_guard]
-    D --> E[ranking]
-    E --> F[earnings_quality_sloan]
-    F --> G[catalysts]
-    G --> H[event_calendar_engine]
-    H --> I[ownership_quality]
-    I --> J[target_price_engine]
-    J --> K[hurdle_engine]
-    K --> L[beta_adjusted_hurdle]
-    L --> M[dividend_sustainability_engine]
-    M --> N[optional_valuation_addon]
-    N --> O[concentration_check]
-    O --> P[correlation_diagnostic]
-    P --> Q[decision_diff_engine]
-    Q --> R[payload]
-    R --> S[thesis_card]
-    S --> T[validate]
-    T --> U[dispatch]
-    U --> V[evaluate_past_predictions]
-    V --> W[thesis_invalidation_monitor]
+    C --> D[basis_guard / data_quality]
+    D --> E[piotroski / sloan / catalysts / events / ownership]
+    E --> F[per ticker: momentum, Amihud, beta, levels]
+    F --> G[target_price_engine + hurdle + risk levels]
+    G --> H[z-scores: ownership, low_vol, momentum]
+    H --> I[scoring: hard filters, final_score, state]
+    I --> J[concentration + correlation + HRP + factor disclosure]
+    J --> K[predictions + invalidation persisted]
+    K --> L[payload -> thesis cards -> render]
+    L --> M[validate]
+    M --> N[dispatch]
+    N --> O[evaluate_past_predictions]
 ```
+
+The pipeline is idempotent: a second run for the same `as_of_date` after a sent email is skipped (`--force` overrides).
+
+---
+
+## GitHub Actions
+
+| Workflow | Schedule | Steps |
+|---|---|---|
+| `ci.yml` | push / PR to `master` | `pytest` (255 tests), config/schema checks |
+| `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry) |
+| `weekly-optimize.yml` | Sunday 18:00 UTC | `scripts/optimize_weights.py` → cone $z$, $\alpha$, ML ensemble → commit `config/weights_optimized.json` |
+
+A full universe run takes about 2.5–3.5 hours. The job timeout is 350 minutes.
 
 ---
 
@@ -472,186 +413,64 @@ flowchart TD
 
 ```text
 bist-screener-v9/
-│
-├── bist_mcp/                 # BIST data MCP server
-├── kap_web_mcp/               # KAP data MCP server
-├── macro_mcp/                 # Macro data MCP server
-│
-├── core/                      # Core deterministic calculation engines
-│   ├── ranking.py
-│   ├── scoring.py
-│   ├── targets.py
-│   ├── evaluate.py
+├── bist_mcp/ kap_web_mcp/ macro_mcp/   # MCP data servers
+├── core/
+│   ├── live_data.py      # borsapy: raw + adjusted prices, statements, KAP
+│   ├── pit_panel.py      # point-in-time fundamentals panel
+│   ├── scoring.py ranking.py momentum.py volatility.py ownership.py
+│   ├── valuation_triangle.py dcf.py gordon.py targets.py hurdle.py beta_hurdle.py
+│   ├── levels.py         # support/resistance, volume profile, VWAP
+│   ├── sector_rotation.py trend_forecaster.py regime.py regime_taxonomy.py
+│   ├── portfolio.py correlation.py concentration.py factor_disclosure.py
+│   ├── catalysts.py events.py kap_sentiment.py piotroski.py sloan.py
+│   ├── backtest.py data_quality.py evaluate.py decision_diff.py payload.py db.py
 │   └── ...
-│
-├── config/                    # Configuration and model assumptions
-│
-├── data/                      # SQLite database and generated reports
-│   ├── bist_history.db
-│   └── reports/
-│
-├── report/                    # HTML templates and validation logic
-├── skills/                    # CLI / methodology packages
-├── tests/                     # Automated test suite
-│
-├── dashboard.py                # Streamlit dashboard
-├── run.py                      # Daily orchestrator
-├── requirements.txt
-├── .env.example
-│
-├── bist_screener_v9_prompt.json
-├── bist_screener_v10_roadmap.json
-└── README.md
+├── report/               # templates, render, validation gate, sector Excel
+├── skills/               # methodology packages (catalyst scoring, regime monitor, ...)
+├── scripts/              # backtests, PIT panel builder, optimizer, KAP sentiment, purge
+├── config/               # weights.yaml, equity_risk_premium.yaml, transaction_costs.yaml, ...
+├── data/                 # bist_history.db, reports/ (committed by CI), research/ (ignored)
+├── tests/                # 255 tests
+├── run.py                # daily orchestrator
+└── dashboard.py          # read-only Streamlit
 ```
 
 ---
 
 ## Installation
 
-**1. Clone the repository**
-
 ```bash
 git clone https://github.com/erenkbgc/bist-screener-v9.git
 cd bist-screener-v9
-```
-
-**2. Create a virtual environment**
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-```
-
-**3. Install dependencies**
-
-```bash
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+pip install -r requirements-nlp.txt   # optional: FinBERT layer (torch, transformers)
+cp .env.example .env                  # SMTP_*, MAIL_*, BIST_DATA_MODE
 ```
-
-**4. Configure environment variables**
-
-```bash
-cp .env.example .env
-```
-
-Fill in the relevant variables in `.env` — including SMTP settings if you want reports delivered by email.
 
 ---
 
 ## Operating Modes
 
-### Mock Mode
+**Mock** (default, deterministic, used by tests): `BIST_DATA_MODE=mock`. Production-DB writes of mock rows are blocked by `core/db.py`.
 
-The default mode. Fully deterministic and safe for development.
-
-```bash
-BIST_DATA_MODE=mock
-```
-
-- Produces identical output for a given `as_of_date`
-- Does **not** reflect real market conditions
-- Ideal for local development, CI, and testing
-
-### Live Mode
-
-```bash
-export BIST_DATA_MODE=live
-python run.py --as-of-date 2026-09-10
-```
-
-The live data layer sources price, OHLCV, financial statements, dividends, and KAP headline data via `borsapy`. The BIST universe is constructed dynamically — there is no hardcoded ticker list.
-
-> Depending on provider coverage, some fields may be unavailable. The system leaves these fields empty rather than fabricating values.
+**Live**: `BIST_DATA_MODE=live`. Optional `BIST_LIVE_TICKERS=THYAO,ASELS` or `BIST_LIVE_UNIVERSE_LIMIT=50` for test runs. Unavailable fields stay empty.
 
 ---
 
-## Running the Screener
-
-**Single run for a specific date:**
+## Running
 
 ```bash
-python run.py --as-of-date 2026-09-10
-```
+python run.py --as-of-date 2026-09-25            # daily pipeline
+python run.py --as-of-date 2026-09-25 --force    # ignore idempotency
 
-**Run using the current date:**
-
-```bash
-python run.py
-```
-
----
-
-## Running Backtests
-
-Simulate historical strategy performance, friction costs, and dynamic risk execution across any BIST stock:
-
-**Run walk-forward backtest via CLI:**
-
-```bash
-python -m core.backtest --ticker FORTE --days 250 --capital 100000
-```
-
-**Run using the Backtrader engine:**
-
-```bash
-python -m core.backtest --ticker FORTE --days 250 --backtrader
-```
-
-**Run ML Trend & Regime Walk-Forward Backtest:**
-
-```bash
-python3 scripts/run_trend_forecast_backtest.py
-```
-
-**Run 5-Year Empirical Weight Optimization & Volatility Calibration:**
-
-```bash
-python3 scripts/optimize_weights.py --period 5y
-```
-
----
-
-## Dashboard
-
-```bash
+python scripts/build_pit_panel.py --tickers THYAO,ASELS   # PIT panel (omit for full universe)
+python scripts/backtest_sector_rotation.py
+python scripts/backtest_entry_levels.py --date 2026-09-25
+python scripts/kap_sentiment_today.py --days 3
+python -m core.backtest --ticker FORTE --days 250 [--backtrader]
+python scripts/optimize_weights.py --period 5y
 streamlit run dashboard.py
-```
-
-The Streamlit dashboard is strictly **read-only** — it has no write access to the underlying database.
-
-```mermaid
-flowchart LR
-    A[Dashboard] -->|read only| B[(SQLite)]
-```
-
----
-
-## Automated Daily Execution
-
-Example `cron` entry:
-
-```cron
-30 18 * * * cd /path/to/bist-screener-v9 && .venv/bin/python run.py >> logs/run.log 2>&1
-```
-
-Default intended execution time: **18:30, Europe/Istanbul**.
-
----
-
-## MCP Servers
-
-The project includes three independent MCP data-access layers:
-
-```text
-bist_mcp/       BIST market data
-kap_web_mcp/    KAP disclosures
-macro_mcp/      Macroeconomic data
-```
-
-Each can be run independently, e.g.:
-
-```bash
-python -m bist_mcp.server
 ```
 
 ---
@@ -659,61 +478,23 @@ python -m bist_mcp.server
 ## Testing
 
 ```bash
-pytest tests/ -v
+pytest tests/ -q
 ```
 
-The suite (**240 tests**) covers:
-
-<details>
-<summary>Test coverage areas</summary>
-
-- Zero-Manual Weight Optimization (Brier loss, trinomial scenario mapping, Granger-Ramanathan SLSQP)
-- Realistic Target Price Engine & Volatility Cones ($2.50\sigma$ Black-Scholes upper bound, Ornstein-Uhlenbeck convergence)
-- Machine Learning Trend & Direction Forecasting Engine (Random Forest + Logistic Regression walk-forward ensemble)
-- 12-1 Cross-Sectional Momentum & Trend Smoothness ($R^2$ log-linear regression)
-- Hierarchical Risk Parity (HRP) Portfolio Allocation & recursive bisection
-- Amihud (2002) Illiquidity Ratio & Market Impact Slippage
-- Dynamic risk levels (ATR stepped entry band, swing low stop-loss, position sizing)
-- Multi-Factor Valuation Triangle (Harmonic peer multiples, DCF, Quality rent)
-- GYO & Holding balance sheet NAV / discount modeling
-- Walk-forward backtesting engine & zero look-ahead bias
-- Backtrader Cerebro runner & institutional performance metrics
-- Backtest database persistence and trade audit logs
-- Basis guard & Point-in-time constraints
-- Hurdle engine & Beta-adjusted hurdle
-- Piotroski F-Score (0-9) & Sloan accrual cross-sectional calculations
-- Event calendar & Corporate actions warnings
-- Regime taxonomy isolation
-- Invalidation monitor & Decision diff engine
-- Zero-Orphan validation gate & Banned claims check
-- Idempotency & Dashboard read-only behavior
-
-</details>
-
----
-
-## Reproducibility
-
-For a fixed dataset and configuration, the system guarantees:
-
-```
-Same Input  →  Same Calculation  →  Same Output
-```
-
-Strategy performance is verified through rigorous walk-forward backtesting with transaction costs and slippage, and forward thesis outcomes are monitored in parallel via prediction tracking.
+255 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
 
 ---
 
 ## Configuration
 
-Model assumptions live outside the calculation layer, e.g.:
-
-```text
-config/weights.yaml
-config/equity_risk_premium.yaml
-```
-
-These are **starting assumptions**, not empirically validated optimal parameters — changing them can materially change screening results.
+| File | Content |
+|---|---|
+| `config/weights.yaml` | Scoring weights, regime rows, Piotroski thresholds, valuation triangle weights. **Priors.** |
+| `config/weights_optimized.json` | Weekly optimiser output. Only `calibrated_z_score` and `calibrated_alpha` are used. |
+| `config/equity_risk_premium.yaml` | ERP 5%, TCMB long-term inflation target, corporate tax 25% |
+| `config/transaction_costs.yaml` | Commission 15 bps round trip, base slippage 20 bps |
+| `config/catalyst_decay.yaml` | Catalyst half-lives |
+| `config/fintables_ticker_sektor.json` | Ticker → sector map (sector index mapping for RRG) |
 
 ---
 
@@ -721,95 +502,45 @@ These are **starting assumptions**, not empirically validated optimal parameters
 
 | Area | Status |
 |---|---|
-| Broker concentration guard | In development (v13 P1) |
-| XU100 historical benchmark series | Integration incomplete |
-| Investor count / retail-institutional split | No reliable free data source |
-| TCMB expectation data | Partially unavailable |
-| Tedbir / VBTS data (live mode) | May be incomplete |
-| GYO / holding NAV calculation | Implemented (v13 P0 Değerleme Üçgeni) |
-| Bank & insurance sector ratios | Some sector-specific ratios not computable |
-| Listing-day, volume, KAP classification | Some fields rely on proxy assumptions |
-
-These gaps are represented explicitly as `None` / `unknown` rather than being silently filled in.
+| Factor weights | Uncalibrated. Cross-sectional backtest (rank-IC, Fama-MacBeth) is the next step. |
+| Cone $z$ / $\alpha$ | Fitted on one index series, not on stock outcomes |
+| Prediction outcomes | `outcomes` table too small for attribution |
+| Financial statements | Nominal (not IAS 29). Inflation distorts some Piotroski criteria and DCF |
+| Banks / insurance | Some ratios not computable. Excluded from the PIT panel |
+| Tedbir / VBTS, investor split | Incomplete or no free source |
+| Backtests | ~2 years of stock data in live mode. Current-constituent universe (survivorship bias) in entry-rule test |
 
 ---
 
 ## Design Principles
 
-1. **Deterministic calculation** — same data always produces the same result.
-2. **No fabrication for missing data** — absent a reliable source, the field is `None`.
-3. **Avoid fixed thresholds** — peer-relative ranking is preferred over absolute cutoffs.
-4. **No hidden assumptions** — weights and parameters in config files are documented starting assumptions, not proven constants.
-5. **Backtest ≠ prediction tracking** — these are treated as distinct concepts.
-6. **Read-only dashboard** — the visualization layer cannot alter underlying data.
-7. **Validate before dispatch** — no report is sent without passing the validation gate.
+1. Deterministic calculation.
+2. No fabrication: absent a reliable source, the field is `None`.
+3. Peer-relative ranking over absolute cutoffs.
+4. Priors are labelled as priors. Evidence is shown with its t-statistic and multiple-testing threshold.
+5. A layer that fails its backtest stays information-only (RRG, S/R levels, FinBERT).
+6. Validate before dispatch.
+7. The dashboard is read-only.
 
 ---
 
 ## Roadmap
 
-Active engineering is driving the **v13 Institutional Quality Upgrade**:
+Current plan (root cause: the stock-level model has never been backtested cross-sectionally):
 
-- **P0 Core Risk & Methodology (100% Completed)**
-  - [x] Dynamic Entry / Stop-Loss / Fixed Fractional Position Sizing (`core/targets.py`)
-  - [x] Walk-Forward Backtesting Engine & Backtrader Integration (`core/backtest.py`)
-  - [x] Multi-Factor Valuation Triangle (DCF + Peer Multiples + Quality Premium + GYO NAV) (`core/valuation_triangle.py`)
-  - [x] Data Quality, CRSP Price Adjustments & Survivorship Bias Guards (`core/data_quality.py`)
-- **P1 Portfolio, Diagnostics & Optimization (Active / Completed)**
-  - [x] Portfolio Optimization: Risk Parity, Min Variance, Max Sharpe, Pairwise Correlation Filter, Sector Cap $\le 30\%$ (`core/portfolio.py`)
-  - [x] Transparent Factor Disclosure & Attribution: "What increased/decreased this score?" (`core/factor_disclosure.py`)
-  - [x] Sector Neutralization: Cross-sectional z-score standardization with $N < 5$ supersector fallback (`core/ranking.py`)
-  - [x] Corporate Actions Calendar: `event_calendar` database and signal execution warnings (`core/events.py`)
-- **P2 Advanced Analytics & Infrastructure**
-  - [ ] KAP LLM/NLP Sentiment Analysis & Text Mining
-  - [ ] Macro Dynamic Regime Asset Rebalancing
-  - [ ] Streamlit/Dash Interactive Analytical Web UI
+- [x] **Step 1:** point-in-time fundamentals panel (`core/pit_panel.py`)
+- [x] **Step 2:** adjusted prices for all return calculations
+- [ ] **Step 3:** `backtest_factor_model.py`: monthly rebalance, rank-IC, Fama-MacBeth, sub-periods 2016–2020 vs. 2021–2026, Harvey-Liu-Zhu $t > 3$
+- [ ] **Step 4:** IC-IR shrinkage calibration of `weights.yaml`, only for significant factors
+- [ ] **Step 5:** Ledoit-Wolf covariance, ADV-based position limits, square-root market impact
+- [ ] **Step 6:** data health checks in `run.py` (empty index series, stale prices), config hash per report
 
-Detailed roadmap document: [`TODO.md`](./TODO.md)
+Done recently: sector rotation RRG + Excel + backtest, mobile email with attachments, lognormal target-hit probability, live XU100 beta with Blume adjustment, dividend-aware targets, KAP FinBERT layer, support/resistance levels (information only).
 
----
-
-## Disclaimer
-
-This project is developed for educational, research, and personal decision-support purposes.
-
-None of the following should be interpreted as investment advice, a buy/sell recommendation, or a guarantee of future performance:
-
-- Scores
-- Rankings
-- Target prices
-- Expected returns
-- Financial metrics
-- Analyses
-
-Past performance in financial markets does not guarantee future results. Investment decisions should be made based on independent research and, where appropriate, professional financial advice.
-
----
-
-## Contributing
-
-This repository is developed primarily for personal use, but contributions are welcome via GitHub Issues and Pull Requests:
-
-- Bug reports
-- Feature requests
-- Data source suggestions
-- Architectural improvements
-- Test contributions
+Details: [`TODO.md`](./TODO.md)
 
 ---
 
 ## License
 
-See the repository for applicable license information.
-
----
-
-<div align="center">
-
-**Autonomous BIST AI Screener — v9**
-
-Data · Fundamentals · Relative Ranking · Risk · Valuation · Catalysts · Validation → Research Output
-
-[Repository](https://github.com/erenkbgc/bist-screener-v9)
-
-</div>
+See the repository for license information. Research and personal decision-support use only. Not investment advice.
