@@ -393,6 +393,16 @@ Conclusion: value is the strongest and most stable factor. Low volatility predic
 
 The fair-value gap ranks stocks correctly, but prices close only about 3% of the gap in 6 months, not 32%. With $`\alpha = 0.32`$, the cheapest quintile implied +25% excess return; the realised excess was +1.4%. $`\alpha`$ is now 0.05.
 
+**Short-term bucket** (`scripts/backtest_short_term.py`, `scripts/research_short_term_signals.py`; daily, 543 tickers, 2013 → 2026-08; excess = 20-day return minus the liquid-universe mean):
+
+| Rule | 20-day excess | t |
+|---|---|---|
+| Live rule: volume ratio ≥ 1.5 | −0.76% | −7.9 |
+| Volume ratio ≥ 1.5 on a down day | −2.04% | −12.4 |
+| Volume ratio ≥ 1.5, top third by value | +0.10% | 0.6 |
+
+A pre-registered search ([`docs/research/short_term_preregistration.md`](docs/research/short_term_preregistration.md)) tested 6 literature signals with a 2013–2020 discovery period and a 2021–2026 holdout. None passed. Sector-neutral value came closest (discovery t = 4.8, holdout t = 1.6). The short-term bucket is therefore shown only as an experimental watchlist (`short_term_opportunities_enabled: false`).
+
 **Entry rules** (`scripts/backtest_entry_levels.py`; 40 liquid tickers, ~2 years, 1,883 signals, 0.5% round-trip cost, stop assumed first when stop and target hit in the same bar):
 
 | Variant | Mean trade return | Per-ticker diff. vs. ATR band | t |

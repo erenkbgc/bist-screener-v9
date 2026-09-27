@@ -177,6 +177,13 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
             else:
                 c["candidate_state"] = "WATCHLIST"
 
+        # Kanitsiz kova firsata yukseltilmez (config: short_term_opportunities_enabled).
+        if bucket == "short_term" and not weights.get("short_term_opportunities_enabled", True):
+            for c in passing:
+                if c["candidate_state"] in ("STRONG_OPPORTUNITY", "OPPORTUNITY"):
+                    c["candidate_state"] = "WATCHLIST"
+                c["experimental"] = True
+
         passing.sort(key=lambda c: (c["final_score"] is None, -(c["final_score"] or 0)))
         for rank, c in enumerate(passing):
             c["_rank_in_bucket"] = rank

@@ -45,6 +45,14 @@ piotroski:
 # ML senaryo agirliklandirmasi bu testte YOK (bkz. script docstring).
 target_convergence_alpha: 0.05
 
+# Kisa vade kovasi fırsat olarak sunulmaz (false): canli kural (hacim >= 1.5 +
+# deger skoru) gecmis veride evrenin gerisinde/basabas (scripts/backtest_short_term.py)
+# ve on-kayitli 6 aday sinyalden hicbiri gecme kuralini saglamadi
+# (docs/research/short_term_preregistration.md, 2026-09-28). false iken kisa vade
+# adaylari en fazla WATCHLIST olur ve bultende "deneysel" notuyla gosterilir.
+# true yapmak icin yeni bir on-kayitli testin gecmesi gerekir.
+short_term_opportunities_enabled: false
+
 top_n_per_bucket: 4
 
 # Degerleme Ucgeni (Valuation Triangle) bilesen agirliklari (v13 roadmap P0-3).

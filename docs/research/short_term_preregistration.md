@@ -56,3 +56,22 @@ If several signals pass, the one with the highest holdout t is chosen. A differe
 - Returns are nominal TL.
 - The entry is the signal-day close; live, it is next day within a band.
 - There is no structural cap (swing high, Bollinger band) on the target.
+
+---
+
+## Results (added 2026-09-28, after the run; the sections above are unchanged)
+
+`python scripts/research_short_term_signals.py`: 685 weekly selection dates, 543 tickers. Excess is the 20-day return minus the liquid-universe mean; t is Newey-West with 4 lags. The trade column is the mean net return of the bracket trade; the universe baseline is 0.87% in discovery and 0.96% in holdout.
+
+| Signal | Discovery excess | t | Holdout excess | t | Holdout trade | Pass |
+|---|---|---|---|---|---|---|
+| S1 1-week reversal | −0.67% | −3.87 | −0.69% | −5.02 | 0.71% | no |
+| S2 1-month reversal | −0.60% | −2.39 | −1.01% | −4.84 | 0.76% | no |
+| S3 52-week-high proximity | +0.27% | 1.02 | +1.83% | 6.03 | 1.59% | no (discovery) |
+| S4 Low volatility | −0.69% | −2.39 | +0.58% | 2.05 | 1.17% | no (discovery) |
+| S5 Sector-neutral value | +0.86% | 4.77 | +0.42% | 1.61 | 1.19% | no (holdout t < 2) |
+| S6 Value + low volatility | +0.82% | 4.58 | +0.33% | 1.24 | 1.09% | no (holdout t < 2) |
+
+**Conclusion: no short-term rule was found.** As pre-registered, the short-term bucket is no longer presented as opportunities. `config/weights.yaml` now has `short_term_opportunities_enabled: false`.
+
+**Post-hoc observation (not a result).** The reversal signals are significantly negative in both periods, which suggests short-term *continuation* in BIST (1-week momentum). This hypothesis was formed after seeing the holdout, so this data cannot test it cleanly. A new pre-registration with forward (out-of-sample, live paper) tracking is needed before it can be used.

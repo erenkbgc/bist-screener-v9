@@ -190,3 +190,24 @@ def test_catalyst_unavailable_uses_redistributed_weights(temp_db):
     assert w["KAPOK"]["catalyst_score"] > 0
     assert w["KAPDOWN"]["catalyst_score"] == 0.0
     assert w["KAPDOWN"]["valuation_z"] > w["KAPOK"]["valuation_z"]
+
+
+def test_short_term_never_promoted_when_disabled(temp_db):
+    """on-kayitli arama kural bulamadi -> kisa vade en fazla WATCHLIST."""
+    from core.scoring import score_candidates
+
+    def cand(ticker, bucket, val):
+        return {"ticker": ticker, "bucket": bucket, "tedbir_level": 0, "reporting_basis": "adjusted",
+                "listing_days": 500, "free_float_pct": 30, "excess_over_hurdle_pct": 5.0,
+                "effective_at": "2026-09-01", "piotroski_normalized_score": 0.9, "volume_ratio_20d": 2.0,
+                "catalyst_score": 0.0, "ownership_z": 0.0, "low_vol_z": 0.0, "momentum_z": 0.0,
+                "sector": "S", "supersector": "SS", "ratio_profile": "industrial",
+                "pe": val, "pb": val / 5, "ev_ebitda": val / 2, "roe": 20.0}
+    cands = [cand(f"S{i}", "short_term", 5 + i) for i in range(8)] + \
+            [cand(f"L{i}", "long_term", 5 + i) for i in range(8)]
+    scored = score_candidates("2026-09-10", cands, "2026-09-10")
+    st = [c for c in scored if c["bucket"] == "short_term" and c["candidate_state"] != "NO_ACTION"]
+    lt = [c for c in scored if c["bucket"] == "long_term"]
+    assert st, [(c["ticker"], c.get("filtered_by")) for c in scored]
+    assert all(c["candidate_state"] == "WATCHLIST" and c.get("experimental") for c in st)
+    assert any(c["candidate_state"] in ("STRONG_OPPORTUNITY", "OPPORTUNITY") for c in lt)
