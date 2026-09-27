@@ -11,6 +11,26 @@ from pathlib import Path
 from typing import Iterable
 
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "bist_history.db"
+# Uretim (canli) gecmis veritabani. Mock veri buraya YAZILAMAZ: 2026-09-17 ve
+# 2026-09-19 kosulari mock modda bu dosyaya yazildi (mock makro: faiz 37,
+# TUFE 31.5; 23 hisselik mock evren) ve dashboard/degerlendirmeye sahte veri
+# karisti. Testler temp_db ile DB_PATH'i degistirdigi icin etkilenmez.
+PRODUCTION_DB_PATH = DB_PATH
+
+
+class MockWriteToProductionDBError(RuntimeError):
+    pass
+
+
+def _assert_not_mock_into_production() -> None:
+    import os
+    mode = os.environ.get("BIST_DATA_MODE", "mock").strip().lower()
+    if mode != "live" and Path(DB_PATH).resolve() == PRODUCTION_DB_PATH.resolve():
+        raise MockWriteToProductionDBError(
+            f"BIST_DATA_MODE={mode!r}: mock veri uretim veritabanina ({PRODUCTION_DB_PATH}) "
+            "yazilamaz. Canli kosu icin BIST_DATA_MODE=live kullanin; gelistirme icin "
+            "core.db.DB_PATH'i baska bir dosyaya yonlendirin."
+        )
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS regime_log (
@@ -309,6 +329,7 @@ def get_connection(read_only: bool = False) -> sqlite3.Connection:
         uri = f"file:{DB_PATH}?mode=ro"
         conn = sqlite3.connect(uri, uri=True)
     else:
+        _assert_not_mock_into_production()
         conn = sqlite3.connect(str(DB_PATH))
         conn.executescript(SCHEMA)
         _migrate_existing_tables(conn)
@@ -344,6 +365,10 @@ _TABLE_MIGRATIONS = {
     "scores": [
         ("low_vol_z", "REAL"),
         ("valuation_z_sector_neutral", "REAL"),
+        ("momentum_z", "REAL"),
+    ],
+    "factor_contributions": [
+        ("momentum_contrib", "REAL"),
     ],
 }
 

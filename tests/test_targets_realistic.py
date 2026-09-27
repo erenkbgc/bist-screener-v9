@@ -1,4 +1,6 @@
 """tests/test_targets_realistic.py: Gercekci hedef fiyat ve oynaklik konisi testleri."""
+import math
+
 import pytest
 
 from core.targets import (
@@ -10,10 +12,11 @@ from core.valuation_triangle import compute_valuation_triangle
 
 
 def test_volatility_cone_envelope_clamping():
-    # 100 TL hisse, %40 yillik oynaklik, 180 gun vade
+    # 100 TL hisse, %40 yillik oynaklik, 180 gun vade. volatility_60d GUNLUK
+    # stdev'dir (live_data/mock_data ile ayni birim): 0.40 / sqrt(252).
     upper_envelope = compute_volatility_cone_envelope(
         current_price=100.0,
-        volatility_60d=0.40,
+        volatility_60d=0.40 / math.sqrt(252),
         horizon_days=180,
         risk_free_annual_pct=45.0,
         z=1.75,
@@ -37,7 +40,7 @@ def test_long_term_target_realistic_actionable_vs_terminal():
         "supersector": "XUSIN",
         "pe": 8.0,
         "eps_ttm": 12.0,  # 8 * 12 = 96 TL
-        "volatility_60d": 0.35,
+        "volatility_60d": 0.35 / math.sqrt(252),
         "atr20": 3.0,
     }
     # Peers PE ortalamasi 20.0 ise teorik peer degeri 20 * 12 = 240 TL (+%140)
@@ -104,3 +107,25 @@ def test_scenario_probabilities_integrated_in_valuation():
     assert bull_res["target_price"] > bear_res["target_price"]
     assert bull_res["scenario_probabilities"]["bull"] > bear_res["scenario_probabilities"]["bull"]
     assert bear_res["scenario_probabilities"]["bear"] > bull_res["scenario_probabilities"]["bear"]
+
+
+def test_volatility_cone_uses_daily_sigma_annualized():
+    # Regresyon (2026-09-27): gunluk sigma (0.02) yillik gibi kullanilinca tavan
+    # ~P0*1.2'ye cokuyor ve 180 gunluk hurdle (~%18) yapisal olarak gecilemiyordu.
+    ceiling = compute_volatility_cone_envelope(
+        current_price=100.0, volatility_60d=0.02, horizon_days=180,
+        risk_free_annual_pct=40.0, z=2.5,
+    )
+    # yillik sigma ~0.32 -> tavan belirgin bicimde %60'in uzerinde olmali
+    assert ceiling > 160.0
+
+
+def test_long_term_target_fairly_priced_stock_earns_cost_of_equity():
+    # Adil fiyatli (FV == P) bir hissenin 180 gunluk beklenen getirisi k_e'nin
+    # ufka bilesik karsiligi olmali; rf hurdle'inin ustunde kalmali.
+    from core.hurdle import hurdle_rate_pct
+    from core.targets import cost_of_equity_pct
+    rf = 40.0
+    k_e = cost_of_equity_pct(rf)
+    expected = ((1 + k_e / 100) ** (180 / 365) - 1) * 100
+    assert expected > hurdle_rate_pct(rf, 180)

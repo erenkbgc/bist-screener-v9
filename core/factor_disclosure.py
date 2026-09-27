@@ -2,7 +2,7 @@
 
 v13 Roadmap P1-6:
 1. final_score bilesen analizi:
-   valuation_z * 0.50, catalyst_score * 0.25, ownership_z * 0.15, low_vol_z * 0.10.
+   agirliklar config/weights.yaml'dan (valuation, catalyst, ownership, low_vol, momentum).
 2. "Bu skoru ne artirdi, ne dusurdu?" kural-tabanli aciklama uretimi.
 3. factor_contributions tablosu ve DB persistansi.
 4. Rapor ve bultenler icin seffaf faktor ayrisimi.
@@ -34,6 +34,7 @@ def load_scoring_weights() -> dict[str, float]:
                 "catalyst_score": float(w.get("catalyst_score", 0.25)),
                 "ownership_quality_z": float(w.get("ownership_quality_z", 0.15)),
                 "low_vol_z": float(w.get("low_vol_z", 0.10)),
+                "momentum_z": float(w.get("momentum_z", 0.0)),
             }
     except Exception as e:
         logger.warning("weights.yaml okunamadi, varsayilan agirliklar kullaniliyor: %s", e)
@@ -42,6 +43,7 @@ def load_scoring_weights() -> dict[str, float]:
             "catalyst_score": 0.25,
             "ownership_quality_z": 0.15,
             "low_vol_z": 0.10,
+            "momentum_z": 0.0,
         }
 
 
@@ -50,6 +52,7 @@ FACTOR_NAMES_TR = {
     "catalyst_score": "Katalizör ve Büyüme Skoru",
     "ownership_quality_z": "Ortaklık / Kurumsal Kalite",
     "low_vol_z": "Düşük Volatilite / Risk Anomalisi",
+    "momentum_z": "Momentum / Trend (12-1)",
 }
 
 
@@ -67,14 +70,16 @@ def explain_candidate_score(candidate: dict, weights: dict[str, float] | None = 
     cat_contrib = round(weights["catalyst_score"] * cat_s, 4)
     own_contrib = round(weights["ownership_quality_z"] * own_z, 4)
     vol_contrib = round(weights["low_vol_z"] * vol_z, 4)
+    mom_contrib = round(weights.get("momentum_z", 0.0) * float(candidate.get("momentum_z") or 0.0), 4)
 
-    final_score = round(val_contrib + cat_contrib + own_contrib + vol_contrib, 4)
+    final_score = round(val_contrib + cat_contrib + own_contrib + vol_contrib + mom_contrib, 4)
 
     contrib_map = {
         "valuation_z": val_contrib,
         "catalyst_score": cat_contrib,
         "ownership_quality_z": own_contrib,
         "low_vol_z": vol_contrib,
+        "momentum_z": mom_contrib,
     }
 
     # Pozitif ve negatif itici gucler
@@ -90,7 +95,7 @@ def explain_candidate_score(candidate: dict, weights: dict[str, float] | None = 
     if abs_sum > 0:
         factor_shares = {k: round((abs(v) / abs_sum) * 100.0, 1) for k, v in contrib_map.items()}
     else:
-        factor_shares = {k: 25.0 for k in contrib_map}
+        factor_shares = {k: round(100.0 / len(contrib_map), 1) for k in contrib_map}
 
     # Dogal dil ifsa metni olustur
     ticker = candidate.get("ticker", "ADAY")
@@ -123,6 +128,7 @@ def explain_candidate_score(candidate: dict, weights: dict[str, float] | None = 
         "catalyst_contrib": cat_contrib,
         "ownership_contrib": own_contrib,
         "low_vol_contrib": vol_contrib,
+        "momentum_contrib": mom_contrib,
         "top_positive_factor": top_pos_name,
         "top_negative_factor": top_neg_name or "Yok (Negatif etki yok)",
         "explanation": explanation,
@@ -162,6 +168,7 @@ def compute_and_save_factor_contributions(
             exp["catalyst_contrib"],
             exp["ownership_contrib"],
             exp["low_vol_contrib"],
+            exp["momentum_contrib"],
             exp["top_positive_factor"],
             exp["top_negative_factor"],
             exp["explanation"],
@@ -174,15 +181,16 @@ def compute_and_save_factor_contributions(
             conn.executemany(
                 """INSERT INTO factor_contributions
                    (as_of_date, ticker, bucket, final_score, valuation_contrib, catalyst_contrib,
-                    ownership_contrib, low_vol_contrib, top_positive_factor, top_negative_factor,
-                    explanation, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ownership_contrib, low_vol_contrib, momentum_contrib, top_positive_factor,
+                    top_negative_factor, explanation, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                    ON CONFLICT(as_of_date, ticker, bucket) DO UPDATE SET
                      final_score=excluded.final_score,
                      valuation_contrib=excluded.valuation_contrib,
                      catalyst_contrib=excluded.catalyst_contrib,
                      ownership_contrib=excluded.ownership_contrib,
                      low_vol_contrib=excluded.low_vol_contrib,
+                     momentum_contrib=excluded.momentum_contrib,
                      top_positive_factor=excluded.top_positive_factor,
                      top_negative_factor=excluded.top_negative_factor,
                      explanation=excluded.explanation,

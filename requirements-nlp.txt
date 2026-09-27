@@ -1,0 +1,7 @@
+# Opsiyonel NLP katmani (scripts/kap_sentiment_today.py). Gunluk tarama bunlara
+# ihtiyac duymaz; CI kurulumunu agirlastirmamak icin ayri tutulur.
+# CPU: pip install --index-url https://download.pytorch.org/whl/cpu torch
+torch>=2.4
+transformers>=4.44
+sentencepiece
+sacremoses

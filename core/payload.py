@@ -88,6 +88,7 @@ def build_report_payload(
             "cpi_yoy_pct": regime[0]["cpi_yoy_pct"] if regime else None,
             "usdtry_spot": regime[0]["usdtry_spot"] if regime else None,
             "piotroski_normalized_score_threshold": weights["piotroski"]["normalized_score_threshold"],
+            "piotroski_hard_filter_min_score": weights["piotroski"].get("hard_filter_min_score"),
             "equity_risk_premium_pct": load_equity_risk_premium_pct(),
             "dcf_growth_low_pct": GROWTH_LOW_PCT,
             "dcf_growth_base_pct": GROWTH_BASE_PCT,

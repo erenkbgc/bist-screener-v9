@@ -11,7 +11,7 @@ from statistics import median
 import math
 
 from core.ranking import build_peer_group
-from core.valuation_triangle import compute_valuation_triangle
+from core.valuation_triangle import compute_valuation_triangle, load_erp_config
 from core.weight_optimizer import load_optimized_weights
 
 # core/universe.py::MIN_VOLUME_TL_DEFAULT ile ayni taban: evrenin en ince ucundaki
@@ -51,24 +51,32 @@ def compute_volatility_cone_envelope(
     horizon_days: int = 180,
     risk_free_annual_pct: float = 45.0,
     z: float | None = None,
+    expected_return_annual_pct: float | None = None,
 ) -> float:
     """Geometrik Brownian Hareketi ve Volatilite Konisi (Black-Scholes / Hull):
-    Belirli bir vadedeki (T = horizon_days / 252) istatistiki %95-97 tavan fiyat:
+    Belirli bir vadedeki (T = horizon_days / 365, takvim gunu) istatistiki tavan fiyat:
       Upper = P0 * exp((mu - 0.5 * sigma^2)*T + z * sigma * sqrt(T))
     z katsayisi ampirik kalibrasyondan gelir (varsayilan z=1.75).
+
+    BIRIM: volatility_60d, live_data/mock_data'da GUNLUK getirilerin stdev'idir
+    (~0.02). Yillik sigma = gunluk * sqrt(252). Onceden gunluk deger yillik
+    gibi kullaniliyordu; tavan her hissede ~P0*1.2'ye cokup 180 gunluk hurdle'i
+    (~%18-20) yapisal olarak gecilemez kiliyordu (2026-09-27 uctan uca iz).
+    mu: surekli bilesik beklenen getiri, ln(1 + k_e). k_e verilmezse rf kullanilir.
     """
     if current_price <= 0:
         return current_price
 
-    if volatility_60d and volatility_60d > 0.01:
-        sigma = float(volatility_60d)
+    if volatility_60d and volatility_60d > 0:
+        sigma = float(volatility_60d) * math.sqrt(252)
     elif atr20 and atr20 > 0:
         sigma = float((atr20 / current_price) * math.sqrt(252))
     else:
-        sigma = 0.35  # BIST piyasa taban oynakligi
+        sigma = 0.35  # BIST piyasa taban oynakligi (yillik)
 
-    T = horizon_days / 252.0
-    mu = (risk_free_annual_pct / 100.0) * 0.5
+    T = horizon_days / 365.0
+    annual_pct = expected_return_annual_pct if expected_return_annual_pct is not None else risk_free_annual_pct
+    mu = math.log(1.0 + annual_pct / 100.0)
 
     if z is None:
         opt = load_optimized_weights()
@@ -77,6 +85,16 @@ def compute_volatility_cone_envelope(
     exponent = (mu - 0.5 * (sigma ** 2)) * T + z * sigma * math.sqrt(T)
     upper_bound = current_price * math.exp(exponent)
     return bist_tick_round(round(upper_bound, 2)) or round(upper_bound, 2)
+
+
+def cost_of_equity_pct(risk_free_annual_pct: float, beta: float | None = None,
+                       equity_risk_premium_pct: float | None = None) -> float:
+    """CAPM ozsermaye maliyeti k_e = rf + beta * ERP (yillik, nominal TL).
+    beta bilinmiyorsa 1.0 (piyasa) varsayilir; ERP config/equity_risk_premium.yaml."""
+    if equity_risk_premium_pct is None:
+        equity_risk_premium_pct = float(load_erp_config().get("equity_risk_premium_pct", 5.0))
+    b = beta if beta is not None else 1.0
+    return risk_free_annual_pct + b * equity_risk_premium_pct
 
 
 def compute_long_term_target(
@@ -112,21 +130,25 @@ def compute_long_term_target(
 
     # Yalnizca hissede volatilite/ATR bilgisi mevcutsa (gercek piyasa verisi) koni ve yakinsama uygula
     if current_price > 0 and raw_target is not None and (volatility_60d or atr20):
+        k_e = cost_of_equity_pct(rf_rate, candidate.get("beta_60_120d"))
         ceiling = compute_volatility_cone_envelope(
             current_price=current_price,
             volatility_60d=volatility_60d,
             atr20=atr20,
             horizon_days=180,
             risk_free_annual_pct=rf_rate,
+            expected_return_annual_pct=k_e,
         )
         opt = load_optimized_weights()
         alpha = float(opt.get("calibrated_alpha", 0.40)) if opt else 0.40
 
-        # Enflasyonel nominal suruklenme
-        cpi_exp = (macro_snapshot or {}).get("cpi_yearend_expectation_pct", 25.0) or 25.0
-        drift_nominal = current_price * ((cpi_exp / 100.0) * (180.0 / 365.0) * 0.4)
-
-        projected = current_price + alpha * (raw_target - current_price) + drift_nominal
+        # Beklenen fiyat = (bugunku fiyat + alpha * adil deger acigi) * (1 + k_e)^(h/365).
+        # Denge (CAPM) altinda adil fiyatli bir hisse k_e kadar nominal getiri
+        # beklenir; hurdle da nominal rf oldugu icin ikisi ayni birimdedir.
+        # Onceki "0.4 * TUFE * h" suruklenmesi keyfiydi ve canli modda TUFE
+        # None oldugunda sabit %25'e dusuyordu (uydurma girdi).
+        growth = (1.0 + k_e / 100.0) ** (180.0 / 365.0)
+        projected = (current_price + alpha * (raw_target - current_price)) * growth
         if ceiling and ceiling > current_price:
             actionable_target = min(projected, ceiling)
         else:

@@ -55,7 +55,9 @@ def net_expected_roi_pct(expected_roi_pct: float, hurdle_rate_pct: float, spread
 
 
 def hurdle_rate_pct(risk_free_annual_pct: float, horizon_days: int) -> float:
-    return risk_free_annual_pct * (horizon_days / 365)
+    """Yillik rf'nin ufka bilesik olceklenmesi: (1+rf)^(h/365) - 1.
+    Dogrusal rf*h/365, %40 faizde 180 gunde ~1.5 puan fazla hurdle uretir."""
+    return ((1 + risk_free_annual_pct / 100) ** (horizon_days / 365) - 1) * 100
 
 
 def expected_roi_pct(entry_price: float, target_price: float) -> float:

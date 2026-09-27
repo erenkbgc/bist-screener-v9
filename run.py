@@ -30,6 +30,7 @@ from pathlib import Path
 # fiyati "yanlis" sanilan yanlis alarm -- kok neden, DB_PATH mock'lansa bile
 # _dispatch'in reports_dir'i hep gercek proje klasorune hardcode etmesiydi).
 REPORTS_DIR = Path(__file__).resolve().parent / "data" / "reports"
+PRICE_HISTORY_DAYS = 273
 
 try:
     from dotenv import load_dotenv
@@ -205,8 +206,10 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     events_by_ticker = events_mod.fetch_upcoming_events(as_of_date, tickers)
 
     # --- prices (hurdle/beta/target/correlation icin ortak girdi) ---
-    prices_by_ticker = {t: bist_mcp.get_prices(t, as_of_date, days=140) for t in tickers}
-    xu100_prices = bist_mcp.get_prices("XU100_INDEX", as_of_date, days=140)
+    # 12-1 momentum 252+21 is gunu ister; 140 gunle 'yillik' deger aslinda
+    # yilliklastirilmis ~5-1 ay momentumuydu (core/momentum.py).
+    prices_by_ticker = {t: bist_mcp.get_prices(t, as_of_date, days=PRICE_HISTORY_DAYS) for t in tickers}
+    xu100_prices = bist_mcp.get_prices("XU100_INDEX", as_of_date, days=PRICE_HISTORY_DAYS)
 
     # --- Quant Level-Up Faz 1: BIST Trend ve Rejim Tahmini ---
     try:
@@ -381,6 +384,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         for c in bucket_list:
             c["ownership_z"] = ownership_mod.compute_ownership_z(c, bucket_list)
             c["low_vol_z"] = volatility_mod.compute_low_vol_z(c, bucket_list)
+            c["momentum_z"] = momentum_mod.compute_momentum_z(c, bucket_list)
 
     # --- scoring (hard_filters + final_score + candidate_state + Quant Level-Up Faz 1 Rejim Agirliklari) ---
     as_of_date_cutoff = as_of_date

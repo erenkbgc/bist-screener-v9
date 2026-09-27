@@ -19,11 +19,12 @@ def setup_db():
 
 def test_load_scoring_weights():
     weights = load_scoring_weights()
-    assert weights["valuation_z"] == 0.50
-    assert weights["catalyst_score"] == 0.25
-    assert weights["ownership_quality_z"] == 0.15
-    assert weights["low_vol_z"] == 0.10
-    assert sum(weights.values()) == 1.0
+    assert weights["valuation_z"] == 0.40
+    assert weights["catalyst_score"] == 0.20
+    assert weights["ownership_quality_z"] == 0.12
+    assert weights["low_vol_z"] == 0.08
+    assert weights["momentum_z"] == 0.20
+    assert abs(sum(weights.values()) - 1.0) < 1e-9
 
 
 def test_explain_candidate_score_mixed():
@@ -34,18 +35,21 @@ def test_explain_candidate_score_mixed():
         "catalyst_score": 1.0,
         "ownership_z": -1.0,
         "low_vol_z": 0.5,
+        "momentum_z": -0.5,
     }
     res = explain_candidate_score(cand)
-    # val: 2.0 * 0.50 = 1.0
-    # cat: 1.0 * 0.25 = 0.25
-    # own: -1.0 * 0.15 = -0.15
-    # vol: 0.5 * 0.10 = 0.05
-    # total = 1.0 + 0.25 - 0.15 + 0.05 = 1.15
-    assert res["valuation_contrib"] == 1.0
-    assert res["catalyst_contrib"] == 0.25
-    assert res["ownership_contrib"] == -0.15
-    assert res["low_vol_contrib"] == 0.05
-    assert res["final_score"] == 1.15
+    # val: 2.0 * 0.40 = 0.8
+    # cat: 1.0 * 0.20 = 0.2
+    # own: -1.0 * 0.12 = -0.12
+    # vol: 0.5 * 0.08 = 0.04
+    # mom: -0.5 * 0.20 = -0.1
+    # total = 0.8 + 0.2 - 0.12 + 0.04 - 0.1 = 0.82
+    assert res["valuation_contrib"] == 0.8
+    assert res["catalyst_contrib"] == 0.2
+    assert res["ownership_contrib"] == -0.12
+    assert res["low_vol_contrib"] == 0.04
+    assert res["momentum_contrib"] == -0.1
+    assert res["final_score"] == 0.82
 
     assert "Değerleme" in res["top_positive_factor"]
     assert "Ortaklık" in res["top_negative_factor"]
