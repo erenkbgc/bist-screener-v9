@@ -43,6 +43,7 @@ from core import regime as regime_mod
 from core import regime_taxonomy
 from core import universe as universe_mod
 from core import basis_guard
+from core import run_health as run_health_mod
 from core import piotroski as piotroski_mod
 from core import sloan as sloan_mod
 from core import catalysts as catalysts_mod
@@ -448,6 +449,13 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     # --- predictions kaydi + thesis_invalidation kosullari ---
     _persist_predictions_and_invalidation(as_of_date, passing)
 
+    # --- veri saglik kapisi (roadmap Adim 6; bkz. core/run_health.py) ---
+    health = run_health_mod.assess(
+        as_of_date, prices=run_health_mod.price_stats(as_of_date, prices_by_ticker, xu100_prices))
+    run_health_mod.persist(health)
+    print(f"[run_health] {health['status']} issues={health['issues']} config={health['config_hash']} "
+          f"metrics={health['metrics']}", flush=True)
+
     # --- payload (decision_diff_engine dahil, bkz. core/payload.py) ---
     payload = payload_mod.build_report_payload(
         as_of_date,
@@ -456,6 +464,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         trend_forecast=trend_forecast,
         passing_candidates=passing,
         sector_rotation=sector_rotation,
+        run_health=health,
     )
     decision_diff = payload["decision_diff"]
 
@@ -490,6 +499,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "invalidation_triggered": payload["invalidation_triggered"],
         "evaluation_summary": evaluation_summary,
         "weights": payload["weights"],
+        "run_health": health,
     }
 
     # E-posta govdesi mobil ozet; eski genis rapor ek olarak gider. Validation

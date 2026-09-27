@@ -57,6 +57,11 @@ CREATE TABLE IF NOT EXISTS universe_snapshot (
     PRIMARY KEY (as_of_date, ticker)
 );
 
+CREATE TABLE IF NOT EXISTS run_health (
+    as_of_date TEXT PRIMARY KEY, status TEXT, config_hash TEXT,
+    issues_json TEXT, metrics_json TEXT, created_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS fundamentals (
     as_of_date TEXT, ticker TEXT, period_end TEXT, reporting_basis TEXT,
     pe REAL, pb REAL, ev_ebitda REAL, ev_sales REAL, roe REAL,

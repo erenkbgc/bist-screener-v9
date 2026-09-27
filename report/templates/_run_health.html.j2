@@ -1,0 +1,18 @@
+{# Veri saglik bandi (core/run_health.py). Tum sayilar run_health.pct'den gelir (validation_gate). #}
+{% if run_health and run_health.status != "OK" %}
+{% set failed = run_health.status == "FAILED" %}
+<div style="background:{{ '#fef2f2' if failed else '#fffbeb' }}; border:1px solid {{ '#fecaca' if failed else '#fde68a' }}; border-radius:12px; padding:12px 14px; font-size:13px; color:{{ '#7f1d1d' if failed else '#78350f' }};">
+  <b>{% if failed %}Veri sağlığı YETERSİZ: bugünkü sinyaller güvenilir değil.{% else %}Veri sağlığı KISMİ: bazı veri kaynakları eksik.{% endif %}</b>
+  <ul style="margin:6px 0 0 18px; padding:0;">
+  {% for issue in run_health.issues %}
+    {% if issue == "fundamentals_coverage" %}<li>Temel veri kapsamı %{{ run_health.pct.fundamentals_coverage | fmt }} (eşik %{{ run_health.pct.min_fundamentals_coverage | fmt }}).</li>
+    {% elif issue == "price_fresh_coverage" %}<li>Güncel fiyat kapsamı %{{ run_health.pct.price_fresh_coverage | fmt }} (eşik %{{ run_health.pct.min_price_fresh_coverage | fmt }}).</li>
+    {% elif issue == "macro_missing" %}<li>Makro veri eksik (BIST 100 veya 2 yıllık tahvil).</li>
+    {% elif issue == "index_series_empty" %}<li>BIST 100 fiyat serisi boş: beta ve momentum hesaplanamadı.</li>
+    {% elif issue == "data_filter_share" %}<li>Adayların %{{ run_health.pct.data_filter_share | fmt }}'i veri eksikliği nedeniyle elendi (eşik %{{ run_health.pct.max_data_filter_share | fmt }}).</li>
+    {% elif issue == "kap_unavailable" %}<li>KAP'a erişilemedi: hisselerin %{{ run_health.pct.kap_missing_share | fmt }}'inde rapor tarihi alınamadı. Katalizör skoru eksik olabilir.</li>
+    {% else %}<li>{{ issue }}</li>{% endif %}
+  {% endfor %}
+  </ul>
+</div>
+{% endif %}

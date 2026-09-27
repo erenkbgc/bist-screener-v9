@@ -88,6 +88,11 @@
   </td></tr>
   <tr><td style="height:14px; line-height:14px; font-size:0;">&nbsp;</td></tr>
 
+  {% if run_health and run_health.status != "OK" %}
+  <tr><td>{% include "_run_health.html.j2" %}</td></tr>
+  <tr><td style="height:14px; line-height:14px; font-size:0;">&nbsp;</td></tr>
+  {% endif %}
+
   {% if invalidation_triggered %}
   <tr><td style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:12px 14px; font-size:13px; color:#7f1d1d;">
     <b>Tez bozulması:</b>
