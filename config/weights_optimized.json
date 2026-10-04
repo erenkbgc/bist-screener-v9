@@ -1,55 +1,55 @@
 {
-  "optimized_at": "2026-09-27T21:00:37.980436+00:00",
+  "optimized_at": "2026-10-04T20:57:35.499865+00:00",
   "sample_bars": 1825,
   "methodology": "Quant Zero-Manual Weights (Brier Loss, IC-IR, Granger-Ramanathan, Volatility Cones)",
   "calibration_basis": "single_series_technical_proxies",
-  "calibrated_z_score": 2.17,
+  "calibrated_z_score": 2.18,
   "calibrated_alpha": 0.32,
   "ensemble_weights": {
-    "rf": 0.0893,
-    "lr": 0.9107
+    "rf": 0.1559,
+    "lr": 0.8441
   },
   "valuation_triangle_weights": {
     "dcf": 0.05,
-    "peer_multiples": 0.4817,
-    "quality_premium": 0.4683
+    "peer_multiples": 0.473,
+    "quality_premium": 0.477
   },
   "scoring_weights": {
-    "valuation_z": 0.2834,
-    "catalyst_score": 0.2358,
-    "ownership_quality_z": 0.2449,
-    "low_vol_z": 0.2358
+    "valuation_z": 0.2453,
+    "catalyst_score": 0.2421,
+    "ownership_quality_z": 0.2706,
+    "low_vol_z": 0.2421
   },
   "regime_scoring_weights": {
     "STRONG_BULL": {
-      "valuation_z": 0.2289,
-      "catalyst_score": 0.3333,
-      "ownership_quality_z": 0.2473,
-      "low_vol_z": 0.1904
+      "valuation_z": 0.1963,
+      "catalyst_score": 0.3391,
+      "ownership_quality_z": 0.2708,
+      "low_vol_z": 0.1938
     },
     "MILD_BULL": {
-      "valuation_z": 0.2834,
-      "catalyst_score": 0.2358,
-      "ownership_quality_z": 0.2449,
-      "low_vol_z": 0.2358
+      "valuation_z": 0.2453,
+      "catalyst_score": 0.2421,
+      "ownership_quality_z": 0.2706,
+      "low_vol_z": 0.2421
     },
     "CORRECTION_CHOPPY": {
-      "valuation_z": 0.2891,
-      "catalyst_score": 0.1531,
-      "ownership_quality_z": 0.2953,
-      "low_vol_z": 0.2625
+      "valuation_z": 0.2494,
+      "catalyst_score": 0.1567,
+      "ownership_quality_z": 0.3253,
+      "low_vol_z": 0.2686
     },
     "STRONG_BEAR": {
-      "valuation_z": 0.2282,
-      "catalyst_score": 0.1055,
-      "ownership_quality_z": 0.3287,
-      "low_vol_z": 0.3376
+      "valuation_z": 0.1945,
+      "catalyst_score": 0.1067,
+      "ownership_quality_z": 0.3576,
+      "low_vol_z": 0.3413
     },
     "OVERSOLD_REVERSAL": {
-      "valuation_z": 0.3894,
-      "catalyst_score": 0.1851,
-      "ownership_quality_z": 0.2404,
-      "low_vol_z": 0.1851
+      "valuation_z": 0.3429,
+      "catalyst_score": 0.1934,
+      "ownership_quality_z": 0.2702,
+      "low_vol_z": 0.1934
     }
   }
 }
