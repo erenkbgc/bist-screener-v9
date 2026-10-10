@@ -89,6 +89,50 @@ If several rules pass, the one with the highest holdout t is chosen. No other pa
 
 ---
 
-## Results
+## Results (added 2026-10-10, after the run; the sections above are unchanged)
 
-(To be added after the run. The sections above stay unchanged.)
+`python scripts/research_entry_timing.py`. Selection months run from 2013-04 to 2026-02; the last 126-day exit window ends in 2026-09.
+
+| Sample | Discovery | Holdout |
+|---|---|---|
+| New entrants | 665 obs, 93 months (about 7 per month) | 589 obs, 62 months |
+| All members | 4010 obs | 3615 obs |
+
+All values are mean monthly improvements versus buying at the d1 close, in log %. The t-statistics are Newey-West with 6 lags.
+
+**Primary sample (new entrants):**
+
+| Rule | Discovery I_mkt (t) | Holdout I_mkt (t) | Holdout I_cash | Holdout mean wait (days) | Holdout share better than immediate | Result |
+|---|---|---|---|---|---|---|
+| E1 wait after a top-quintile month | −0.21% (−0.89) | +0.04% (0.20) | −0.02% | 1.9 | 5.3% | FAIL |
+| E2a limit −1 ATR | −0.38% (−0.74) | +0.39% (0.65) | −0.34% | 11.5 | 64.7% | FAIL |
+| E2b limit −2 ATR | −0.56% (−1.05) | +0.56% (0.75) | −0.30% | 16.1 | 63.2% | FAIL |
+| E3 RSI14 < 30 | −0.97% (−1.54) | +0.40% (0.53) | −0.53% | 17.0 | 55.7% | FAIL |
+| E4 close > SMA50 | +0.06% (0.14) | −0.15% (−0.28) | −0.45% | 12.1 | 21.1% | FAIL |
+| E5 staggered thirds | −0.29% (−0.84) | +0.27% (0.56) | −0.64% | 10.0 | 56.4% | FAIL |
+| E6 knife filter | +0.20% (1.22) | +0.04% (0.28) | −0.06% | 2.7 | 11.5% | FAIL |
+
+**Secondary sample (all top-quintile members), discovery I_mkt:**
+
+| Rule | I_mkt (t) |
+|---|---|
+| E2a | −1.33% (−3.42) |
+| E2b | −1.23% (−2.57) |
+| E3 | −1.48% (−2.43) |
+| E4 | −0.45% (−2.69) |
+| E5 | −0.62% (−2.04) |
+
+Holdout values for all members are small and positive (t ≤ 1.74).
+
+**Conclusion: no entry-timing rule beats buying right away.** As pre-registered:
+- the live report gives no timing advice;
+- the ATR entry band is information only.
+
+No rule met "waiting is costly" (t < −2 in both periods), so that label is not claimed.
+
+How to read it:
+- **Limit and pullback rules (E2a, E2b, E3)** get a better price in most cases: 56–65% of names. They still lose on average. When the stock rises immediately the limit never fills, and the rule buys later at a higher price. Many small savings are outweighed by a few missed rallies.
+- **Waiting in cash (I_cash)** is negative for every rule in the holdout, even at policy rates of 8.5–50%.
+- **The discovery losses in the all-members sample** match the theory: a stock with a positive expected premium costs money to wait for.
+
+The theoretical default holds: the chosen value stocks show no exploitable short-term price predictability after selection, so the best mathematical entry time is the earliest one.

@@ -205,7 +205,9 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
         f"Beklenen getirinin büyük kısmı piyasa getirisi beklentisidir (özsermaye maliyeti); hisseye özgü kısım 'Adil değer farkı × {alpha:g}' kadardır.",
         "Hurdle % = 180 günlük risksiz getiri (2Y tahvil). Hurdle üstü % = beklenen getiri − hurdle.",
         "Hedefe ulaşma olasılığı modelden gelir (lognormal); gerçekleşmiş isabet oranı değildir.",
-        "Alış bandı ve stop ATR tabanlıdır; pozisyon % sabit risk kuralından (hesabın ~%1.5'i risk) türetilir.",
+        ("Alış bandı ve stop ATR tabanlıdır; pozisyon % sabit risk kuralından (hesabın ~%1.5'i risk) türetilir. "
+         "Alış bandı yalnızca bilgidir: on-kayıtlı test (docs/research/entry_timing_preregistration.md) "
+         "geri çekilme/limit, RSI, trend onayı ve kademeli alım kurallarının hemen almaktan iyi olmadığını gösterdi."),
         "Değer tuzağı riski: fiyat trendi aşağı; ucuzluk düşüşün sonucu olabilir.",
         (f"Zirveden % ve risk bayrakları yalnızca bilgidir, skoru değiştirmez: 5 yıllık zirveden "
          f"%{-dg.CRASH_FROM_PEAK_PCT:g}+ düşüş, 52 haftalık zirveden %{-dg.FAR_FROM_52W_HIGH_PCT:g}+ uzaklık, "
