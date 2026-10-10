@@ -39,3 +39,33 @@ def test_item_missing_in_old_template():
 
 def test_empty():
     assert pit_panel.merge_statement_batches([]).empty
+
+
+def test_add_usd_returns_converts_and_excess():
+    import pandas as pd
+    from core import pit_panel
+
+    daily = pd.DataFrame({
+        "date": pd.to_datetime(["2020-01-31", "2020-02-28", "2020-07-31"]),
+        "usdtry": [6.0, 6.6, 6.0],
+        "xu100": [1000.0, 1100.0, 1000.0],
+    })
+    m = pit_panel.monthly_market(daily)
+    f = pd.DataFrame({"date": pd.to_datetime(["2020-01-31"]), "ticker": ["X"],
+                      "fwd_ret_1m": [0.21], "fwd_ret_6m": [0.0]})
+    out = pit_panel.add_usd_returns(f, m)
+    # TL +21%, kur +10% -> USD +10%; XU100 +10% -> fazla getiri 11 puan
+    assert abs(out.loc[0, "fwd_ret_1m_usd"] - 0.10) < 1e-9
+    assert abs(out.loc[0, "fwd_ret_1m_xs"] - 0.11) < 1e-9
+    assert abs(out.loc[0, "fwd_ret_6m_usd"]) < 1e-9
+
+
+def test_add_usd_returns_missing_month_is_nan():
+    import pandas as pd
+    from core import pit_panel
+
+    daily = pd.DataFrame({"date": pd.to_datetime(["2020-01-31"]), "usdtry": [6.0], "xu100": [1000.0]})
+    f = pd.DataFrame({"date": pd.to_datetime(["2020-01-31"]), "ticker": ["X"],
+                      "fwd_ret_1m": [0.2], "fwd_ret_6m": [0.3]})
+    out = pit_panel.add_usd_returns(f, pit_panel.monthly_market(daily))
+    assert out["fwd_ret_1m_usd"].isna().all()

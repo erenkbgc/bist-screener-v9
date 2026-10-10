@@ -66,6 +66,10 @@ socket.setdefaulttimeout(25)
 # PREFETCH_MAX_WORKERS BILINCLI OLARAK DUSUK tutuluyor -- "daha fazla worker
 # = daha hizli" varsayimi bu saglayicilar icin GECERSIZ.
 PREFETCH_MAX_WORKERS = 4
+# 5 yil: uzun vade teshisi (5 yillik zirveden dusus, core/diagnostics.py) icin.
+# Ayni cagri sayisi, yalnizca daha uzun seri; kisa pencereli hesaplar kendi
+# dilimlerini alir (live_prices rows[-days:]).
+HISTORY_PERIOD = "5y"
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -366,8 +370,8 @@ def prefetch_all(universe_rows: list[dict]) -> None:
         futures.extend(pool.submit(_statements_cached, u["ticker"],
                                     _financial_group_for_profile(u.get("ratio_profile")))
                         for u in universe_rows)
-        futures.extend(pool.submit(_history_cached, t, "2y") for t in tickers)
-        futures.extend(pool.submit(_history_adj_cached, t, "2y") for t in tickers)
+        futures.extend(pool.submit(_history_cached, t, HISTORY_PERIOD) for t in tickers)
+        futures.extend(pool.submit(_history_adj_cached, t, HISTORY_PERIOD) for t in tickers)
         for f in futures:
             f.result()  # istisnalar zaten fonksiyon icinde yutuluyor, sadece bekle
 
@@ -383,7 +387,7 @@ def live_listing_and_size(ticker: str, as_of_date: str) -> dict:
     avg_volume_tl = None
     listing_days = None
     try:
-        hist = _history_cached(ticker, "2y")
+        hist = _history_cached(ticker, HISTORY_PERIOD)
         if hist is not None and not hist.empty:
             first_date = hist.index[0].date()
             as_of = datetime.strptime(as_of_date, "%Y-%m-%d").date()
@@ -464,12 +468,12 @@ def live_current_price(ticker: str, price_rows: list[dict]) -> dict:
 def live_prices(ticker: str, as_of_date: str, days: int = 140) -> list[dict]:
     # live_listing_and_size ile AYNI 2 yillik gecmisi paylasir (_history_cached);
     # 140 gunluk istek bunun icine rahatca siger, ayri bir ag cagrisi gerekmez.
-    hist = _history_cached(ticker, "2y")
+    hist = _history_cached(ticker, HISTORY_PERIOD)
     if hist is None or hist.empty:
         return []
 
     as_of = datetime.strptime(as_of_date, "%Y-%m-%d").date()
-    adj_hist = _history_adj_cached(ticker, "2y")
+    adj_hist = _history_adj_cached(ticker, HISTORY_PERIOD)
     adj_by_date = {}
     if adj_hist is not None and not adj_hist.empty:
         for idx, a in adj_hist.iterrows():
@@ -615,7 +619,7 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     financial_expenses_ttm = _val(_row(inc, "(Esas Faaliyet Dışı) Finansal Giderler (-)"))
     if financial_expenses_ttm is not None:
         financial_expenses_ttm = abs(financial_expenses_ttm)
-    dividend_per_share_ttm = _dividend_ttm(ticker)
+    dividend_per_share_ttm = _dividend_ttm(ticker, as_of_date)
     payout_ratio = None
     if dividend_per_share_ttm and eps_ttm and eps_ttm > 0:
         payout_ratio = dividend_per_share_ttm / eps_ttm
@@ -675,12 +679,16 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     }
 
 
-def _dividend_ttm(ticker: str) -> float:
+def _dividend_ttm(ticker: str, as_of_date: str | None = None) -> float:
     divs = _dividends_cached(ticker)
     if divs is None or divs.empty or "Amount" not in divs.columns:
         return 0.0
-    cutoff = datetime.now(timezone.utc).date() - timedelta(days=370)
-    recent = [float(a) for d, a in zip(divs.index, divs["Amount"]) if d.date() >= cutoff]
+    # as_of_date'e gore (datetime.now degil): gecmis tarihli kosu gelecekteki
+    # temettuyu gormemeli (point-in-time).
+    end = (datetime.strptime(as_of_date, "%Y-%m-%d").date() if as_of_date
+           else datetime.now(timezone.utc).date())
+    cutoff = end - timedelta(days=370)
+    recent = [float(a) for d, a in zip(divs.index, divs["Amount"]) if cutoff <= d.date() <= end]
     return sum(recent) if recent else 0.0
 
 

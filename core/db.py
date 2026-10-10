@@ -371,6 +371,15 @@ _TABLE_MIGRATIONS = {
         ("fair_value_base", "REAL"),
         ("fair_value_high", "REAL"),
         ("valuation_method", "TEXT"),
+        ("candidate_state", "TEXT"),
+    ],
+    "outcomes": [
+        ("bucket", "TEXT"),
+        ("candidate_state", "TEXT"),
+        ("exit_date", "TEXT"),
+        ("first_touch", "TEXT"),
+        ("max_runup_pct", "REAL"),
+        ("max_drawdown_pct", "REAL"),
     ],
     "prices": [
         ("volatility_60d", "REAL"),

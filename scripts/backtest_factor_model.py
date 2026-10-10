@@ -40,8 +40,10 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from core import factor_backtest as fb  # noqa: E402
+from core import pit_panel  # noqa: E402
 
 PANEL = ROOT / "data" / "research" / "factors_monthly.parquet"
+FX = ROOT / "data" / "research" / "fx.parquet"
 FACTORS = list(fb.SIGNS)
 VALUE = ["bm", "ep", "sp", "ey"]
 # Cok degiskenli FM: birbiriyle en az ortusen temsilciler.
@@ -96,11 +98,20 @@ def main() -> None:
     ap.add_argument("--liq-drop", type=float, default=0.3, help="Her ay atilan en az likit dilim")
     ap.add_argument("--cost-bps", type=float, default=20.0)
     ap.add_argument("--split", default="2021-01-01")
+    ap.add_argument("--currency", choices=("tl", "usd", "xs"), default="tl",
+                    help="Ileri getiri birimi: nominal TL, USD ya da XU100'e gore fazla getiri "
+                         "(usd/xs icin once scripts/build_fx_panel.py)")
     args = ap.parse_args()
 
     if not PANEL.exists():
         sys.exit(f"{PANEL} yok; once scripts/build_pit_panel.py calistirin.")
     raw = pd.read_parquet(PANEL)
+    if args.currency != "tl":
+        if not FX.exists():
+            sys.exit(f"{FX} yok; once scripts/build_fx_panel.py calistirin.")
+        raw = pit_panel.add_usd_returns(raw, pit_panel.monthly_market(pd.read_parquet(FX)))
+        for h in ("1m", "6m"):
+            raw[f"fwd_ret_{h}"] = raw[f"fwd_ret_{h}_{args.currency}"]
     prepared = fb.prepare(raw, FACTORS, liq_drop_pct=args.liq_drop)
     if prepared.empty:
         sys.exit(f"Hicbir ay filtre sonrasi >=30 hisse icermiyor ({raw['ticker'].nunique()} hisse); "
@@ -158,10 +169,11 @@ def main() -> None:
     print(f"\nEsik: HLZ |t|>{HLZ_T} (Bonferroni {n_tests} test icin ~{bonf_t:.2f}) VE iki alt donemde ayni isaret.")
     print("Gecen sinyaller: " + (", ".join(sig) or "yok"))
 
-    out = ROOT / "data" / "reports" / f"backtest_factor_model_{date.today().isoformat()}.json"
+    suffix = "" if args.currency == "tl" else f"_{args.currency}"
+    out = ROOT / "data" / "reports" / f"backtest_factor_model{suffix}_{date.today().isoformat()}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({
-        "liq_drop": args.liq_drop, "cost_bps": args.cost_bps, "split": args.split,
+        "liq_drop": args.liq_drop, "cost_bps": args.cost_bps, "split": args.split, "currency": args.currency,
         "hlz_t": HLZ_T, "bonferroni_t": bonf_t, "n_tickers": int(raw["ticker"].nunique()),
         "data_start": str(df["date"].min().date()), "data_end": str(df["date"].max().date()),
         "signals": res.to_dict("records"), "fama_macbeth_multi": multi.to_dict("records"),

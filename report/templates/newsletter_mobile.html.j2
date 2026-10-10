@@ -44,11 +44,12 @@
       {% endif %}
     </table>
   </td></tr>
-  {% if not short and (c.why_now or c.main_risk or c.value_trap_risk) %}
+  {% if not short and (c.why_now or c.main_risk or c.value_trap_risk or c.risk_flags) %}
   <tr><td style="padding:0 16px 14px 16px; font-size:13px; line-height:1.5; color:#334155;">
     {% if c.why_now %}<div style="margin-bottom:4px;"><b style="color:#047857;">Neden şimdi:</b> {{ c.why_now }}</div>{% endif %}
     {% if c.main_risk %}<div style="margin-bottom:4px;"><b style="color:#b45309;">Ana risk:</b> {{ c.main_risk }}</div>{% endif %}
     {% if c.value_trap_risk %}<div><b style="color:#b91c1c;">Uyarı:</b> fiyat trendi aşağı, değer tuzağı riski.</div>{% endif %}
+    {% if c.risk_flags %}<div><b style="color:#b91c1c;">Risk bayrakları:</b> {{ c.risk_flags | join(", ") }}{% if c.drawdown_from_5y_peak_pct is not none %} (beş yıllık zirveden %{{ c.drawdown_from_5y_peak_pct | fmt }}){% endif %}.</div>{% endif %}
   </td></tr>
   {% endif %}
 </table>

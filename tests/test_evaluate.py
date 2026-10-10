@@ -35,7 +35,9 @@ def test_xu100_return_comes_from_real_series_not_hardcoded_zero(temp_db):
     assert len(rows) == 1
     row = rows[0]
 
-    expected_xu100 = md.mock_index_return_pct("XU100", pred_date, eval_date)
+    # endeks, hissenin cikis bariyla ayni tarihe kadar olculur (01-25 Pazar -> 01-23 Cuma)
+    assert row["exit_date"] == "2026-01-23"
+    expected_xu100 = md.mock_index_return_pct("XU100", pred_date, row["exit_date"])
     assert row["xu100_return_pct"] == expected_xu100
     assert row["xu100_return_pct"] != 0.0  # eski hardcoded yer tutucu degil
     assert row["excess_vs_index_pct"] == row["return_pct"] - expected_xu100
@@ -117,7 +119,7 @@ def test_return_uses_series_close_and_usd_uses_two_fx_dates(temp_db):
     _insert_matured_prediction("2026-01-05", "FXX", 20, 999.0)  # ham giris fiyati seriyle uyusmuyor
     conn = db.get_connection()
     conn.execute("INSERT INTO regime_log (as_of_date, usdtry_spot) VALUES ('2026-01-05', 40.0)")
-    conn.execute("INSERT INTO regime_log (as_of_date, usdtry_spot) VALUES ('2026-01-25', 44.0)")
+    conn.execute("INSERT INTO regime_log (as_of_date, usdtry_spot) VALUES ('2026-01-23', 44.0)")
     conn.commit(); conn.close()
     evaluate_past_predictions("2026-01-25")
     row = db.query("SELECT * FROM outcomes WHERE ticker='FXX'")[0]
@@ -138,3 +140,65 @@ def test_matured_without_outcome_counts_stalled_predictions(temp_db):
     assert matured_without_outcome("2026-01-26") == 0            # grace icinde
     evaluate_past_predictions("2026-01-29")
     assert matured_without_outcome("2026-01-29") == 0
+
+
+def test_180_day_prediction_evaluated_even_if_maturity_day_skipped(temp_db):
+    """Eski surum yalnizca as_of - 180 gun penceresine bakiyordu: d+180 gunu kosu
+    olmazsa tahmin sonsuza kadar degerlendirilmiyordu."""
+    from core.evaluate import matured_without_outcome
+    _insert_matured_prediction("2026-01-05", "SKP", 180, 100.0)
+    evaluate_past_predictions("2026-07-20")  # olgunlasmadan 16 gun sonra
+    rows = db.query("SELECT * FROM outcomes WHERE ticker='SKP'")
+    assert len(rows) == 1
+    assert rows[0]["exit_date"] <= "2026-07-04"
+    assert matured_without_outcome("2026-07-20") == 0
+
+
+def _fake_series(dates_closes, adj_factor_until=None):
+    rows = []
+    for d, c in dates_closes:
+        k = 0.5 if adj_factor_until and d < adj_factor_until else 1.0
+        rows.append({"date": d, "close": c, "adj_close": c * k, "high": c * 1.01, "low": c * 0.99})
+    return rows
+
+
+def test_bonus_issue_inside_horizon_is_not_a_fake_loss(temp_db, monkeypatch):
+    """Ham kapanis kullanilinca %100 bedelsiz -%50 sahte kayip gibi gorunuyordu."""
+    import core.evaluate as ev
+    series = _fake_series([("2026-01-05", 100.0), ("2026-01-12", 101.0), ("2026-01-19", 51.0),
+                           ("2026-01-23", 52.0)], adj_factor_until="2026-01-19")
+    monkeypatch.setattr(ev.bist_mcp, "get_prices", lambda *a, **k: series)
+    _insert_matured_prediction("2026-01-05", "BED", 20, 100.0)
+    evaluate_past_predictions("2026-01-25")
+    row = db.query("SELECT * FROM outcomes WHERE ticker='BED'")[0]
+    assert abs(row["return_pct"] - 4.0) < 1e-9  # 52 / (100*0.5) - 1
+
+
+def test_first_touch_records_target_or_stop(temp_db, monkeypatch):
+    import core.evaluate as ev
+    series = [{"date": "2026-01-05", "close": 100.0, "high": 100.0, "low": 100.0},
+              {"date": "2026-01-06", "close": 104.0, "high": 112.0, "low": 103.0},  # hedef 110
+              {"date": "2026-01-07", "close": 90.0, "high": 95.0, "low": 85.0},
+              {"date": "2026-01-23", "close": 95.0, "high": 96.0, "low": 94.0}]
+    monkeypatch.setattr(ev.bist_mcp, "get_prices", lambda *a, **k: series)
+    _insert_matured_prediction("2026-01-05", "TCH", 20, 100.0)  # target = 110, stop NULL
+    evaluate_past_predictions("2026-01-25")
+    row = db.query("SELECT * FROM outcomes WHERE ticker='TCH'")[0]
+    assert row["first_touch"] == "target"
+    assert abs(row["max_runup_pct"] - 12.0) < 1e-9
+    assert abs(row["max_drawdown_pct"] + 15.0) < 1e-9
+
+
+def test_short_term_horizon_counts_trading_days(temp_db):
+    """Kisa vade 20 = 20 islem gunu; 20 takvim gunu sonra henuz olgun degil."""
+    conn = db.get_connection()
+    conn.execute(
+        """INSERT INTO predictions (as_of_date, ticker, bucket, entry_price, target_price, horizon_days,
+           hurdle_rate_pct, candidate_state) VALUES ('2026-01-05', 'STT', 'short_term', 100, 110, 20, 2, 'WATCHLIST')""")
+    conn.commit(); conn.close()
+    evaluate_past_predictions("2026-01-25")
+    assert db.query("SELECT * FROM outcomes WHERE ticker='STT'") == []
+    result = evaluate_past_predictions("2026-02-05")
+    rows = db.query("SELECT * FROM outcomes WHERE ticker='STT'")
+    assert len(rows) == 1 and rows[0]["exit_date"] == "2026-02-02"  # 01-05'ten 20 islem gunu sonra
+    assert result["by_group"]["experimental"][20]["n_observations"] == 1

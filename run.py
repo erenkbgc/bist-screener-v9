@@ -31,6 +31,9 @@ from pathlib import Path
 # _dispatch'in reports_dir'i hep gercek proje klasorune hardcode etmesiydi).
 REPORTS_DIR = Path(__file__).resolve().parent / "data" / "reports"
 PRICE_HISTORY_DAYS = 273
+# Yalnizca teshis (core/diagnostics.py): 5 yillik zirveden dusus. Skor/beta/
+# momentum hesaplari PRICE_HISTORY_DAYS ile kalir.
+DIAGNOSTIC_HISTORY_DAYS = 1260
 
 try:
     from dotenv import load_dotenv
@@ -58,6 +61,7 @@ from core import dividend_sustainability as div_sustain_mod
 from core import gordon as gordon_mod
 from core import dcf as dcf_mod
 from core import concentration as concentration_mod
+from core import diagnostics as diagnostics_mod
 from core import correlation as correlation_mod
 from core import scoring as scoring_mod
 from core import payload as payload_mod
@@ -370,6 +374,8 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["dcf"] = dcf_row
         lt["bucket"] = "long_term"
         lt["events"] = events_by_ticker.get(t, [])
+        lt.update(diagnostics_mod.diagnose(
+            lt, bist_mcp.get_prices(t, as_of_date, days=DIAGNOSTIC_HISTORY_DAYS)))
         long_term_candidates.append(lt)
 
         # --- kisa vade: yalnizca ownership.short_term_rejected degilse ---
@@ -602,6 +608,7 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
             "fair_value_base": c.get("fair_value_base"),
             "fair_value_high": c.get("fair_value_high"),
             "valuation_method": c.get("valuation_method"),
+            "candidate_state": c.get("candidate_state"),
         })
         invalidation_mod.create_invalidation_condition(as_of_date, c["ticker"], "excess_over_hurdle_pct", "<", 0)
         if c.get("piotroski_normalized_score") is not None:
@@ -619,13 +626,13 @@ def _persist_predictions_and_invalidation(as_of_date: str, passing_candidates: l
                    real_return_pct, usd_return_pct, rationale_hash, current_price, price_source,
                    net_expected_roi_pct, net_excess_over_hurdle_pct, transaction_cost_pct, volume_ratio_20d,
                    entry_low, entry_high, position_size_pct,
-                   fair_value_low, fair_value_base, fair_value_high, valuation_method)
+                   fair_value_low, fair_value_base, fair_value_high, valuation_method, candidate_state)
                    VALUES (:as_of_date, :ticker, :bucket, :entry_price, :target_price, :stop_loss,
                            :horizon_days, :expected_roi_pct, :hurdle_rate_pct, :excess_over_hurdle_pct,
                            :real_return_pct, :usd_return_pct, :rationale_hash, :current_price, :price_source,
                            :net_expected_roi_pct, :net_excess_over_hurdle_pct, :transaction_cost_pct, :volume_ratio_20d,
                            :entry_low, :entry_high, :position_size_pct,
-                           :fair_value_low, :fair_value_base, :fair_value_high, :valuation_method)""",
+                           :fair_value_low, :fair_value_base, :fair_value_high, :valuation_method, :candidate_state)""",
                 rows,
             )
             conn.commit()

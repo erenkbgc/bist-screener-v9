@@ -54,7 +54,7 @@ def test_net_debt_and_ebitda_calculation_positive(monkeypatch):
         "pe_ratio": 10.0, "pb_ratio": 2.0, "market_cap": 1000.0, "shares": 100.0
     })
     monkeypatch.setattr(ld, "_info_cached", lambda ticker: {})
-    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker: 0.0)
+    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker, as_of_date=None: 0.0)
 
     f = ld.live_fundamentals("IND_TEST", "2026-09-18", "SPK_TFRS", "industrial")
 
@@ -78,7 +78,7 @@ def test_net_debt_negative_net_cash(monkeypatch):
         "pe_ratio": 10.0, "pb_ratio": 2.0, "market_cap": 1000.0, "shares": 100.0
     })
     monkeypatch.setattr(ld, "_info_cached", lambda ticker: {})
-    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker: 0.0)
+    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker, as_of_date=None: 0.0)
 
     f = ld.live_fundamentals("CASH_TEST", "2026-09-18", "SPK_TFRS", "industrial")
 
@@ -100,7 +100,7 @@ def test_ev_ebitda_guard_against_negative_ebitda_and_negative_ev(monkeypatch):
         "pe_ratio": None, "pb_ratio": 1.0, "market_cap": 100.0, "shares": 10.0
     })
     monkeypatch.setattr(ld, "_info_cached", lambda ticker: {})
-    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker: 0.0)
+    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker, as_of_date=None: 0.0)
 
     f = ld.live_fundamentals("LOSS_TEST", "2026-09-18", "SPK_TFRS", "industrial")
 
@@ -119,7 +119,7 @@ def test_bank_and_insurance_keep_net_debt_and_ev_ebitda_none(monkeypatch):
         "pe_ratio": 5.0, "pb_ratio": 1.0, "market_cap": 1000.0, "shares": 100.0
     })
     monkeypatch.setattr(ld, "_info_cached", lambda ticker: {})
-    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker: 0.0)
+    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker, as_of_date=None: 0.0)
 
     f_bank = ld.live_fundamentals("BANK_TEST", "2026-09-18", "BDDK", "bank")
     assert f_bank["net_debt"] is None

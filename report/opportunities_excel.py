@@ -78,6 +78,9 @@ LONG_COLS = [
     ("Direnç", lambda c: c.get("nearest_resistance"), PRICE, 9),
     ("Direnç hedeften önce", lambda c: _bool_tr(c.get("resistance_before_target")), None, 10),
     ("Değer tuzağı riski", lambda c: _bool_tr(c.get("value_trap_risk")), None, 10),
+    ("5 yıllık zirveden %", lambda c: c.get("drawdown_from_5y_peak_pct"), PCT, 10),
+    ("52 haftalık zirveden %", lambda c: c.get("dist_52w_high_pct"), PCT, 10),
+    ("Risk bayrakları", lambda c: ", ".join(c.get("risk_flags") or []) or None, None, 30),
     ("Sektör RRG", lambda c: QUADRANT_TR.get(c.get("rrg_quadrant"), c.get("rrg_quadrant")), None, 11),
     ("F/K", lambda c: c.get("pe"), "0.0", 7),
     ("PD/DD", lambda c: c.get("pb"), "0.00", 7),
@@ -88,7 +91,8 @@ LONG_COLS = [
 ]
 SHORT_COLS = [col for col in LONG_COLS if col[0] not in (
     "Hedef (180g)", "Adil değer (baz)", "Adil değer farkı %", "Adil değer düşük", "Adil değer yüksek",
-    "Değer tuzağı riski", "F/K", "PD/DD", "Piotroski (0-1)")]
+    "Değer tuzağı riski", "5 yıllık zirveden %", "52 haftalık zirveden %", "Risk bayrakları",
+    "F/K", "PD/DD", "Piotroski (0-1)")]
 SHORT_COLS.insert(8, ("Hedef (20g)", lambda c: c.get("target_price"), PRICE, 11))
 SHORT_COLS.insert(9, ("Hacim oranı (20g)", lambda c: c.get("volume_ratio_20d"), "0.00", 10))
 
@@ -186,6 +190,7 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
         if wk.auto_filter.ref:
             wk.auto_filter.ref = wk.auto_filter.ref.replace("A1:", "A2:")
 
+    from core import diagnostics as dg
     from core.targets import convergence_alpha
     w = payload.get("weights") or {}
     alpha = convergence_alpha()
@@ -202,6 +207,11 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
         "Hedefe ulaşma olasılığı modelden gelir (lognormal); gerçekleşmiş isabet oranı değildir.",
         "Alış bandı ve stop ATR tabanlıdır; pozisyon % sabit risk kuralından (hesabın ~%1.5'i risk) türetilir.",
         "Değer tuzağı riski: fiyat trendi aşağı; ucuzluk düşüşün sonucu olabilir.",
+        (f"Zirveden % ve risk bayrakları yalnızca bilgidir, skoru değiştirmez: 5 yıllık zirveden "
+         f"%{-dg.CRASH_FROM_PEAK_PCT:g}+ düşüş, 52 haftalık zirveden %{-dg.FAR_FROM_52W_HIGH_PCT:g}+ uzaklık, "
+         f"zarar (TTM HBK < 0), borç/sıkıntı (negatif özsermaye, negatif FAVÖK + net borç, "
+         f"net borç/FAVÖK > {dg.NET_DEBT_EBITDA_MAX:g} veya FAVÖK/finansman gideri < {dg.INTEREST_COVERAGE_MIN:g}). "
+         "Eşikler henüz test edilmedi."),
         "Sektör RRG: sektörün BIST 100'e göre göreli gücü; skora dahil değil, tek başına alım sinyali değil.",
         "Backtest kanıtı (2013–2026): değer ve düşük volatilite faktörleri kesitsel olarak çalışıyor; hayatta kalma yanlılığı ve nominal TL uyarıları geçerli.",
     ]

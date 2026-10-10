@@ -8,6 +8,7 @@ persentil/z-skor kullanilir.
 """
 from __future__ import annotations
 
+import math
 from statistics import mean, pstdev
 
 MIN_PEER_N = 5  # v13 P1-7: peer_n < 5 ise supersector'e dusulur; kucuk sektorler (sigorta vb.) gereksiz elenmez
@@ -16,21 +17,21 @@ CONFIDENCE_MAPPING = {"sector": "high", "supersector": "degraded", "market": "lo
 
 RATIO_PROFILES = {
     "industrial": {
-        "metrics": ["pe", "pb", "ev_ebitda", "ev_sales", "roe", "net_debt_ebitda", "fcf_yield"],
-        "direction": {"pe": "lower_better", "pb": "lower_better", "ev_ebitda": "lower_better",
+        "metrics": ["ep", "pb", "ev_ebitda", "ev_sales", "roe", "net_debt_ebitda", "fcf_yield"],
+        "direction": {"ep": "higher_better", "pb": "lower_better", "ev_ebitda": "lower_better",
                       "ev_sales": "lower_better", "roe": "higher_better",
                       "net_debt_ebitda": "lower_better", "fcf_yield": "higher_better"},
     },
     "bank": {
-        "metrics": ["pe", "pb", "roe", "roa", "nim", "npl_ratio", "car"],
-        "direction": {"pe": "lower_better", "pb": "lower_better", "roe": "higher_better",
+        "metrics": ["ep", "pb", "roe", "roa", "nim", "npl_ratio", "car"],
+        "direction": {"ep": "higher_better", "pb": "lower_better", "roe": "higher_better",
                       "roa": "higher_better", "nim": "higher_better", "npl_ratio": "lower_better",
                       "car": "higher_better"},
         "forbidden_metrics": ["ev_ebitda", "ev_sales", "net_debt_ebitda"],
     },
     "insurance": {
-        "metrics": ["pe", "pb", "roe", "combined_ratio"],
-        "direction": {"pe": "lower_better", "pb": "lower_better", "roe": "higher_better",
+        "metrics": ["ep", "pb", "roe", "combined_ratio"],
+        "direction": {"ep": "higher_better", "pb": "lower_better", "roe": "higher_better",
                       "combined_ratio": "lower_better"},
         "forbidden_metrics": ["ev_ebitda", "ev_sales"],
     },
@@ -45,6 +46,35 @@ RATIO_PROFILES = {
         "forbidden_metrics": ["ev_ebitda"],
     },
 }
+
+
+def earnings_yield(c: dict) -> float | None:
+    """E/P (%). F/K yerine kullanilir: zarar eden sirkette F/K anlamsizdir ("A/D",
+    None) ve eskiden metrik SESSIZCE atlaniyordu -- zarar cezalandirilmiyor, skor
+    kalan (cogu zaman PD/DD, FD/Satis) metriklerden geliyordu. E/P zarari negatif
+    deger olarak siralamaya sokar (Fama-French ve literatur standardi)."""
+    pe = c.get("pe")
+    if pe is not None and _finite(pe) and pe > 0:
+        return 100.0 / pe
+    eps = c.get("eps_ttm")
+    price = c.get("current_price")
+    if price is None and c.get("market_cap") and c.get("shares_outstanding"):
+        price = c["market_cap"] / c["shares_outstanding"]
+    if eps is not None and _finite(eps) and eps < 0 and price and price > 0:
+        return eps / price * 100.0
+    return None
+
+
+def _finite(x) -> bool:
+    try:
+        return math.isfinite(float(x))
+    except (TypeError, ValueError):
+        return False
+
+
+def _metric_value(c: dict, metric: str) -> float | None:
+    v = earnings_yield(c) if metric == "ep" else c.get(metric)
+    return v if v is not None and _finite(v) else None
 
 
 def winsorize(values: list[float], low_pct: float = 1, high_pct: float = 99) -> list[float]:
@@ -105,14 +135,23 @@ def build_peer_group(
     return same_basis_profile, "none", CONFIDENCE_MAPPING["none"]
 
 
+Z_CLIP = 3.0
+
+
 def score_metric_z(candidate_value: float, peer_values: list[float], direction: str) -> float:
-    pool = winsorize([v for v in peer_values if v is not None])
-    if len(pool) < 2 or candidate_value is None:
+    clean = [v for v in peer_values if v is not None and _finite(v)]
+    pool = winsorize(clean)
+    if len(pool) < 2 or candidate_value is None or not _finite(candidate_value):
         return 0.0
     mu, sigma = mean(pool), pstdev(pool)
     if sigma == 0:
         return 0.0
-    z = (candidate_value - mu) / sigma
+    # Adayin kendi degeri de esler havuzunun ayni sinirlarina kirpilir; aksi halde
+    # tek bir uc deger (cokmus fiyat -> asiri dusuk PD/DD) z'yi sinirsiz buyutup
+    # valuation_z ortalamasini domine ediyordu.
+    lo, hi = min(pool), max(pool)
+    z = (min(max(candidate_value, lo), hi) - mu) / sigma
+    z = max(-Z_CLIP, min(Z_CLIP, z))
     return z if direction == "higher_better" else -z
 
 
@@ -133,8 +172,8 @@ def compute_valuation_z(
     metrics = [m for m in profile["metrics"] if m not in forbidden]
     z_scores = []
     for metric in metrics:
-        peer_values = [p.get(metric) for p in peers if p.get(metric) is not None]
-        cand_value = candidate.get(metric)
+        peer_values = [v for v in (_metric_value(p, metric) for p in peers) if v is not None]
+        cand_value = _metric_value(candidate, metric)
         if cand_value is None or len(peer_values) < 2:
             continue
         direction = profile["direction"][metric]

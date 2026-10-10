@@ -87,5 +87,7 @@ def compute_ownership_z(candidate: dict, population: list[dict]) -> float:
         return 0.0
     z = (raw(candidate) - mu) / sigma
     if candidate.get("_penalize"):
-        z *= PENALTY_FACTOR
+        # z *= 0.70 negatif z'yi IYILESTIRIYORDU (-1.0 -> -0.7). Ceza her zaman
+        # asagi: |z|'nin %30'u kadar dusur.
+        z -= abs(z) * (1 - PENALTY_FACTOR)
     return z

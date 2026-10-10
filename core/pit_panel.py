@@ -252,3 +252,31 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
                 "stmt_period": last["period"],
             })
     return pd.DataFrame(rows)
+
+
+def monthly_market(daily: pd.DataFrame) -> pd.DataFrame:
+    """Gunluk usdtry/xu100 (data/research/fx.parquet) -> ay sonu son deger."""
+    d = daily.copy()
+    d["date"] = pd.to_datetime(d["date"])
+    return d.set_index("date")[["usdtry", "xu100"]].resample("ME").last()
+
+
+def add_usd_returns(factors: pd.DataFrame, market_m: pd.DataFrame) -> pd.DataFrame:
+    """fwd_ret_{1m,6m} (TL, duzeltilmis) yanina USD ve XU100'e gore fazla getiri ekler.
+
+    usd: (1 + r_TL) / (1 + r_USDTRY) - 1, ayni pencere ve ay sonu kapanisi.
+    xs : r_TL - r_XU100 (aritmetik fark; XU100 temettu haric fiyat endeksi,
+         hisse getirisi temettu dahil duzeltilmis -- fark temettu verimi kadar
+         yukari yanlidir).
+    Kur veya endeks degeri eksik ayda yeni kolonlar NaN kalir.
+    """
+    m = market_m.sort_index()
+    out = factors.copy()
+    key = pd.to_datetime(out["date"]).dt.to_period("M").dt.to_timestamp("M")
+    for h in (1, 6):
+        fx_ret = (m["usdtry"].shift(-h) / m["usdtry"] - 1).reindex(key).values
+        xu_ret = (m["xu100"].shift(-h) / m["xu100"] - 1).reindex(key).values
+        r = out[f"fwd_ret_{h}m"].values
+        out[f"fwd_ret_{h}m_usd"] = (1 + r) / (1 + fx_ret) - 1
+        out[f"fwd_ret_{h}m_xs"] = r - xu_ret
+    return out
