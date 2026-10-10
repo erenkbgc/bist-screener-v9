@@ -908,6 +908,18 @@
             <span class="metric-val">Negatif 12-1 momentum ve dusen trend</span>
           </div>
           {% endif %}
+          {% if c.drawdown_from_5y_peak_pct is not none %}
+          <div class="metric-entry">
+            <span class="metric-key">Bes Yillik Zirveden Uzaklik</span>
+            <span class="metric-val">%{{ c.drawdown_from_5y_peak_pct | fmt }}{% if c.dist_52w_high_pct is not none %} (son bir yil: %{{ c.dist_52w_high_pct | fmt }}){% endif %}</span>
+          </div>
+          {% endif %}
+          {% if c.risk_flags %}
+          <div class="metric-entry">
+            <span class="metric-key">Risk Bayraklari (bilgi)</span>
+            <span class="metric-val">{{ c.risk_flags | join(", ") }}</span>
+          </div>
+          {% endif %}
           {% if c.amihud_illiq is not none %}
           <div class="metric-entry">
             <span class="metric-key">Amihud Likidite Riski (ILLIQ)</span>
