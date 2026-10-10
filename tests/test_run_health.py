@@ -91,12 +91,24 @@ def test_price_stats_from_memory_and_empty_index(temp_db):
     assert "index_series_empty" in h["issues"] and h["status"] == "FAILED"
 
 
-def test_catalyst_missing_share_degrades(temp_db):
+def test_catalyst_missing_share_degrades(temp_db, monkeypatch):
+    import core.scoring as scoring
+    real = scoring.load_weights()
+    weighted = {**real, "scoring_weights": {**real["scoring_weights"], "catalyst_score": 0.25}}
+    monkeypatch.setattr(scoring, "load_weights", lambda: weighted)
     _seed()
     avail = {f"T{i:03d}": i < 30 for i in range(100)}
     h = run_health.assess(D, catalyst_available=avail)
     assert h["metrics"]["catalyst_missing_share"] == 0.7
     assert h["status"] == "DEGRADED" and "catalyst_redistributed" in h["issues"]
+
+
+def test_catalyst_missing_ignored_when_weight_zero(temp_db):
+    """Faz 2: katalizor agirligi 0 -> eksik KAP verisi skoru etkilemez, uyari yok."""
+    _seed()
+    avail = {f"T{i:03d}": i < 30 for i in range(100)}
+    h = run_health.assess(D, catalyst_available=avail)
+    assert "catalyst_redistributed" not in h["issues"]
 
 
 def test_outcomes_stalled_degrades(temp_db):

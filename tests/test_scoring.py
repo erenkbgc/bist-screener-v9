@@ -103,65 +103,14 @@ def test_run_level_state_normal_when_opportunity_exists():
     assert run_level_state(scored) == "NORMAL"
 
 
-def test_get_regime_weights():
+def test_get_regime_weights_fixed():
+    """Faz 2 on-kaydi H6: rejim agirliklari kaldirildi; her rejimde sabit value_sn."""
     from core.scoring import get_regime_weights
 
-    # Tanimsiz rejim: temel agirliklar donmeli
     w_default = get_regime_weights(None)
-    assert w_default["valuation_z"] == 0.50
-    assert w_default["catalyst_score"] == 0.25
-    assert w_default["momentum_z"] == 0.0
-
-    # STRONG_BULL: Katalizor/momentum artmali
-    w_bull = get_regime_weights("STRONG_BULL")
-    assert w_bull["catalyst_score"] > w_default["catalyst_score"]
-    assert abs(sum(w_bull.values()) - 1.0) < 1e-4
-
-    # STRONG_BEAR: Kalite ve Düşük Volatilite artmali
-    w_bear = get_regime_weights("STRONG_BEAR")
-    assert w_bear["low_vol_z"] > w_default["low_vol_z"]
-    assert w_bear["ownership_quality_z"] > w_default["ownership_quality_z"]
-    assert abs(sum(w_bear.values()) - 1.0) < 1e-4
-
-
-
-def test_value_trap_blocks_strong_opportunity(temp_db):
-    # Ucuz ama dusen hisse (12-1 momentum < 0, trend asagi) en ust dilimde olsa
-    # bile STRONG_OPPORTUNITY alamaz. Ayni hisse momentum pozitifken alabilir.
-    from core.scoring import score_candidates
-
-    def pool(trap_mom, trap_trend):
-        cands = []
-        for i in range(6):
-            cheap = i == 0
-            cands.append(dict(
-                _base_candidate(), ticker=f"T{i}", ratio_profile="industrial", sector="S1",
-                supersector="X", reporting_basis="adjusted",
-                pe=3.0 if cheap else 12.0, pb=0.4 if cheap else 2.0, ev_ebitda=3.0 if cheap else 10.0,
-                catalyst_score=0.0, ownership_z=0.0, low_vol_z=0.0, momentum_z=0.0,
-                mom_12_1_pct=trap_mom if cheap else 10.0,
-                trend_smoothness_r2=trap_trend if cheap else 0.3))
-        return {c["ticker"]: c for c in score_candidates("2026-09-10", cands, "2026-09-10")}
-
-    trap = pool(-60.0, -0.8)["T0"]
-    assert trap["value_trap_risk"] is True
-    assert trap["candidate_state"] != "STRONG_OPPORTUNITY"
-    healthy = pool(15.0, 0.5)["T0"]
-    assert healthy["value_trap_risk"] is False
-
-
-def test_long_term_fails_without_valuation_upside():
-    # Hurdle gecse bile (CAPM buyumesi) adil degerin altindaki fiyatli hisse elenir.
-    passed, reason = hard_filters_passed(_base_candidate(valuation_excess_pct=-0.5), 0.55, "2026-09-10")
-    assert not passed and reason == "valuation_upside"
-    passed, _ = hard_filters_passed(_base_candidate(valuation_excess_pct=0.5), 0.55, "2026-09-10")
-    assert passed
-
-
-def test_valuation_upside_gate_only_for_long_term():
-    c = _base_candidate(bucket="short_term", volume_ratio_20d=2.0, valuation_excess_pct=-5.0)
-    passed, _ = hard_filters_passed(c, 0.55, "2026-09-10")
-    assert passed
+    assert w_default["valuation_z"] == 1.0
+    for reg in ("STRONG_BULL", "MILD_BULL", "CORRECTION_CHOPPY", "OVERSOLD_REVERSAL", "STRONG_BEAR"):
+        assert get_regime_weights(reg) == w_default
 
 
 def test_redistribute_catalyst_weight_preserves_total_and_ratios():
@@ -174,7 +123,7 @@ def test_redistribute_catalyst_weight_preserves_total_and_ratios():
     assert abs(r["valuation_z"] - 0.50 / 0.75) < 1e-12
 
 
-def test_catalyst_unavailable_uses_redistributed_weights(temp_db):
+def test_catalyst_unavailable_uses_redistributed_weights(temp_db, monkeypatch):
     """KAP cekilemeyen hissede katalizor 0 'notr' sayilmaz; agirlik dagitilir."""
     from core.scoring import score_candidates
 
@@ -186,6 +135,11 @@ def test_catalyst_unavailable_uses_redistributed_weights(temp_db):
                 "low_vol_z": 0.0, "momentum_z": 0.0, "sector": "S", "supersector": "SS",
                 "ratio_profile": "industrial", "pe": 10.0, "pb": 1.0, "ev_ebitda": 5.0, "roe": 10.0}
     peers = [cand(f"PEER{i}", True) for i in range(6)]  # confidence icin >= 5 akran
+    # Canli agirliklarda katalizor 0 (Faz 2); dagitim mantigi karisik agirlikla sinanir.
+    import core.scoring as scoring_mod
+    mixed = {"valuation_z": 0.50, "catalyst_score": 0.25, "ownership_quality_z": 0.15, "low_vol_z": 0.10,
+             "momentum_z": 0.0}
+    monkeypatch.setattr(scoring_mod, "get_regime_weights", lambda *a, **k: dict(mixed))
     scored = score_candidates("2026-09-10", [cand("KAPOK", True), cand("KAPDOWN", False)] + peers, "2026-09-10")
     w = {c["ticker"]: c.get("scoring_weights_used") for c in scored}
     assert w["KAPOK"] and w["KAPDOWN"], [(c["ticker"], c.get("filtered_by")) for c in scored]

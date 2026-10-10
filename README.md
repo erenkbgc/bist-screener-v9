@@ -160,19 +160,17 @@ Metrics are ranked within the peer group, not against fixed cutoffs. `valuation_
 \mathrm{final\_score} = w_v\,z_{\text{val}} + w_c\,s_{\text{cat}} + w_o\,z_{\text{own}} + w_l\,z_{\text{lowvol}} + w_m\,z_{\text{mom}}
 ```
 
-Base weights (`config/weights.yaml`):
+Weights (`config/weights.yaml`), set by the Phase 2 pre-registration (`docs/research/long_term_preregistration.md`, 2026-10-10):
 
 | Factor | Weight | Definition |
 |---|---|---|
-| `valuation_z` | 0.50 | Sector-neutral valuation z-score |
-| `catalyst_score` | 0.25 | Rule-based KAP catalyst score with time decay |
-| `ownership_quality_z` | 0.15 | Ownership-structure z-score |
-| `low_vol_z` | 0.10 | z-score of $`-\sigma_{60d}`$ within the bucket (low-risk anomaly) |
-| `momentum_z` | 0.00 | z-score of `momentum_score` within the bucket; computed and shown, but weight set to 0 after the factor backtest (12-1 momentum has no cross-sectional effect in BIST, see [Backtests & Evidence](#backtests--evidence)) |
+| `valuation_z` | 1.00 | Peer-relative mean z of E/P, B/M, S/P and EBIT/EV (the tested `value_sn` definition) for industrial, holding and REIT profiles. Bank and insurance profiles are unchanged and untested. |
+| `catalyst_score` | 0.00 | Shown as information only; no history, cannot be tested |
+| `ownership_quality_z` | 0.00 | Shown as information only; no history, cannot be tested |
+| `low_vol_z` | 0.00 | Value + low-vol was weaker than plain value in the factor backtest |
+| `momentum_z` | 0.00 | 12-1 momentum has no cross-sectional effect in BIST |
 
-The ML regime (see [ML Trend Forecaster](#ml-trend-forecaster--market-regime)) selects a row of `regime_scoring_weights` Momentum is 0 in every regime row. Each row is normalised to sum to 1. The regime rows themselves are not tested yet.
-
-**Only the value/low-vol/momentum split has backtest evidence** (factor backtest below). `catalyst_score` and `ownership_quality_z` have no history and stay uncalibrated priors. `config/weights_optimized.json` also contains "optimised" scoring weights, but they were fitted on a single XU100 series with technical proxies, so the pipeline does **not** use them (`use_optimized=False`).
+Plain value top quintile: net active +10.65%/yr in discovery (2013–2020, t 2.71) and +6.96%/yr in holdout (2021–2026, t 2.60). Distress, crash, momentum, 52-week-high, GP/A and SUE additions did not pass. Regime weights were removed: the regime engine cannot be rebuilt point-in-time, and the macro study found no predictor of market direction. `config/weights_optimized.json` is still not used (`use_optimized=False`).
 
 **Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data, Piotroski normalised score ≥ 0.34. Long-term bucket: additionally `valuation_excess_pct > 0` (scenario-weighted fair value above price). The hurdle gate alone passes almost every stock, because the CAPM drift $`k_e > r_f`$. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
 
@@ -568,7 +566,7 @@ pytest tests/ -q
 
 | Area | Status |
 |---|---|
-| Factor weights | Value / low-vol / momentum split backtested. `catalyst_score`, `ownership_quality_z` and regime rows are uncalibrated. |
+| Factor weights | Plain value (pre-registered, survivorship-sensitive). Live statements are annual, the panel is quarterly TTM. Bank/insurance valuation profiles are untested. |
 | Cone $`z`$ | Fitted on one index series, not on stock outcomes |
 | Target $`\alpha`$ | Estimated from the peer leg only; DCF and quality legs and the ML scenario weights are not tested |
 | Prediction outcomes | `outcomes` table too small for attribution |

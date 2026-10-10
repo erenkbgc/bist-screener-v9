@@ -5,25 +5,20 @@
 # bu degerleri kendi basina ogrenmez/degistirmez.
 
 scoring_weights:
-  # 2026-09-27 kesitsel backtest (scripts/backtest_factor_model.py; 528 hisse,
-  # 2013-04..2026-09, aylik; rapor data/reports/backtest_factor_model_2026-09-27.json):
-  #   - deger (bm/ep/sp/ey): rank-IC 0.056, t 7.2, iki alt donemde de pozitif.
-  #   - dusuk volatilite (vol60): rank-IC 0.075, t 7.3.
-  #   - momentum 12-1: rank-IC 0.007, t 0.7; cok degiskenli Fama-MacBeth t 0.02.
-  # Ayni panelde vekil skor karsilastirmasi (catalyst/ownership icin gecmis veri yok):
-  #   deger .40 + momentum .20 + low_vol .08 -> IC 0.059, net ust dilim +5.5%/yil,
-  #     devir %23, max DD -40%
-  #   deger .50 + low_vol .10 (momentum 0)   -> IC 0.075, net +6.2%/yil,
-  #     devir %17, max DD -27%
-  # Bu yuzden momentum_z agirligi 0'a cekildi, digerleri momentum oncesi
-  # degerlerine dondu. catalyst/ownership agirliklari hala DENENMEMIS
-  # BASLANGIC VARSAYIMIDIR (priors_are_disclosed).
-  # Sinirlar: hayatta kalma yanliligi (bugunku liste), nominal TL, canli
-  # valuation_z sektor-notr akran carpanidir, backtest vekili ham carpandir.
-  valuation_z: 0.50
-  catalyst_score: 0.25
-  ownership_quality_z: 0.15
-  low_vol_z: 0.10
+  # 2026-10-10 Faz 2 on-kaydi (docs/research/long_term_preregistration.md):
+  # taban deger portfoyu (value_sn: E/P, B/M, S/P, EBIT/EV, sektor ici) ust
+  # dilimi net aktif +10.65%/yil (t 2.71) kesif 2013-2020, +6.96%/yil (t 2.60)
+  # holdout 2021-2026. Hicbir ek filtre/bilesim (sikinti, cokus, momentum,
+  # 52 haftalik zirve, GP/A, SUE) gecme esigini gecmedi; on-kayda gore skor
+  # duz value_sn'dir.
+  #   - catalyst/ownership: gecmis veri yok, test edilemez -> 0 (yalnizca bilgi).
+  #   - low_vol: deger + dusuk-vol vekili (t 2.66) duz degerden (t 4.05) zayif -> 0.
+  #   - momentum 12-1: etkisiz (t 0.71) -> 0.
+  # Onceki karisim (0.50/0.25/0.15/0.10) test edilmemis varsayimdi.
+  valuation_z: 1.00
+  catalyst_score: 0.00
+  ownership_quality_z: 0.00
+  low_vol_z: 0.00
   momentum_z: 0.00
 
 piotroski:
@@ -71,43 +66,9 @@ valuation_triangle_weights:
   peer_multiples: 0.50
   quality_premium: 0.25
 
-# Rejim-Duyarli Dinamik Faktor Agirliklari (Quant Level-Up Faz 1)
-# Piyasa rejimine gore faktörlerin agirlik dagilimi (Asness et al., AQR 2017).
-# momentum_z rejim toplamina eklenir, get_regime_weights normalize eder.
-# 2026-09-27: momentum_z tum rejimlerde 0 (kesitsel backtest'te etkisiz, bkz.
-# scoring_weights notu). Rejim agirliklarinin kendisi HENUZ test edilmedi.
-# OVERSOLD_REVERSAL'da dusuk: momentum dip donuslerinde cokme egilimli
-# (Daniel & Moskowitz 2016 'momentum crashes').
-regime_scoring_weights:
-  STRONG_BULL:
-    valuation_z: 0.35
-    catalyst_score: 0.35
-    ownership_quality_z: 0.15
-    low_vol_z: 0.15
-    momentum_z: 0.00
-  MILD_BULL:
-    valuation_z: 0.45
-    catalyst_score: 0.25
-    ownership_quality_z: 0.15
-    low_vol_z: 0.15
-    momentum_z: 0.00
-  CORRECTION_CHOPPY:
-    valuation_z: 0.45
-    catalyst_score: 0.15
-    ownership_quality_z: 0.25
-    low_vol_z: 0.15
-    momentum_z: 0.00
-  OVERSOLD_REVERSAL:
-    valuation_z: 0.55
-    catalyst_score: 0.15
-    ownership_quality_z: 0.20
-    low_vol_z: 0.10
-    momentum_z: 0.00
-  STRONG_BEAR:
-    valuation_z: 0.35
-    catalyst_score: 0.10
-    ownership_quality_z: 0.30
-    low_vol_z: 0.25
-    momentum_z: 0.00
+# Rejim agirliklari kaldirildi (2026-10-10). Faz 2 on-kaydi H6: rejim motoru
+# nokta-zamanli yeniden kurulamiyor ve makro calisma (macro_drivers_preregistration.md)
+# piyasa yonunu ongorebilen bir degisken bulamadi. Karar: sabit agirlik.
+# get_regime_weights rejim verilse de scoring_weights'i dondurur.
 
 

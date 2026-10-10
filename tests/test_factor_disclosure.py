@@ -19,10 +19,11 @@ def setup_db():
 
 def test_load_scoring_weights():
     weights = load_scoring_weights()
-    assert weights["valuation_z"] == 0.50
-    assert weights["catalyst_score"] == 0.25
-    assert weights["ownership_quality_z"] == 0.15
-    assert weights["low_vol_z"] == 0.10
+    # Faz 2 on-kaydi: duz value_sn (docs/research/long_term_preregistration.md)
+    assert weights["valuation_z"] == 1.0
+    assert weights["catalyst_score"] == 0.0
+    assert weights["ownership_quality_z"] == 0.0
+    assert weights["low_vol_z"] == 0.0
     assert weights["momentum_z"] == 0.0
     assert abs(sum(weights.values()) - 1.0) < 1e-9
 
@@ -37,7 +38,10 @@ def test_explain_candidate_score_mixed():
         "low_vol_z": 0.5,
         "momentum_z": -0.5,
     }
-    res = explain_candidate_score(cand)
+    # Ayristirma mantigi karisik agirliklarla test edilir (canli agirliklardan bagimsiz).
+    mixed = {"valuation_z": 0.50, "catalyst_score": 0.25, "ownership_quality_z": 0.15,
+             "low_vol_z": 0.10, "momentum_z": 0.0}
+    res = explain_candidate_score(cand, mixed)
     # val: 2.0 * 0.50 = 1.0
     # cat: 1.0 * 0.25 = 0.25
     # own: -1.0 * 0.15 = -0.15

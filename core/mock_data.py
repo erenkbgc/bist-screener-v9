@@ -185,6 +185,9 @@ def mock_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         # valuation_engine_v2_dcf_addon.inputs.wacc: core/live_data.py::live_fundamentals
         # ile ayni alan (_financial_expenses_ttm), borclanma maliyeti proxy'si.
         "_financial_expenses_ttm": rng.uniform(1e6, 2e9),
+        # value_sn girdileri (S/P, EBIT/EV): core/live_data.py ile ayni alanlar.
+        "_revenue": rng.uniform(1e9, 2e11),
+        "_op_profit": rng.uniform(-5e9, 3e10),
     }
 
 
