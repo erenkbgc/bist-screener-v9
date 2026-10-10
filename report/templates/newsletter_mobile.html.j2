@@ -103,8 +103,20 @@
   <tr><td style="height:14px; line-height:14px; font-size:0;">&nbsp;</td></tr>
   {% endif %}
 
+  <!-- aylik rotasyon (on-kayitli test edilmis tek alim/satim kurali) -->
+  {% if rotation and rotation.n_holdings %}
+  <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Aylık rotasyon <span style="font-size:12px; font-weight:500; color:#64748b;">(dengeleme {{ rotation.rebalance_date }})</span></td></tr>
+  <tr><td style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.6; color:#334155;">
+    <div><b style="color:#047857;">AL:</b> {% if rotation.buy %}{% for h in rotation.buy %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
+    <div><b style="color:#1d4ed8;">TUT:</b> {% if rotation.hold %}{% for h in rotation.hold %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
+    <div><b style="color:#b91c1c;">SAT:</b> {% if rotation.sell %}{{ rotation.sell | join(", ") }}{% else %}yok{% endif %}</div>
+    <div style="font-size:12px; color:#64748b; margin-top:6px;">Kural: değerleme sıralamasında üst %{{ rotation.top_pct | fmt }} ({{ rotation.n_holdings | fmt }} hisse) eşit ağırlıkla tutulur, üst dilimden çıkan satılır; ayda bir güncellenir. Alış zamanlaması, stop ve tampon kuralları test edildi, hemen almak ve bu kuraldan iyi olmadı. Yatırım tavsiyesi değildir.</div>
+  </td></tr>
+  <tr><td style="height:14px; line-height:14px; font-size:0;">&nbsp;</td></tr>
+  {% endif %}
+
   <!-- uzun vade -->
-  <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Uzun vade <span style="font-size:12px; font-weight:500; color:#64748b;">(değerleme + kalite)</span></td></tr>
+  <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Uzun vade <span style="font-size:12px; font-weight:500; color:#64748b;">(değerleme)</span></td></tr>
   <tr><td>
     {% if long_term_candidates %}
       {% for c in long_term_candidates %}{{ candidate_card(c, false) }}{% endfor %}

@@ -62,6 +62,7 @@ from core import gordon as gordon_mod
 from core import dcf as dcf_mod
 from core import concentration as concentration_mod
 from core import diagnostics as diagnostics_mod
+from core import rotation as rotation_mod
 from core import correlation as correlation_mod
 from core import scoring as scoring_mod
 from core import payload as payload_mod
@@ -437,6 +438,9 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     as_of_date_cutoff = as_of_date
     scored = scoring_mod.score_candidates(as_of_date, all_candidates, as_of_date_cutoff, regime=predicted_regime)
 
+    # --- aylik rotasyon listesi (AL/TUT/SAT; on-kayitli satis testi, kural R0) ---
+    rotation = rotation_mod.monthly_rotation(as_of_date, scored)
+
     # --- concentration_check + correlation_diagnostic (yalnizca gecen adaylar uzerinde) ---
     passing = [c for c in scored if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")]
     concentration_warnings = concentration_mod.check_concentration(passing)
@@ -481,6 +485,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         passing_candidates=passing,
         sector_rotation=sector_rotation,
         run_health=health,
+        rotation=rotation,
     )
     decision_diff = payload["decision_diff"]
 
@@ -502,6 +507,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "trend_forecast": trend_forecast,
         "portfolio_result": portfolio_result,
         "decision_diff": decision_diff,
+        "rotation": payload["rotation"],
         "concentration_warnings": concentration_warnings,
         "sector_rotation": sorted(
             ({"code": k, **v} for k, v in sector_rotation.items()),
