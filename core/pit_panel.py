@@ -35,6 +35,11 @@ BS_ITEMS = {
     "paid_in": ("Ödenmiş Sermaye",),
     "cash": ("Nakit ve Nakit Benzerleri",),
     "fin_debt": ("Finansal Borçlar",),  # kisa + uzun vade: tekrarlanan satirlar toplanir
+    # Faz 2 on-kaydi (docs/research/long_term_preregistration.md): sikinti/F7 girdileri
+    "current_assets": ("Dönen Varlıklar",),
+    "current_liab": ("Kısa Vadeli Yükümlülükler",),
+    "noncurrent_liab": ("Uzun Vadeli Yükümlülükler",),
+    "retained": ("Geçmiş Yıllar Kar/Zararları",),
 }
 INC_ITEMS = {
     "revenue": ("Satış Gelirleri",),
@@ -42,6 +47,8 @@ INC_ITEMS = {
     "op_profit": ("FAALİYET KARI (ZARARI)", "Net Faaliyet Kar/Zararı"),
     "ni_parent": ("Ana Ortaklık Payları",),
     "net_income": ("DÖNEM KARI (ZARARI)",),
+    "ebit": ("Finansman Gideri Öncesi Faaliyet Karı/Zararı",),
+    "fin_expense": ("(Esas Faaliyet Dışı) Finansal Giderler (-)",),
 }
 SUM_DUPLICATES = {"fin_debt"}
 
