@@ -70,12 +70,14 @@ def test_short_term_passes_with_volume_confirmed():
     assert passed is True
 
 
-def test_excess_over_beta_hurdle_not_in_hard_filters():
-    """beta_adjusted_hurdle bilgi amaclidir; excess_over_beta_hurdle_pct negatif
-    olsa bile hard_filters_passed bunu KONTROL ETMEZ."""
+def test_long_term_fails_beta_adjusted_hurdle():
+    """Hedef k_e = rf + beta*ERP ile buyutuldugu icin sabit rf hurdle'i otomatik
+    geciliyordu; uzun vade artik ayni k_e'yi kullanan beta hurdle'ina bakar."""
     c = _base_candidate(excess_over_beta_hurdle_pct=-50)
     passed, reason = hard_filters_passed(c, 0.55, "2026-09-10")
-    assert passed is True
+    assert passed is False and reason == "beta_hurdle"
+    c_unknown = _base_candidate(excess_over_beta_hurdle_pct=None)
+    assert hard_filters_passed(c_unknown, 0.55, "2026-09-10")[0] is True
 
 
 def test_hard_filters_fail_on_outlier_roi():
@@ -211,3 +213,35 @@ def test_short_term_never_promoted_when_disabled(temp_db):
     assert st, [(c["ticker"], c.get("filtered_by")) for c in scored]
     assert all(c["candidate_state"] == "WATCHLIST" and c.get("experimental") for c in st)
     assert any(c["candidate_state"] in ("STRONG_OPPORTUNITY", "OPPORTUNITY") for c in lt)
+
+
+def test_ownership_penalty_lowers_negative_z():
+    """z *= 0.70 negatif z'yi iyilestiriyordu; ceza her zaman asagi olmali."""
+    from core.ownership import compute_ownership_z
+    pop = [{"free_float_pct": v} for v in (20, 30, 40, 50, 60)]
+    weak = {"free_float_pct": 20}
+    plain = compute_ownership_z(weak, pop)
+    penalized = compute_ownership_z({**weak, "_penalize": True}, pop)
+    assert plain < 0 and penalized < plain
+
+
+def test_top_ranked_non_strong_is_opportunity_and_value_trap_is_watchlist(temp_db):
+    """Eski kural: ust dilimde olup STRONG kosullarindan birini kaciran hisse
+    WATCHLIST, alt siradaki OPPORTUNITY oluyordu. Value-trap bayragi da yalnizca
+    STRONG'u engelliyordu."""
+    from core import scoring
+
+    def cand(t, pb, trap=False, pio=0.45):
+        return {"ticker": t, "bucket": "long_term", "sector": "XGIDA", "supersector": "XUSIN",
+                "ratio_profile": "industrial", "reporting_basis": "adjusted", "tedbir_level": 0,
+                "listing_days": 500, "free_float_pct": 30, "excess_over_hurdle_pct": 5.0,
+                "effective_at": "2026-09-01", "piotroski_normalized_score": pio,
+                "pb": pb, "roe": 10, "catalyst_score": 0.0, "ownership_z": 0.0,
+                "mom_12_1_pct": -10 if trap else 10, "trend_smoothness_r2": -0.5 if trap else 0.5}
+
+    cands = [cand(f"T{i}", 1 + i * 0.2) for i in range(8)]
+    cands[0]["piotroski_normalized_score"] = 0.40   # en ucuz ama STRONG esiginin altinda
+    cands[1].update(mom_12_1_pct=-10, trend_smoothness_r2=-0.5)  # value trap
+    out = {c["ticker"]: c for c in scoring.score_candidates("2026-09-10", cands, "2026-09-10")}
+    assert out["T0"]["candidate_state"] == "OPPORTUNITY"
+    assert out["T1"]["candidate_state"] == "WATCHLIST"

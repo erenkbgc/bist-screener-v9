@@ -98,6 +98,11 @@ def hard_filters_passed(candidate: dict, piotroski_threshold: float, as_of_date_
         # (volatilite/ATR yok, yakinsama uygulanmadi) bu kapi uygulanmaz.
         v = candidate.get("valuation_excess_pct")
         checks.append((v is None or v > 0, "valuation_upside"))
+        # Hedef fiyat k_e = rf + beta*ERP ile buyutuldugu icin sabit rf hurdle'i
+        # beta > 0 olan her hissede otomatik gecilir. Ayni k_e'yi kullanan
+        # beta-duzeltilmis hurdle tutarli kiyastir (beta hesaplanamadiysa uygulanmaz).
+        b = candidate.get("excess_over_beta_hurdle_pct")
+        checks.append((b is None or b > 0, "beta_hurdle"))
     if candidate["bucket"] == "short_term":
         checks.append((candidate.get("volume_ratio_20d") is not None and candidate["volume_ratio_20d"] >= 1.5,
                        "volume_breakout"))
@@ -172,7 +177,10 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
             if c["confidence"] == "high" and top_tier and positive_margin and \
                     c["piotroski_normalized_score"] >= piotroski_threshold and not c["value_trap_risk"]:
                 c["candidate_state"] = "STRONG_OPPORTUNITY"
-            elif positive_margin and (not top_tier or c["confidence"] == "degraded"):
+            elif positive_margin and c["confidence"] in ("high", "degraded") and not c["value_trap_risk"]:
+                # Eski kural "not top_tier or degraded" idi: ust dilimde olup STRONG
+                # kosullarindan birini kaciran hisse WATCHLIST'e dusuyor, daha asagi
+                # siradaki (value-trap bayrakli olsa bile) OPPORTUNITY oluyordu.
                 c["candidate_state"] = "OPPORTUNITY"
             else:
                 c["candidate_state"] = "WATCHLIST"

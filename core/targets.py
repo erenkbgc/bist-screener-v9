@@ -66,6 +66,9 @@ def _liquidity_buffer_multiplier(avg_volume_tl_20d: float | None) -> float:
     return MAX_LIQUIDITY_BUFFER - frac * (MAX_LIQUIDITY_BUFFER - 1.0)
 
 
+DEFAULT_CONE_Z = 1.75  # varsayim (prior), kalibre edilmedi
+
+
 def compute_volatility_cone_envelope(
     current_price: float,
     volatility_60d: float | None = None,
@@ -101,8 +104,11 @@ def compute_volatility_cone_envelope(
     mu = math.log(1.0 + annual_pct / 100.0)
 
     if z is None:
-        opt = load_optimized_weights()
-        z = float(opt.get("calibrated_z_score", 1.75)) if opt else 1.75
+        # weights_optimized.json'daki calibrated_z_score KULLANILMAZ: XU100 tek
+        # serisinden, T=180/252 (islem gunu) ile kalibre ediliyor, burada T=180/365
+        # (takvim gunu) ile ve tek hisselere uygulaniyordu -- hem birim hem evren
+        # uyumsuz. Sabit varsayim olarak ifsa edilir.
+        z = DEFAULT_CONE_Z
 
     exponent = (mu - 0.5 * (sigma ** 2)) * T + z * sigma * math.sqrt(T)
     upper_bound = current_price * math.exp(exponent)

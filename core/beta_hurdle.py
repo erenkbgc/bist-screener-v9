@@ -1,9 +1,10 @@
 """beta_adjusted_hurdle: yuksek beta'li hisselerin ayni sabit hurdle ile
 sistematik olarak odullenmesini gostermek icin bilgi amacli ek metrik.
 
-usage (spec): "hard_filter DEGIL. excess_over_hurdle_pct'in yaninda ek bilgi
-olarak gosterilir." Bu yuzden scoring.hard_filters_all_buckets listesine
-GIRMEZ (bkz. core/scoring.py ve tests/test_beta_hurdle.py).
+Ilk spec bunu yalnizca bilgi olarak tanimliyordu. 2026-10 denetimi: uzun vade
+hedef fiyati k_e = rf + beta*ERP ile buyutuldugu icin sabit rf hurdle'i beta > 0
+olan her hissede otomatik geciliyordu. Bu yuzden uzun vade kovasinda
+excess_over_beta_hurdle_pct artik sert filtredir (core/scoring.py, "beta_hurdle").
 """
 from __future__ import annotations
 

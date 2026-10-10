@@ -82,7 +82,7 @@ def test_live_fundamentals_bank_computes_roa_roe_from_ufrs_labels(monkeypatch):
     monkeypatch.setattr(ld, "_fast_info_cached", lambda ticker: {"pe_ratio": 5.0, "pb_ratio": 1.0,
                                                                    "market_cap": 1e9, "shares": 1e8})
     monkeypatch.setattr(ld, "_info_cached", lambda ticker: {})
-    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker: 0.0)
+    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker, as_of_date=None: 0.0)
 
     f = ld.live_fundamentals("AKBNK_TEST", "2026-09-17", "BDDK", "bank")
     assert f["roa"] == 5.0  # 50_000/1_000_000 * 100
@@ -101,7 +101,7 @@ def test_live_fundamentals_reports_unknown_basis_when_statements_totally_unfetch
     monkeypatch.setattr(ld, "_fast_info_cached", lambda ticker: {"pe_ratio": 5.0, "pb_ratio": 1.0,
                                                                    "market_cap": 1e9, "shares": 1e8})
     monkeypatch.setattr(ld, "_info_cached", lambda ticker: {})
-    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker: 0.0)
+    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker, as_of_date=None: 0.0)
 
     f = ld.live_fundamentals("ISFIN_TEST", "2026-09-17", "BDDK", "bank")
     assert f["reporting_basis"] == "unknown"
@@ -117,7 +117,7 @@ def test_live_fundamentals_stays_unresolved_when_at_least_one_statement_availabl
     monkeypatch.setattr(ld, "_fast_info_cached", lambda ticker: {"pe_ratio": 5.0, "pb_ratio": 1.0,
                                                                    "market_cap": 1e9, "shares": 1e8})
     monkeypatch.setattr(ld, "_info_cached", lambda ticker: {})
-    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker: 0.0)
+    monkeypatch.setattr(ld, "_dividend_ttm", lambda ticker, as_of_date=None: 0.0)
 
     f = ld.live_fundamentals("PARTIAL_TEST", "2026-09-17", "BDDK", "bank")
     assert f["reporting_basis"] is None

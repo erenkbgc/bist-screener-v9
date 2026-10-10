@@ -30,12 +30,11 @@ def test_beta_none_with_insufficient_history():
     assert calculate_beta(stock, market) is None
 
 
-def test_excess_over_beta_hurdle_not_referenced_in_hard_filters_source():
-    """Statik kontrol: core/scoring.py::hard_filters_passed kaynak kodunda
-    'excess_over_beta_hurdle_pct' gecmemeli (yalnizca excess_over_hurdle_pct
-    kontrol edilir)."""
+def test_beta_hurdle_is_hard_filter_for_long_term_only():
+    """2026-10 denetimi: sabit rf hurdle'i beta > 0 hisselerde otomatik gecildigi
+    icin uzun vade kovasi beta-duzeltilmis hurdle'a da bakar (bkz. modul notu)."""
     source = inspect.getsource(hard_filters_passed)
-    assert "excess_over_beta_hurdle_pct" not in source
+    assert "excess_over_beta_hurdle_pct" in source
     assert "excess_over_hurdle_pct" in source
 
 

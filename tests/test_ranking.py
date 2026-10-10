@@ -74,3 +74,31 @@ def test_ratio_profile_only_compares_within_same_profile():
     result = compute_valuation_z(bank, [bank] + industrials)
     # bank'in esler grubu yalnizca kendisi -> insufficient_peers
     assert result["confidence"] == "insufficient_peers"
+
+
+def test_loss_maker_is_penalized_not_skipped():
+    """Zarar eden sirkette F/K None ('A/D') -- eskiden metrik atlaniyor, skor kalan
+    metriklerden geliyordu. E/P zarari negatif deger olarak siralamaya sokar."""
+    peers = [_make_candidate(f"S{i}", "XGIDA", "XUSIN", pe=8 + i) for i in range(8)]
+    for p in peers:
+        p["current_price"] = 10.0
+    profitable = _make_candidate("WIN", "XGIDA", "XUSIN", pe=10)
+    loser = _make_candidate("LOS", "XGIDA", "XUSIN", pe=None)
+    profitable["current_price"] = loser["current_price"] = 10.0
+    loser["eps_ttm"] = -2.0
+    pool = peers + [profitable, loser]
+    assert ranking.earnings_yield(loser) == -20.0
+    z_win = compute_valuation_z(profitable, pool)["valuation_z"]
+    z_los = compute_valuation_z(loser, pool)["valuation_z"]
+    assert z_los < z_win
+
+
+def test_extreme_candidate_value_is_clipped_and_nan_ignored():
+    peers = [_make_candidate(f"S{i}", "XGIDA", "XUSIN", pb=1 + 0.1 * i) for i in range(10)]
+    crashed = _make_candidate("CRS", "XGIDA", "XUSIN", pb=0.01)
+    z = ranking.score_metric_z(0.01, [p["pb"] for p in peers], "lower_better")
+    assert z <= ranking.Z_CLIP
+    assert ranking.score_metric_z(float("nan"), [p["pb"] for p in peers], "lower_better") == 0.0
+    nan_peer = _make_candidate("NAN", "XGIDA", "XUSIN", pb=float("nan"))
+    result = compute_valuation_z(crashed, peers + [crashed, nan_peer])
+    assert result["valuation_z"] == result["valuation_z"]  # NaN degil
