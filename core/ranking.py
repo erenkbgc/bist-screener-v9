@@ -15,13 +15,20 @@ MIN_PEER_N = 5  # v13 P1-7: peer_n < 5 ise supersector'e dusulur; kucuk sektorle
 FALLBACK_CHAIN = ["sector", "supersector", "market"]
 CONFIDENCE_MAPPING = {"sector": "high", "supersector": "degraded", "market": "low", "none": "insufficient_peers"}
 
+# Sanayi/holding/GYO: test edilen value_sn ile ayni dort oran (Faz 2 on-kaydi,
+# docs/research/long_term_preregistration.md; panel 2013-2026, deger ust dilimi
+# net aktif +10.65%/yil kesif, +6.96%/yil holdout). Onceki karisim (PD/DD,
+# FD/FAVOK, FD/Satis, ROE, net borc/FAVOK, FCF verimi, NAV iskontosu) hic test
+# edilmemisti. Hepsi "verim" yonunde: buyuk = ucuz.
+VALUE_SN_METRICS = ["ep", "bm", "sp", "ey"]
+_VALUE_SN_PROFILE = {
+    "metrics": VALUE_SN_METRICS,
+    "direction": {m: "higher_better" for m in VALUE_SN_METRICS},
+}
+
 RATIO_PROFILES = {
-    "industrial": {
-        "metrics": ["ep", "pb", "ev_ebitda", "ev_sales", "roe", "net_debt_ebitda", "fcf_yield"],
-        "direction": {"ep": "higher_better", "pb": "lower_better", "ev_ebitda": "lower_better",
-                      "ev_sales": "lower_better", "roe": "higher_better",
-                      "net_debt_ebitda": "lower_better", "fcf_yield": "higher_better"},
-    },
+    "industrial": dict(_VALUE_SN_PROFILE),
+    # Banka/sigorta: panel finansallari kapsamadi; bu profiller TEST EDILMEDI.
     "bank": {
         "metrics": ["ep", "pb", "roe", "roa", "nim", "npl_ratio", "car"],
         "direction": {"ep": "higher_better", "pb": "lower_better", "roe": "higher_better",
@@ -35,16 +42,10 @@ RATIO_PROFILES = {
                       "combined_ratio": "lower_better"},
         "forbidden_metrics": ["ev_ebitda", "ev_sales"],
     },
-    "holding": {
-        "metrics": ["nav_discount", "pb", "roe"],
-        "direction": {"nav_discount": "higher_better", "pb": "lower_better", "roe": "higher_better"},
-        "note": "NAV hesaplanamiyorsa skorlanmaz.",
-    },
-    "reit": {
-        "metrics": ["pb", "nav_discount", "ffo_yield"],
-        "direction": {"pb": "lower_better", "nav_discount": "higher_better", "ffo_yield": "higher_better"},
-        "forbidden_metrics": ["ev_ebitda"],
-    },
+    # Holding ve GYO panelde finansal-disi evrendeydi (pit_panel.FINANCIAL_SECTORS
+    # yalnizca banka/sigorta/araci kurum/MKYO vb.); ayni value_sn tanimi gecerli.
+    "holding": dict(_VALUE_SN_PROFILE),
+    "reit": dict(_VALUE_SN_PROFILE),
 }
 
 
@@ -72,8 +73,35 @@ def _finite(x) -> bool:
         return False
 
 
+def book_to_market(c: dict) -> float | None:
+    """B/M = 1 / (PD/DD). Negatif ozsermaye panelde NaN'dir (pit_panel: eq > 0 sarti)."""
+    pb = c.get("pb")
+    return 1.0 / pb if pb is not None and _finite(pb) and pb > 0 else None
+
+
+def sales_yield(c: dict) -> float | None:
+    """S/P = satislar / piyasa degeri (pit_panel 'sp')."""
+    rev, mcap = c.get("revenue_ttm"), c.get("market_cap")
+    if rev is None or not _finite(rev) or not mcap or mcap <= 0:
+        return None
+    return rev / mcap
+
+
+def ebit_yield(c: dict) -> float | None:
+    """EBIT/EV = faaliyet kari / (piyasa degeri + net borc) (pit_panel 'ey'). EV <= 0 ise None."""
+    op, mcap, nd = c.get("op_profit_ttm"), c.get("market_cap"), c.get("net_debt")
+    if op is None or not _finite(op) or not mcap or mcap <= 0:
+        return None
+    ev = mcap + (nd if nd is not None and _finite(nd) else 0.0)
+    return op / ev if ev > 0 else None
+
+
+_DERIVED = {"ep": earnings_yield, "bm": book_to_market, "sp": sales_yield, "ey": ebit_yield}
+
+
 def _metric_value(c: dict, metric: str) -> float | None:
-    v = earnings_yield(c) if metric == "ep" else c.get(metric)
+    fn = _DERIVED.get(metric)
+    v = fn(c) if fn else c.get(metric)
     return v if v is not None and _finite(v) else None
 
 

@@ -561,6 +561,7 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     equity = _val(_row(bs, "Özkaynaklar", "XVI. ÖZKAYNAKLAR", "Özsermaye Toplamı"))
     total_assets = _val(_row(bs, "TOPLAM VARLIKLAR", "AKTİF TOPLAMI"))
     ebitda_ttm = None
+    op_inc = None
 
     # Net Borc & FAVOK Kurtarimi (v15 ev_ebitda_net_debt_recovery)
     # Banka ve sigorta sirketlerinde finansal borc / FAVOK sanayi anlaminda mevcut degildir
@@ -674,6 +675,9 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         "_total_assets": total_assets,
         "_net_income": net_income,
         "_financial_expenses_ttm": financial_expenses_ttm,
+        # value_sn girdileri (core/ranking.py::sales_yield / ebit_yield)
+        "_revenue": revenue,
+        "_op_profit": op_inc,
         "_nav_per_share": nav_per_share,
         "_portfolio_value": portfolio_val,
     }

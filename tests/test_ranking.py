@@ -102,3 +102,20 @@ def test_extreme_candidate_value_is_clipped_and_nan_ignored():
     nan_peer = _make_candidate("NAN", "XGIDA", "XUSIN", pb=float("nan"))
     result = compute_valuation_z(crashed, peers + [crashed, nan_peer])
     assert result["valuation_z"] == result["valuation_z"]  # NaN degil
+
+
+def test_value_sn_metrics_match_research_definition():
+    """Faz 2: sanayi/holding/GYO canli skoru panel value_sn ile ayni dort oran."""
+    from core.ranking import VALUE_SN_METRICS, book_to_market, ebit_yield, sales_yield
+
+    assert VALUE_SN_METRICS == ["ep", "bm", "sp", "ey"]
+    for prof in ("industrial", "holding", "reit"):
+        assert RATIO_PROFILES[prof]["metrics"] == VALUE_SN_METRICS
+        assert set(RATIO_PROFILES[prof]["direction"].values()) == {"higher_better"}
+    c = {"pb": 2.0, "revenue_ttm": 500.0, "op_profit_ttm": 60.0, "market_cap": 1000.0, "net_debt": 200.0}
+    assert book_to_market(c) == 0.5
+    assert sales_yield(c) == 0.5
+    assert ebit_yield(c) == 60.0 / 1200.0
+    assert book_to_market({"pb": -1.0}) is None
+    assert ebit_yield({**c, "net_debt": -1500.0}) is None  # EV <= 0
+    assert sales_yield({"revenue_ttm": 1.0, "market_cap": None}) is None

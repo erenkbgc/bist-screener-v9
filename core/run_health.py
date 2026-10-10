@@ -132,7 +132,11 @@ def assess(as_of_date: str, prices: dict | None = None,
         failed.append("data_filter_share")
     if metrics["kap_missing_share"] is not None and metrics["kap_missing_share"] > MAX_KAP_MISSING_SHARE:
         degraded.append("kap_unavailable")
-    if metrics["catalyst_missing_share"] is not None and metrics["catalyst_missing_share"] > MAX_KAP_MISSING_SHARE:
+    # Katalizor agirligi 0 iken (Faz 2: test edilemez) eksik KAP verisi skoru etkilemez.
+    from core.scoring import load_weights
+    catalyst_weighted = float(load_weights()["scoring_weights"].get("catalyst_score", 0.0)) > 0
+    if catalyst_weighted and metrics["catalyst_missing_share"] is not None \
+            and metrics["catalyst_missing_share"] > MAX_KAP_MISSING_SHARE:
         degraded.append("catalyst_redistributed")
     if metrics["matured_without_outcome"]:
         degraded.append("outcomes_stalled")
