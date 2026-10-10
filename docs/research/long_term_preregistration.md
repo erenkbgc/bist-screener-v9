@@ -152,6 +152,61 @@ The weights in H4a and H5 are fixed at 50/50 and are not searched.
 
 ---
 
-## Results
+## Results (added 2026-10-10, after the run; the sections above are unchanged)
 
-(To be added after the run. The sections above stay unchanged.)
+`python scripts/research_long_term.py`. The panel runs from 2013-04 to 2026-09: 93 discovery months and 68 holdout months.
+
+Implementation notes. These were fixed in unit tests (`tests/test_long_term_research.py`) before the run:
+- Missing data never triggers an exclusion.
+- In H4a and H5, a missing second component counts as 0 (as in `add_composites`).
+- The CHS intercept is omitted. Only the ranking is used, so the intercept has no effect.
+
+Coverage of the new signals:
+
+| Signal | Rows with a value |
+|---|---|
+| CHS | 96.8% |
+| Altman | 98.8% |
+| F7 | 91.9% |
+| dd5y | 79.9% |
+| hi52 | 100% |
+
+**Base B** (value_sn top quintile; net active return per year, NW t with 6 lags):
+
+| Period | Net active / yr (TL) | Net active / yr (USD) | Value-trap rate | Max DD of active | Names | Turnover |
+|---|---|---|---|---|---|---|
+| Discovery | +10.65% (t 2.71) | +10.60% | 4.3% | −7.2% | 43 | 16.7% |
+| Holdout | +6.96% (t 2.60) | +6.82% | 18.7% | −9.1% | 60 | 17.6% |
+
+The holdout value-trap rate is higher because the whole universe changed: 22.6% of all holdout rows had a 6-month excess below −30%, against 7.0% in discovery. B stays below the universe rate in both periods.
+
+**Hypotheses.** D is the annual difference in net active return versus B, with NW t at 6 lags.
+
+| ID | Discovery D (t) | Holdout D (t) | Holdout B′ active TL / USD | Holdout trap rate | Result |
+|---|---|---|---|---|---|
+| H1a CHS worst decile | −0.14% (−0.18) | +0.05% (0.05) | 7.01% / 6.83% | 18.2% | FAIL |
+| H1b Altman EM < 1.1 | +0.40% (0.26) | −0.11% (−0.10) | 6.86% / 6.79% | 18.8% | FAIL |
+| H2a dd5y ≤ −70% | −1.50% (−2.04) | +0.32% (0.90) | 7.28% / 7.12% | 18.6% | FAIL |
+| H2b dd5y ≤ −70% and F7 ≤ 3 | −0.44% (−0.97) | +0.34% (2.00) | 7.30% / 7.14% | 18.7% | FAIL |
+| H3a bottom mom_12_1 quintile | −0.41% (−0.42) | +1.52% (0.80) | 8.48% / 8.12% | 18.7% | FAIL |
+| H3b bottom hi52 quintile | +2.24% (1.53) | +2.18% (1.33) | 9.14% / 8.87% | 17.8% | FAIL |
+| H4a value + GP/A | −2.64% (−0.73) | −8.36% (−2.55) | −1.40% / −1.43% | 24.2% | FAIL |
+| H4b F7 ≤ 2 | +0.42% (0.50) | −0.21% (−0.25) | 6.75% / 6.62% | 19.2% | FAIL |
+| H5 value + SUE | −4.49% (−1.23) | +0.21% (0.07) | 7.17% / 6.69% | 20.8% | FAIL |
+| H8 top vol60 quintile (exploratory) | −3.84% (−2.05) | +0.47% (0.31) | 7.43% / 7.31% | 16.5% | — |
+
+**No hypothesis passed, and none reached "supported, not confirmed".**
+
+What the results show:
+- **H2a** answers the user's question directly. Removing stocks that fell 70%+ in five years from the value portfolio did not help. In discovery it cost 1.5% per year (t −2.04). In surviving stocks, a crash is not a reason to exclude a cheap stock. The survivorship caveat applies most strongly here (`phase1_diagnostics.md`).
+- **H4a** made things worse. Mixing GP/A into value halves its tilt towards cheap stocks.
+- **H3b** is the only filter that was positive in both periods, but its t is below 2 in each.
+
+As pre-registered, the live score becomes plain value_sn:
+- no exclusion filters;
+- catalyst and ownership weight 0;
+- no regime weights.
+
+Survivorship. The holdout B′ series falls below t = 3 at h = 0 by construction, so the break-even is not informative here; the JSON has the values. For H1a, the mean active return turns negative at a 3.5% annual universe delisting rate (full loss, 3× concentration). The break-even uses NW t with 1 lag (the method of `survivorship_sensitivity.py`), so its t at h = 0 differs from the table above.
+
+**Post-hoc observation (not a result).** As standalone signals over the full sample, low CHS (rank IC t 4.27) and F7 (t 3.95) do predict returns. Altman EM does not (t 0.93). Their information overlaps with value: the value top quintile already avoids most distressed names. This was seen after the run, so it cannot support a new rule without a new pre-registration.
