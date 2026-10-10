@@ -190,6 +190,30 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
         if wk.auto_filter.ref:
             wk.auto_filter.ref = wk.auto_filter.ref.replace("A1:", "A2:")
 
+    rot = payload.get("rotation") or {}
+    if rot.get("n_holdings"):
+        wr = wb.create_sheet("Rotasyon")
+        _header(wr, 1, [("İşlem", None, None, 10), ("Hisse", None, None, 10),
+                        ("Değerleme z", None, None, 12), ("Sıra yüzdeliği", None, None, 14)])
+        r = 2
+        for action, items in (("AL", rot.get("buy") or []), ("TUT", rot.get("hold") or [])):
+            for h in items:
+                for j, v in enumerate((action, h["ticker"], h["valuation_z"], round(h["rank_pct"] * 100, 2)), 1):
+                    cell = wr.cell(row=r, column=j, value=v)
+                    cell.border = BORDER
+                    if j == 3:
+                        cell.number_format = SCORE
+                    if j == 4:
+                        cell.number_format = PCT
+                r += 1
+        for tk in rot.get("sell") or []:
+            for j, v in enumerate(("SAT", tk), 1):
+                wr.cell(row=r, column=j, value=v).border = BORDER
+            r += 1
+        wr.cell(row=r + 1, column=1, value=f"Dengeleme: {rot.get('rebalance_date')}; önceki: {rot.get('previous_rebalance_date') or '-'}. "
+                                         "Kural: değerleme sıralamasında üst %20 eşit ağırlık, üst dilimden çıkan satılır.")
+        wr.freeze_panes = "A2"
+
     from core import diagnostics as dg
     from core.targets import convergence_alpha
     w = payload.get("weights") or {}
@@ -205,7 +229,10 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
         f"Beklenen getirinin büyük kısmı piyasa getirisi beklentisidir (özsermaye maliyeti); hisseye özgü kısım 'Adil değer farkı × {alpha:g}' kadardır.",
         "Hurdle % = 180 günlük risksiz getiri (2Y tahvil). Hurdle üstü % = beklenen getiri − hurdle.",
         "Hedefe ulaşma olasılığı modelden gelir (lognormal); gerçekleşmiş isabet oranı değildir.",
-        ("Alış bandı ve stop ATR tabanlıdır; pozisyon % sabit risk kuralından (hesabın ~%1.5'i risk) türetilir. "
+        ("Alış bandı ve stop ATR tabanlıdır ve yalnızca bilgidir; pozisyon % bu stoptan (hesabın ~%1.5'i risk) "
+         "türetilen bir referanstır, test edilmiş bir büyüklük kuralı değildir. On-kayıtlı satış testi "
+         "(docs/research/exit_rules_preregistration.md): iz süren, sabit ve ATR stopları ile tez bozulması çıkışı "
+         "getiriyi artırmadı ve düşüşü azaltmadı; satış kuralı, hissenin değer sıralamasında üst %20'den çıkmasıdır. "
          "Alış bandı yalnızca bilgidir: on-kayıtlı test (docs/research/entry_timing_preregistration.md) "
          "geri çekilme/limit, RSI, trend onayı ve kademeli alım kurallarının hemen almaktan iyi olmadığını gösterdi."),
         "Değer tuzağı riski: fiyat trendi aşağı; ucuzluk düşüşün sonucu olabilir.",

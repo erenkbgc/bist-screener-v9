@@ -303,6 +303,11 @@ CREATE TABLE IF NOT EXISTS sector_rotation (
     PRIMARY KEY (as_of_date, index_code)
 );
 
+CREATE TABLE IF NOT EXISTS rotation_holdings (
+    rebalance_date TEXT, ticker TEXT, valuation_z REAL, rank_pct REAL,
+    PRIMARY KEY (rebalance_date, ticker)
+);
+
 CREATE TABLE IF NOT EXISTS factor_contributions (
     as_of_date TEXT,
     ticker TEXT,

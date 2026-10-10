@@ -97,3 +97,56 @@ A rule with D < 0 and t < −2 in both periods is labelled "harmful".
 - Survivorship bias: delisted stocks are missing, and they are exactly the ones a stop would have sold. The bias works **against** stops. This is reported with the result, not corrected.
 - Fills are at the close with no slippage. Gaps through a stop are filled at the trigger-day close, which is realistic for daily monitoring.
 - Proceeds held in XU100 keep market exposure. The alternative, cash, mixes in a market-timing effect that is not tested here.
+
+---
+
+## Results (added 2026-10-10, after the run; the sections above are unchanged)
+
+`python scripts/research_exit_rules.py`. 160 monthly rebalances, 2013-04 to 2026-08. Discovery is 93 months and holdout 67.
+
+R0 here is +10.64%/yr in discovery, the same as base B. Its holdout value (+5.67%) is lower than B's +6.96%, for two reasons:
+- month returns come from daily closes between rebalance days, not from the month-end panel;
+- names without daily data are skipped.
+
+**Portfolio statistics.** Active return is net of cost, NW t with 6 lags. Drawdown and volatility are for the total return in USD, so they include market exposure.
+
+| Rule | Period | Net active / yr (t) | USD active / yr | Turnover / month | Stop exits / yr | USD max DD | USD vol |
+|---|---|---|---|---|---|---|---|
+| R0 top 20% | discovery | 10.64% (2.66) | 10.60% | 16.7% | — | −57.9% | 38.5% |
+| | holdout | 5.67% (2.03) | 5.56% | 16.4% | — | −43.5% | 35.1% |
+| R1 buffer 20/40 | discovery | 9.62% (3.43) | 9.68% | 9.0% | — | −58.8% | 38.0% |
+| | holdout | 5.36% (2.09) | 5.12% | 7.3% | — | −39.8% | 34.6% |
+| R2 buffer 20/60 | discovery | 7.53% (3.10) | 7.67% | 7.1% | — | −58.4% | 37.4% |
+| | holdout | 5.27% (2.15) | 5.00% | 5.5% | — | −39.9% | 34.4% |
+| X1 trailing −25% | discovery | 6.34% (2.10) | 6.36% | 18.8% | 67 | −58.3% | 37.6% |
+| | holdout | 4.86% (1.95) | 4.69% | 19.3% | 113 | −40.2% | 34.5% |
+| X2 fixed −20% | discovery | 8.39% (2.88) | 8.40% | 12.5% | 25 | −58.8% | 37.7% |
+| | holdout | 5.55% (2.19) | 5.30% | 9.2% | 22 | −39.6% | 34.5% |
+| X3 live ATR stop | discovery | 8.48% (2.70) | 8.49% | 18.4% | 64 | −59.1% | 37.7% |
+| | holdout | 4.85% (1.91) | 4.64% | 13.4% | 67 | −40.4% | 34.5% |
+| X4 thesis break | discovery | 8.15% (2.67) | 8.21% | 26.4% | — | −58.7% | 37.9% |
+| | holdout | 5.59% (2.05) | 5.38% | 18.4% | — | −40.6% | 34.8% |
+
+**Tests.** D is the annual difference versus the base, NW t with 6 lags.
+
+| Test | Base | Discovery D (t) | Holdout D (t) | Stopped names beating XU100 over the next 3 months | Result |
+|---|---|---|---|---|---|
+| R1 buffer 20/40 | R0 | −1.02% (−0.44) | −0.30% (−0.19) | — | FAIL |
+| R2 buffer 20/60 | R0 | −3.11% (−1.01) | −0.40% (−0.24) | — | FAIL |
+| X1 trailing −25% | R1 | −3.29% (−1.81) | −0.50% (−0.56) | 46.6% | FAIL |
+| X2 fixed −20% | R1 | −1.23% (−1.25) | +0.19% (0.85) | 54.2% | FAIL |
+| X3 live ATR stop | R1 | −1.14% (−1.00) | −0.51% (−1.24) | 48.4% | FAIL |
+| X4 thesis break | R1 | −1.47% (−1.36) | +0.23% (0.28) | — | FAIL |
+
+**No rotation or exit rule passed.** None met "risk reduction" either: max drawdown and volatility moved by less than 1 pp. None met "harmful": no t < −2 in both periods.
+
+As pre-registered:
+- **Rotation stays R0:** hold the top 20% and sell when a name leaves it.
+- **The live `stop_loss` is information only.**
+- **Thesis break is not a sell reason.**
+
+How to read it:
+- **Buffers** halve turnover (16.7% to 7–9% per month). The cost saving is only about 0.4%/yr at 20 bps (2 × 20 bps × 7.7 pp × 12), and it is more than offset by holding weaker-ranked names. The net effect is small and not significant. At higher real costs (wide spreads in small caps), R1 would look relatively better. This was not tested.
+- **Price stops** cut drawdown by less than 1 pp, because the portfolio's drawdown is market-wide (USD max DD around −40% to −59% for every rule). A stock-level stop does not protect against a market fall, and the proceeds stayed in XU100.
+- After a stop, roughly half the stopped names beat XU100 over the next 3 months (46.6–54.2%). A stop sells at a random point, not before further losses. This matches the reversal and no-momentum evidence.
+- **Survivorship works against stops**, because delisted names are missing. So these results understate stop value somewhat, but not by enough to reverse a −1% to −3%/yr discovery cost without evidence.
