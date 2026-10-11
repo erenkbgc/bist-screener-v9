@@ -20,6 +20,8 @@ def test_parse_drops_unknown_ids_and_categories():
     assert kap_llm.parse(content, {1, 2, 3}) == {1: "insolvency", 3: "none"}
     assert kap_llm.parse("OK", {1}) == {}
     assert kap_llm.parse('{"items": "x"}', {1}) == {}
+    # Bazi modeller JSON'u kod blogu icinde dondurur.
+    assert kap_llm.parse('```json\n{"items": [{"id": 1, "category": "none"}]}\n```', {1}) == {1: "none"}
 
 
 def test_prompt_lists_only_fixed_categories():
@@ -32,9 +34,7 @@ class _Resp:
     def __init__(self, payload, status=200):
         self.payload, self.status_code = payload, status
 
-    def raise_for_status(self):
-        if self.status_code >= 400:
-            raise RuntimeError(f"HTTP {self.status_code}")
+    text = "rate limit"
 
     def json(self):
         return self.payload
@@ -65,14 +65,14 @@ def _seed(monkeypatch, n):
 
 
 def test_no_token_skips(temp_db, monkeypatch):
-    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-    assert kap_llm.label_pending(["AAA"], "2026-04-01")["error"] == "GITHUB_TOKEN yok"
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    assert kap_llm.label_pending(["AAA"], "2026-04-01")["error"] == "GROQ_API_KEY yok"
 
 
 def test_labels_stored_and_shown_separately(temp_db, monkeypatch):
     from report.render import render_mobile_newsletter
     from report.validate import find_orphan_numbers
-    monkeypatch.setenv("GITHUB_TOKEN", "x")
+    monkeypatch.setenv("GROQ_API_KEY", "x")
     _seed(monkeypatch, 3)
     out = kap_llm.label_pending(["AAA"], "2026-04-01", http=_FakeHttp())
     assert out["labeled"] == 3 and out["error"] is None
@@ -95,7 +95,7 @@ def test_labels_stored_and_shown_separately(temp_db, monkeypatch):
 
 
 def test_rate_limit_keeps_partial_labels(temp_db, monkeypatch):
-    monkeypatch.setenv("GITHUB_TOKEN", "x")
+    monkeypatch.setenv("GROQ_API_KEY", "x")
     _seed(monkeypatch, 45)  # 3 istek (20 + 20 + 5)
     out = kap_llm.label_pending(["AAA"], "2026-04-01", http=_FakeHttp(fail_after=1))
     assert out["labeled"] == 20 and "429" in out["error"]
@@ -103,7 +103,7 @@ def test_rate_limit_keeps_partial_labels(temp_db, monkeypatch):
 
 
 def test_label_rows_carry_model_and_prompt(temp_db, monkeypatch):
-    monkeypatch.setenv("GITHUB_TOKEN", "x")
+    monkeypatch.setenv("GROQ_API_KEY", "x")
     _seed(monkeypatch, 1)
     kap_llm.label_pending(["AAA"], "2026-04-01", http=_FakeHttp())
     r = db.query("SELECT model, prompt_hash FROM kap_llm_labels")[0]
