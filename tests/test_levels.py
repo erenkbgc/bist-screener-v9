@@ -128,6 +128,7 @@ def test_long_term_card_shows_realized_reference_not_model_target():
            "sector_rotation": [], "no_action_today": False, "realized_returns": rr}
     html = render_mobile_newsletter(ctx)
     assert "Alış: sonraki kapanış" in html and "Gerçekçi getiri" in html
+    assert "dolar bazında" in html and "TL mevduat" in html
     for hidden in ("112.40", "93.20", "Alış bandı", "Hedefe ulaşma"):
         assert hidden not in html
     assert find_orphan_numbers(html, payload) == []

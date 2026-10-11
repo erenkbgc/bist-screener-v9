@@ -12,6 +12,13 @@
       "positive_share_pct": 64.1,
       "n": 3687
     },
+    "stock_usd_6m": {
+      "median_pct": -3.8,
+      "p10_pct": -33.0,
+      "p90_pct": 63.6,
+      "positive_share_pct": 45.5,
+      "n": 3687
+    },
     "stock_vs_xu100_6m": {
       "median_pct": -7.5,
       "p10_pct": -38.8,
@@ -26,6 +33,38 @@
       "p90_pct": 27.8,
       "positive_share_pct": 52.4,
       "n_months": 63
+    },
+    "basket_tl_6m": {
+      "mean_pct": 30.2,
+      "median_pct": 20.4,
+      "p10_pct": -6.6,
+      "p90_pct": 78.8,
+      "positive_share_pct": 81.0,
+      "n_months": 63
+    },
+    "basket_usd_6m": {
+      "mean_pct": 9.9,
+      "median_pct": 3.5,
+      "p10_pct": -16.8,
+      "p90_pct": 42.6,
+      "positive_share_pct": 52.4,
+      "n_months": 63
+    },
+    "deposit_tl_6m": {
+      "mean_pct": 16.1,
+      "median_pct": 19.5,
+      "p10_pct": 5.7,
+      "p90_pct": 26.9,
+      "positive_share_pct": 100.0,
+      "n_months": 63
+    },
+    "basket_vs_deposit_6m": {
+      "mean_pct": 14.2,
+      "median_pct": 3.6,
+      "p10_pct": -26.3,
+      "p90_pct": 71.8,
+      "positive_share_pct": 50.8,
+      "n_months": 63
     }
   },
   "discovery": {
@@ -34,6 +73,13 @@
       "p10_pct": -23.2,
       "p90_pct": 82.9,
       "positive_share_pct": 59.7,
+      "n": 4010
+    },
+    "stock_usd_6m": {
+      "median_pct": 0.1,
+      "p10_pct": -32.9,
+      "p90_pct": 71.8,
+      "positive_share_pct": 50.1,
       "n": 4010
     },
     "stock_vs_xu100_6m": {
@@ -50,7 +96,39 @@
       "p90_pct": 59.7,
       "positive_share_pct": 86.0,
       "n_months": 93
+    },
+    "basket_tl_6m": {
+      "mean_pct": 23.9,
+      "median_pct": 16.0,
+      "p10_pct": -6.6,
+      "p90_pct": 70.9,
+      "positive_share_pct": 76.3,
+      "n_months": 93
+    },
+    "basket_usd_6m": {
+      "mean_pct": 14.1,
+      "median_pct": 6.7,
+      "p10_pct": -17.7,
+      "p90_pct": 54.5,
+      "positive_share_pct": 62.4,
+      "n_months": 93
+    },
+    "deposit_tl_6m": {
+      "mean_pct": 5.6,
+      "median_pct": 4.1,
+      "p10_pct": 3.8,
+      "p90_pct": 11.1,
+      "positive_share_pct": 100.0,
+      "n_months": 93
+    },
+    "basket_vs_deposit_6m": {
+      "mean_pct": 18.3,
+      "median_pct": 11.1,
+      "p10_pct": -13.0,
+      "p90_pct": 66.3,
+      "positive_share_pct": 68.8,
+      "n_months": 93
     }
   },
-  "caveat": "Delist olmus hisseler veride yok; sayilar iyimserdir."
+  "caveat": "Delist olmus hisseler veride yok; sayilar iyimserdir. Mevduat vekili TCMB politika faizi, brut (stopaj oncesi); hisse getirisi islem maliyeti oncesi."
 }

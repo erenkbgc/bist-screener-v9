@@ -29,6 +29,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import research_long_term as rlt  # noqa: E402
 
 OUT = ROOT / "config" / "realized_returns.json"
+MACRO = ROOT / "data" / "research" / "macro_monthly.parquet"
 
 
 def top_quintile_members(df: pd.DataFrame) -> pd.DataFrame:
@@ -49,16 +50,41 @@ def _pct(x: pd.Series) -> dict:
             "n": int(len(x))}
 
 
+def deposit_6m(dates: pd.Index) -> pd.Series:
+    """TL mevduat vekili: TCMB politika faizi (borsapy TCMB, macro_monthly),
+    t ayindan itibaren 6 ay boyunca aylik bilesik, brut (stopaj oncesi)."""
+    policy = pd.read_parquet(MACRO)["policy"].dropna()
+    policy.index = pd.to_datetime(policy.index).to_period("M")
+    out = {}
+    for d in dates:
+        months = [pd.Timestamp(d).to_period("M") + k for k in range(6)]
+        rates = [policy.get(m) for m in months]
+        if all(r is not None and pd.notna(r) for r in rates):
+            out[d] = float(pd.Series([1 + r / 1200 for r in rates]).prod() - 1)
+    return pd.Series(out)
+
+
+def _basket(x: pd.Series) -> dict:
+    x = x.dropna() * 100
+    return {"mean_pct": round(float(x.mean()), 1), "median_pct": round(float(x.median()), 1),
+            "p10_pct": round(float(x.quantile(0.1)), 1), "p90_pct": round(float(x.quantile(0.9)), 1),
+            "positive_share_pct": round(float((x > 0).mean() * 100), 1), "n_months": int(len(x))}
+
+
 def summarize(top: pd.DataFrame) -> dict:
-    basket = top.groupby("date")["xs_6m"].mean().dropna() * 100
+    by_date = top.groupby("date")
+    basket_tl = by_date["fwd_ret_6m"].mean()
+    deposit = deposit_6m(basket_tl.index)
     return {
         "stock_tl_6m": _pct(top["fwd_ret_6m"]),
+        "stock_usd_6m": _pct(top["fwd_ret_6m_usd"]),
         "stock_vs_xu100_6m": _pct(top["xs_6m"]),
-        "basket_vs_xu100_6m": {
-            "mean_pct": round(float(basket.mean()), 1), "median_pct": round(float(basket.median()), 1),
-            "p10_pct": round(float(basket.quantile(0.1)), 1), "p90_pct": round(float(basket.quantile(0.9)), 1),
-            "positive_share_pct": round(float((basket > 0).mean() * 100), 1), "n_months": int(len(basket)),
-        },
+        "basket_vs_xu100_6m": _basket(by_date["xs_6m"].mean()),
+        "basket_tl_6m": _basket(basket_tl),
+        "basket_usd_6m": _basket(by_date["fwd_ret_6m_usd"].mean()),
+        # Sepet TL getirisi - ayni 6 ayin politika faizi getirisi (puan).
+        "deposit_tl_6m": _basket(deposit),
+        "basket_vs_deposit_6m": _basket((basket_tl - deposit).dropna()),
     }
 
 
@@ -75,7 +101,8 @@ def main() -> None:
         "period_end": str(hold["date"].max().date()),
         "holdout": summarize(hold),
         "discovery": summarize(top[top["date"] < rlt.SPLIT]),
-        "caveat": "Delist olmus hisseler veride yok; sayilar iyimserdir.",
+        "caveat": "Delist olmus hisseler veride yok; sayilar iyimserdir. Mevduat vekili TCMB politika "
+                  "faizi, brut (stopaj oncesi); hisse getirisi islem maliyeti oncesi.",
     }
     OUT.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps(out["holdout"], ensure_ascii=False))
