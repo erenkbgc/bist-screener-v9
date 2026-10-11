@@ -113,6 +113,16 @@
     <div><b style="color:#1d4ed8;">TUT:</b> {% if rotation.hold %}{% for h in rotation.hold %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
     <div><b style="color:#b91c1c;">SAT:</b> {% if rotation.sell %}{{ rotation.sell | join(", ") }}{% else %}yok{% endif %}</div>
     {% if portfolio_correlation and portfolio_correlation.effective_n %}<div style="font-size:12px; color:#475569; margin-top:6px;">Çeşitlendirme: {{ portfolio_correlation.n_holdings | fmt }} hisse, 60 günlük ortalama getiri korelasyonu {{ portfolio_correlation.avg_pairwise_corr | fmt }}; yaklaşık {{ portfolio_correlation.effective_n | fmt }} bağımsız bahis kadar.</div>{% endif %}
+    {% if kap_red_flags %}<div style="font-size:12px; color:#334155; margin-top:8px; border-top:1px solid #e2e8f0; padding-top:8px;">
+      <b>KAP kırmızı bayrak (son {{ kap_red_flags.window_days | fmt }} gün, bilgi amaçlı):</b>
+      {% if kap_red_flags.status == "unavailable" %}KAP verisi alınamadı; bayrak durumu bilinmiyor.
+      {% else %}
+        {% if kap_red_flags.holdings %}{% for h in kap_red_flags.holdings %}<div style="margin-top:3px;"><b>{{ h.ticker }}</b>: {% for c in h.categories %}<a href="{{ c.url }}" style="color:#b91c1c;">{{ c.label }}</a> ({{ c.count | fmt }} bildirim, son {{ c.last_date }}){% if not loop.last %}; {% endif %}{% endfor %}</div>{% endfor %}
+        {% else %}AL/TUT hisselerinde bayrak yok.{% endif %}
+        {% if kap_red_flags.status == "partial" %}<div style="color:#b45309;">Uyarı: {{ kap_red_flags.missing_days | fmt }} gün KAP'tan çekilemedi; liste eksik olabilir.</div>{% endif %}
+      {% endif %}
+      <div style="color:#64748b;">Dava, istifa, konkordato, SPK/Rekabet yaptırımı gibi bildirimler kural tabanlı yakalanır. Geçmiş testte bu hisseleri elemek getiriyi artırmadı; karar değişmez, yalnızca kontrol notudur.</div>
+    </div>{% endif %}
     <div style="font-size:12px; color:#64748b; margin-top:6px;">Kural: değerleme sıralamasında üst %{{ rotation.top_pct | fmt }} ({{ rotation.n_holdings | fmt }} hisse) eşit ağırlıkla tutulur, üst dilimden çıkan satılır; ayda bir güncellenir. Alış zamanlaması, stop ve tampon kuralları test edildi, hemen almak ve bu kuraldan iyi olmadı. Yatırım tavsiyesi değildir.</div>
   </td></tr>
   <tr><td style="height:14px; line-height:14px; font-size:0;">&nbsp;</td></tr>
