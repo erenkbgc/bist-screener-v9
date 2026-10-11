@@ -656,6 +656,7 @@
       <b>Gercekci getiri (gecmiste ne oldu, {{ realized_returns.period_start }} – {{ realized_returns.period_end }}, 6 ay):</b>
       bu kurala giren hisselerde medyan %{{ rr.stock_tl_6m.median_pct | fmt }} TL; en kotu onda bir %{{ rr.stock_tl_6m.p10_pct | fmt }}, en iyi onda bir %{{ rr.stock_tl_6m.p90_pct | fmt }}.
       Tek hisse XU100'u %{{ rr.stock_vs_xu100_6m.positive_share_pct | fmt }} oraninda gecti; esit agirlikli sepet XU100'u ortalama %{{ rr.basket_vs_xu100_6m.mean_pct | fmt }} puan gecti (donemlerin %{{ rr.basket_vs_xu100_6m.positive_share_pct | fmt }}'inde).
+      {% if rr.basket_usd_6m and rr.basket_vs_deposit_6m %}Sepet 6 ayda dolar bazinda medyan %{{ rr.basket_usd_6m.median_pct | fmt }} (ortalama %{{ rr.basket_usd_6m.mean_pct | fmt }}; donemlerin %{{ rr.basket_usd_6m.positive_share_pct | fmt }}'inde arti). Ayni 6 aylarda TL mevduat (politika faizi, brut) medyan %{{ rr.deposit_tl_6m.median_pct | fmt }} getirdi; sepet mevduati donemlerin %{{ rr.basket_vs_deposit_6m.positive_share_pct | fmt }}'inde gecti (medyan fark %{{ rr.basket_vs_deposit_6m.median_pct | fmt }} puan).{% endif %}
       Hisse bazli hedef fiyat, alis bandi ve stop gosterilmiyor: model hedefleri gecmiste gerceklesenin cok ustundeydi; alis ve satis kurallari on-kayitli testleri gecmedi. Delist olanlar veride yok, sayilar iyimser.
     </div>
     {% endif %}

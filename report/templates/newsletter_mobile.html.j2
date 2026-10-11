@@ -137,6 +137,7 @@
       <b style="color:#0f172a;">Gerçekçi getiri (geçmişte ne oldu)</b><br>
       Bu kurala giren hisselerin 6 aylık getirisi ({{ realized_returns.period_start }} – {{ realized_returns.period_end }}): medyan %{{ rr.stock_tl_6m.median_pct | fmt }} TL; en kötü onda bir %{{ rr.stock_tl_6m.p10_pct | fmt }} altında, en iyi onda bir %{{ rr.stock_tl_6m.p90_pct | fmt }} üstünde.
       Tek hisse XU100'ü yalnızca %{{ rr.stock_vs_xu100_6m.positive_share_pct | fmt }} oranında geçti. Avantaj sepet düzeyinde: eşit ağırlıklı sepet XU100'ü 6 ayda ortalama %{{ rr.basket_vs_xu100_6m.mean_pct | fmt }} puan geçti (dönemlerin %{{ rr.basket_vs_xu100_6m.positive_share_pct | fmt }}'inde).
+      {% if rr.basket_usd_6m and rr.basket_vs_deposit_6m %}<br>Dolar ve mevduat karşılaştırması: sepet 6 ayda dolar bazında medyan %{{ rr.basket_usd_6m.median_pct | fmt }} (ortalama %{{ rr.basket_usd_6m.mean_pct | fmt }}; dönemlerin %{{ rr.basket_usd_6m.positive_share_pct | fmt }}'inde artı). Aynı 6 aylarda TL mevduat (politika faizi, brüt) medyan %{{ rr.deposit_tl_6m.median_pct | fmt }} getirdi; sepet mevduatı dönemlerin yalnızca %{{ rr.basket_vs_deposit_6m.positive_share_pct | fmt }}'inde geçti (medyan fark %{{ rr.basket_vs_deposit_6m.median_pct | fmt }} puan).{% endif %}
       <div style="font-size:12px; color:#64748b; margin-top:4px;">Hisse bazlı hedef fiyat gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi. TL getirinin büyük kısmı piyasa yönüne bağlı ve o öngörülemiyor. Delist olan hisseler veride yok, sayılar iyimser.</div>
     </div>
   </td></tr>

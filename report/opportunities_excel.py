@@ -58,7 +58,12 @@ def _realized_note(rr: dict) -> str:
     return (f"Gerçekçi getiri ({rr['period_start']} – {rr['period_end']}, 6 ay): bu kurala giren hisselerde medyan "
             f"%{st['median_pct']:g} TL, en kötü onda bir %{st['p10_pct']:g}, en iyi onda bir %{st['p90_pct']:g}. "
             f"Tek hisse XU100'ü %{xs['positive_share_pct']:g} oranında geçti; eşit ağırlıklı sepet XU100'ü ortalama "
-            f"%{bk['mean_pct']:g} puan geçti (dönemlerin %{bk['positive_share_pct']:g}'inde). Hisse bazlı hedef "
+            f"%{bk['mean_pct']:g} puan geçti (dönemlerin %{bk['positive_share_pct']:g}'inde). "
+            + (f"Sepet dolar bazında medyan %{h['basket_usd_6m']['median_pct']:g}; aynı dönemde TL mevduat (politika "
+               f"faizi, brüt) medyan %{h['deposit_tl_6m']['median_pct']:g}, sepet mevduatı dönemlerin "
+               f"%{h['basket_vs_deposit_6m']['positive_share_pct']:g}'inde geçti. "
+               if "basket_usd_6m" in h and "basket_vs_deposit_6m" in h else "")
+            + "Hisse bazlı hedef "
             "gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi. Delist olanlar veride yok, sayılar iyimser.")
 
 
