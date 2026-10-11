@@ -444,7 +444,12 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     # --- concentration_check + correlation_diagnostic (yalnizca gecen adaylar uzerinde) ---
     passing = [c for c in scored if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")]
     concentration_warnings = concentration_mod.check_concentration(passing)
-    correlation_mod.compute_correlation_flags(as_of_date, {c["ticker"]: prices_by_ticker[c["ticker"]] for c in passing})
+    # Korelasyon yalnizca fiilen tutulan AL/TUT sepetinde anlamli (tum gecen
+    # adaylarin ciftleri gunde binlerce bayrak uretiyordu).
+    held = {c["ticker"]: prices_by_ticker[c["ticker"]]
+            for c in rotation["buy"] + rotation["hold"] if c["ticker"] in prices_by_ticker}
+    correlation_mod.compute_correlation_flags(as_of_date, held)
+    portfolio_correlation = correlation_mod.effective_bets(held)
 
     # --- Quant Level-Up Faz 4 & 5: HRP Portfoy & Faktor Katki Disclosures ---
     if passing:
@@ -486,6 +491,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         sector_rotation=sector_rotation,
         run_health=health,
         rotation=rotation,
+        portfolio_correlation=portfolio_correlation,
     )
     decision_diff = payload["decision_diff"]
 
@@ -515,6 +521,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "portfolio_result": portfolio_result,
         "decision_diff": decision_diff,
         "rotation": payload["rotation"],
+        "portfolio_correlation": payload["portfolio_correlation"],
         "concentration_warnings": concentration_warnings,
         "sector_rotation": sorted(
             ({"code": k, **v} for k, v in sector_rotation.items()),
