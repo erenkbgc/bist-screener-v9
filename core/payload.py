@@ -24,6 +24,7 @@ def build_report_payload(
     sector_rotation: dict | None = None,
     run_health: dict | None = None,
     rotation: dict | None = None,
+    portfolio_correlation: dict | None = None,
 ) -> dict:
     as_of_date_cutoff = as_of_date
 
@@ -133,6 +134,7 @@ def build_report_payload(
         "evaluation_summary": summarize_outcomes(as_of_date),
         "decision_diff": diff_against_previous_run(as_of_date),
         "rotation": rotation or {},
+        "portfolio_correlation": portfolio_correlation or {},
     }
     return payload
 
