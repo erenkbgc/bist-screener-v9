@@ -50,6 +50,18 @@ def _pct_gap(a, b):
         return None
 
 
+def _realized_note(rr: dict) -> str:
+    h = rr.get("holdout")
+    if not h:
+        return "Hisse bazlı hedef fiyat gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi."
+    st, xs, bk = h["stock_tl_6m"], h["stock_vs_xu100_6m"], h["basket_vs_xu100_6m"]
+    return (f"Gerçekçi getiri ({rr['period_start']} – {rr['period_end']}, 6 ay): bu kurala giren hisselerde medyan "
+            f"%{st['median_pct']:g} TL, en kötü onda bir %{st['p10_pct']:g}, en iyi onda bir %{st['p90_pct']:g}. "
+            f"Tek hisse XU100'ü %{xs['positive_share_pct']:g} oranında geçti; eşit ağırlıklı sepet XU100'ü ortalama "
+            f"%{bk['mean_pct']:g} puan geçti (dönemlerin %{bk['positive_share_pct']:g}'inde). Hisse bazlı hedef "
+            "gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi. Delist olanlar veride yok, sayılar iyimser.")
+
+
 def _bool_tr(v):
     return "Evet" if v else ("Hayır" if v is not None else None)
 
@@ -89,12 +101,19 @@ LONG_COLS = [
     ("En güçlü faktör", lambda c: (c.get("factor_attribution") or {}).get("top_positive_factor"), None, 22),
     ("En zayıf faktör", lambda c: (c.get("factor_attribution") or {}).get("top_negative_factor"), None, 22),
 ]
+# Uzun vadede model hedefi, alis bandi, stop ve pozisyon gosterilmez: hedef
+# dogrulugu testi tahmini abartili buldu, alis ve satis kurallari on-kayitli
+# testleri gecmedi. Yerine "Açıklamalar" sayfasinda gerceklesen dagilim var.
+LONG_HIDDEN = ("Alış bandı alt", "Alış bandı üst", "Stop", "Hedef (180g)", "Beklenen getiri %",
+               "Hurdle üstü %", "Hedefe ulaşma olasılığı %", "Pozisyon %", "Destek", "Direnç",
+               "Direnç hedeften önce")
 SHORT_COLS = [col for col in LONG_COLS if col[0] not in (
     "Hedef (180g)", "Adil değer (baz)", "Adil değer farkı %", "Adil değer düşük", "Adil değer yüksek",
     "Değer tuzağı riski", "5 yıllık zirveden %", "52 haftalık zirveden %", "Risk bayrakları",
     "F/K", "PD/DD", "Piotroski (0-1)")]
 SHORT_COLS.insert(8, ("Hedef (20g)", lambda c: c.get("target_price"), PRICE, 11))
 SHORT_COLS.insert(9, ("Hacim oranı (20g)", lambda c: c.get("volume_ratio_20d"), "0.00", 10))
+LONG_COLS = [col for col in LONG_COLS if col[0] not in LONG_HIDDEN]
 
 
 def _header(ws, row: int, cols) -> None:
@@ -215,25 +234,19 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
         wr.freeze_panes = "A2"
 
     from core import diagnostics as dg
-    from core.targets import convergence_alpha
     w = payload.get("weights") or {}
-    alpha = convergence_alpha()
     wm = wb.create_sheet("Açıklamalar")
     notes = [
         "Yatırım tavsiyesi değildir. Model çıktısıdır; gerçekleşen performans henüz ölçülmedi (ilk sonuçlar 2026-10-01'den itibaren).",
         (f"Skor = {w.get('valuation_z', 0):g} değerleme + {w.get('catalyst_score', 0):g} katalizör + "
          f"{w.get('ownership_quality_z', 0):g} ortaklık + {w.get('low_vol_z', 0):g} düşük volatilite + "
          f"{w.get('momentum_z', 0):g} momentum. KAP verisi alınamayan hissede katalizör ağırlığı diğerlerine dağıtılır."),
-        (f"Hedef (180g) = (fiyat + {alpha:g} × (adil değer − fiyat)) × (1 + özsermaye maliyeti)^(180/365) − temettü. "
-         f"{alpha:g}, geçmiş verideki gerçek yakınsama hızından ölçüldü (fiyat 6 ayda adil değer farkının ~%3'ünü kapattı)."),
-        f"Beklenen getirinin büyük kısmı piyasa getirisi beklentisidir (özsermaye maliyeti); hisseye özgü kısım 'Adil değer farkı × {alpha:g}' kadardır.",
-        "Hurdle % = 180 günlük risksiz getiri (2Y tahvil). Hurdle üstü % = beklenen getiri − hurdle.",
-        "Hedefe ulaşma olasılığı modelden gelir (lognormal); gerçekleşmiş isabet oranı değildir.",
-        ("Alış bandı ve stop ATR tabanlıdır ve yalnızca bilgidir; pozisyon % bu stoptan (hesabın ~%1.5'i risk) "
-         "türetilen bir referanstır, test edilmiş bir büyüklük kuralı değildir. On-kayıtlı satış testi "
+        _realized_note(payload.get("realized_returns") or {}),
+        "Hurdle % = 180 günlük risksiz getiri (2Y tahvil).",
+        ("Uzun vadede alış sonraki kapanıştır; alış bandı, stop ve pozisyon büyüklüğü gösterilmez. On-kayıtlı satış testi "
          "(docs/research/exit_rules_preregistration.md): iz süren, sabit ve ATR stopları ile tez bozulması çıkışı "
          "getiriyi artırmadı ve düşüşü azaltmadı; satış kuralı, hissenin değer sıralamasında üst %20'den çıkmasıdır. "
-         "Alış bandı yalnızca bilgidir: on-kayıtlı test (docs/research/entry_timing_preregistration.md) "
+         "On-kayıtlı alış testi (docs/research/entry_timing_preregistration.md) "
          "geri çekilme/limit, RSI, trend onayı ve kademeli alım kurallarının hemen almaktan iyi olmadığını gösterdi."),
         "Değer tuzağı riski: fiyat trendi aşağı; ucuzluk düşüşün sonucu olabilir.",
         (f"Zirveden % ve risk bayrakları yalnızca bilgidir, skoru değiştirmez: 5 yıllık zirveden "

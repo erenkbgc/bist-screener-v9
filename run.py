@@ -522,6 +522,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "decision_diff": decision_diff,
         "rotation": payload["rotation"],
         "portfolio_correlation": payload["portfolio_correlation"],
+        "realized_returns": payload["realized_returns"],
         "concentration_warnings": concentration_warnings,
         "sector_rotation": sorted(
             ({"code": k, **v} for k, v in sector_rotation.items()),

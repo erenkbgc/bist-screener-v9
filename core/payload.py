@@ -7,12 +7,26 @@ olan satirlar kullanilir.
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from core import db
 from core.scoring import load_weights
 from core.beta_hurdle import load_equity_risk_premium_pct
 from core.dcf import GROWTH_LOW_PCT, GROWTH_BASE_PCT, GROWTH_HIGH_PCT, load_corporate_tax_rate_pct
 from core.evaluate import summarize_outcomes
 from core.decision_diff import diff_against_previous_run
+
+REALIZED_RETURNS_PATH = Path(__file__).resolve().parent.parent / "config" / "realized_returns.json"
+
+
+def load_realized_returns() -> dict:
+    """Canli kuralin gecmiste gerceklesen 6 aylik getiri dagilimi
+    (scripts/realized_return_reference.py). Yoksa bos: bulten bolumu gizlenir."""
+    try:
+        return json.loads(REALIZED_RETURNS_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
 
 
 def build_report_payload(
@@ -135,6 +149,7 @@ def build_report_payload(
         "decision_diff": diff_against_previous_run(as_of_date),
         "rotation": rotation or {},
         "portfolio_correlation": portfolio_correlation or {},
+        "realized_returns": load_realized_returns(),
     }
     return payload
 

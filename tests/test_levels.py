@@ -102,11 +102,34 @@ def test_mobile_card_shows_levels_without_orphan_numbers():
             "nearest_support": 97.3, "nearest_resistance": 106.8, "resistance_before_target": True,
             "sr_levels": {"supports": [97.31], "resistances": [106.77], "vwap20": 99.12, "poc": 96.4}}
     payload = {"passing_candidates": [cand]}
-    ctx = {"as_of_date": "2026-09-27", "long_term_candidates": [cand], "short_term_candidates": [],
+    # Seviyeler yalnizca (deneysel) kisa vade kartinda; uzun vadede hedef/stop/bant
+    # gosterilmez (on-kayitli alis ve satis testleri gecmedi).
+    ctx = {"as_of_date": "2026-09-27", "long_term_candidates": [], "short_term_candidates": [cand],
            "sector_rotation": [], "no_action_today": False}
     html = render_mobile_newsletter(ctx)
     assert "Destek / direnç" in html and "106.80" in html
     assert "Hedef yolunda direnç" in html
+    assert find_orphan_numbers(html, payload) == []
+
+
+def test_long_term_card_shows_realized_reference_not_model_target():
+    import json
+    from pathlib import Path
+    from report.render import render_mobile_newsletter
+    from report.validate import find_orphan_numbers
+    cand = {"ticker": "TEST", "candidate_state": "OPPORTUNITY", "current_price": 100.0,
+            "target_price": 112.4, "expected_roi_pct": 12.4, "horizon_days": 180,
+            "entry_low": 98.5, "entry_high": 100.4, "stop_loss": 93.2, "position_size_pct": 18.2,
+            "target_hit_prob_pct": 43.1}
+    rr = json.loads(Path("config/realized_returns.json").read_text(encoding="utf-8"))
+    payload = {"passing_candidates": [cand], "realized_returns": rr}
+    ctx = {"as_of_date": "2026-09-27", "long_term_candidates": [cand], "short_term_candidates": [],
+           "long_term_display_count": 1, "short_term_display_count": 0,
+           "sector_rotation": [], "no_action_today": False, "realized_returns": rr}
+    html = render_mobile_newsletter(ctx)
+    assert "Alış: sonraki kapanış" in html and "Gerçekçi getiri" in html
+    for hidden in ("112.40", "93.20", "Alış bandı", "Hedefe ulaşma"):
+        assert hidden not in html
     assert find_orphan_numbers(html, payload) == []
 
 

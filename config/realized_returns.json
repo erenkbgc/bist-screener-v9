@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-10-11",
+  "rule": "value_sn ust %20, aylik",
+  "horizon_months": 6,
+  "period_start": "2021-01-31",
+  "period_end": "2026-03-31",
+  "holdout": {
+    "stock_tl_6m": {
+      "median_pct": 12.7,
+      "p10_pct": -22.2,
+      "p90_pct": 93.9,
+      "positive_share_pct": 64.1,
+      "n": 3687
+    },
+    "stock_vs_xu100_6m": {
+      "median_pct": -7.5,
+      "p10_pct": -38.8,
+      "p90_pct": 49.9,
+      "positive_share_pct": 39.5,
+      "n": 3687
+    },
+    "basket_vs_xu100_6m": {
+      "mean_pct": 3.3,
+      "median_pct": 1.4,
+      "p10_pct": -11.7,
+      "p90_pct": 27.8,
+      "positive_share_pct": 52.4,
+      "n_months": 63
+    }
+  },
+  "discovery": {
+    "stock_tl_6m": {
+      "median_pct": 7.8,
+      "p10_pct": -23.2,
+      "p90_pct": 82.9,
+      "positive_share_pct": 59.7,
+      "n": 4010
+    },
+    "stock_vs_xu100_6m": {
+      "median_pct": 3.5,
+      "p10_pct": -23.0,
+      "p90_pct": 71.9,
+      "positive_share_pct": 55.1,
+      "n": 4010
+    },
+    "basket_vs_xu100_6m": {
+      "mean_pct": 19.0,
+      "median_pct": 10.3,
+      "p10_pct": -1.2,
+      "p90_pct": 59.7,
+      "positive_share_pct": 86.0,
+      "n_months": 93
+    }
+  },
+  "caveat": "Delist olmus hisseler veride yok; sayilar iyimserdir."
+}
