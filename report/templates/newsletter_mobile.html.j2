@@ -71,7 +71,7 @@
   <tr><td style="background:#0f172a; border-radius:12px; padding:18px 16px; color:#ffffff;">
     <div style="font-size:12px; color:#94a3b8;">{{ as_of_date }} · Günlük tarama</div>
     <div style="font-size:21px; font-weight:800; margin-top:4px; line-height:1.25;">
-      {% if no_action_today %}Bugün işlem sinyali yok{% else %}{{ long_term_candidates | length }} uzun vade · {{ short_term_candidates | length }} kısa vade aday{% endif %}
+      {% if no_action_today %}Bugün işlem sinyali yok{% else %}{{ long_term_display_count }} uzun vade · {{ short_term_display_count }} kısa vade aday{% endif %}
     </div>
     {% if regime_taxonomy_tag and "unknown" not in regime_taxonomy_tag %}<div style="font-size:13px; color:#cbd5e1; margin-top:6px;">Rejim: {{ regime_taxonomy_tag }}</div>{% endif %}
     {% if regime %}

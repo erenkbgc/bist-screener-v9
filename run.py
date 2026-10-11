@@ -497,6 +497,13 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         card = thesis_mod.build_thesis_card(c)
         lt_display.append({**c, **card, "upcoming_events": c.get("events", [])})
 
+    st_display = [c for c in short_term_candidates if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")]
+    # Mobil ozet bu sayilari basar; sablonda "| length" hesabi validation gate'te
+    # orphan sayi uretir (2026-10-06/09/10 bultenleri bu yuzden gonderilmedi),
+    # o yuzden sayim payload'a yazilir.
+    payload["long_term_display_count"] = len(lt_display)
+    payload["short_term_display_count"] = len(st_display)
+
     filtered_candidates = [c for c in scored if c["candidate_state"] == "NO_ACTION"]
     evaluation_summary = payload["evaluation_summary"]
 
@@ -513,7 +520,9 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             ({"code": k, **v} for k, v in sector_rotation.items()),
             key=lambda r: (["Improving", "Leading", "Weakening", "Lagging"].index(r["quadrant"]), -r["rs_momentum"])),
         "long_term_candidates": lt_display,
-        "short_term_candidates": [c for c in short_term_candidates if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")],
+        "short_term_candidates": st_display,
+        "long_term_display_count": payload["long_term_display_count"],
+        "short_term_display_count": payload["short_term_display_count"],
         "filtered_candidates": filtered_candidates,
         "unscored_count": payload["unscored_count"],
         "no_action_count": payload["no_action_count"],
