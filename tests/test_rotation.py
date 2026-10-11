@@ -32,3 +32,14 @@ def test_monthly_rebalance_reused_within_month_and_diff(temp_db):
     assert [h["ticker"] for h in r2["hold"]] == ["T9"]
     assert [h["ticker"] for h in r2["buy"]] == ["T7"]
     assert r2["sell"] == ["T8"] and r2["previous_rebalance_date"] == "2026-09-01"
+
+
+def test_financials_excluded_like_tested_panel():
+    # Test edilen panel finansallari icermiyordu (pit_panel.FINANCIAL_SECTORS);
+    # 2026-10-10 canli kosusunda GARAN gibi bankalar puanlaniyordu.
+    cands = [_c(f"T{i}", float(i), sector="İmalat") for i in range(10)]
+    cands += [_c("BANK", 99.0, sector="Bankacılık"), _c("INS", 98.0, sector="Sigorta"),
+              _c("HOLD", 97.0, sector="Holding")]
+    top = rotation.select_top(cands)
+    assert [h["ticker"] for h in top] == ["HOLD", "T9"]
+    assert rotation.is_financial({"sector": "Faktoring"}) and not rotation.is_financial({"sector": "Holding"})
