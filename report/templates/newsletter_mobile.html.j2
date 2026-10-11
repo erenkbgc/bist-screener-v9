@@ -12,32 +12,34 @@
     {% if c.rrg_future_star %}<span style="display:inline-block; margin-left:4px; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:700; color:#92400e; background:#fef3c7; vertical-align:middle;">&#9733; Sektör ivmesi</span>{% endif %}
   </td></tr>
   <tr><td style="padding:4px 16px 10px 16px; font-size:15px; color:#334155;">
+    {% if short %}
     {{ c.current_price | fmt }} &rarr; <b style="color:#0f172a;">{{ c.target_price | fmt }}</b>
     <span style="color:{{ '#047857' if (c.expected_roi_pct or 0) >= 0 else '#b91c1c' }}; font-weight:800;">&nbsp;%{{ c.expected_roi_pct | fmt }}</span>
     <span style="color:#94a3b8; font-size:12px;">&nbsp;· {{ c.horizon_days | fmt }} gün</span>
+    {% else %}
+    <b style="color:#0f172a;">{{ c.current_price | fmt }}</b>
+    <span style="color:#64748b; font-size:13px;">&nbsp;· Alış: sonraki kapanış</span>
+    {% endif %}
   </td></tr>
   <tr><td style="padding:0 16px 12px 16px;">
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; font-size:13px; color:#334155; border-collapse:collapse;">
-      {% if c.entry_low is not none and c.entry_high is not none %}
+      {% if short and c.entry_low is not none and c.entry_high is not none %}
       <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Alış bandı</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">{{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</td></tr>
       {% endif %}
-      {% if c.stop_loss is not none %}
+      {% if short and c.stop_loss is not none %}
       <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Stop</td><td style="padding:5px 0; text-align:right; font-weight:600; color:#b91c1c; border-top:1px solid #f1f5f9;">{{ c.stop_loss | fmt }}</td></tr>
       {% endif %}
-      {% if c.nearest_support is not none or c.nearest_resistance is not none %}
+      {% if short and (c.nearest_support is not none or c.nearest_resistance is not none) %}
       <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Destek / direnç</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">{{ c.nearest_support | fmt if c.nearest_support is not none else '—' }} / {{ c.nearest_resistance | fmt if c.nearest_resistance is not none else '—' }}</td></tr>
       {% endif %}
-      {% if c.resistance_before_target %}
+      {% if short and c.resistance_before_target %}
       <tr><td colspan="2" style="padding:5px 0; color:#b45309; font-size:12px; border-top:1px solid #f1f5f9;">Hedef yolunda direnç var ({{ c.nearest_resistance | fmt }}); kırılmadan hedef zorlaşabilir.</td></tr>
       {% endif %}
-      {% if c.position_size_pct is not none %}
+      {% if short and c.position_size_pct is not none %}
       <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Pozisyon</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">%{{ c.position_size_pct | fmt }}</td></tr>
       {% endif %}
       {% if not short and c.fair_value_low is not none and c.fair_value_high is not none %}
       <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Adil değer (bugün)</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">{{ c.fair_value_low | fmt }} – {{ c.fair_value_high | fmt }}</td></tr>
-      {% endif %}
-      {% if not short and c.target_hit_prob_pct is not none %}
-      <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Hedefe ulaşma olasılığı (model)</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">%{{ c.target_hit_prob_pct | fmt }}</td></tr>
       {% endif %}
       {% if c.rrg_quadrant %}
       <tr><td style="padding:5px 0; color:#64748b; border-top:1px solid #f1f5f9;">Sektör ({{ c.sector_index }})</td><td style="padding:5px 0; text-align:right; font-weight:600; border-top:1px solid #f1f5f9;">{{ QUAD_TR.get(c.rrg_quadrant, c.rrg_quadrant) }}</td></tr>
@@ -118,6 +120,17 @@
 
   <!-- uzun vade -->
   <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Uzun vade <span style="font-size:12px; font-weight:500; color:#64748b;">(değerleme)</span></td></tr>
+  {% set rr = realized_returns.holdout if realized_returns else none %}
+  {% if rr %}
+  <tr><td style="padding:0 0 10px 0;">
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.55; color:#334155;">
+      <b style="color:#0f172a;">Gerçekçi getiri (geçmişte ne oldu)</b><br>
+      Bu kurala giren hisselerin 6 aylık getirisi ({{ realized_returns.period_start }} – {{ realized_returns.period_end }}): medyan %{{ rr.stock_tl_6m.median_pct | fmt }} TL; en kötü onda bir %{{ rr.stock_tl_6m.p10_pct | fmt }} altında, en iyi onda bir %{{ rr.stock_tl_6m.p90_pct | fmt }} üstünde.
+      Tek hisse XU100'ü yalnızca %{{ rr.stock_vs_xu100_6m.positive_share_pct | fmt }} oranında geçti. Avantaj sepet düzeyinde: eşit ağırlıklı sepet XU100'ü 6 ayda ortalama %{{ rr.basket_vs_xu100_6m.mean_pct | fmt }} puan geçti (dönemlerin %{{ rr.basket_vs_xu100_6m.positive_share_pct | fmt }}'inde).
+      <div style="font-size:12px; color:#64748b; margin-top:4px;">Hisse bazlı hedef fiyat gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi. TL getirinin büyük kısmı piyasa yönüne bağlı ve o öngörülemiyor. Delist olan hisseler veride yok, sayılar iyimser.</div>
+    </div>
+  </td></tr>
+  {% endif %}
   <tr><td>
     {% if long_term_candidates %}
       {% for c in long_term_candidates %}{{ candidate_card(c, false) }}{% endfor %}
