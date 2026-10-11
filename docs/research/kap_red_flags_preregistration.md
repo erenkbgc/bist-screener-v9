@@ -76,3 +76,40 @@ A filter with D > 0 and t > 2 in both periods, but failing rule 1, is labelled "
 - **Survivorship bias against the filter.** The price panel is missing delisted stocks, and companies in insolvency are the most likely to be delisted. The filter can only be credited for names that survived. This is reported with the result, not corrected.
 - **Classifier recall.** Auditor opinions inside financial reports, auditor changes and Borsa VBTS/brüt takas notices are not captured (see module docstring). The test covers what the classifier sees, not all red flags.
 - **Repeated disclosures.** Some companies file the same event every month (for example konkordato instalment payments). They stay flagged for the whole period. This is intended: the condition is still present.
+
+---
+
+## Results (added 2026-10-11, after the run; the sections above are unchanged)
+
+`python scripts/research_kap_red_flags.py`. Panel 2013-04 to 2026-09: discovery is 93 months and holdout 68. Base B: discovery +10.65%/yr (t 2.71), holdout +6.96%/yr (t 2.60).
+
+Flagged stock-months in the top quintile matched the power table: K1 388 / 320, K2 81 / 63.
+
+| Filter | Discovery D %/yr (t) | Holdout D %/yr (t) | Holdout active TL / USD | Verdict |
+|---|---|---|---|---|
+| K1 any flag, 90 days | −0.13 (−0.13) | +1.39 (1.18) | 8.36 / 8.21 | FAIL |
+| K2 severe flag, 90 days | −1.35 (−1.61) | −0.33 (−0.91) | 6.63 / 6.51 | FAIL |
+
+Sensitivity, 180-day window (no decision): K1 −0.79 (−0.81) / −0.96 (−0.64); K2 −1.99 (−1.81) / −0.68 (−1.07). Every sign is negative: excluding flagged names lowers the return.
+
+**K3 (exploratory, cannot pass).** Crashed top-quintile names (dd5y ≤ −70%) with a 6-month outcome, mean 6-month return vs XU100:
+- discovery: flagged 15 names +26.6%, unflagged 152 names +30.2%;
+- holdout: flagged 5 names −2.3%, unflagged 62 names +22.0%.
+
+The holdout gap points in the expected direction, but 5 observations cannot support a conclusion.
+
+**Descriptive: are cheap stocks the distressed ones?** Mean monthly Spearman correlation with value_sn:
+- any flag (90 days): −0.075 (162 months)
+- CHS distress: −0.083
+- F7 quality: +0.182
+- dd5y: +0.015
+
+Cheaper stocks have slightly fewer KAP red flags, lower CHS distress and higher F7 quality. value_sn does not systematically select distressed companies.
+
+## Conclusion
+
+Neither filter passes. The severe-flag filter is negative in both periods, and K1 is near zero.
+
+As registered, red flags stay **information only**. The planned bulletin panel shows them for AL/TUT holdings as a "check this" note, without changing the score or the AL/TUT/SAT decision. This agrees with Phase 2: excluding distressed names did not help the value portfolio, through numeric proxies or through KAP disclosures.
+
+Survivorship bias works against the filter (see Known limits). The result therefore does not prove that red flags are harmless, only that the surviving panel shows no gain from excluding them.
