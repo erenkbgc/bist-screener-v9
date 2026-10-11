@@ -117,11 +117,11 @@
       <b>KAP kırmızı bayrak (son {{ kap_red_flags.window_days | fmt }} gün, bilgi amaçlı):</b>
       {% if kap_red_flags.status == "unavailable" %}KAP verisi alınamadı; bayrak durumu bilinmiyor.
       {% else %}
-        {% if kap_red_flags.holdings %}{% for h in kap_red_flags.holdings %}<div style="margin-top:3px;"><b>{{ h.ticker }}</b>: {% for c in h.categories %}<a href="{{ c.url }}" style="color:#b91c1c;">{{ c.label }}</a> ({{ c.count | fmt }} bildirim, son {{ c.last_date }}){% if not loop.last %}; {% endif %}{% endfor %}</div>{% endfor %}
+        {% if kap_red_flags.holdings %}{% for h in kap_red_flags.holdings %}<div style="margin-top:3px;"><b>{{ h.ticker }}</b>: {% for c in h.categories %}<a href="{{ c.url }}" style="color:#b91c1c;">{{ c.label }}</a> ({{ c.count | fmt }} bildirim, son {{ c.last_date }}){% if not loop.last %}; {% endif %}{% endfor %}{% if h.llm_categories %}<div style="color:#7c3aed;">Deneysel LLM etiketi: {% for c in h.llm_categories %}<a href="{{ c.url }}" style="color:#7c3aed;">{{ c.label }}</a> ({{ c.count | fmt }} bildirim, son {{ c.last_date }}){% if not loop.last %}; {% endif %}{% endfor %}</div>{% endif %}</div>{% endfor %}
         {% else %}AL/TUT hisselerinde bayrak yok.{% endif %}
         {% if kap_red_flags.status == "partial" %}<div style="color:#b45309;">Uyarı: {{ kap_red_flags.missing_days | fmt }} gün KAP'tan çekilemedi; liste eksik olabilir.</div>{% endif %}
       {% endif %}
-      <div style="color:#64748b;">Dava, istifa, konkordato, SPK/Rekabet yaptırımı gibi bildirimler kural tabanlı yakalanır. Geçmiş testte bu hisseleri elemek getiriyi artırmadı; karar değişmez, yalnızca kontrol notudur.</div>
+      <div style="color:#64748b;">Dava, istifa, konkordato, SPK/Rekabet yaptırımı gibi bildirimler kural tabanlı yakalanır. Geçmiş testte bu hisseleri elemek getiriyi artırmadı; karar değişmez, yalnızca kontrol notudur. Mor satırlar kuralın kaçırdığı, dil modelinin işaretlediği bildirimlerdir (deneysel).</div>
     </div>{% endif %}
     <div style="font-size:12px; color:#64748b; margin-top:6px;">Kural: değerleme sıralamasında üst %{{ rotation.top_pct | fmt }} ({{ rotation.n_holdings | fmt }} hisse) eşit ağırlıkla tutulur, üst dilimden çıkan satılır; ayda bir güncellenir. Alış zamanlaması, stop ve tampon kuralları test edildi, hemen almak ve bu kuraldan iyi olmadı. Yatırım tavsiyesi değildir.</div>
   </td></tr>

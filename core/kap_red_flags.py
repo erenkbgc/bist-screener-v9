@@ -7,6 +7,9 @@ bildirimin (2010-2026) konu/ozet FREKANS TABLOSU ve elle okunan orneklerle
 ayarlandi; getiri verisine BAKILMADI (bkz.
 docs/research/kap_red_flags_preregistration.md).
 
+Kural tabanli sonuc esas alinir; core/kap_llm.py'nin deneysel LLM etiketi
+yalnizca bu kurallarin kacirdigi bildirimler icin panelde ayrica gosterilir.
+
 Bu modul skor/karar URETMEZ. Catalyst skoru core/live_data.py::_CATEGORY_RULES
 ile ayri kalir (agirlik 0, PR #25).
 

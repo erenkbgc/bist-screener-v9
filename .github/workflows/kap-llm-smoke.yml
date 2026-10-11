@@ -1,0 +1,38 @@
+name: KAP LLM etiket smoke testi
+
+# GitHub Models erisimini (GITHUB_TOKEN + models: read) gercek KAP
+# ornekleriyle elle dogrulamak icin. Gunluk taramayi etkilemez.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  models: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install httpx
+      - name: Ornek bildirimleri etiketle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'EOF'
+          import os, httpx
+          from core import kap_llm
+          batch = [
+              {"disclosure_index": 1, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Konkordato Süreci Hakkında Bilgilendirme"},
+              {"disclosure_index": 2, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Şirketimiz Tarafından Suç Duyurusunda Bulunulması Hakkında"},
+              {"disclosure_index": 3, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Tedarikçimizin şirketimiz aleyhine açtığı alacak davası"},
+              {"disclosure_index": 4, "subject": "Yeni İş İlişkisi", "summary": "Yurt dışı ihracat sözleşmesi imzalanması"},
+          ]
+          with httpx.Client() as http:
+              print(kap_llm.MODEL, kap_llm.PROMPT_HASH)
+              print(kap_llm._call(http, os.environ["GITHUB_TOKEN"], batch))
+          EOF

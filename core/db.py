@@ -338,6 +338,12 @@ CREATE TABLE IF NOT EXISTS kap_fetch_log (
     day TEXT PRIMARY KEY, n_disclosures INTEGER, fetched_at TEXT
 );
 
+-- core/kap_llm.py: sabit semali deneysel LLM etiketi (bilgi amacli).
+CREATE TABLE IF NOT EXISTS kap_llm_labels (
+    disclosure_index INTEGER, model TEXT, prompt_hash TEXT, category TEXT, labeled_at TEXT,
+    PRIMARY KEY (disclosure_index, model, prompt_hash)
+);
+
 CREATE TABLE IF NOT EXISTS event_calendar (
     ticker TEXT,
     event_date TEXT,

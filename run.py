@@ -21,7 +21,7 @@ import argparse
 import hashlib
 import sys
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 # core/db.py::DB_PATH ile ayni desen: testler (tests/conftest.py::temp_db)
@@ -462,8 +462,16 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
             refresh_error = str(exc)
         if refresh_error:
             print(f"[kap_red_flags] eksik: {refresh_error}", flush=True)
-    kap_red_flags = kap_red_flag_panel.build_panel(
-        as_of_date, sorted(c["ticker"] for c in rotation["buy"] + rotation["hold"]), refresh_error)
+    held_tickers = sorted(c["ticker"] for c in rotation["buy"] + rotation["hold"])
+    # Deneysel LLM etiketi (GitHub Models, sabit sema; karara girmez). Token
+    # yoksa veya hata olursa panel yalnizca regex ile devam eder.
+    llm_status = None
+    if kap_web_mcp._live_enabled():
+        from core import kap_llm
+        since = (datetime.strptime(as_of_date, "%Y-%m-%d") - timedelta(days=kap_red_flag_panel.WINDOW_DAYS)).date().isoformat()
+        llm_status = kap_llm.label_pending(held_tickers, since)
+        print(f"[kap_llm] {llm_status}", flush=True)
+    kap_red_flags = kap_red_flag_panel.build_panel(as_of_date, held_tickers, refresh_error, llm_status)
 
     # --- Quant Level-Up Faz 4 & 5: HRP Portfoy & Faktor Katki Disclosures ---
     if passing:

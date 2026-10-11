@@ -48,7 +48,7 @@
     "long_only": "Sistem yalnizca long yon uretir.",
     "silence_is_valid_output": "Hicbir aday hard_filters'i gecmezse sistem NO_ACTION durumunu acikca raporlar.",
     "speculative_models_are_labeled": "DCF/Gordon gibi varsayima asiri duyarli modeller ana karara giremez, her zaman deneysel etiketiyle ve aralik olarak sunulur.",
-    "no_free_text_interpretation_of_kap": "KAP bildirimleri LLM'e serbest metin olarak asla verilmez, once deterministik kategoriye indirilir.",
+    "no_free_text_interpretation_of_kap": "KAP bildirimleri skor, siralama ve AL/TUT/SAT karari icin yalnizca deterministik (kural tabanli) kategoriye indirgenir. Tek istisna (2026-10-11, kullanici onayi): core/kap_llm.py bildirimin konu+ozetini LLM'e SABIT SEMALI ETIKETLEME icin verebilir; cikti yalnizca core/kap_red_flags kategori listesinden biri veya none'dir, serbest metin/sayi/skor/tahmin uretilmez. LLM etiketi skora ve karara GIREMEZ, bultende deneysel olarak gosterilir, model+prompt hash ile saklanir ve yalnizca ileriye donuk on-kayitli testle degerlendirilebilir.",
     "priors_are_disclosed": "final_score agirliklari (0.55/0.30/0.15), piotroski esigi, equity risk premium sabiti ve benzeri butun parametreler DENENMEMIS BASLANGIC VARSAYIMIDIR. Bu, methodology bolumunde ve her raporun altbilgisinde acikca belirtilir.",
     "no_proof_of_edge_claims": "evaluate_past_predictions bir backtest degildir, canli takiptir. Rapor veya dashboard hicbir zaman 'kanitlanmis', 'istatistiksel olarak anlamli', 'backtest edilmis', 'edge dogrulandi' gibi ifadeler kullanamaz. Yalnizca tanimlayici izleme metrikleri (hit_rate, ortalama fazla getiri) gosterilir, bunlarin yaninda ortusen ufuklar nedeniyle bagimsiz gozlem sayisinin dusuk oldugu notu bulunur.",
     "agentic_workflow": true
