@@ -7,9 +7,9 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-255%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-381%20passing-brightgreen)
 ![Backtest](https://img.shields.io/badge/backtest-walk--forward-blueviolet)
-![Status](https://img.shields.io/badge/status-research%20%E2%80%94%20weights%20uncalibrated-orange)
+![Status](https://img.shields.io/badge/status-research%20%E2%80%94%20pre--registered%20value%20rule-orange)
 
 </div>
 
@@ -18,8 +18,8 @@
 > **Disclaimer**
 > This project is for research and decision support only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns are model outputs, not guarantees of future performance.
 
-> **Calibration status (2026-09-27)**
-> The scoring weights in `config/weights.yaml` are **untested starting assumptions**. The stock-level factor model has not yet been backtested cross-sectionally; the point-in-time panel that makes this possible was added on 2026-09-27 (see [Research Infrastructure](#research-infrastructure)). The `outcomes` table (realised results of past predictions) is still too small for live attribution.
+> **Status (2026-10-11)**
+> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and [Pre-registered Research](#pre-registered-research).
 
 ---
 
@@ -27,6 +27,8 @@
 
 - [Overview](#overview)
 - [Architecture](#architecture)
+- [Live Decision Rule: Monthly Rotation](#live-decision-rule-monthly-rotation)
+  - [Realistic Return Reference](#realistic-return-reference)
 - [Analysis Layers](#analysis-layers)
   - [Price Data: Raw vs. Adjusted](#price-data-raw-vs-adjusted)
   - [Universe Construction & Amihud Illiquidity](#universe-construction--amihud-illiquidity)
@@ -43,8 +45,10 @@
   - [ML Trend Forecaster & Market Regime](#ml-trend-forecaster--market-regime)
   - [Portfolio Construction (HRP)](#portfolio-construction-hrp)
   - [Catalysts, KAP & FinBERT Sentiment](#catalysts-kap--finbert-sentiment)
+  - [KAP Red Flags (Information Only)](#kap-red-flags-information-only)
   - [Corporate Actions, Dividends & Ownership](#corporate-actions-dividends--ownership)
 - [Research Infrastructure](#research-infrastructure)
+- [Pre-registered Research](#pre-registered-research)
 - [Backtests & Evidence](#backtests--evidence)
 - [Reports & Delivery](#reports--delivery)
 - [Validation Gate](#validation-gate)
@@ -71,7 +75,7 @@ The system runs as a daily pipeline and produces:
 
 | Output | Description |
 |---|---|
-| Mobile email body | Single-column, inline-styled summary: candidate cards with target, entry band, stop, position size, support/resistance, sector quadrant |
+| Mobile email body | Single-column, inline-styled summary: monthly AL/TUT/SAT rotation, diversification (effective bets), KAP red-flag panel, untested financials, realised-return reference (TL, USD, vs. deposit), long-term cards (price, "buy at next close"), experimental short-term watchlist |
 | Detailed HTML report (attachment) | Full tables, thesis dossiers, methodology, WhatsApp-ready quick-copy block |
 | Sector rotation Excel (attachment) | RRG summary, 5-week tail chart, data table, method sheet |
 | JSON payload (attachment) | Every number shown in the reports, machine-readable and auditable |
@@ -85,6 +89,7 @@ The system runs as a daily pipeline and produces:
 - Peer-relative ranking instead of universal fixed thresholds.
 - Priors are disclosed as priors; evidence is reported with its t-statistic.
 - No report is sent unless every number in it traces back to the payload.
+- Every return test is pre-registered: the hypothesis and pass rule are committed before the run, and results are appended in a later commit.
 
 ---
 
@@ -108,7 +113,10 @@ flowchart TD
     F --> G[Entry band / stop / position size]
     G --> H[Cross-sectional z-scores + regime weights]
     H --> I[Hard filters -> final_score -> candidate_state]
-    I --> J[Concentration, correlation, HRP]
+    I --> R[Monthly rotation: value_sn top 20%, non-financial]
+    R --> J[Concentration, correlation, effective bets, HRP]
+    A3 --> KR[KAP red flags: regex + experimental LLM label]
+    KR -. information only .-> L
     A5 --> K[Sector rotation RRG]
     K -. annotation only .-> I
     J --> L[Payload -> thesis cards]
@@ -119,7 +127,39 @@ flowchart TD
 
 ---
 
+## Live Decision Rule: Monthly Rotation
+
+`core/rotation.py` implements rule R0 from [`docs/research/exit_rules_preregistration.md`](docs/research/exit_rules_preregistration.md):
+
+- **Universe:** long-term candidates with a sector-relative valuation z (`valuation_z` = the tested `value_sn`: mean z of E/P, B/M, S/P and EBIT/EV, demeaned within sector). Quarantined names and names with too few peers are excluded.
+- **Financials excluded:** banks, insurance, pension, factoring, leasing, savings finance, brokers, securities investment trusts and asset managers (`pit_panel.FINANCIAL_SECTORS`). The tested panel never contained them. Their own top 20% is shown separately as "test edilmedi" (untested, information only).
+- **Rule:** hold the top 20% equal-weighted. The first run of each month stores the list in `rotation_holdings`; later runs in the same month reuse it. A name that leaves the top 20% is sold.
+- **Output:** AL (new), TUT (kept), SAT (dropped).
+- **Diversification:** average pairwise 60-day log-return correlation of the held basket and the effective number of bets $`N/(1+(N-1)\bar\rho)`$ (`core/correlation.py::effective_bets`).
+
+Hurdle, Piotroski, target-price gates do **not** affect this list: the tested rule did not contain them.
+
+### Realistic Return Reference
+
+Long-term cards no longer show model targets, expected ROI, entry bands or stops. The target backtest predicted +25.1% 6-month excess for the cheapest quintile against +1.4% realised, and the entry and exit rules failed their tests. Instead, the bulletin shows what the live rule actually returned (`scripts/realized_return_reference.py` → `config/realized_returns.json`), holdout 2021-01 → 2026-03, 63 months, 6-month horizon:
+
+| Series | Median | Mean | Share positive |
+|---|---|---|---|
+| Single stock, TL | +12.7% | — | 64.1% |
+| Single stock vs. XU100 | −7.5% | — | 39.5% |
+| Basket vs. XU100 | +1.4% | +3.3% | 52.4% |
+| Basket, TL | +20.4% | +30.2% | 81.0% |
+| Basket, USD | +3.5% | +9.9% | 52.4% |
+| TL deposit proxy (TCMB policy rate, gross) | +19.5% | +16.1% | 100% |
+| Basket minus deposit | +3.6 pp | +14.2 pp | 50.8% |
+
+The edge is at basket level; a single stock beats XU100 less than half the time. Delisted stocks are missing, so these numbers are optimistic.
+
+---
+
 ## Analysis Layers
+
+The layers below feed the scoring pipeline and the reports. Except for `valuation_z`, they are **information only** in the live decision.
 
 ### Price Data: Raw vs. Adjusted
 
@@ -164,7 +204,7 @@ Weights (`config/weights.yaml`), set by the Phase 2 pre-registration (`docs/rese
 
 | Factor | Weight | Definition |
 |---|---|---|
-| `valuation_z` | 1.00 | Peer-relative mean z of E/P, B/M, S/P and EBIT/EV (the tested `value_sn` definition) for industrial, holding and REIT profiles. Bank and insurance profiles are unchanged and untested. |
+| `valuation_z` | 1.00 | Peer-relative mean z of E/P, B/M, S/P and EBIT/EV (the tested `value_sn` definition) for industrial, holding and REIT profiles. Bank and insurance profiles are untested and excluded from the rotation. |
 | `catalyst_score` | 0.00 | Shown as information only; no history, cannot be tested |
 | `ownership_quality_z` | 0.00 | Shown as information only; no history, cannot be tested |
 | `low_vol_z` | 0.00 | Value + low-vol was weaker than plain value in the factor backtest |
@@ -310,16 +350,25 @@ Quadrants: Leading (R ≥ 100, M ≥ 100), Weakening, Lagging, Improving. A *fut
 | `STRONG_BEAR` | `prob_up` < 0.40 and distance to SMA50 < −3% |
 | `CORRECTION_CHOPPY` | otherwise |
 
-This regime selects the scoring-weight row. The separate `regime_taxonomy` (macro labels in the report) is isolated from scoring by a static test.
+Regime weights were removed from scoring (Phase 2); the regime is shown as information only. The macro study found no predictor of market direction. The separate `regime_taxonomy` (macro labels in the report) is isolated from scoring by a static test.
 
 ### Portfolio Construction (HRP)
+
+`core/correlation.py`: pairwise Pearson correlation on 60-day **log returns** of the held AL/TUT basket (until PR #29 it used price levels, which flagged about 6,900 spurious pairs a day). Flags above 0.85 are information only.
 
 `core/portfolio.py`: Hierarchical Risk Parity (López de Prado 2016). Distance $`d_{ij} = \sqrt{\tfrac12(1-\rho_{ij})}`$, Ward linkage, quasi-diagonalisation, recursive bisection, no matrix inversion. Covariance comes from adjusted returns, and the sector cap is 30%. Risk parity, minimum variance, and max Sharpe are also available.
 
 ### Catalysts, KAP & FinBERT Sentiment
 
-- **Catalyst score:** rule/regex classification of KAP titles, with time decay (`config/catalyst_decay.yaml`). It is deterministic and reproducible.
+- **Catalyst score:** rule/regex classification of KAP titles, with time decay (`config/catalyst_decay.yaml`). It is deterministic and reproducible. Weight 0.
 - **FinBERT layer** (`core/kap_sentiment.py`, `scripts/kap_sentiment_today.py`): disclosure bodies from the last 3 days → `opus-mt-tr-en` translation → `ProsusAI/finbert`. Runs daily in CI after the screener and writes `data/reports/kap_sentiment_<date>.json`. **Information only**, not in `final_score`.
+
+### KAP Red Flags (Information Only)
+
+- **Classifier** (`core/kap_red_flags.py`): regex only, on the KAP subject and short summary. Seven categories: insolvency (konkordato, iflas, restructuring, TTK 376), going concern, auditor adverse/qualified opinion, regulatory sanction (SPK, Competition Authority, tax, trustee, detention), market sanction (watch-list market, gross settlement), lawsuit or seizure against the company, board / CEO resignation. Rules were tuned on the subject/summary frequency table of the archive and hand-read samples, never on returns.
+- **Panel** (`core/kap_red_flag_panel.py`): for AL/TUT holdings, red flags of the last 180 days grouped by category with count, latest date and KAP link. Source: the KAP `byCriteria` endpoint (`core/kap_api.py`). Only days missing from `kap_fetch_log` are fetched (one request on a normal day); on a KAP error it stops and fills the gap next run. With missing days the panel says "partial" or "KAP verisi alınamadı", never "no flags".
+- **Experimental LLM label** (`core/kap_llm.py`): subject + summary are sent in batches of 20 to an OpenAI-compatible endpoint (default Groq `openai/gpt-oss-120b`, key `GROQ_API_KEY`). The model may only return one of the seven categories or `none`; unknown output is dropped. Labels are stored with model and prompt hash in `kap_llm_labels` for a future forward-only test, and the bulletin shows them on a separate "Deneysel LLM etiketi" line only where the regex found nothing. They never enter score or decision. GitHub Models was retired on 2026-07-30 and is no longer used.
+- **Test:** excluding flagged names from the value top quintile did **not** pass ([`kap_red_flags_preregistration.md`](docs/research/kap_red_flags_preregistration.md)).
 
 ### Corporate Actions, Dividends & Ownership
 
@@ -343,7 +392,27 @@ This regime selects the scoring-weight row. The separate `regime_taxonomy` (macr
 
 Full build: 583 non-financial tickers, 0 failures, 24,089 quarter rows, 58,223 monthly factor rows (2012-09 → 2026-09).
 
+**KAP disclosure archive** (`scripts/build_kap_archive.py`): all IGS disclosures since 2010 from the kap.org.tr `byCriteria` endpoint, delisted companies included. Weekly windows, day-by-day re-query when a window hits the 2,000-row cap, monthly cache with resume. Full build: 637,454 disclosures, 987 tickers, 2010-01-04 → 2026-10-11 (`data/research/kap_archive.parquet`, gitignored).
+
 borsapy 0.11 joins its 4-quarter batches on row labels. Duplicated labels (for example short- and long-term `Finansal Borçlar`) therefore multiply per batch (2^15 copies over 15 batches). `build_pit_panel.py` fetches the batches itself and aligns rows by (label, occurrence) (`pit_panel.merge_statement_batches`).
+
+---
+
+## Pre-registered Research
+
+Since 2026-09-28 every return test follows the same discipline: hypotheses, data, metrics and the pass rule are committed **before** the run; results are appended afterwards without changing the earlier sections. Pass rule (long-term): discovery 2013–2020 $`t > 3`$ (Harvey-Liu-Zhu) and holdout 2021+ same sign with $`t > 2`$, plus a USD check.
+
+| Study | Question | Result |
+|---|---|---|
+| [`short_term_preregistration.md`](docs/research/short_term_preregistration.md) | Any 20-day signal? | None of 6 passed. Short-term bucket is an experimental watchlist |
+| [`phase1_diagnostics.md`](docs/research/phase1_diagnostics.md) | Why did live picks include crashed stocks? Currency? Survivorship? | Live score ≠ tested proxy; factor IC identical in TL, USD and XU100-excess; value premium fragile to survivorship |
+| [`macro_drivers_preregistration.md`](docs/research/macro_drivers_preregistration.md) | What moves BIST, can it be timed? | XU100 2005–2026 ≈ +0.8%/yr in USD; only MSCI EM beta explains; no predictor of direction |
+| [`long_term_preregistration.md`](docs/research/long_term_preregistration.md) | Do distress, crash, momentum, quality or SUE improve value? | None of 9 passed. Live score = plain `value_sn` (+10.65%/yr discovery, +6.96%/yr holdout) |
+| [`entry_timing_preregistration.md`](docs/research/entry_timing_preregistration.md) | Better entry than the next close? | No. Limit/RSI/SMA rules lost to buying immediately |
+| [`exit_rules_preregistration.md`](docs/research/exit_rules_preregistration.md) | Buffers, stops, thesis break? | None passed. Live = monthly R0 rotation |
+| [`kap_red_flags_preregistration.md`](docs/research/kap_red_flags_preregistration.md) | Does excluding KAP red-flag names help? | No (any flag D −0.13%/yr t −0.13; severe flag negative in both periods). value_sn is slightly *negatively* correlated with flags |
+
+Notes for the next study (sector-specific valuation: banks, holdings NAV discount, REIT NAV discount, IAS 29 monetary gain): [`docs/research/sector_specific_notes.md`](docs/research/sector_specific_notes.md).
 
 ---
 
@@ -465,11 +534,12 @@ The pipeline is idempotent: a second run for the same `as_of_date` after a sent 
 
 | Workflow | Schedule | Steps |
 |---|---|---|
-| `ci.yml` | push / PR to `master` | `pytest` (255 tests), config/schema checks |
-| `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry) |
+| `ci.yml` | push / PR to `master` | `pytest` (381 tests), config/schema checks |
+| `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live; KAP red-flag fetch and LLM labels inside) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry). Secrets: `SMTP_*`, `MAIL_*`, `GROQ_API_KEY` (optional) |
+| `kap-llm-smoke.yml` | manual | Checks the LLM provider with 4 sample disclosures and lists available models |
 | `weekly-optimize.yml` | Sunday 18:00 UTC | `scripts/optimize_weights.py` → cone $`z`$, ML ensemble → commit `config/weights_optimized.json` |
 
-A full universe run takes about 2.5–3.5 hours. The job timeout is 350 minutes.
+A full universe run takes about 2.5–3.5 hours. The job timeout is 350 minutes. KAP often drops connections from GitHub runners; the run health gate reports this as `DEGRADED (kap_unavailable)`.
 
 ---
 
@@ -486,15 +556,18 @@ bist-screener-v9/
 │   ├── levels.py         # support/resistance, volume profile, VWAP
 │   ├── sector_rotation.py trend_forecaster.py regime.py regime_taxonomy.py
 │   ├── portfolio.py correlation.py concentration.py factor_disclosure.py
+│   ├── rotation.py       # live rule: monthly value_sn top 20% (AL/TUT/SAT)
+│   ├── kap_api.py kap_red_flags.py kap_red_flag_panel.py kap_llm.py   # KAP red flags
 │   ├── catalysts.py events.py kap_sentiment.py piotroski.py sloan.py
 │   ├── backtest.py data_quality.py evaluate.py decision_diff.py payload.py db.py
 │   └── ...
 ├── report/               # templates, render, validation gate, sector Excel
 ├── skills/               # methodology packages (catalyst scoring, regime monitor, ...)
-├── scripts/              # backtests, PIT panel builder, optimizer, KAP sentiment, purge
+├── scripts/              # backtests, pre-registered research, PIT panel, KAP archive, optimizer
 ├── config/               # weights.yaml, equity_risk_premium.yaml, transaction_costs.yaml, ...
 ├── data/                 # bist_history.db, reports/ (committed by CI), research/ (ignored)
-├── tests/                # 255 tests
+├── docs/research/        # pre-registrations and results
+├── tests/                # 381 tests
 ├── run.py                # daily orchestrator
 └── dashboard.py          # read-only Streamlit
 ```
@@ -529,6 +602,9 @@ python run.py --as-of-date 2026-09-25            # daily pipeline
 python run.py --as-of-date 2026-09-25 --force    # ignore idempotency
 
 python scripts/build_pit_panel.py --tickers THYAO,ASELS   # PIT panel (omit for full universe)
+python scripts/build_kap_archive.py                       # KAP archive 2010+ (~1–2 h, resumable)
+python scripts/research_kap_red_flags.py                  # pre-registered KAP red-flag test
+python scripts/realized_return_reference.py               # refresh config/realized_returns.json
 python scripts/backtest_sector_rotation.py
 python scripts/backtest_entry_levels.py --date 2026-09-25
 python scripts/kap_sentiment_today.py --days 3
@@ -545,7 +621,7 @@ streamlit run dashboard.py
 pytest tests/ -q
 ```
 
-255 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
+381 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
 
 ---
 
@@ -558,7 +634,9 @@ pytest tests/ -q
 | `config/equity_risk_premium.yaml` | ERP 5%, TCMB long-term inflation target, corporate tax 25% |
 | `config/transaction_costs.yaml` | Commission 15 bps round trip, base slippage 20 bps |
 | `config/catalyst_decay.yaml` | Catalyst half-lives |
-| `config/fintables_ticker_sektor.json` | Ticker → sector map (sector index mapping for RRG) |
+| `config/fintables_ticker_sektor.json` | Ticker → sector map (sector index mapping for RRG, financial-sector exclusion) |
+| `config/realized_returns.json` | Realised 6-month returns of the live rule (TL, USD, vs. XU100, vs. deposit) shown in the bulletin |
+| `BIST_LLM_URL`, `BIST_LLM_MODEL`, `GROQ_API_KEY` (env) | Provider for the experimental KAP LLM label; without a key the step is skipped |
 
 ---
 
@@ -566,11 +644,14 @@ pytest tests/ -q
 
 | Area | Status |
 |---|---|
-| Factor weights | Plain value (pre-registered, survivorship-sensitive). Live statements are annual, the panel is quarterly TTM. Bank/insurance valuation profiles are untested. |
+| Factor weights | Plain value (pre-registered, survivorship-sensitive). Live statements are annual, the panel is quarterly TTM. |
+| Financials | Valuation rule untested for banks/insurance/brokers; excluded from the rotation and shown separately as untested |
 | Cone $`z`$ | Fitted on one index series, not on stock outcomes |
 | Target $`\alpha`$ | Estimated from the peer leg only; DCF and quality legs and the ML scenario weights are not tested |
 | Prediction outcomes | `outcomes` table too small for attribution |
-| Financial statements | Nominal (not IAS 29). Inflation distorts some Piotroski criteria and DCF |
+| Financial statements | Pre-2023 statements are nominal; since 2023 IAS 29 adds a net monetary gain/loss line that can inflate earnings of indebted firms (check planned). Inflation distorts some Piotroski criteria and DCF |
+| KAP in CI | KAP often drops GitHub runner connections; red-flag panel then shows "partial" or "unavailable" |
+| LLM labels | Experimental; can only be evaluated forward (the model knows company outcomes from training data) |
 | Banks / insurance | Some ratios not computable. Excluded from the PIT panel |
 | Tedbir / VBTS, investor split | Incomplete or no free source |
 | Backtests | ~2 years of stock data in live mode. Current-constituent universe (survivorship bias) in entry-rule test |
@@ -583,9 +664,10 @@ pytest tests/ -q
 2. No fabrication: absent a reliable source, the field is `None`.
 3. Peer-relative ranking over absolute cutoffs.
 4. Priors are labelled as priors. Evidence is shown with its t-statistic and multiple-testing threshold.
-5. A layer that fails its backtest stays information-only (RRG, S/R levels, FinBERT).
-6. Validate before dispatch.
-7. The dashboard is read-only.
+5. A layer that fails its backtest stays information-only (RRG, S/R levels, FinBERT, targets, stops, KAP red flags).
+6. Pre-register before testing; a changed rule is a new test.
+7. Validate before dispatch.
+8. The dashboard is read-only.
 
 ---
 
@@ -600,7 +682,9 @@ Current plan (root cause: the stock-level model has never been backtested cross-
 - [ ] **Step 5:** Ledoit-Wolf covariance, ADV-based position limits, square-root market impact
 - [x] **Step 6:** data health gate (`core/run_health.py`): fundamentals and price coverage, empty index series, macro presence, data-driven filter share, KAP availability, and a config hash per run, stored in `run_health` and shown as a banner in the bulletin
 
-Done recently: sector rotation RRG + Excel + backtest, mobile email with attachments, lognormal target-hit probability, live XU100 beta with Blume adjustment, dividend-aware targets, KAP FinBERT layer, support/resistance levels (information only).
+Done recently (2026-10): pre-registered Phase 1–2, entry and exit studies; live rule reduced to the monthly value_sn rotation; realistic-return reference with USD and deposit comparison; correlation on log returns with effective bets; KAP archive 2010+, red-flag classifier, panel and pre-registered test; experimental LLM label; financials excluded from the rotation.
+
+Next: sector-specific valuation and the IAS 29 check, see [`docs/plan_2026-10-12.md`](docs/plan_2026-10-12.md).
 
 Details: [`TODO.md`](./TODO.md)
 
