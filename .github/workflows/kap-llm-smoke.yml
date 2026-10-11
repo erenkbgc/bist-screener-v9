@@ -1,13 +1,12 @@
 name: KAP LLM etiket smoke testi
 
-# GitHub Models erisimini (GITHUB_TOKEN + models: read) gercek KAP
+# core/kap_llm.py saglayici erisimini (GROQ_API_KEY secret) gercek KAP
 # ornekleriyle elle dogrulamak icin. Gunluk taramayi etkilemez.
 on:
   workflow_dispatch:
 
 permissions:
   contents: read
-  models: read
 
 jobs:
   smoke:
@@ -21,18 +20,23 @@ jobs:
       - run: pip install httpx
       - name: Ornek bildirimleri etiketle
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           python - <<'EOF'
           import os, httpx
           from core import kap_llm
-          batch = [
-              {"disclosure_index": 1, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Konkordato Süreci Hakkında Bilgilendirme"},
-              {"disclosure_index": 2, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Şirketimiz Tarafından Suç Duyurusunda Bulunulması Hakkında"},
-              {"disclosure_index": 3, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Tedarikçimizin şirketimiz aleyhine açtığı alacak davası"},
-              {"disclosure_index": 4, "subject": "Yeni İş İlişkisi", "summary": "Yurt dışı ihracat sözleşmesi imzalanması"},
-          ]
+          key = os.environ["GROQ_API_KEY"]
+          assert key, "GROQ_API_KEY secret'i tanimli degil"
           with httpx.Client() as http:
+              r = http.get(kap_llm.URL.rsplit("/chat/", 1)[0] + "/models",
+                           headers={"Authorization": f"Bearer {key}"}, timeout=30)
+              print("models", r.status_code, sorted(m["id"] for m in r.json().get("data", [])))
+              batch = [
+                  {"disclosure_index": 1, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Konkordato Süreci Hakkında Bilgilendirme"},
+                  {"disclosure_index": 2, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Şirketimiz Tarafından Suç Duyurusunda Bulunulması Hakkında"},
+                  {"disclosure_index": 3, "subject": "Özel Durum Açıklaması (Genel)", "summary": "Tedarikçimizin şirketimiz aleyhine açtığı alacak davası"},
+                  {"disclosure_index": 4, "subject": "Yeni İş İlişkisi", "summary": "Yurt dışı ihracat sözleşmesi imzalanması"},
+              ]
               print(kap_llm.MODEL, kap_llm.PROMPT_HASH)
-              print(kap_llm._call(http, os.environ["GITHUB_TOKEN"], batch))
+              print(kap_llm._call(http, key, batch))
           EOF

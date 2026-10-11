@@ -1,4 +1,4 @@
-"""KAP bildirimlerine GitHub Models ile SABIT SEMALI etiket (deneysel, bilgi amacli).
+"""KAP bildirimlerine dil modeliyle SABIT SEMALI etiket (deneysel, bilgi amacli).
 
 Kural (bist_screener_v9_prompt.json::no_free_text_interpretation_of_kap):
 LLM yalnizca core/kap_red_flags kategori listesinden birini veya "none"
@@ -8,15 +8,18 @@ gosterilir. Her etiket model + prompt hash ile saklanir: ileride on-kayitli,
 YALNIZCA ILERIYE DONUK test icin (model egitim verisinden sirketlerin
 akibetini bildigi icin gecmise donuk test gecersizdir).
 
-Girdi: kap_feed'deki konu + kisa ozet (regex ile ayni girdi). Erisim:
-GitHub Actions'ta GITHUB_TOKEN + `permissions: models: read`. Token yoksa
-veya cagri basarisizsa sessizce atlanir; regex paneli calismaya devam eder.
+Girdi: kap_feed'deki konu + kisa ozet (regex ile ayni girdi). Saglayici:
+OpenAI uyumlu herhangi bir chat/completions ucu; varsayilan Groq ucretsiz
+katmani (GROQ_API_KEY repo secret'i). GitHub Models 2026-07-30'da kapatildi
+(uc her istege duz "OK" donuyor), bu yuzden ilk surumden tasindi. Anahtar
+yoksa veya cagri basarisizsa atlanir; regex paneli calismaya devam eder.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import re
 from datetime import datetime
 
 import httpx
@@ -24,10 +27,11 @@ import httpx
 from core import db
 from core.kap_red_flags import RED_FLAG_LABELS
 
-URL = "https://models.github.ai/inference/chat/completions"
-MODEL = os.environ.get("BIST_LLM_MODEL", "openai/gpt-4.1-mini")
+URL = os.environ.get("BIST_LLM_URL", "https://api.groq.com/openai/v1/chat/completions")
+MODEL = os.environ.get("BIST_LLM_MODEL", "openai/gpt-oss-120b")
+KEY_ENV = "GROQ_API_KEY"
 BATCH = 20
-# Ucretsiz katmanin gunluk istek limiti dusuk; birikmis bildirimler gunler icinde erir.
+# Ucretsiz katman dakika/gun istek limitli; birikmis bildirimler gunler icinde erir.
 MAX_REQUESTS = 20
 CATEGORIES = [*RED_FLAG_LABELS, "none"]
 
@@ -59,6 +63,7 @@ def pending(tickers: list[str], since: str, limit: int) -> list[dict]:
 
 def parse(content: str, ids: set[int]) -> dict[int, str]:
     """Model cevabini dogrular: bilinmeyen id ve kategori ATILIR."""
+    content = re.sub(r"^\s*```(?:json)?|```\s*$", "", content or "").strip()
     try:
         items = json.loads(content).get("items", [])
     except (ValueError, AttributeError):
@@ -80,16 +85,17 @@ def _call(http: httpx.Client, token: str, batch: list[dict]) -> dict[int, str]:
     r = http.post(URL, headers={"Authorization": f"Bearer {token}"}, timeout=90, json={
         "model": MODEL, "temperature": 0, "response_format": {"type": "json_object"},
         "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}]})
-    r.raise_for_status()
+    if r.status_code >= 400:
+        raise RuntimeError(f"HTTP {r.status_code}: {r.text[:300]}")
     content = r.json()["choices"][0]["message"]["content"]
     return parse(content, {b["disclosure_index"] for b in batch})
 
 
 def label_pending(tickers: list[str], since: str, http: httpx.Client | None = None) -> dict:
     """Etiketlenmemis bildirimleri etiketler. Hata: durur, eldekini saklar."""
-    token = os.environ.get("GITHUB_TOKEN")
+    token = os.environ.get(KEY_ENV)
     if not token:
-        return {"labeled": 0, "error": "GITHUB_TOKEN yok"}
+        return {"labeled": 0, "error": f"{KEY_ENV} yok"}
     todo = pending(tickers, since, BATCH * MAX_REQUESTS)
     own = http is None
     http = http or httpx.Client()

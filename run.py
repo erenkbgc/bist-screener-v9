@@ -463,7 +463,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         if refresh_error:
             print(f"[kap_red_flags] eksik: {refresh_error}", flush=True)
     held_tickers = sorted(c["ticker"] for c in rotation["buy"] + rotation["hold"])
-    # Deneysel LLM etiketi (GitHub Models, sabit sema; karara girmez). Token
+    # Deneysel LLM etiketi (core/kap_llm.py, sabit sema; karara girmez). Anahtar
     # yoksa veya hata olursa panel yalnizca regex ile devam eder.
     llm_status = None
     if kap_web_mcp._live_enabled():

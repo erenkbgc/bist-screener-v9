@@ -29,7 +29,6 @@ concurrency:
 
 permissions:
   contents: write  # data/bist_history.db + data/reports/ geri commit'lemek icin
-  models: read  # core/kap_llm.py: GitHub Models ile deneysel KAP etiketi (karara girmez)
 
 jobs:
   run-screener:
@@ -61,7 +60,7 @@ jobs:
           BIST_DATA_MODE: live
           BIST_LIVE_UNIVERSE_LIMIT: ${{ inputs.universe_limit }}
           BIST_LIVE_TICKERS: ${{ inputs.tickers }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}  # core/kap_llm.py deneysel KAP etiketi; yoksa atlanir
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
