@@ -112,6 +112,7 @@
     <div><b style="color:#047857;">AL:</b> {% if rotation.buy %}{% for h in rotation.buy %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
     <div><b style="color:#1d4ed8;">TUT:</b> {% if rotation.hold %}{% for h in rotation.hold %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
     <div><b style="color:#b91c1c;">SAT:</b> {% if rotation.sell %}{{ rotation.sell | join(", ") }}{% else %}yok{% endif %}</div>
+    {% if rotation.untested_financials %}<div style="font-size:12px; color:#64748b; margin-top:4px;"><b>Finansallar (test edilmedi, bilgi amaçlı):</b> {% for f in rotation.untested_financials %}{{ f.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}. Banka/sigorta/aracı kurumlarda bu değerleme kuralı geçmişte test edilmedi; AL/TUT listesine girmez.</div>{% endif %}
     {% if portfolio_correlation and portfolio_correlation.effective_n %}<div style="font-size:12px; color:#475569; margin-top:6px;">Çeşitlendirme: {{ portfolio_correlation.n_holdings | fmt }} hisse, 60 günlük ortalama getiri korelasyonu {{ portfolio_correlation.avg_pairwise_corr | fmt }}; yaklaşık {{ portfolio_correlation.effective_n | fmt }} bağımsız bahis kadar.</div>{% endif %}
     {% if kap_red_flags %}<div style="font-size:12px; color:#334155; margin-top:8px; border-top:1px solid #e2e8f0; padding-top:8px;">
       <b>KAP kırmızı bayrak (son {{ kap_red_flags.window_days | fmt }} gün, bilgi amaçlı):</b>

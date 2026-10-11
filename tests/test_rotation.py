@@ -43,3 +43,21 @@ def test_financials_excluded_like_tested_panel():
     top = rotation.select_top(cands)
     assert [h["ticker"] for h in top] == ["HOLD", "T9"]
     assert rotation.is_financial({"sector": "Faktoring"}) and not rotation.is_financial({"sector": "Holding"})
+
+
+def test_untested_financials_listed_separately(temp_db):
+    from core import db
+    from report.render import render_mobile_newsletter
+    from report.validate import find_orphan_numbers
+    db.init_db()
+    cands = [_c(f"T{i}", float(i), sector="İmalat") for i in range(10)]
+    cands += [_c(f"B{i}", float(i), sector="Bankacılık") for i in range(5)]
+    r = rotation.monthly_rotation("2026-10-01", cands)
+    assert all(not h["ticker"].startswith("B") for h in r["buy"])
+    assert r["untested_financials"] == [{"ticker": "B4", "sector": "Bankacılık"}]
+    ctx = {"as_of_date": "2026-10-01", "long_term_candidates": [], "short_term_candidates": [],
+           "long_term_display_count": 0, "short_term_display_count": 0, "sector_rotation": [],
+           "no_action_today": True, "rotation": r, "portfolio_correlation": {}}
+    html = render_mobile_newsletter(ctx)
+    assert "test edilmedi" in html and "B4" in html
+    assert find_orphan_numbers(html, {"rotation": r}) == []

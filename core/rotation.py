@@ -23,10 +23,10 @@ def is_financial(candidate: dict) -> bool:
     return candidate.get("sector") in FINANCIAL_SECTORS
 
 
-def _eligible(candidates: list[dict]) -> list[dict]:
+def _eligible(candidates: list[dict], financial: bool = False) -> list[dict]:
     return [c for c in candidates
             if c.get("bucket") == "long_term"
-            and not is_financial(c)
+            and is_financial(c) == financial
             and c.get("candidate_state") != "QUARANTINE"
             and c.get("confidence") != "insufficient_peers"
             and c.get("valuation_z") is not None]
@@ -39,6 +39,16 @@ def select_top(candidates: list[dict]) -> list[dict]:
     n_top = max(1, round(len(pool) * TOP_PCT))
     return [{"ticker": c["ticker"], "valuation_z": c["valuation_z"],
              "rank_pct": round((i + 1) / len(pool), 4)} for i, c in enumerate(pool[:n_top])]
+
+
+def untested_financials(candidates: list[dict]) -> list[dict]:
+    """Finansallar icinde degerleme z'sine gore ust %20: YALNIZCA bilgi amacli.
+    Bu kural finansallarda test edilmedi; AL/TUT listesine girmez."""
+    pool = sorted(_eligible(candidates, financial=True), key=lambda c: -c["valuation_z"])
+    if not pool:
+        return []
+    n_top = max(1, round(len(pool) * TOP_PCT))
+    return [{"ticker": c["ticker"], "sector": c.get("sector")} for c in pool[:n_top]]
 
 
 def _holdings(rebalance_date: str) -> list[dict]:
@@ -73,4 +83,5 @@ def monthly_rotation(as_of_date: str, candidates: list[dict]) -> dict:
         "sell": sorted(prev - cur),
         "n_holdings": len(current),
         "top_pct": TOP_PCT * 100,
+        "untested_financials": untested_financials(candidates),
     }

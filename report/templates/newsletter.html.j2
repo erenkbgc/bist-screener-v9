@@ -967,6 +967,19 @@
   </div>
   {% endif %}
 
+  <!-- ============================== FINANSALLAR (test edilmedi) ============================== -->
+  {% if rotation and rotation.untested_financials %}
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">Finansal Sirketler (test edilmedi, bilgi amacli)</h2>
+      <div class="section-desc">Banka, sigorta, araci kurum, faktoring, leasing ve MKYO'lar arasinda degerleme sirasinda ust dilim. Bu kural finansallarda gecmiste test edilmedi (bilancolari satis/FAVOK tasimiyor; dogru olcut ROE'ye gore PD/DD); AL/TUT listesine girmez.</div>
+    </div>
+    <div style="font-size:12.5px; color:#334155; line-height:1.6;">
+      {% for f in rotation.untested_financials %}{{ f.ticker }} ({{ f.sector }}){% if not loop.last %}, {% endif %}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- ============================== KAP KIRMIZI BAYRAK (bilgi amacli) ============================== -->
   {% if kap_red_flags %}
   <div class="card">
