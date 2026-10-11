@@ -108,3 +108,28 @@ def test_mobile_card_shows_levels_without_orphan_numbers():
     assert "Destek / direnç" in html and "106.80" in html
     assert "Hedef yolunda direnç" in html
     assert find_orphan_numbers(html, payload) == []
+
+
+def test_mobile_header_candidate_counts_come_from_payload():
+    # 2026-10-06/09/10: baslikta "{{ ... | length }}" ile basilan aday sayisi
+    # (orn. 188) payload'da yoktu, validation gate bulteni durdurdu.
+    from report.render import render_mobile_newsletter
+    from report.validate import find_orphan_numbers
+    base = {"candidate_state": "OPPORTUNITY", "current_price": 100.0, "target_price": 112.4,
+            "expected_roi_pct": 12.4, "horizon_days": 180, "entry_low": 98.5, "entry_high": 100.4,
+            "stop_loss": 93.2, "position_size_pct": 18.2}
+    lt = [{**base, "ticker": f"T{i:03d}"} for i in range(37)]
+    payload = {"passing_candidates": lt, "long_term_display_count": 37, "short_term_display_count": 0}
+    ctx = {"as_of_date": "2026-09-27", "long_term_candidates": lt, "short_term_candidates": [],
+           "long_term_display_count": 37, "short_term_display_count": 0,
+           "sector_rotation": [], "no_action_today": False}
+    html = render_mobile_newsletter(ctx)
+    assert "37 uzun vade" in html
+    assert find_orphan_numbers(html, payload) == []
+
+
+def test_templates_do_not_count_in_jinja():
+    # Sablonda hesaplanan sayi payload'da olmaz -> orphan; sayim payload'da yapilmali.
+    from pathlib import Path
+    for tpl in Path("report/templates").glob("*.j2"):
+        assert "| length" not in tpl.read_text(encoding="utf-8"), tpl.name
