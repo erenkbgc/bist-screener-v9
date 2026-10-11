@@ -6,7 +6,7 @@
   - Out-of-fold ensemble (RandomForest + LogisticRegression) ve 3-fold TimeSeriesSplit capraz dogrulama.
   - 25+ makro ve teknik gosterge: USD/TRY kuru, BIST 100 endeksi, RSI(14), MACD(12,26,9), Bollinger Bant genisligi ve %B, ATR(14), ADX(14), 20/50/200 gunluk HO egimleri, hacim anomalileri.
   - SciPy SLSQP optimizasyonu ile Out-of-Fold Brier loss minimizasyonu (sabit agirlik yerine veri bazli ensemble).
-  - Walk-forward backtest simülasyon araci: `scripts/run_trend_forecast_backtest.py`.
+  - Walk-forward backtest simülasyon araci (`scripts/run_trend_forecast_backtest.py`) 2026-10-11 kaldirildi; trend tahmini skora bagli degil (PR #25).
   - Testler: `tests/test_trend_forecaster.py` (5/5 basarili).
 
 - [x] **2. Sifir Manuel Agirlik Motoru (`core/weight_optimizer.py`)** — TAMAMLANDI (2026-09-19).
