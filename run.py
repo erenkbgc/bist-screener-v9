@@ -523,6 +523,9 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     for c in long_term_candidates:
         if c["candidate_state"] in ("NO_ACTION", "QUARANTINE"):
             continue
+        # Finansallar test edilen modelde yoktu (core/rotation.py ile ayni kural).
+        if rotation_mod.is_financial(c):
+            continue
         card = thesis_mod.build_thesis_card(c)
         lt_display.append({**c, **card, "upcoming_events": c.get("events", [])})
 

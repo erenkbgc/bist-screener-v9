@@ -6,19 +6,27 @@ tutulur, ust %20'den cikan satilir. Ay basina bir dengeleme yapilir: ayin ilk
 kosusu listeyi kaydeder, ayni ay icindeki sonraki kosular ayni listeyi gosterir.
 
 Evren: degerleme z'si hesaplanabilen uzun vade adaylari (karantina ve akran
-yetersizligi haric). Hedef fiyat, hurdle ve Piotroski kapilari bu listeyi
+yetersizligi haric). Finansal sirketler (banka, sigorta, faktoring, leasing,
+araci kurum, MKYO...) haric: test edilen panel bunlari icermiyordu
+(core/pit_panel.FINANCIAL_SECTORS); bilancolari satis/FAVOK tasimiyor. Hedef fiyat, hurdle ve Piotroski kapilari bu listeyi
 ETKILEMEZ: test edilen kural bu kapilari icermiyordu.
 """
 from __future__ import annotations
 
 from core import db
+from core.pit_panel import FINANCIAL_SECTORS
 
 TOP_PCT = 0.20
+
+
+def is_financial(candidate: dict) -> bool:
+    return candidate.get("sector") in FINANCIAL_SECTORS
 
 
 def _eligible(candidates: list[dict]) -> list[dict]:
     return [c for c in candidates
             if c.get("bucket") == "long_term"
+            and not is_financial(c)
             and c.get("candidate_state") != "QUARANTINE"
             and c.get("confidence") != "insufficient_peers"
             and c.get("valuation_z") is not None]
