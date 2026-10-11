@@ -14,7 +14,9 @@ BIST_DATA_MODE=live oldugunda core/live_data.py, Is Yatirim uzerinden ayna
 tuttugu GERCEK KAP bildirim basliklarini (Ticker.news) KURAL TABANLI bir
 regex/anahtar-kelime siniflandiriciyla (core/live_data.py::_categorize_kap_title)
 kategoriye indirger -- LLM tabanli siniflandirma KULLANILMAZ (spec'te acikca
-yasaklanmis). Aksi halde core/mock_data.py'daki deterministik mock katmani
+yasaklanmis). Tek istisna core/kap_llm.py: bilgi amacli kirmizi bayrak
+panelinde sabit semali, karara girmeyen deneysel etiket (bkz.
+bist_screener_v9_prompt.json). Aksi halde core/mock_data.py'daki deterministik mock katmani
 kullanilir.
 """
 from __future__ import annotations

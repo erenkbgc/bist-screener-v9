@@ -15,7 +15,7 @@ from __future__ import annotations
 import time
 from datetime import date, datetime, timedelta
 
-from core import db, kap_api
+from core import db, kap_api, kap_llm
 from core.kap_red_flags import RED_FLAG_LABELS, classify
 
 WINDOW_DAYS = 180
@@ -97,7 +97,29 @@ def refresh(as_of_date: str, http=None, sleep_s: float = _SLEEP_S) -> dict:
     return {"windows_fetched": fetched, "error": error}
 
 
-def build_panel(as_of_date: str, tickers: list[str], refresh_error: str | None = None) -> dict:
+def _group(rows) -> dict[str, dict[str, dict]]:
+    """Hisse basina kategori ozeti: adet, en yeni tarih ve en yeni bildirimin linki.
+    rows published_at DESC sirali: ilk gorulen en yeni."""
+    by_ticker: dict[str, dict[str, dict]] = {}
+    for r in rows:
+        cats = by_ticker.setdefault(r["ticker"], {})
+        c = cats.get(r["red_flag"])
+        if c is None:
+            cats[r["red_flag"]] = {
+                "category": r["red_flag"], "label": RED_FLAG_LABELS.get(r["red_flag"], r["red_flag"]),
+                "count": 1, "last_date": r["published_at"][:10],
+                "disclosure_index": r["disclosure_index"], "url": f"{KAP_URL}{r['disclosure_index']}"}
+        else:
+            c["count"] += 1
+    return by_ticker
+
+
+def _sorted(cats: dict[str, dict]) -> list[dict]:
+    return sorted(cats.values(), key=lambda c: c["last_date"], reverse=True)
+
+
+def build_panel(as_of_date: str, tickers: list[str], refresh_error: str | None = None,
+                llm: dict | None = None) -> dict:
     """AL/TUT hisseleri icin son 180 gunun kirmizi bayraklari.
 
     status: ok (pencere tam), partial (bazi gunler cekilemedi), unavailable
@@ -117,21 +139,20 @@ def build_panel(as_of_date: str, tickers: list[str], refresh_error: str | None =
             f"WHERE red_flag IS NOT NULL AND ticker IN ({marks}) AND published_at >= ? AND published_at < ? "
             f"ORDER BY ticker, published_at DESC",
             (*tickers, start.isoformat(), (as_of + timedelta(days=1)).isoformat()))
-        # Hisse basina kategori ozeti: adet, en yeni tarih ve en yeni bildirimin linki.
-        by_ticker: dict[str, dict[str, dict]] = {}
-        for r in rows:  # published_at DESC: ilk gorulen en yeni
-            cats = by_ticker.setdefault(r["ticker"], {})
-            c = cats.get(r["red_flag"])
-            if c is None:
-                cats[r["red_flag"]] = {
-                    "category": r["red_flag"], "label": RED_FLAG_LABELS.get(r["red_flag"], r["red_flag"]),
-                    "count": 1, "last_date": r["published_at"][:10],
-                    "disclosure_index": r["disclosure_index"], "url": f"{KAP_URL}{r['disclosure_index']}"}
-            else:
-                c["count"] += 1
-        holdings = [{"ticker": t, "n_flags": sum(c["count"] for c in cats.values()),
-                     "categories": sorted(cats.values(), key=lambda c: c["last_date"], reverse=True)}
-                    for t, cats in sorted(by_ticker.items())]
+        # Deneysel: regex'in KACIRDIGI, LLM'in bayrakladigi bildirimler (ayri gosterilir).
+        llm_rows = db.query(
+            f"SELECT f.disclosure_index, f.ticker, f.published_at, l.category AS red_flag FROM kap_feed f "
+            f"JOIN kap_llm_labels l ON l.disclosure_index = f.disclosure_index AND l.model = ? AND l.prompt_hash = ? "
+            f"WHERE f.red_flag IS NULL AND l.category != 'none' AND f.ticker IN ({marks}) "
+            f"AND f.published_at >= ? AND f.published_at < ? ORDER BY f.ticker, f.published_at DESC",
+            (kap_llm.MODEL, kap_llm.PROMPT_HASH, *tickers, start.isoformat(), (as_of + timedelta(days=1)).isoformat()))
+        regex_by, llm_by = _group(rows), _group(llm_rows)
+        holdings = [{"ticker": t,
+                     "n_flags": sum(c["count"] for c in regex_by.get(t, {}).values()),
+                     "categories": _sorted(regex_by.get(t, {})),
+                     "llm_categories": _sorted(llm_by.get(t, {}))}
+                    for t in sorted(set(regex_by) | set(llm_by))]
     return {"status": status, "window_days": WINDOW_DAYS, "missing_days": missing_days,
             "n_holdings": len(tickers), "n_flagged_holdings": len(holdings),
-            "holdings": holdings, "refresh_error": refresh_error}
+            "holdings": holdings, "refresh_error": refresh_error,
+            "llm_model": kap_llm.MODEL, "llm": llm or {}}
