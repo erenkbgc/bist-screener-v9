@@ -324,6 +324,20 @@ CREATE TABLE IF NOT EXISTS factor_contributions (
     PRIMARY KEY (as_of_date, ticker, bucket)
 );
 
+-- KAP bildirim sorgusundan (core/kap_api.py) gelen, kirmizi bayrakli veya
+-- serbest metinli (Ozel Durum Aciklamasi, Haber ve Soylentiler) bildirimler.
+-- Hisse kodu basina bir satir. red_flag: core/kap_red_flags.classify.
+CREATE TABLE IF NOT EXISTS kap_feed (
+    disclosure_index INTEGER, ticker TEXT, published_at TEXT,
+    subject TEXT, summary TEXT, red_flag TEXT,
+    PRIMARY KEY (disclosure_index, ticker)
+);
+
+-- Tamamen cekilmis gunler (kosu gunu haric: gun bitmeden yazilmaz).
+CREATE TABLE IF NOT EXISTS kap_fetch_log (
+    day TEXT PRIMARY KEY, n_disclosures INTEGER, fetched_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS event_calendar (
     ticker TEXT,
     event_date TEXT,

@@ -25,7 +25,7 @@ import re
 # (kategori, Turkce etiket, konu deseni, ozet deseni). Sira = oncelik: bir
 # bildirim yalnizca ILK eslesen kategoriye yazilir.
 _RULES: list[tuple[str, str, re.Pattern | None, re.Pattern | None]] = [
-    ("insolvency", "Konkordato / iflas / borç yapılandırma / TTK 376",
+    ("insolvency", "Konkordato / iflas / borç yapılandırma / sermaye kaybı (TTK)",
      re.compile(r"iflas|TTK'nın 376", re.I),
      # "6736 sayili ... yeniden yapilandirilmasi" vergi affidir, "swap ...
      # yeniden yapilandirma" turev islemidir: ikisi de "finansal"/"borc" kokune

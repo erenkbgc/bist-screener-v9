@@ -39,6 +39,7 @@ def build_report_payload(
     run_health: dict | None = None,
     rotation: dict | None = None,
     portfolio_correlation: dict | None = None,
+    kap_red_flags: dict | None = None,
 ) -> dict:
     as_of_date_cutoff = as_of_date
 
@@ -149,6 +150,7 @@ def build_report_payload(
         "decision_diff": diff_against_previous_run(as_of_date),
         "rotation": rotation or {},
         "portfolio_correlation": portfolio_correlation or {},
+        "kap_red_flags": kap_red_flags or {},
         "realized_returns": load_realized_returns(),
     }
     return payload

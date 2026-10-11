@@ -63,6 +63,7 @@ from core import dcf as dcf_mod
 from core import concentration as concentration_mod
 from core import diagnostics as diagnostics_mod
 from core import rotation as rotation_mod
+from core import kap_red_flag_panel
 from core import correlation as correlation_mod
 from core import scoring as scoring_mod
 from core import payload as payload_mod
@@ -451,6 +452,19 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     correlation_mod.compute_correlation_flags(as_of_date, held)
     portfolio_correlation = correlation_mod.effective_bets(held)
 
+    # --- KAP kirmizi bayrak paneli (bilgi amacli; on-kayitli test gecmedi,
+    # karari DEGISTIRMEZ). Canli modda eksik gunler KAP'tan cekilir. ---
+    refresh_error = None
+    if kap_web_mcp._live_enabled():
+        try:
+            refresh_error = kap_red_flag_panel.refresh(as_of_date)["error"]
+        except Exception as exc:  # noqa: BLE001 - panel taramayi durdurmaz
+            refresh_error = str(exc)
+        if refresh_error:
+            print(f"[kap_red_flags] eksik: {refresh_error}", flush=True)
+    kap_red_flags = kap_red_flag_panel.build_panel(
+        as_of_date, sorted(c["ticker"] for c in rotation["buy"] + rotation["hold"]), refresh_error)
+
     # --- Quant Level-Up Faz 4 & 5: HRP Portfoy & Faktor Katki Disclosures ---
     if passing:
         factor_disclosure.compute_and_save_factor_contributions(
@@ -492,6 +506,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         run_health=health,
         rotation=rotation,
         portfolio_correlation=portfolio_correlation,
+        kap_red_flags=kap_red_flags,
     )
     decision_diff = payload["decision_diff"]
 
@@ -522,6 +537,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "decision_diff": decision_diff,
         "rotation": payload["rotation"],
         "portfolio_correlation": payload["portfolio_correlation"],
+        "kap_red_flags": payload["kap_red_flags"],
         "realized_returns": payload["realized_returns"],
         "concentration_warnings": concentration_warnings,
         "sector_rotation": sorted(

@@ -36,36 +36,8 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "research"
 RAW = OUT / "kap_raw"
 
-URL = "https://www.kap.org.tr/tr/api/disclosure/members/byCriteria"
-PAGE_CAP = 2000
-KEEP = ("disclosureIndex", "publishDate", "stockCodes", "subject", "summary",
-        "disclosureClass", "disclosureType", "isLate", "ruleType", "attachmentCount")
-
-
-def _body(fr: str, to: str) -> dict:
-    return {"fromDate": fr, "toDate": to, "year": "", "prd": "", "term": "", "ruleType": "",
-            "bdkReview": "", "disclosureClass": "", "index": "", "market": "", "isLate": "",
-            "subjectList": [], "mkkMemberOidList": [], "inactiveMkkMemberOidList": [],
-            "bdkMemberOidList": [], "mainSector": "", "sector": "", "subSector": "",
-            "memberType": "IGS", "fromDateString": "", "toDateString": "", "srcCategory": "",
-            "discIndex": []}
-
-
-def fetch_range(client: httpx.Client, fr: date, to: date, retries: int = 8) -> list[dict]:
-    day = f"{fr}..{to}"
-    for attempt in range(retries):
-        try:
-            r = client.post(URL, json=_body(fr.isoformat(), to.isoformat()), timeout=60)
-            r.raise_for_status()
-            return [{k: x.get(k) for k in KEEP} for x in r.json()]
-        except Exception as exc:  # noqa: BLE001 - ag hatasi: bekle, tekrar dene
-            # KAP hizli istekte IP'yi dakikalarca keser ("Server disconnected");
-            # bekleme 30 s'den ~16 dk'ya kadar uzar.
-            wait = min(30 * 2 ** attempt, 960)
-            print(f"[hata] {day}: {exc}; {wait}s sonra tekrar", flush=True)
-            time.sleep(wait)
-    raise RuntimeError(f"{day} cekilemedi")
-
+sys.path.insert(0, str(ROOT))
+from core.kap_api import PAGE_CAP, client, fetch_range  # noqa: E402
 
 def months(start: date, end: date):
     m = date(start.year, start.month, 1)
@@ -128,9 +100,8 @@ def main() -> None:
 
     RAW.mkdir(parents=True, exist_ok=True)
     start, end = date.fromisoformat(args.start), date.fromisoformat(args.end)
-    headers = {"User-Agent": "Mozilla/5.0", "Content-Type": "application/json"}
-    with httpx.Client(headers=headers, follow_redirects=True) as client:
-        files = [build_month(client, a, b, args.sleep) for a, b in months(start, end)]
+    with client() as http:
+        files = [build_month(http, a, b, args.sleep) for a, b in months(start, end)]
 
     df = to_frame(files)
     out = OUT / "kap_archive.parquet"
