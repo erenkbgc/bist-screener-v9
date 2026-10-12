@@ -3,7 +3,7 @@ from core import rotation
 
 def _c(t, z, **kw):
     return {"ticker": t, "bucket": "long_term", "candidate_state": "WATCHLIST", "confidence": "high",
-            "valuation_z": z, **kw}
+            "valuation_z": z, "tl_vol_med60": 1e9, **kw}
 
 
 def test_select_top_quintile_and_exclusions():
@@ -61,3 +61,20 @@ def test_untested_financials_listed_separately(temp_db):
     html = render_mobile_newsletter(ctx)
     assert "test edilmedi" in html and "B4" in html
     assert find_orphan_numbers(html, {"rotation": r}) == []
+
+
+def test_illiquid_tail_dropped_like_tested_panel():
+    # Panel her ay 60g medyan TL hacminde alt %30'u atiyordu; canli da ayni kesimi uygular.
+    cands = [_c(f"T{i}", float(i), tl_vol_med60=1e6 * (i + 1)) for i in range(10)]
+    cands.append(_c("NOLIQ", 99.0, tl_vol_med60=None))  # <40 bar: panelde de NaN, disarida
+    top = rotation.select_top(cands)
+    # kesim 30. yuzdelik = 3.7M -> T0..T2 elenir, 7 hisseden ust %20 = 1
+    assert [h["ticker"] for h in top] == ["T9"]
+    assert rotation.select_top([_c("A", 5.0, tl_vol_med60=1e6), _c("B", 1.0, tl_vol_med60=9e6)]) \
+        == [{"ticker": "B", "valuation_z": 1.0, "rank_pct": 1.0}]
+
+
+def test_tl_volume_median_60():
+    bars = [{"close": 10.0, "volume": float(v)} for v in range(1, 61)]
+    assert rotation.tl_volume_median_60(bars) == 10.0 * 30.5
+    assert rotation.tl_volume_median_60(bars[:39]) is None

@@ -133,6 +133,7 @@ flowchart TD
 
 - **Universe:** long-term candidates with a sector-relative valuation z (`valuation_z` = the tested `value_sn`: mean z of E/P, B/M, S/P and EBIT/EV, demeaned within sector). Quarantined names and names with too few peers are excluded.
 - **Financials excluded:** banks, insurance, pension, factoring, leasing, savings finance, brokers, securities investment trusts and asset managers (`pit_panel.FINANCIAL_SECTORS`). The tested panel never contained them. Their own top 20% is shown separately as "test edilmedi" (untested, information only).
+- **Liquidity cut:** the bottom 30% of non-financial long-term candidates by 60-day median daily TL volume (close × volume, at least 40 bars) are dropped before ranking, as in the tested panel (`factor_backtest.prepare`, `liq_drop_pct=0.3`). The live universe floor of 10M TL is looser; before this cut, about a third of the live top 20% came from the untested illiquid tier.
 - **Rule:** hold the top 20% equal-weighted. The first run of each month stores the list in `rotation_holdings`; later runs in the same month reuse it. A name that leaves the top 20% is sold.
 - **Output:** AL (new), TUT (kept), SAT (dropped).
 - **Diversification:** average pairwise 60-day log-return correlation of the held basket and the effective number of bets $`N/(1+(N-1)\bar\rho)`$ (`core/correlation.py::effective_bets`).

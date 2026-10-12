@@ -10,13 +10,30 @@ yetersizligi haric). Finansal sirketler (banka, sigorta, faktoring, leasing,
 araci kurum, MKYO...) haric: test edilen panel bunlari icermiyordu
 (core/pit_panel.FINANCIAL_SECTORS); bilancolari satis/FAVOK tasimiyor. Hedef fiyat, hurdle ve Piotroski kapilari bu listeyi
 ETKILEMEZ: test edilen kural bu kapilari icermiyordu.
+
+Likidite: test edilen panel her ay 60 gunluk medyan TL hacmine gore en az likit
+%30'u atiyordu (core/factor_backtest.prepare, liq_drop_pct=0.3). Canli evrenin
+10M TL tabani bundan gevsek; 2026-10-10 kosusunda ust %20'nin ~1/3'u test
+edilmemis likidite diliminden geliyordu. Ayni kesim burada da uygulanir; 60g
+medyani hesaplanamayan (<40 bar) hisse, panelde oldugu gibi disarida kalir.
 """
 from __future__ import annotations
+
+from statistics import median
 
 from core import db
 from core.pit_panel import FINANCIAL_SECTORS
 
 TOP_PCT = 0.20
+LIQ_DROP_PCT = 0.30      # core/factor_backtest.prepare ile ayni
+LIQ_WINDOW, LIQ_MIN_BARS = 60, 40  # core/pit_panel: rolling(60, min_periods=40).median()
+
+
+def tl_volume_median_60(bars: list[dict]) -> float | None:
+    """Son 60 bardaki gunluk TL hacminin (kapanis x adet) medyani; panelin tlvol60 tanimi."""
+    vals = [b["close"] * b["volume"] for b in bars[-LIQ_WINDOW:]
+            if b.get("close") and b.get("volume") is not None]
+    return median(vals) if len(vals) >= LIQ_MIN_BARS else None
 
 
 def is_financial(candidate: dict) -> bool:
@@ -32,8 +49,24 @@ def _eligible(candidates: list[dict], financial: bool = False) -> list[dict]:
             and c.get("valuation_z") is not None]
 
 
+def _liquid_tickers(candidates: list[dict]) -> set[str]:
+    """Finansal olmayan uzun vade adaylari icinde 60g medyan TL hacmine gore alt %30'u atar."""
+    liq = {c["ticker"]: c["tl_vol_med60"] for c in candidates
+           if c.get("bucket") == "long_term" and not is_financial(c)
+           and c.get("tl_vol_med60") is not None and c["tl_vol_med60"] > 0}
+    if not liq:
+        return set()
+    vals = sorted(liq.values())
+    # pandas Series.quantile (lineer) ile ayni kesim
+    pos = LIQ_DROP_PCT * (len(vals) - 1)
+    lo = int(pos)
+    cut = vals[lo] + (vals[min(lo + 1, len(vals) - 1)] - vals[lo]) * (pos - lo)
+    return {t for t, v in liq.items() if v >= cut}
+
+
 def select_top(candidates: list[dict]) -> list[dict]:
-    pool = sorted(_eligible(candidates), key=lambda c: -c["valuation_z"])
+    liquid = _liquid_tickers(candidates)
+    pool = sorted((c for c in _eligible(candidates) if c["ticker"] in liquid), key=lambda c: -c["valuation_z"])
     if not pool:
         return []
     n_top = max(1, round(len(pool) * TOP_PCT))
