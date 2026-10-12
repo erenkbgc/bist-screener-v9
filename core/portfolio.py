@@ -26,43 +26,69 @@ logger = logging.getLogger(__name__)
 DEFAULT_CORRELATION_THRESHOLD = 0.80
 DEFAULT_MAX_SECTOR_WEIGHT = 0.30
 ANNUAL_TRADING_DAYS = 252
+MIN_COMMON_OBS = 15  # kovaryans/korelasyon icin asgari ortak islem gunu
 
 
 # =====================================================================
 # 1. KORELASYON HESAPLAMA VE FILTRELEME
 # =====================================================================
 
+def _returns_by_date(bars: list[dict]) -> pd.Series:
+    """Bar listesinden tarih indeksli gunluk getiri serisi (ardisik mevcut barlar arasi)."""
+    rows = [(b["date"], float(b.get("adj_close") or b["close"])) for b in bars if b.get("close") and b.get("date")]
+    if not rows:
+        return pd.Series(dtype=float)
+    closes = pd.Series(dict(rows), dtype=float).sort_index()
+    return closes.pct_change().dropna()
+
+
+def _aligned_returns(returns_dict: dict, tickers: list[str]) -> pd.DataFrame:
+    """Getirileri ortak islem gunlerine hizalar; yalnizca tum hisselerin getirisi olan gunler kalir.
+
+    Tarihsiz (ndarray) seriler sondan hizalanir: tarih bilgisi yoksa yapilabilecek tek varsayim."""
+    cols = []
+    for t in tickers:
+        r = returns_dict[t]
+        if not isinstance(r, pd.Series):
+            arr = np.asarray(r, dtype=float)
+            r = pd.Series(arr, index=range(-len(arr), 0))
+        cols.append(r)
+    # Sutunlar tickers sirasiyla konumsal; ayni ticker iki kez gelirse iki sutun olur.
+    return pd.concat(cols, axis=1, keys=range(len(cols))).dropna()
+
+
 def calculate_returns_and_covariance(
     tickers: list[str],
     price_series_by_ticker: dict[str, list[dict]],
     window_days: int = 60,
-) -> tuple[dict[str, np.ndarray], np.ndarray, np.ndarray]:
-    """Kapanis fiyatlarindan gunluk log/yuzde getirileri ve yilliklandirilmis kovaryans matrisini hesaplar."""
-    returns_dict: dict[str, np.ndarray] = {}
-    valid_tickers: list[str] = []
+) -> tuple[dict[str, pd.Series], np.ndarray, np.ndarray]:
+    """Kapanis fiyatlarindan gunluk getirileri ve yilliklandirilmis kovaryans matrisini hesaplar.
 
+    Getiriler tarih indeksli tutulur ve ortak islem gunlerine hizalanir; hisseler
+    arasinda farkli gunlerin ayni satira dusmesi engellenir. Pencere, tum hisselerin
+    birlesik takviminin son window_days gunudur (bayat fiyatli hisse bu pencerede
+    MIN_COMMON_OBS gozlemi saglamazsa disarida kalir)."""
+    series = {t: _returns_by_date(price_series_by_ticker.get(t, [])) for t in tickers}
+    calendar = sorted(set().union(*(s.index for s in series.values()))) if series else []
+    window = set(calendar[-window_days:])
+
+    returns_dict: dict[str, pd.Series] = {}
     for t in tickers:
-        bars = price_series_by_ticker.get(t, [])
-        if len(bars) < 15:
-            continue
-        closes = [float(b.get("adj_close") or b["close"]) for b in bars[-window_days:] if b.get("close")]
-        if len(closes) < 15:
-            continue
-        arr = np.array(closes, dtype=float)
-        # Gunluk getiri
-        rets = np.diff(arr) / arr[:-1]
-        returns_dict[t] = rets
-        valid_tickers.append(t)
+        r = series[t][series[t].index.isin(window)]
+        if len(r) >= MIN_COMMON_OBS:
+            returns_dict[t] = r
 
+    valid_tickers = list(returns_dict)
     if len(valid_tickers) < 2:
         return returns_dict, np.array([]), np.array([])
 
-    # Ortak uzunluga kirp
-    min_len = min(len(returns_dict[t]) for t in valid_tickers)
-    mat = np.column_stack([returns_dict[t][-min_len:] for t in valid_tickers])
+    mat = _aligned_returns(returns_dict, valid_tickers)
+    if len(mat) < MIN_COMMON_OBS:
+        logger.warning("Ortak islem gunu sayisi yetersiz (%d < %d); kovaryans hesaplanmadi.", len(mat), MIN_COMMON_OBS)
+        return returns_dict, np.array([]), np.array([])
 
     # Yilliklandirilmis kovaryans matrisi
-    cov_matrix = np.cov(mat, rowvar=False) * ANNUAL_TRADING_DAYS
+    cov_matrix = np.cov(mat.to_numpy(), rowvar=False) * ANNUAL_TRADING_DAYS
     # Volatiliteler (yillik %)
     vols = np.sqrt(np.diag(cov_matrix)) * 100.0
 
@@ -79,10 +105,12 @@ def filter_correlated_candidates(
     if len(tickers) < 2:
         return candidates, []
 
-    # Ortak boyutta matris
-    min_len = min(len(returns_dict[t]) for t in tickers)
-    data = np.column_stack([returns_dict[t][-min_len:] for t in tickers])
-    corr_mat = np.corrcoef(data, rowvar=False)
+    # Ortak islem gunlerine hizali matris
+    data = _aligned_returns(returns_dict, tickers)
+    if len(data) < MIN_COMMON_OBS:
+        logger.warning("Korelasyon filtresi atlandi: ortak gun sayisi %d < %d.", len(data), MIN_COMMON_OBS)
+        return candidates, []
+    corr_mat = np.corrcoef(data.to_numpy(), rowvar=False)
 
     candidate_map = {c["ticker"]: c for c in candidates}
     dropped_info: list[dict] = []
@@ -482,7 +510,12 @@ def optimize_portfolio(
         }
 
     # Yeniden filtrelenmis evren icin kovaryans ve getiri matrisi
-    _, cov_matrix, vols = calculate_returns_and_covariance(active_tickers, price_series_by_ticker, window_days=60)
+    active_returns, cov_matrix, vols = calculate_returns_and_covariance(
+        active_tickers, price_series_by_ticker, window_days=60
+    )
+    if cov_matrix.size and len(active_returns) != len(active_tickers):
+        # Pencere bu alt kume icin yeniden kuruldu; yetersiz ortak gozlemli hisse disarida kalir.
+        active_tickers = list(active_returns)
 
     n = len(active_tickers)
 
@@ -562,10 +595,9 @@ def optimize_portfolio(
     sharpe = round((port_exp_ret_pct - risk_free_rate_pct) / max(1.0, port_vol_pct), 2)
 
     # %95 CVaR (Expected Shortfall) hesabi
-    min_len = min(len(returns_dict[t]) for t in active_tickers) if active_tickers else 0
-    if min_len >= 5:
-        returns_mat = np.column_stack([returns_dict[t][-min_len:] for t in active_tickers])
-        cvar_95 = compute_portfolio_cvar(weights, returns_mat, confidence=0.95)
+    returns_mat = _aligned_returns(active_returns, active_tickers)
+    if len(returns_mat) >= 5:
+        cvar_95 = compute_portfolio_cvar(weights, returns_mat.to_numpy(), confidence=0.95)
     else:
         cvar_95 = 0.0
 
