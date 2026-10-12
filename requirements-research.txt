@@ -1,3 +1,4 @@
 # Arastirma scriptleri (scripts/research_*.py); canli akis bunlara bagli degil.
 yfinance>=1.7
 statsmodels>=0.15
+hijridate>=2.5
