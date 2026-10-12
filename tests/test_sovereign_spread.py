@@ -5,8 +5,10 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+pytest.importorskip("statsmodels")  # arastirma bagimliligi (requirements-research.txt); CI kurmaz
 import research_sovereign_spread as ss  # noqa: E402
 
 
