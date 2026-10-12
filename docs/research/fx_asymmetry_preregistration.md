@@ -54,3 +54,29 @@ At each month-end t, for each universe stock, using months t−35 … t:
 - **Price-based exposure:** FX beta is estimated from prices, not from reported export shares or FX positions. Those are not available point-in-time.
 - **Lira trend:** the lira fell in most months of the sample, so Δfx is mostly positive. X1 is identified mainly by the size of the fall, not by its direction.
 - **Survivorship**, as in the other studies.
+
+---
+
+## Results (added 2026-10-12, after the run; the sections above are unchanged)
+
+`python scripts/research_fx_asymmetry.py`. 150 holding months: 81 in discovery and 69 in holdout. JSON: `data/reports/research_fx_asymmetry_2026-10-12.json`.
+
+S = high-FX-beta quintile − low-FX-beta quintile, next-month return. Slopes are per unit of monthly Δln USDTRY, with Newey-West t.
+
+| Test | Discovery slope (t) | Holdout slope (t) | Result |
+|---|---|---|---|
+| X1: S on the same month's lira move | +0.06 (0.55) | +0.13 (1.62) | FAIL |
+| X2: S on the previous month's lira move | −0.04 (−0.48) | −0.16 (−2.86) | FAIL |
+
+**Descriptive:**
+- Mean S: −7.3% a year in discovery (t −1.32) and −2.4% in holdout (t −0.43).
+- After a top-quartile lira fall, S averaged −0.45% in discovery and −0.34% in holdout the next month. In other months it averaged −0.67% and −0.17%.
+- Mean FX beta by sector, over the full sample:
+  - most positive: Otomotiv Yan Sanayi +0.14, Otomotiv +0.09, Turizm +0.04;
+  - most negative: Mobilya ve Dekorasyon −0.63, Haberleşme −0.40, Enerji Teknolojileri −0.26, Enerji Üretim ve Dağıtım −0.25.
+
+How to read it:
+- **The sector pattern matches the story, but it is small.** Auto makers, auto-parts exporters and tourism gain a little relative to the market when the lira falls. Telecoms, energy distributors with FX debt and domestic consumer sectors lose a little. These are average betas of about ±0.1–0.6 on top of the market's own FX exposure, which is far smaller than "the strongest factor".
+- **X1: a stock's past FX beta does not reliably predict how it behaves in the next lira fall.** The slope is positive in both periods, as expected, but not significant. Stock-level currency exposure measured from prices is too noisy and too unstable to sort on.
+- **X2:** no delayed reaction to exploit. The holdout sign is the opposite of the hypothesis: after a lira fall, high-FX-beta stocks did *worse* the next month (t −2.86), which points to reversal, not underreaction. This was found after seeing the data and is not a result.
+- Nothing is shown in the bulletin.
