@@ -62,3 +62,33 @@ There are 3 tests:
 - **Non-synchronous trading:** stale prices in small stocks can create spurious lead-lag at daily frequency. Weekly returns reduce this but do not remove it. A pass in L1 that disappears after a further one-day skip would point to stale prices. This is reported as a sensitivity.
 - **Sector labels** are one current classification and are applied to the whole history.
 - **Survivorship**, as in all studies here.
+
+---
+
+## Results (added 2026-10-12, after the run; the sections above are unchanged)
+
+`python scripts/research_spillovers.py`. 514 stocks, 3,959 trading days. JSON: `data/reports/research_spillovers_2026-10-12.json`.
+
+**L1, big-to-small lead-lag.** b is the mean weekly Fama-MacBeth slope of the small stocks' week w+1 return on the big stocks' week w return, with Newey-West t.
+
+| Period | Weeks | Sectors per week | b (t) | b, one-day skip (t) | Top-third sectors' small stocks − all small, per week (t) |
+|---|---|---|---|---|---|
+| Discovery | 399 | 20.2 | 0.024 (1.31) | 0.024 (1.53) | −1.1 bps (−0.20) |
+| Holdout | 301 | 24.4 | 0.030 (1.93) | 0.018 (1.34) | +5.7 bps (0.93) |
+
+**L2, information transfer.** b is the slope of the peers' return on the first reporter's [0, +1] return, with t clustered by quarter.
+
+| Test | Period | Events | Clusters | Peers per event | b (t) |
+|---|---|---|---|---|---|
+| L2a same day [0, +1] | Discovery | 268 | 30 | 6.8 | 0.081 (1.72) |
+| | Holdout | 302 | 23 | 8.3 | −0.018 (−0.89) |
+| L2b drift [+2, +10] | Discovery | 268 | 30 | 6.8 | −0.046 (−1.09) |
+| | Holdout | 302 | 23 | 8.3 | −0.028 (−0.63) |
+
+**All three fail.**
+
+How to read it:
+- **L1:** the sign is positive in both periods, as the theory expects, but small. A 1% move in a sector's big stocks is followed by about a 0.02–0.03% move in its small stocks the next week, which is not significant. The tradable version earns nothing. On BIST, information travels within sectors mostly in the same week, not with a usable lag.
+- **L2a:** no reliable same-day transfer. A peer moves about 0.08× the first reporter in discovery and nothing in holdout. On BIST, sector peers do not move noticeably with the first company's quarterly report.
+- **L2b:** no drift afterwards, so there is no underreaction to trade.
+- The "spider web" exists in returns: stocks in a sector move together. But it shows up as same-time co-movement, mostly driven by the market and the currency, not as news spreading from one company to its peers with a lag that could be exploited.
