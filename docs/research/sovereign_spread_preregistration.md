@@ -49,3 +49,41 @@ For each month-end and each USD bond with 3 to 30 years to maturity:
 - **Not CDS:** the spread includes bond liquidity and the USD term premium. It moves closely with CDS but is not the same.
 - **Changing basket:** the bond basket changes as bonds are issued and mature. The median spread limits the effect, but the tenor drifts.
 - **Unknown archive start:** the Ziraat archive's start date was checked back to 2012-12. The usable sample starts where month-end data begins.
+
+---
+
+## Results (added 2026-10-13, after the run; the sections above are unchanged)
+
+**Data:**
+- `python scripts/fetch_eurobond_monthly.py`: 2,673 bond-month yields over 198 month-ends, 2010-04 to 2026-09.
+- `python scripts/research_sovereign_spread.py`. JSON: `data/reports/research_sovereign_spread_2026-10-13.json`.
+- The median spread averaged 3.82 pp (range 1.72 to 8.03). It was 2.66 pp at 2026-09.
+
+**C1, same month: PASS.**
+
+| | Value |
+|---|---|
+| Months | 197 |
+| b on Δsp (per 1 pp) | −0.124, NW t −8.24 |
+| b in each half | −0.122 / −0.126 |
+| R², EEM only | 0.215 |
+| R², EEM + Δsp | 0.490 |
+
+A 100 bp widening of Turkey's USD spread goes with about a 12% lower BIST in USD in the same month, beyond what EM equities explain. Adding the spread **more than doubles** the explained share of monthly variance, from 22% to 49%. The coefficient is the same in both halves.
+
+**C2, prediction: FAIL.**
+
+| Test | In-sample b (t) | OOS R² | Clark-West p | Result |
+|---|---|---|---|---|
+| C2a next month | +0.011 (2.17) | −3.2% | 0.48 | FAIL |
+| C2b next 12 months | +0.098 (3.70) | −31.4% | 0.018 | FAIL |
+
+**Decisions, as pre-registered:**
+- The README names the sovereign spread as the Turkey-specific driver of BIST.
+- The bulletin may show the current spread and its monthly change as information. This is not implemented yet: it needs a daily Ziraat Eurobond request in the live run.
+- No timing note: C2 failed.
+
+How to read it:
+- This answers the macro study's open question: the Turkey-specific half of BIST's monthly move is largely country credit risk.
+- It is **explanation, not prediction**. The spread moves together with BIST in the same month. A high spread at month-end did not reliably predict a better next month or year out of sample. The 12-month in-sample fit (t 3.70) did not survive out of sample (R² −31%), the same pattern as the macro study's near misses.
+- For an investor, the spread is a risk gauge: when it widens, BIST in USD falls. It does not give a timing signal.
