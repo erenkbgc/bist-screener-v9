@@ -3,7 +3,7 @@ from core import rotation
 
 def _c(t, z, **kw):
     return {"ticker": t, "bucket": "long_term", "candidate_state": "WATCHLIST", "confidence": "high",
-            "valuation_z": z, **kw}
+            "valuation_z": z, "tl_vol_med60": 1e9, **kw}
 
 
 def test_select_top_quintile_and_exclusions():
@@ -61,3 +61,53 @@ def test_untested_financials_listed_separately(temp_db):
     html = render_mobile_newsletter(ctx)
     assert "test edilmedi" in html and "B4" in html
     assert find_orphan_numbers(html, {"rotation": r}) == []
+
+
+def test_illiquid_tail_dropped_like_tested_panel():
+    # Panel her ay 60g medyan TL hacminde alt %30'u atiyordu; canli da ayni kesimi uygular.
+    cands = [_c(f"T{i}", float(i), tl_vol_med60=1e6 * (i + 1)) for i in range(10)]
+    cands.append(_c("NOLIQ", 99.0, tl_vol_med60=None))  # <40 bar: panelde de NaN, disarida
+    top = rotation.select_top(cands)
+    # kesim 30. yuzdelik = 3.7M -> T0..T2 elenir, 7 hisseden ust %20 = 1
+    assert [h["ticker"] for h in top] == ["T9"]
+    top2 = rotation.select_top([_c("A", 5.0, tl_vol_med60=1e6), _c("B", 1.0, tl_vol_med60=9e6)])
+    assert [(h["ticker"], h["rank_pct"]) for h in top2] == [("B", 1.0)]
+
+
+def test_tl_volume_median_60():
+    bars = [{"close": 10.0, "volume": float(v)} for v in range(1, 61)]
+    assert rotation.tl_volume_median_60(bars) == 10.0 * 30.5
+    assert rotation.tl_volume_median_60(bars[:39]) is None
+
+
+def test_small_or_illiquid_holdings_shown_with_figures(temp_db):
+    # Bilgi notu: alt ucte birlik piyasa degeri/likidite dilimindeki tutulan hisseler
+    # (portfoy testi PR #43: bunlari cikaran filtreler gecmedi, karar degismez).
+    from core import db
+    from report.render import render_mobile_newsletter
+    from report.validate import find_orphan_numbers
+    db.init_db()
+    # likidite i ile artar (alt %30 = T0..T5 elenir), piyasa degeri i ile azalir
+    cands = [_c(f"T{i}", float(i), sector="İmalat", market_cap=1e8 * (20 - i),
+                tl_vol_med60=1e7 * (i + 1)) for i in range(20)]
+    r = rotation.monthly_rotation("2026-10-01", cands)
+    assert [h["ticker"] for h in r["buy"]] == ["T19", "T18", "T17"]
+    sl = r["size_liquidity"]
+    assert [n["ticker"] for n in sl["names"]] == ["T19", "T18", "T17"] and sl["n_holdings"] == 3
+    assert sl["names"][0] == {"ticker": "T19", "market_cap_mn": 100, "mcap_pct": 5.0, "liq_pct": 100.0}
+    # ayni ay ikinci kosu DB'den okur, bilgi korunur
+    assert rotation.monthly_rotation("2026-10-15", cands)["size_liquidity"] == sl
+    ctx = {"as_of_date": "2026-10-01", "long_term_candidates": [], "short_term_candidates": [],
+           "long_term_display_count": 0, "short_term_display_count": 0, "sector_rotation": [],
+           "no_action_today": True, "rotation": r, "portfolio_correlation": {}}
+    html = render_mobile_newsletter(ctx)
+    assert "Küçük / az likit" in html and "T19 (100 mn TL" in html
+    assert find_orphan_numbers(html, {"rotation": r}) == []
+
+
+
+def test_size_liquidity_card_in_desktop_template():
+    # Detay sablonu tam kosu baglami ister; mock run.py testleri onu render eder.
+    from pathlib import Path
+    detail = (Path(__file__).resolve().parent.parent / "report/templates/newsletter.html.j2").read_text(encoding="utf-8")
+    assert "Kucuk / Az Likit" in detail and "rotation.size_liquidity.names" in detail

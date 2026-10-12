@@ -127,3 +127,53 @@ def test_optimize_portfolio_end_to_end():
         db_rows = get_portfolio_allocations(test_date, method=method)
         assert len(db_rows) == 4
         assert sum(r["weight_pct"] for r in db_rows) >= 99.8
+
+
+def _bars(dates, closes):
+    return [{"date": d, "close": c} for d, c in zip(dates, closes)]
+
+
+def test_returns_aligned_by_date_not_position():
+    """Eksik gunu olan hissede getiriler tarihe gore hizalanmali, sondan kirpilmamali.
+
+    B, A'nin gunluk getirisinin aynisini yasar ama 3. gunde islem gormez. Pozisyonel
+    kirpmada B'nin satirlari A'ya gore kayar ve korelasyon dusuk cikar; tarih
+    hizalamasinda eksik gun atilir, kalan gunlerde getiriler birebir eslesir."""
+    from core.portfolio import calculate_returns_and_covariance
+
+    rng = np.random.default_rng(0)
+    dates = [f"2026-0{1 + i // 28}-{1 + i % 28:02d}" for i in range(40)]
+    rets = rng.normal(0, 0.02, len(dates) - 1)
+    closes_a = list(100 * np.cumprod(np.r_[1.0, 1 + rets]))
+    missing = 3
+    bars_b = _bars([d for i, d in enumerate(dates) if i != missing],
+                   [c for i, c in enumerate(closes_a) if i != missing])
+    bars_c = _bars(dates, list(100 * np.cumprod(np.r_[1.0, 1 + rng.normal(0, 0.02, len(dates) - 1)])))
+
+    returns_dict, cov, _ = calculate_returns_and_covariance(
+        ["A", "B", "C"], {"A": _bars(dates, closes_a), "B": bars_b, "C": bars_c}, window_days=60
+    )
+    assert cov.shape == (3, 3)
+    corr_ab = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
+    assert corr_ab > 0.99
+
+    candidates = [{"ticker": "A", "final_score": 2.0}, {"ticker": "B", "final_score": 1.0},
+                  {"ticker": "C", "final_score": 1.5}]
+    kept, dropped = filter_correlated_candidates(candidates, returns_dict, threshold=0.80)
+    assert [d["dropped"] for d in dropped] == ["B"]
+
+
+def test_stale_ticker_excluded_from_window():
+    """Fiyati penceredeki son gunlerden once kesilen hisse, ortak gozlem yetersizse disarida kalir."""
+    from core.portfolio import calculate_returns_and_covariance
+
+    dates = [f"2026-0{1 + i // 28}-{1 + i % 28:02d}" for i in range(80)]
+    walk = lambda seed: list(100 * np.cumprod(1 + np.random.default_rng(seed).normal(0, 0.02, len(dates))))
+    prices = {
+        "A": _bars(dates, walk(1)),
+        "B": _bars(dates, walk(2)),
+        "STALE": _bars(dates[:30], walk(3)[:30]),  # 50 gun once islem durmus
+    }
+    returns_dict, cov, _ = calculate_returns_and_covariance(["A", "B", "STALE"], prices, window_days=60)
+    assert "STALE" not in returns_dict
+    assert cov.shape == (2, 2)

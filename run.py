@@ -440,6 +440,8 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     scored = scoring_mod.score_candidates(as_of_date, all_candidates, as_of_date_cutoff, regime=predicted_regime)
 
     # --- aylik rotasyon listesi (AL/TUT/SAT; on-kayitli satis testi, kural R0) ---
+    for c in scored:
+        c["tl_vol_med60"] = rotation_mod.tl_volume_median_60(prices_by_ticker.get(c["ticker"], []))
     rotation = rotation_mod.monthly_rotation(as_of_date, scored)
 
     # --- concentration_check + correlation_diagnostic (yalnizca gecen adaylar uzerinde) ---
