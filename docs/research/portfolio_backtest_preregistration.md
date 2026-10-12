@@ -102,3 +102,50 @@ From the 2026-11 rebalance onward, each live decision (date, list, fill-day pric
 - The cost model is a fixed formula, not a fit to BIST trade data. Its constants are standard textbook values.
 - The equal-weighted universe benchmark pays no costs.
 - XU100 is a price index (see Data).
+
+---
+
+## Results (added 2026-10-12, after the run; the sections above are unchanged)
+
+`python scripts/research_portfolio_backtest.py`. Decisions 2013-04 to 2026-08: 93 discovery months and 68 holdout months. JSON: `data/reports/research_portfolio_backtest_2026-10-12.json`.
+
+**P0, the live rule, at 1M TL with base costs and next-close fills.** Active returns are per year, with Newey-West t (6 lags).
+
+| Period | vs EW universe | vs XU100 | vs deposit | CAGR TL / USD / real | XU100 CAGR | Deposit CAGR | USD max DD | Cost / yr |
+|---|---|---|---|---|---|---|---|---|
+| Discovery | +9.81% (2.47) | +29.77% (2.78) | +29.37% | 41.0% / 17.6% / 26.4% | 7.2% | 10.5% | −58.1% | 1.86% |
+| Holdout | +5.83% (2.11) | +0.75% (0.13) | +17.28% | 44.5% / 3.3% / −1.0% | 44.7% | 28.7% | −43.9% | 1.49% |
+
+Monthly one-way turnover is about 20%. At 1M TL, the cost splits into commission 0.48%, spread 0.84% and impact 0.17% a year in the holdout.
+
+**Capital and costs, P0, holdout, active vs EW universe:**
+
+| Capital | Base costs | Stress costs (2×) | Fills > 10% of ADV (discovery) |
+|---|---|---|---|
+| 100k TL | +5.94% (2.15) | +4.52% (1.64) | 0.0% |
+| 1M TL | +5.83% (2.11) | +4.28% (1.56) | 0.0% |
+| 10M TL | +5.45% (1.98) | +3.53% (1.29) | 0.8% |
+| 100M TL | +4.27% (1.55) | +1.16% (0.43) | 14.9% |
+
+Sensitivities at 1M TL with base costs:
+- Next-open fills: holdout +6.26% (2.34).
+- Delisting haircut h = 0.5: identical to h = 0, because the data contain **no** delisting events (0 in every run). The delisted stocks are missing from the data entirely, so this check cannot detect survivorship bias.
+
+**Filters, 1M TL with base costs.** D = net active(filter) − net active(P0), per year.
+
+| Filter | Discovery D (t) | Holdout D (t) | Result |
+|---|---|---|---|
+| F1: drop the smallest 30% by market value | −8.83% (−1.94) | −1.10% (−0.31) | FAIL |
+| F2: liquidity cut at 50% instead of 30% | −3.03% (−1.36) | −3.75% (−2.59) | FAIL |
+
+**Decisions, as pre-registered:**
+- **D1: "survives realistic costs in the backtest".** Net active vs the EW universe is > 0 with t > 2 in both periods. Under stress costs, the holdout t falls to 1.56.
+- **D2: indicative capacity 100M TL** by the pre-registered rule (holdout at 100M is +4.27%, above half of the 100k level). In discovery, 14.9% of fills at 100M were above 10% of ADV and t fell to 1.38. Read the 100M figure as an upper bound.
+- **D3: neither filter goes live.** The live universe stays as tested. Each live pick's market value and liquidity percentile are to be shown as information.
+- **D4: not survivorship-sensitive by this check.** The check is uninformative, because the data have no delisting events.
+
+How to read it:
+- **Against the EW universe**, the rule's edge survives realistic costs at personal-account sizes. This is the comparison the rule was built on.
+- **Against XU100**, the holdout edge is zero (+0.75%/yr, t 0.13). XU100 is a price index, so against a total-return index it is likely slightly negative. In 2021–2026 the EW universe lagged XU100 by about 5%/yr, and the rule only made that back. In this period, an investor holding the rule would have done about as well as an index fund, with the same −44% USD drawdown.
+- **In real terms**, the holdout CAGR is −1.0% in TL and +3.3% in USD. The deposit proxy (28.7%/yr) also lost to inflation.
+- **The value premium lives in small, less liquid names.** Removing the smallest 30% by market value cost 8.8%/yr in discovery. Raising the liquidity cut to 50% cost 3.75%/yr in the holdout (t −2.59). The manipulation-risk concern is real, and avoiding it has a measured price. That trade-off is the user's to make; the backtest cannot price manipulation risk.
