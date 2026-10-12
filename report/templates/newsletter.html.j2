@@ -644,6 +644,20 @@
   </div>
   {% endif %}
 
+  <!-- ============================== ULKE RISKI (bilgi amacli) ============================== -->
+  {% if sovereign_spread and sovereign_spread.status == "ok" %}
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">Ulke Riski (Eurobond spread'i, bilgi amacli)</h2>
+      <div class="section-desc">Turkiye'nin dolar tahvillerinin ABD Hazine faizine gore ek getirisi (medyan, 3-30 yil vade). On-kayitli testte spread'deki aylik degisim BIST'in dolar bazli hareketinin Turkiye'ye ozgu kismini en iyi aciklayan degisken cikti; ama sonraki ayi veya yili tahmin etmedi. Risk gostergesidir, alim-satim sinyali degildir.</div>
+    </div>
+    <div style="font-size:12.5px; color:#334155; line-height:1.6;">
+      Spread {{ sovereign_spread.date }} itibariyla {{ sovereign_spread.spread_pp | fmt }} puan; {{ sovereign_spread.prev_date }} tarihine gore {{ sovereign_spread.change_bp | fmt }} baz puan degisim.
+      Gecmiste spread {{ sovereign_spread.per_bp | fmt }} baz puan acildiginda BIST dolar bazinda ayni ay ortalama %{{ sovereign_spread.sensitivity_pct | fmt }} dustu.
+    </div>
+  </div>
+  {% endif %}
+
   <!-- ============================== 1. UZUN VADELI FIRSATLAR ============================== -->
   <div class="card">
     <div class="section-header">

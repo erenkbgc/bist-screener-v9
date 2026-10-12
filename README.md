@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-381%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-425%20passing-brightgreen)
 ![Backtest](https://img.shields.io/badge/backtest-walk--forward-blueviolet)
 ![Status](https://img.shields.io/badge/status-research%20%E2%80%94%20pre--registered%20value%20rule-orange)
 
@@ -18,8 +18,8 @@
 > **Disclaimer**
 > This project is for research and decision support only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns are model outputs, not guarantees of future performance.
 
-> **Status (2026-10-11)**
-> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and [Pre-registered Research](#pre-registered-research).
+> **Status (2026-10-13)**
+> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 17 pre-registered studies, only the sovereign spread passed, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. The value rule's 2021+ edge is lag-sensitive and about zero against XU100. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
 
 ---
 
@@ -75,7 +75,7 @@ The system runs as a daily pipeline and produces:
 
 | Output | Description |
 |---|---|
-| Mobile email body | Single-column, inline-styled summary: monthly AL/TUT/SAT rotation, diversification (effective bets), KAP red-flag panel, untested financials, realised-return reference (TL, USD, vs. deposit), long-term cards (price, "buy at next close"), experimental short-term watchlist |
+| Mobile email body | Single-column, inline-styled summary: monthly AL/TUT/SAT rotation, diversification (effective bets), KAP red-flag panel, country risk (Turkey sovereign spread, risk gauge), untested financials, realised-return reference (TL, USD, vs. deposit), long-term cards (price, "buy at next close"), experimental short-term watchlist |
 | Detailed HTML report (attachment) | Full tables, thesis dossiers, methodology, WhatsApp-ready quick-copy block |
 | Sector rotation Excel (attachment) | RRG summary, 5-week tail chart, data table, method sheet |
 | JSON payload (attachment) | Every number shown in the reports, machine-readable and auditable |
@@ -404,17 +404,85 @@ borsapy 0.11 joins its 4-quarter batches on row labels. Duplicated labels (for e
 
 ## Pre-registered Research
 
-Since 2026-09-28 every return test follows the same discipline: hypotheses, data, metrics and the pass rule are committed **before** the run; results are appended afterwards without changing the earlier sections. Pass rule (long-term): discovery 2013–2020 $`t > 3`$ (Harvey-Liu-Zhu) and holdout 2021+ same sign with $`t > 2`$, plus a USD check.
+Since 2026-09-28 every return test follows the same discipline:
+- hypotheses, data, metrics and the pass rule are committed **before** the run;
+- results are appended afterwards, without changing the earlier sections;
+- a changed definition counts as a new test.
+
+The usual pass rule is:
+- discovery (to 2020) with the expected sign and $`t > 3`$ (Harvey-Liu-Zhu);
+- holdout (2021+) with the same sign and $`t > 2`$.
+
+Predictive macro tests also need a positive out-of-sample R² and a significant Clark-West test. Each study document gives its exact rule, its data and its known limits.
+
+**Scorecard: 18 studies (17 pre-registered plus the Phase 1 diagnostics), dozens of confirmatory tests, one confirmatory PASS** (the sovereign spread *explains* BIST in the same month). Two more rules were confirmed, though not as passes against a stricter alternative:
+- value_sn ranks stocks (`long_term`);
+- the live rule survives realistic costs against the EW universe (`portfolio_backtest`).
+
+No test found a way to time the market or to beat the value rule.
+
+### What the evidence says
+
+1. **Stock selection.** Sector-neutral value (`value_sn`) is the only signal that reliably ranks BIST stocks (rank IC t ≈ 4.7 in both periods).
+   - Its top-quintile edge in 2021+ weakens with actual KAP publication dates: t 2.09 → 1.59, labelled "lag-sensitive".
+   - It lives in small, less liquid names. Excluding them costs return, and the bulletin shows them as information.
+   - Against XU100, the rule's 2021+ edge is about zero.
+2. **Market level.** BIST in USD is flat since 2005; the TL rise is the currency. Two things explain monthly moves in the same month:
+   - EM equities (EEM);
+   - Turkey's sovereign spread (R² 0.22 → 0.49 together).
+
+   Nothing tested predicts the next month or year out of sample:
+   - rates, inflation, VIX, oil, gold, the dollar;
+   - industrial production;
+   - the spread level.
+3. **Behaviour, calendar and news.** None of the following showed a usable effect on BIST:
+   - elections, shocks and wars;
+   - Ramadan and pre-holiday days;
+   - national-team football;
+   - disclosure timing, buybacks and dividends;
+   - sector spillovers.
+
+   Two descriptive patterns are recorded as hypotheses for new data:
+   - domestic shocks persist while regional conflicts fade within weeks;
+   - pre-holiday sessions have been weak since 2016.
+
+#### Stock selection and the live rule
 
 | Study | Question | Result |
 |---|---|---|
-| [`short_term_preregistration.md`](docs/research/short_term_preregistration.md) | Any 20-day signal? | None of 6 passed. Short-term bucket is an experimental watchlist |
+| [`short_term_preregistration.md`](docs/research/short_term_preregistration.md) | Any 20-day signal? | None of 6 passed. The short-term bucket is an experimental watchlist |
 | [`phase1_diagnostics.md`](docs/research/phase1_diagnostics.md) | Why did live picks include crashed stocks? Currency? Survivorship? | Live score ≠ tested proxy; factor IC identical in TL, USD and XU100-excess; value premium fragile to survivorship |
-| [`macro_drivers_preregistration.md`](docs/research/macro_drivers_preregistration.md) | What moves BIST, can it be timed? | XU100 2005–2026 ≈ +0.8%/yr in USD; only MSCI EM beta explains; no predictor of direction |
 | [`long_term_preregistration.md`](docs/research/long_term_preregistration.md) | Do distress, crash, momentum, quality or SUE improve value? | None of 9 passed. Live score = plain `value_sn` (+10.65%/yr discovery, +6.96%/yr holdout) |
 | [`entry_timing_preregistration.md`](docs/research/entry_timing_preregistration.md) | Better entry than the next close? | No. Limit/RSI/SMA rules lost to buying immediately |
 | [`exit_rules_preregistration.md`](docs/research/exit_rules_preregistration.md) | Buffers, stops, thesis break? | None passed. Live = monthly R0 rotation |
-| [`kap_red_flags_preregistration.md`](docs/research/kap_red_flags_preregistration.md) | Does excluding KAP red-flag names help? | No (any flag D −0.13%/yr t −0.13; severe flag negative in both periods). value_sn is slightly *negatively* correlated with flags |
+| [`portfolio_backtest_preregistration.md`](docs/research/portfolio_backtest_preregistration.md) | Does the live rule survive next-day fills, liquidity-based costs and capital? Do size or liquidity floors help? | Survives against the EW universe at 1M TL (holdout +5.83%/yr, t 2.11; t 1.56 with doubled costs). Against XU100 holdout +0.75%/yr (t 0.13); holdout real TL CAGR −1.0%. Size floor (−8.8%/yr discovery) and stricter liquidity floor (−3.75%/yr holdout) both FAIL |
+| [`kap_report_dates_preregistration.md`](docs/research/kap_report_dates_preregistration.md) | Is value robust to actual KAP publication dates? | 6.8% of statements were used before publication under the 75/100-day assumption. Rank IC unchanged; holdout top-quintile +6.87% (t 2.09) → +5.26% (t 1.59): **lag-sensitive**. The panel now uses actual dates |
+| [`dividend_yield_preregistration.md`](docs/research/dividend_yield_preregistration.md) | Do high-dividend stocks outperform? Does dividend yield improve value? | All 3 FAIL. High-yield payers lagged by about 10%/yr in 2013–2020; adding dividend yield to value_sn costs 11.8%/yr (discovery) and 4.2%/yr (holdout) |
+| [`spillovers_preregistration.md`](docs/research/spillovers_preregistration.md) | Do a sector's big stocks lead its small ones? Do peers move with the first quarterly reporter? | All 3 FAIL. Lead-lag slope +0.02–0.03 (t < 2); no same-day transfer or drift. Co-movement is contemporaneous |
+| [`fx_asymmetry_preregistration.md`](docs/research/fx_asymmetry_preregistration.md) | Do high-FX-beta (exporter-like) stocks win when the lira falls? Do they react late? | Both FAIL. Sector pattern as expected but small (auto parts +0.14, furniture −0.63, telecom −0.40); stock FX beta does not persist |
+
+#### Market level (macro)
+
+| Study | Question | Result |
+|---|---|---|
+| [`macro_drivers_preregistration.md`](docs/research/macro_drivers_preregistration.md) | What moves BIST, can it be timed? | XU100 2005–2026 ≈ +0.8%/yr in USD; only MSCI EM beta explains; no predictor of direction |
+| [`sovereign_spread_preregistration.md`](docs/research/sovereign_spread_preregistration.md) | Does Turkey's country risk explain the rest? | **PASS, same month:** Turkey USD Eurobond spread change, t −8.24; R² with EEM rises from 0.22 to 0.49; 100 bp wider ≈ −12% BIST in USD. Does not predict the next month or year out of sample. Shown in the bulletin as a risk gauge |
+| [`industrial_production_preregistration.md`](docs/research/industrial_production_preregistration.md) | Does industrial production move or predict BIST? | All 3 FAIL. No release-month reaction (t −0.08 / 0.57), no next-month prediction (OOS R² < 0) |
+
+#### Events, calendar, sentiment and disclosures
+
+| Study | Question | Result |
+|---|---|---|
+| [`event_study_preregistration.md`](docs/research/event_study_preregistration.md) | Hold cash around elections? Buy after shocks and wars? | All 3 FAIL (27 events). Descriptive: domestic shocks −8.4% on day 0 in USD and −17.4% over 60 days (median recovery 158 days); regional conflicts −3.5%, recovered in a median 14 days (post-hoc, not a result) |
+| [`ramadan_holiday_preregistration.md`](docs/research/ramadan_holiday_preregistration.md) | Ramadan effect? Pre-holiday effect? | Both FAIL. Ramadan above the yearly mean in 12 of 22 years. Pre-holiday sessions weak since 2016 (post-hoc) |
+| [`football_sentiment_preregistration.md`](docs/research/football_sentiment_preregistration.md) | Does football mood move prices? | National-team losses: FAIL (discovery +0.39%, holdout −0.27%). Club stocks: registered, waiting for Süper Lig result files |
+| [`kap_red_flags_preregistration.md`](docs/research/kap_red_flags_preregistration.md) | Does excluding KAP red-flag names help? | No (any flag D −0.13%/yr, t −0.13; severe flag negative in both periods). value_sn is slightly *negatively* correlated with flags |
+| [`kap_disclosure_signals_preregistration.md`](docs/research/kap_disclosure_signals_preregistration.md) | Late filing, filing later than usual, Friday-evening release, buyback start? | All 4 FAIL. Late-filing and buyback signals have too few months in the liquid universe |
+
+**Not tested, and why:**
+- **Insider trades:** the direction is not in the KAP summaries; it needs the disclosure texts.
+- **Foreign ownership history:** borsapy gives only the current ratio; it needs forward collection.
+- **Club-level football:** the result files could not be downloaded here.
 
 Notes for the next study (sector-specific valuation: banks, holdings NAV discount, REIT NAV discount, IAS 29 monetary gain): [`docs/research/sector_specific_notes.md`](docs/research/sector_specific_notes.md).
 
