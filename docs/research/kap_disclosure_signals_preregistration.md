@@ -67,3 +67,28 @@ A signal that meets rules 1 and 3 but not rule 2 is labelled "discovery only".
 - Calendar-time portfolios are concentrated in reporting seasons, so some months have few names.
 - `isLate` is KAP's own flag, and its definition may have changed over time.
 - **Survivorship:** delisted companies are missing from the panel. They are likely to be over-represented among late filers, so S1 and S2 are biased **against** finding the effect.
+
+---
+
+## Results (added 2026-10-12, after the run; the sections above are unchanged)
+
+`python scripts/research_kap_disclosure_signals.py`. JSON: `data/reports/research_kap_disclosure_signals_2026-10-12.json`.
+
+Event counts, all stocks before the liquidity filter: 32,085 first report filings; S1 421; S2 2,263; S3 5,668; S4 620 buyback starts.
+
+D is the signal portfolio minus its control, per year, with Newey-West t (3 lags). "Months" counts months with at least 5 names.
+
+| Signal | Expected | Discovery D (t), months | Holdout D (t), months | Result |
+|---|---|---|---|---|
+| S1 KAP late flag | − | −15.3% (−0.55), 8 | +20.0% (1.41), 22 | FAIL |
+| S2 later than own habit (≥ 14 days) | − | +9.2% (0.65), 29 | +10.2% (0.85), 40 | FAIL |
+| S3 Friday evening / weekend | − | +5.9% (1.71), 91 | −2.8% (−0.53), 68 | FAIL |
+| S4 buyback start | + | +12.4% (0.60), 16 | +3.8% (0.58), 45 | FAIL |
+
+**No signal passes.** None is shown in the bulletin.
+
+How to read it:
+- **S1 and S4 fail on data before they fail on returns.** In the liquid universe, a 3-month window rarely holds 5 late filers (8 discovery months) or 5 buyback starts (16 months). Rule 3 (at least 24 months) is not met in discovery. Their large means come with t below 1.5 and are noise at this sample size.
+- **S2** has enough months, and its sign is the opposite of the prior in both periods: firms filing later than their habit did slightly *better*, not significantly.
+- **S3** has the most data and no consistent effect: positive in discovery, negative in holdout, both insignificant.
+- The published effects come from the US with thousands of events. On BIST's liquid universe, timing-based disclosure signals show no usable effect.
