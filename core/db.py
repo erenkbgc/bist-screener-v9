@@ -305,6 +305,7 @@ CREATE TABLE IF NOT EXISTS sector_rotation (
 
 CREATE TABLE IF NOT EXISTS rotation_holdings (
     rebalance_date TEXT, ticker TEXT, valuation_z REAL, rank_pct REAL,
+    market_cap REAL, mcap_pct REAL, liq_pct REAL,
     PRIMARY KEY (rebalance_date, ticker)
 );
 
@@ -419,6 +420,11 @@ _TABLE_MIGRATIONS = {
     ],
     "factor_contributions": [
         ("momentum_contrib", "REAL"),
+    ],
+    "rotation_holdings": [
+        ("market_cap", "REAL"),
+        ("mcap_pct", "REAL"),
+        ("liq_pct", "REAL"),
     ],
 }
 
