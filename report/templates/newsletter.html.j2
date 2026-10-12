@@ -967,6 +967,19 @@
   </div>
   {% endif %}
 
+  <!-- ============================== KUCUK / AZ LIKIT (bilgi amacli) ============================== -->
+  {% if rotation and rotation.size_liquidity and rotation.size_liquidity.n %}
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">Kucuk / Az Likit Hisseler (bilgi amacli)</h2>
+      <div class="section-desc">{{ rotation.size_liquidity.n | fmt }} / {{ rotation.size_liquidity.n_holdings | fmt }} AL/TUT hissesi piyasa degeri veya islem hacminde adaylarin alt ucte birinde. Kucuk tahtalar fiyat oynatmaya daha aciktir. On-kayitli portfoy testinde bunlari cikarmak getiriyi dusurdu (kucukleri cikarmak yilda {{ rotation.size_liquidity.f1_cost_pct | fmt }} puan, daha siki hacim siniri {{ rotation.size_liquidity.f2_cost_pct | fmt }} puan); bu yuzden kurala dahiller. Agirligini kendin sec.</div>
+    </div>
+    <div style="font-size:12.5px; color:#334155; line-height:1.6;">
+      {% for n in rotation.size_liquidity.names %}{{ n.ticker }} ({{ n.market_cap_mn | fmt }} mn TL; PD yuzdeligi {{ n.mcap_pct | fmt }}, hacim yuzdeligi {{ n.liq_pct | fmt }}){% if not loop.last %}, {% endif %}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- ============================== FINANSALLAR (test edilmedi) ============================== -->
   {% if rotation and rotation.untested_financials %}
   <div class="card">

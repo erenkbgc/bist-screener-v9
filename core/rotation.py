@@ -10,13 +10,36 @@ yetersizligi haric). Finansal sirketler (banka, sigorta, faktoring, leasing,
 araci kurum, MKYO...) haric: test edilen panel bunlari icermiyordu
 (core/pit_panel.FINANCIAL_SECTORS); bilancolari satis/FAVOK tasimiyor. Hedef fiyat, hurdle ve Piotroski kapilari bu listeyi
 ETKILEMEZ: test edilen kural bu kapilari icermiyordu.
+
+Likidite: test edilen panel her ay 60 gunluk medyan TL hacmine gore en az likit
+%30'u atiyordu (core/factor_backtest.prepare, liq_drop_pct=0.3). Canli evrenin
+10M TL tabani bundan gevsek; 2026-10-10 kosusunda ust %20'nin ~1/3'u test
+edilmemis likidite diliminden geliyordu. Ayni kesim burada da uygulanir; 60g
+medyani hesaplanamayan (<40 bar) hisse, panelde oldugu gibi disarida kalir.
 """
 from __future__ import annotations
 
-from core import db
+from bisect import bisect_right
+from statistics import median
+
+from core import db, forward_record
 from core.pit_panel import FINANCIAL_SECTORS
 
 TOP_PCT = 0.20
+LIQ_DROP_PCT = 0.30      # core/factor_backtest.prepare ile ayni
+LIQ_WINDOW, LIQ_MIN_BARS = 60, 40  # core/pit_panel: rolling(60, min_periods=40).median()
+SMALL_THIRD = 100 / 3    # bilgi notu: havuzun alt ucte birlik piyasa degeri / likidite dilimi
+# docs/research/portfolio_backtest_preregistration.md (PR #43), 1M TL, base maliyet:
+# kucuk/az likit hisseleri cikaran filtrelerin olculen getiri maliyeti (yillik %).
+F1_SMALL_CAP_COST_PCT = 8.83   # kesif, piyasa degeri alt %30 haric
+F2_LIQUIDITY_COST_PCT = 3.75   # holdout, likidite kesimi %50
+
+
+def tl_volume_median_60(bars: list[dict]) -> float | None:
+    """Son 60 bardaki gunluk TL hacminin (kapanis x adet) medyani; panelin tlvol60 tanimi."""
+    vals = [b["close"] * b["volume"] for b in bars[-LIQ_WINDOW:]
+            if b.get("close") and b.get("volume") is not None]
+    return median(vals) if len(vals) >= LIQ_MIN_BARS else None
 
 
 def is_financial(candidate: dict) -> bool:
@@ -32,13 +55,59 @@ def _eligible(candidates: list[dict], financial: bool = False) -> list[dict]:
             and c.get("valuation_z") is not None]
 
 
+def _liquid_tickers(candidates: list[dict]) -> set[str]:
+    """Finansal olmayan uzun vade adaylari icinde 60g medyan TL hacmine gore alt %30'u atar."""
+    liq = {c["ticker"]: c["tl_vol_med60"] for c in candidates
+           if c.get("bucket") == "long_term" and not is_financial(c)
+           and c.get("tl_vol_med60") is not None and c["tl_vol_med60"] > 0}
+    if not liq:
+        return set()
+    vals = sorted(liq.values())
+    # pandas Series.quantile (lineer) ile ayni kesim
+    pos = LIQ_DROP_PCT * (len(vals) - 1)
+    lo = int(pos)
+    cut = vals[lo] + (vals[min(lo + 1, len(vals) - 1)] - vals[lo]) * (pos - lo)
+    return {t for t, v in liq.items() if v >= cut}
+
+
+def _percentiles(values: dict[str, float]) -> dict[str, float]:
+    """Her degerin havuzdaki yuzdeligi (0-100, kendisi dahil <= olanlarin payi)."""
+    vals = sorted(values.values())
+    return {t: round(100 * bisect_right(vals, v) / len(vals), 1) for t, v in values.items()}
+
+
+def ranking_pool(candidates: list[dict]) -> list[dict]:
+    """Siralanan evren: finansal olmayan, uygun, likidite kesimini gecen adaylar (z'ye gore azalan)."""
+    liquid = _liquid_tickers(candidates)
+    return sorted((c for c in _eligible(candidates) if c["ticker"] in liquid), key=lambda c: -c["valuation_z"])
+
+
 def select_top(candidates: list[dict]) -> list[dict]:
-    pool = sorted(_eligible(candidates), key=lambda c: -c["valuation_z"])
+    pool = ranking_pool(candidates)
     if not pool:
         return []
+    # Bilgi: secilen hissenin piyasa degeri ve likiditesi, finansal olmayan uzun vade
+    # adaylari icinde kacinci yuzdelikte (karari ETKILEMEZ; F1/F2 filtreleri testte gecmedi).
+    base = [c for c in candidates if c.get("bucket") == "long_term" and not is_financial(c)]
+    mcap_pct = _percentiles({c["ticker"]: c["market_cap"] for c in base if c.get("market_cap")})
+    liq_pct = _percentiles({c["ticker"]: c["tl_vol_med60"] for c in base if c.get("tl_vol_med60")})
     n_top = max(1, round(len(pool) * TOP_PCT))
     return [{"ticker": c["ticker"], "valuation_z": c["valuation_z"],
-             "rank_pct": round((i + 1) / len(pool), 4)} for i, c in enumerate(pool[:n_top])]
+             "rank_pct": round((i + 1) / len(pool), 4),
+             "market_cap": c.get("market_cap"), "mcap_pct": mcap_pct.get(c["ticker"]),
+             "liq_pct": liq_pct.get(c["ticker"])} for i, c in enumerate(pool[:n_top])]
+
+
+def small_or_illiquid(holdings: list[dict]) -> dict:
+    """Piyasa degeri veya likiditesi havuzun alt ucte birinde olan tutulan hisseler (bilgi)."""
+    names = [{"ticker": h["ticker"], "market_cap_mn": round(h["market_cap"] / 1e6),
+              "mcap_pct": h["mcap_pct"], "liq_pct": h["liq_pct"]}
+             for h in holdings
+             if h.get("market_cap") and h.get("mcap_pct") is not None and h.get("liq_pct") is not None
+             and (h["mcap_pct"] < SMALL_THIRD or h["liq_pct"] < SMALL_THIRD)]
+    return {"names": sorted(names, key=lambda n: n["market_cap_mn"]), "n": len(names),
+            "n_holdings": len(holdings),
+            "f1_cost_pct": F1_SMALL_CAP_COST_PCT, "f2_cost_pct": F2_LIQUIDITY_COST_PCT}
 
 
 def untested_financials(candidates: list[dict]) -> list[dict]:
@@ -52,7 +121,8 @@ def untested_financials(candidates: list[dict]) -> list[dict]:
 
 
 def _holdings(rebalance_date: str) -> list[dict]:
-    rows = db.query("SELECT ticker, valuation_z, rank_pct FROM rotation_holdings WHERE rebalance_date=? "
+    rows = db.query("SELECT ticker, valuation_z, rank_pct, market_cap, mcap_pct, liq_pct "
+                    "FROM rotation_holdings WHERE rebalance_date=? "
                     "ORDER BY rank_pct", (rebalance_date,))
     return [dict(r) for r in rows]
 
@@ -69,10 +139,13 @@ def monthly_rotation(as_of_date: str, candidates: list[dict]) -> dict:
         current = select_top(candidates)
         current_date, prev_date = as_of_date, (dates[0] if dates else None)
         if current:
+            forward_record.append_decision(as_of_date, [h["ticker"] for h in current],
+                                           [c["ticker"] for c in ranking_pool(candidates)])
             db.executemany(
-                "INSERT OR REPLACE INTO rotation_holdings (rebalance_date, ticker, valuation_z, rank_pct) "
-                "VALUES (?, ?, ?, ?)",
-                [(as_of_date, h["ticker"], h["valuation_z"], h["rank_pct"]) for h in current])
+                "INSERT OR REPLACE INTO rotation_holdings (rebalance_date, ticker, valuation_z, rank_pct, "
+                "market_cap, mcap_pct, liq_pct) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                [(as_of_date, h["ticker"], h["valuation_z"], h["rank_pct"], h.get("market_cap"),
+                  h.get("mcap_pct"), h.get("liq_pct")) for h in current])
     prev = {h["ticker"] for h in _holdings(prev_date)} if prev_date else set()
     cur = {h["ticker"] for h in current}
     return {
@@ -84,4 +157,5 @@ def monthly_rotation(as_of_date: str, candidates: list[dict]) -> dict:
         "n_holdings": len(current),
         "top_pct": TOP_PCT * 100,
         "untested_financials": untested_financials(candidates),
+        "size_liquidity": small_or_illiquid(current),
     }

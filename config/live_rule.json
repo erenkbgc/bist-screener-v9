@@ -1,0 +1,25 @@
+{
+  "version": "R0-2026-10-12",
+  "locked_at": "2026-10-12",
+  "description": "Top 20% of non-financial long-term candidates by sector-neutral value (value_sn), equal-weighted, rebalanced monthly. The bottom 30% by 60-day median TL volume is dropped before ranking.",
+  "params": {
+    "factor": "value_sn",
+    "top_pct": 0.2,
+    "liq_drop_pct": 0.3,
+    "liq_window_days": 60,
+    "liq_min_bars": 40,
+    "exclude_financials": true,
+    "rebalance": "first run of each month"
+  },
+  "evidence": [
+    "docs/research/long_term_preregistration.md",
+    "docs/research/exit_rules_preregistration.md",
+    "docs/research/portfolio_backtest_preregistration.md"
+  ],
+  "forward_record": {
+    "start": "2026-11-01",
+    "path": "data/forward_record/decisions.jsonl",
+    "evaluation": "scripts/forward_record_report.py: next-close fills, 1M TL, base costs (core/portfolio_backtest.py)"
+  },
+  "change_policy": "Any change to params needs a new pre-registration and a new version. A new version starts a new forward series; earlier decisions are never re-simulated under the new rule."
+}
