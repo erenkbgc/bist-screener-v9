@@ -69,3 +69,34 @@ def test_add_usd_returns_missing_month_is_nan():
                       "fwd_ret_1m": [0.2], "fwd_ret_6m": [0.3]})
     out = pit_panel.add_usd_returns(f, pit_panel.monthly_market(daily))
     assert out["fwd_ret_1m_usd"].isna().all()
+
+
+def test_kap_report_dates_maps_period_and_session_close():
+    import pandas as pd
+    from core import pit_panel
+    arc = pd.DataFrame([
+        # Q1 2023, seans icinde -> ayni gun
+        {"disclosureClass": "FR", "subject": "Finansal Rapor", "ruleType": "3 Aylık",
+         "published_at": pd.Timestamp("2023-05-02 15:00"), "stock_code": "AAA"},
+        # ayni donem daha gec duzeltme: ilk yayin sayilir
+        {"disclosureClass": "FR", "subject": "Finansal Rapor", "ruleType": "3 Aylık",
+         "published_at": pd.Timestamp("2023-06-20 10:00"), "stock_code": "AAA"},
+        # Yillik 2024, kapanistan sonra -> ertesi gun
+        {"disclosureClass": "FR", "subject": "Finansal Rapor", "ruleType": "Yıllık",
+         "published_at": pd.Timestamp("2025-03-11 20:29"), "stock_code": "AAA"},
+        # faaliyet raporu sayilmaz
+        {"disclosureClass": "FR", "subject": "Faaliyet Raporu (Konsolide)", "ruleType": "Yıllık",
+         "published_at": pd.Timestamp("2025-02-01 10:00"), "stock_code": "AAA"},
+    ])
+    d = pit_panel.kap_report_dates(arc).set_index("period")
+    assert d.loc["2023Q1", "kap_available_at"] == pd.Timestamp("2023-05-02")
+    assert d.loc["2024Q4", "kap_available_at"] == pd.Timestamp("2025-03-12")
+    assert len(d) == 2
+
+    q = pd.DataFrame({"ticker": ["AAA", "AAA"], "period": ["2023Q1", "2023Q2"],
+                      "available_at": [pd.Timestamp("2023-06-14"), pd.Timestamp("2023-09-13")]})
+    b = pit_panel.apply_report_dates(q, d.reset_index())
+    assert list(b["available_at"]) == [pd.Timestamp("2023-05-02"), pd.Timestamp("2023-09-13")]
+    assert list(b["available_source"]) == ["kap", "assumed"]
+    c = pit_panel.apply_report_dates(q, d.reset_index(), strict=True)
+    assert list(c["period"]) == ["2023Q1"]

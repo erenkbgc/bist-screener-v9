@@ -57,3 +57,38 @@ Everything else is unchanged:
 - **Restatements:** statement values are the provider's final versions. A restated figure may differ from what was first published.
 - **Matching by period type and date:** a company that files very late (more than 400 days) is unmatched and falls back to A in variant B.
 - **Consolidated and solo filings** are not told apart. The first filing of either kind counts.
+
+---
+
+## Results (added 2026-10-12, after the run; the sections above are unchanged)
+
+`python scripts/research_kap_report_dates.py`. JSON: `data/reports/research_kap_report_dates_2026-10-12.json`.
+
+**Lags.** 91.2% of 24,089 (ticker, period) rows matched a KAP filing.
+
+| Quarter | n | Actual lag p10 / median / p90 (days) | Assumed lag | Later than assumed |
+|---|---|---|---|---|
+| Q1 | 5,389 | 30 / 40 / 71 | 75 | 6.3% |
+| Q2 | 5,752 | 35 / 46 / 65 | 75 | 8.1% |
+| Q3 | 5,220 | 28 / 38 / 43 | 75 | 2.3% |
+| Q4 | 5,612 | 48 / 64 / 102 | 100 | 10.2% |
+
+Overall, 6.8% of matched statements were used before they were public under variant A, by a median of 18 days. That is look-ahead. Most statements were published well before the assumed date: Q1 median 40 days against 75.
+
+**value_sn.** Top-quintile net active is per year at 20 bps, Newey-West t.
+
+| Variant | Discovery net active (t) | Discovery IC1 t | Holdout net active (t) | Holdout IC1 t |
+|---|---|---|---|---|
+| A (assumed 75/100) | +10.69% (3.49) | 4.80 | +6.87% (2.09) | 4.65 |
+| B (actual, fallback A) | +9.16% (3.16) | 4.86 | +5.26% (1.59) | 4.74 |
+| C (actual only) | +9.61% (3.41) | 4.71 | +5.26% (1.53) | 4.67 |
+
+**Decisions, as pre-registered:**
+1. The panel switches to B (`build_pit_panel.py` applies actual dates when the archive exists).
+2. **LAG_SENSITIVE.** The holdout t under B is 1.59, below 2.0. The README and both bulletin templates now say so.
+3. C does not flip the holdout sign.
+
+How to read it:
+- The ranking signal itself is unchanged: rank IC t stays at about 4.7 in both periods. value_sn still orders stocks.
+- What weakened is the **top-quintile net return** in the holdout: −1.6 pp a year, with t below 2. Part of the earlier holdout result came from the 6.8% of statements used before they were public.
+- Earlier studies (long-term, exit rules, portfolio backtest, event study) used variant A. They are not re-run or re-labelled here. Their holdout figures should be read as about 1.5 pp a year optimistic.

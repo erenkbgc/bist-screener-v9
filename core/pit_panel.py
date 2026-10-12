@@ -8,8 +8,9 @@ tarihte kamuya acik olan veriyle faktor degerleri uretir.
 Kurallar:
   - Gelir tablosu Is Yatirim'de YIL ICI KUMULATIF (YTD) gelir: 2026Q2 = ilk
     yari. Ceyreklik tutar = YTD_q - YTD_{q-1} (ayni yil), TTM = son 4 ceyrek.
-  - Yayin gecikmesi (ihtiyatli, ileriye bakissiz): Q1-Q3 donem sonu + 75 gun,
-    Q4 + 100 gun (SPK sureleri + uzatmalar).
+  - Yayin tarihi: KAP arsivindeki gercek ilk finansal rapor yayini
+    (kap_report_dates / apply_report_dates). Eslesmeyen ceyrekte varsayim:
+    Q1-Q3 donem sonu + 75 gun, Q4 + 100 gun (SPK sureleri + uzatmalar).
   - Pay sayisi = Odenmis Sermaye (BIST'te nominal 1 TL). Bilanco tarihinden
     sonraki bedelli/bedelsiz islemler `splits` ile ileri tasinir, boylece
     piyasa degeri = ham fiyat x o gunku pay sayisi.
@@ -120,6 +121,49 @@ def period_end(period: str) -> pd.Timestamp:
 def available_at(period: str) -> pd.Timestamp:
     lag = LAG_DAYS_ANNUAL if period.endswith("Q4") else LAG_DAYS_INTERIM
     return period_end(period) + timedelta(days=lag)
+
+
+REPORT_SUBJECTS = {"Finansal Rapor", "Finansal Rapor Bildirimi"}
+RULE_QUARTER = {"3 Aylık": 1, "6 Aylık": 2, "9 Aylık": 3, "Yıllık": 4}
+MAX_MATCH_DAYS = 400
+SESSION_CLOSE_HOUR = 18
+
+
+def kap_report_dates(archive: pd.DataFrame) -> pd.DataFrame:
+    """KAP arsivinden (ticker, period) -> ilk finansal rapor yayin zamani
+    (docs/research/kap_report_dates_preregistration.md).
+
+    Donem: o tipteki (3/6/9 Aylik, Yillik) yayindan kesin once biten en son ceyrek
+    sonu; 400 gunden gec yayin eslesmez. Seans kapanisindan (18:00) sonra yayinlanan
+    rapor ertesi gun kullanilabilir."""
+    fr = archive[(archive["disclosureClass"] == "FR") & archive["subject"].isin(REPORT_SUBJECTS)
+                 & archive["ruleType"].isin(RULE_QUARTER)].copy()
+    if fr.empty:
+        return pd.DataFrame(columns=["ticker", "period", "published_at", "kap_available_at"])
+    pub = pd.to_datetime(fr["published_at"])
+    qn = fr["ruleType"].map(RULE_QUARTER).astype(int)
+    pe_same = pd.to_datetime(dict(year=pub.dt.year, month=3 * qn, day=1)) + pd.offsets.MonthEnd(0)
+    year = np.where(pe_same < pub.dt.normalize(), pub.dt.year, pub.dt.year - 1)
+    pe = pd.to_datetime(dict(year=year, month=3 * qn, day=1)) + pd.offsets.MonthEnd(0)
+    fr = fr.assign(ticker=fr["stock_code"].str.strip(), published_at=pub,
+                   period=[f"{y}Q{q}" for y, q in zip(year, qn)], lag=(pub.dt.normalize() - pe).dt.days)
+    fr = fr[fr["lag"].between(1, MAX_MATCH_DAYS)]
+    first = fr.sort_values("published_at").groupby(["ticker", "period"], as_index=False)["published_at"].first()
+    after_close = first["published_at"].dt.hour >= SESSION_CLOSE_HOUR
+    first["kap_available_at"] = first["published_at"].dt.normalize() + pd.to_timedelta(after_close.astype(int), unit="D")
+    return first
+
+
+def apply_report_dates(q: pd.DataFrame, dates: pd.DataFrame, strict: bool = False) -> pd.DataFrame:
+    """available_at'i gercek KAP tarihiyle degistirir (varyant B). strict=True (varyant C):
+    eslesmeyen ceyrek satirlari atilir. available_source: 'kap' | 'assumed'."""
+    out = q.merge(dates[["ticker", "period", "kap_available_at"]], on=["ticker", "period"], how="left")
+    has = out["kap_available_at"].notna()
+    out["available_at"] = out["kap_available_at"].where(has, out["available_at"])
+    out["available_source"] = np.where(has, "kap", "assumed")
+    if strict:
+        out = out[has]
+    return out.drop(columns="kap_available_at").reset_index(drop=True)
 
 
 def quarterly_table(long: pd.DataFrame) -> pd.DataFrame:
