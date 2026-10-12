@@ -58,3 +58,38 @@ R1 also reports, descriptively:
 - **Few Ramadans:** about 20 trading days per Ramadan, so the test has more power than the event study, but not much.
 - **Pre-holiday days:** about 8–10 a year (roughly 180 in all). One large day can dominate the mean, so the median difference is also reported.
 - **Partial overlap:** 2005–2007 overlaps the published sample.
+
+---
+
+## Results (added 2026-10-12, after the run; the sections above are unchanged)
+
+`python scripts/research_ramadan_holiday.py`. JSON: `data/reports/research_ramadan_holiday_2026-10-12.json`. 2005-01-04 to 2026-10-09: 2,763 discovery days and 2,692 holdout days.
+
+b is the daily return difference in bps (annualised in brackets), with Newey-West t.
+
+| Test | Currency | Discovery b (t) | Holdout b (t) | Result |
+|---|---|---|---|---|
+| R1 Ramadan (229 + 229 days) | USD | +8.0 bps (0.45) | −1.3 bps (−0.09) | FAIL |
+| | TL | +4.1 bps (0.29) | −8.2 bps (−0.69) | |
+| R2 pre-holiday (66 + 82 days) | USD | +8.0 bps (0.29) | −38.7 bps (−2.53) | FAIL |
+| | TL | +5.9 bps (0.37) | −31.1 bps (−2.33) | |
+
+**Ramadan:**
+- In 12 of 22 Ramadans, the USD return was above that year's non-Ramadan mean. That is a coin flip.
+- Volatility ratio (Ramadan / rest): 1.01 in discovery and 0.95 in holdout.
+- The published Ramadan effect does not appear on BIST in 2005–2026.
+
+**Data problem found after the run.** yfinance has no rows for some days on which BIST traded:
+- 25 December in 2017–2025;
+- 2 April 2021.
+
+Under the registered definition, the day before each of these counted as "pre-holiday". The borsapy calendar (`fx.parquet`, 2011 onward) shows that BIST traded on them. 8 holdout flags are false, and none of the discovery flags. The 8–14 February 2023 earthquake closure is a real closure and stays flagged, as defined.
+
+| R2, false flags removed | Discovery b (t) | Holdout b (t) |
+|---|---|---|
+| USD | +8.0 bps (0.29) | −45.1 bps (−2.90) |
+| TL | +5.9 bps (0.37) | −35.4 bps (−2.55) |
+
+The verdict is FAIL either way, because discovery is near zero.
+
+**Post-hoc observation, not a result:** since 2016, the last session before a holiday has been *weaker* than other days (about −0.4% in USD, 74 days). This is the opposite of the published pre-holiday effect. A possible story is investors cutting risk before long bayram closures. Testing it needs a new pre-registration and holidays after 2026-10.
