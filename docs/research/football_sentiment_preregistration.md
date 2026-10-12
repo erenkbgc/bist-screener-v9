@@ -63,3 +63,26 @@ A pass is documented and shown in the bulletin as information only, for example 
 - **F2 power:** about 40–50 competitive losses, so power is low.
 - **Missing competitions:** European and cup matches are not included, although for the clubs they can matter more than league matches.
 - **Overlapping news:** club stocks also react to transfers, debt and capital-increase news, which adds noise but no bias by result.
+
+---
+
+## Results, F2 (added 2026-10-12, after the run; the sections above are unchanged)
+
+`python scripts/research_football_sentiment.py`. The EEM daily cache was extended back to 2004 before the run, so that 2005–2010 matches have an estimation window. The overlapping prices are identical.
+
+Each row is the USD abnormal return of XU100 on the session after a competitive match, with a t-test across matches.
+
+| Period | Result | n | Mean AR | t | Up / down |
+|---|---|---|---|---|---|
+| Discovery (2005–2015) | Loss | 17 | +0.39% | 0.83 | 11 / 6 |
+| | Win | 28 | +0.01% | 0.02 | 16 / 12 |
+| | Draw | 14 | −0.64% | −1.21 | 6 / 8 |
+| Holdout (2016–2026) | Loss | 28 | −0.27% | −0.68 | 11 / 17 |
+| | Win | 44 | −0.24% | −0.64 | 24 / 20 |
+| | Draw | 17 | +0.19% | 0.56 | 11 / 6 |
+
+**F2: FAIL.** After a national-team loss, the market did not fall in discovery; the mean was positive. The holdout mean is slightly negative but not distinguishable from wins. The Edmans, García & Norli loss effect does not show up for Turkey at this sample size.
+
+## F1: not run
+
+The Süper Lig result files (football-data.co.uk) cannot be downloaded from this environment. F1 stays registered as written and is run unchanged once `data/research/football/T1_*.csv` exist.
