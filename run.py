@@ -73,6 +73,7 @@ from core import evaluate as evaluate_mod
 from core import momentum as momentum_mod
 from core import trend_forecaster
 from core import portfolio as portfolio_mod
+from core import sovereign_spread as sovereign_spread_mod
 from core import factor_disclosure
 from core import sector_rotation as sector_rotation_mod
 from bist_mcp import server as bist_mcp
@@ -475,6 +476,12 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         print(f"[kap_llm] {llm_status}", flush=True)
     kap_red_flags = kap_red_flag_panel.build_panel(as_of_date, held_tickers, refresh_error, llm_status)
 
+    # --- ulke riski (Eurobond spread'i): yalnizca risk gostergesi; on-kayitli testte
+    # ayni ayi aciklar ama sonraki ayi TAHMIN ETMEZ, karari degistirmez. ---
+    sovereign = sovereign_spread_mod.build_panel(as_of_date) if kap_web_mcp._live_enabled() else {}
+    if sovereign:
+        print(f"[sovereign_spread] {sovereign}", flush=True)
+
     # --- Quant Level-Up Faz 4 & 5: HRP Portfoy & Faktor Katki Disclosures ---
     if passing:
         factor_disclosure.compute_and_save_factor_contributions(
@@ -517,6 +524,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         rotation=rotation,
         portfolio_correlation=portfolio_correlation,
         kap_red_flags=kap_red_flags,
+        sovereign_spread=sovereign,
     )
     decision_diff = payload["decision_diff"]
 
@@ -551,6 +559,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         "rotation": payload["rotation"],
         "portfolio_correlation": payload["portfolio_correlation"],
         "kap_red_flags": payload["kap_red_flags"],
+        "sovereign_spread": payload["sovereign_spread"],
         "realized_returns": payload["realized_returns"],
         "concentration_warnings": concentration_warnings,
         "sector_rotation": sorted(

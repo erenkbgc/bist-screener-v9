@@ -132,6 +132,16 @@
 
   <!-- uzun vade -->
   <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Uzun vade <span style="font-size:12px; font-weight:500; color:#64748b;">(değerleme)</span></td></tr>
+  {% if sovereign_spread and sovereign_spread.status == "ok" %}
+  <tr><td style="padding:0 0 10px 0;">
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.55; color:#334155;">
+      <b style="color:#0f172a;">Ülke riski (Eurobond spread'i)</b><br>
+      {{ sovereign_spread.date }} itibarıyla {{ sovereign_spread.spread_pp | fmt }} puan; {{ sovereign_spread.prev_date }} tarihine göre {{ sovereign_spread.change_bp | fmt }} baz puan değişim.
+      Geçmişte spread {{ sovereign_spread.per_bp | fmt }} baz puan açıldığında BIST dolar bazında aynı ay ortalama %{{ sovereign_spread.sensitivity_pct | fmt }} düştü.
+      <div style="font-size:12px; color:#64748b; margin-top:4px;">Türkiye'ye özgü piyasa hareketini en iyi açıklayan gösterge; ama sonraki ayı tahmin etmiyor. Risk göstergesidir, alım-satım sinyali değildir.</div>
+    </div>
+  </td></tr>
+  {% endif %}
   {% set rr = realized_returns.holdout if realized_returns else none %}
   {% if rr %}
   <tr><td style="padding:0 0 10px 0;">

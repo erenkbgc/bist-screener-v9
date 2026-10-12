@@ -22,14 +22,7 @@ import research_macro_drivers as md  # noqa: E402
 
 RESEARCH = ROOT / "data" / "research"
 ALPHA = 0.05 / 3
-MIN_YEARS, MAX_YEARS = 3.0, 30.0
-UST_TENORS = (("^FVX", 5.0), ("^TNX", 10.0), ("^TYX", 30.0))
-
-
-def ust_curve(ust_row: pd.Series, years: float) -> float:
-    xs = [t for _, t in UST_TENORS]
-    ys = [ust_row[c] for c, _ in UST_TENORS]
-    return float(np.interp(years, xs, ys))
+from core.sovereign_spread import median_spread, ust_curve  # noqa: E402,F401
 
 
 def spread_series(eb: pd.DataFrame, ust: pd.DataFrame) -> pd.Series:
@@ -40,13 +33,9 @@ def spread_series(eb: pd.DataFrame, ust: pd.DataFrame) -> pd.Series:
         u = ust.loc[:d].iloc[-1] if len(ust.loc[:d]) else None
         if u is None or u.isna().any():
             continue
-        yrs = (g["maturity"] - g["date"]).dt.days / 365.25
-        g = g[(yrs >= MIN_YEARS) & (yrs <= MAX_YEARS)]
-        if g.empty:
-            continue
-        yrs = (g["maturity"] - g["date"]).dt.days / 365.25
-        sp = [y - ust_curve(u, t) for y, t in zip(g["yield"], yrs)]
-        out[pd.Timestamp(m)] = float(np.median(sp))
+        val = median_spread(g[["maturity", "yield"]].to_dict("records"), u, d)
+        if val is not None:
+            out[pd.Timestamp(m)] = val
     return pd.Series(out).sort_index()
 
 
