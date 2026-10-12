@@ -114,3 +114,43 @@ There are 3 tests. Each uses a one-sample t-test across events (df = N − 1). T
 - **Global shocks:** a global shock moves EEM too, so the abnormal return can understate the total effect for G3–G8. TL and USD raw returns are reported next to the AR.
 - **XU100 is a price index:** dividends are missing, which is small over 20–60 days.
 - **Survivorship:** the value-portfolio measure has the same survivorship bias as the other studies.
+
+---
+
+## Results (added 2026-10-12, after the run; the sections above are unchanged)
+
+`python scripts/research_event_study.py`. JSON: `data/reports/research_event_study_2026-10-12.json`.
+
+**Confirmatory tests.** The threshold is p < 0.0167.
+
+| Test | N | Mean | t | p | Sign count | Result |
+|---|---|---|---|---|---|---|
+| H1: XU100 TL minus deposit, [−5, +5] around elections | 11 | +3.67% | 1.60 | 0.14 | 8 of 11 positive | FAIL |
+| H2a: USD CAR [+2, +20] after shocks | 16 | +2.21% | 1.10 | 0.29 | 10 of 16 positive | FAIL |
+| H2b: USD CAR [+2, +60] after shocks | 16 | −2.73% | −0.61 | 0.55 | 9 of 16 positive | FAIL |
+
+**Nothing passes.** As pre-registered, the bulletin says nothing about elections or conflicts, and the event table stays here as information.
+
+**Descriptive, by group.** Mean, t across events, and the number of positive events.
+
+| Measure | Elections (11) | Domestic shocks (8) | Regional conflicts (8) |
+|---|---|---|---|
+| USD return on day 0 | +0.3% (0.20), 7/11 | −8.4% (−4.71), 0/8 | −3.5% (−3.57), 0/8 |
+| USD CAR [0, +5] | +2.3% (1.14) | −9.1% (−3.24), 2/8 | −2.0% (−0.86) |
+| USD CAR [0, +60] | +7.2% (2.11), 9/11 | −17.4% (−2.20), 2/8 | +0.9% (0.16) |
+| Median days to regain the day −1 USD level | 0 | 158 | 14 |
+| Median vol ratio (after / before) | 0.96 | 1.37 | 1.02 |
+| Value top quintile − universe, [0, +20] TL | +2.4% (3.46), 10/11 | −0.3% (−0.40) | +2.3% (2.83), 8/8 |
+
+How to read it:
+- **Elections:** no consistent reaction. The day-0 move was as often up as down. Holding cash around elections would have cost about 3.7% per election on average, not significantly.
+- **Domestic shocks** were costly and lasting:
+  - every one fell on day 0, by −8.4% on average in USD;
+  - the fall continued over the next 60 days (−17.4% CAR);
+  - the median recovery took 158 trading days;
+  - Gezi (D1) and the Ağbal dismissal (D5) had not recovered after 250 days.
+  - Exceptions: the August 2018 crisis (D4) and the November 2021 crash (D6), where the move was mostly in the currency.
+- **Regional conflicts** fell on day 0 (−3.5%), then recovered in a median 14 trading days with no lasting effect. The exceptions were the jet downing (G1) and 7 October (G5).
+- **Pooling hid this split:** H2 pooled domestic and regional shocks, and their opposite paths cancelled. The split above was **not** pre-registered and was found after seeing the data. It is a hypothesis, not a result. Testing it needs a new pre-registration and new events after 2026-10.
+- **The value portfolio** beat the universe after elections (10 of 11) and conflicts (8 of 8). This is one of several descriptive measures, with no correction for multiple testing, so it is not a finding either.
+- **Overlap:** G7 and G8 are 6 trading days apart, so their windows overlap. Both were kept as listed.
