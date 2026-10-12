@@ -6,12 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import research_ramadan_holiday as rh  # noqa: E402
 
 
 def test_ramadan_ranges_match_diyanet_spot_checks():
+    # hijridate yalnizca requirements-research.txt'te; CI ana bagimliliklari kurar.
+    pytest.importorskip("hijridate")
     r = dict((a.year, (a, b)) for a, b in rh.ramadan_ranges())
     assert r[2024][0] == pd.Timestamp("2024-03-11") and r[2024][1] == pd.Timestamp("2024-04-09")
     assert r[2025][0] == pd.Timestamp("2025-03-01")
