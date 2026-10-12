@@ -22,7 +22,7 @@ from __future__ import annotations
 from bisect import bisect_right
 from statistics import median
 
-from core import db
+from core import db, forward_record
 from core.pit_panel import FINANCIAL_SECTORS
 
 TOP_PCT = 0.20
@@ -76,9 +76,14 @@ def _percentiles(values: dict[str, float]) -> dict[str, float]:
     return {t: round(100 * bisect_right(vals, v) / len(vals), 1) for t, v in values.items()}
 
 
-def select_top(candidates: list[dict]) -> list[dict]:
+def ranking_pool(candidates: list[dict]) -> list[dict]:
+    """Siralanan evren: finansal olmayan, uygun, likidite kesimini gecen adaylar (z'ye gore azalan)."""
     liquid = _liquid_tickers(candidates)
-    pool = sorted((c for c in _eligible(candidates) if c["ticker"] in liquid), key=lambda c: -c["valuation_z"])
+    return sorted((c for c in _eligible(candidates) if c["ticker"] in liquid), key=lambda c: -c["valuation_z"])
+
+
+def select_top(candidates: list[dict]) -> list[dict]:
+    pool = ranking_pool(candidates)
     if not pool:
         return []
     # Bilgi: secilen hissenin piyasa degeri ve likiditesi, finansal olmayan uzun vade
@@ -134,6 +139,8 @@ def monthly_rotation(as_of_date: str, candidates: list[dict]) -> dict:
         current = select_top(candidates)
         current_date, prev_date = as_of_date, (dates[0] if dates else None)
         if current:
+            forward_record.append_decision(as_of_date, [h["ticker"] for h in current],
+                                           [c["ticker"] for c in ranking_pool(candidates)])
             db.executemany(
                 "INSERT OR REPLACE INTO rotation_holdings (rebalance_date, ticker, valuation_z, rank_pct, "
                 "market_cap, mcap_pct, liq_pct) VALUES (?, ?, ?, ?, ?, ?, ?)",
