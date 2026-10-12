@@ -155,6 +155,8 @@ Long-term cards no longer show model targets, expected ROI, entry bands or stops
 
 The edge is at basket level; a single stock beats XU100 less than half the time. Delisted stocks are missing, so these numbers are optimistic.
 
+**Publication-date sensitivity** ([`kap_report_dates_preregistration.md`](docs/research/kap_report_dates_preregistration.md)): with actual KAP publication dates instead of the assumed 75/100-day lag, value_sn still ranks stocks (holdout rank IC t 4.74). The holdout top-quintile net active fell from +6.87%/yr (t 2.09) to +5.26%/yr (t 1.59). By the pre-registered rule the result is **lag-sensitive**. The research panel now uses actual dates by default.
+
 ---
 
 ## Analysis Layers

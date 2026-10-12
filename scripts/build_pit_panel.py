@@ -116,6 +116,12 @@ def main() -> None:
 
     long = pd.concat([x for x in longs if not x.empty], ignore_index=True)
     q = pit_panel.quarterly_table(long)
+    archive = OUT / "kap_archive.parquet"
+    if archive.exists():  # gercek KAP yayin tarihleri (kap_report_dates_preregistration.md, varyant B)
+        q = pit_panel.apply_report_dates(q, pit_panel.kap_report_dates(pd.read_parquet(archive)))
+        print(f"KAP yayin tarihi eslesen ceyrek: %{100 * (q['available_source'] == 'kap').mean():.1f}")
+    else:
+        print("UYARI: data/research/kap_archive.parquet yok; varsayilan 75/100 gun gecikmesi kullaniliyor.")
     px = pd.concat([x for x in pxs if not x.empty], ignore_index=True)
     ev = pd.concat([x for x in evs if not x.empty], ignore_index=True) if any(not x.empty for x in evs) else pd.DataFrame()
     factors = pit_panel.build_monthly_factors(q, px, ev, sectors)
