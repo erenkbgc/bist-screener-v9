@@ -55,3 +55,28 @@ There are 3 tests:
 - **Taxes:** dividends are taxed differently from capital gains; returns here are gross.
 - **Data source:** dividend records come from one source and are not cross-checked.
 - **Survivorship**, as in the other studies.
+
+---
+
+## Results (added 2026-10-12, after the run; the sections above are unchanged)
+
+**Data:**
+- `python scripts/fetch_dividends.py`: 528 tickers, 0 failures, 3,178 cash-dividend rows, 362 tickers that ever paid.
+- `python scripts/research_dividend_yield.py`. JSON: `data/reports/research_dividend_yield_2026-10-12.json`.
+- In an average month, 36–37% of the universe paid in the last 12 months.
+- The correlation between dy_z and value_sn_z is 0.17.
+
+D is per year, net of 20 bps turnover cost, with Newey-West t.
+
+| Test | Discovery D (t) | Holdout D (t) | Result |
+|---|---|---|---|
+| Y1 top dy among payers − universe | −9.71% (−2.52) | +4.82% (0.70) | FAIL |
+| Y2 payers − non-payers | −8.46% (−1.93) | +2.72% (0.59) | FAIL |
+| Y3 (value_sn + dy) top quintile − value_sn top quintile | −11.76% (−2.78) | −4.17% (−1.17) | FAIL |
+
+**Nothing passes**, so nothing is shown in the bulletin.
+
+How to read it:
+- **High-dividend stocks did not beat the universe.** In 2013–2020 they lagged it by about 10% a year. In 2021–2026 they were slightly ahead, not significantly.
+- **Adding dividend yield to the live value rule makes it worse in both periods.** The cost was 11.8% a year in discovery and 4.2% in holdout. Dividend payers on BIST are larger, steadier companies, and the value premium found here sits in smaller, cheaper names (`portfolio_backtest_preregistration.md`, F1). Mixing the two dilutes it.
+- The common belief that high and regular dividend payers attract steady demand and outperform is not supported on BIST in 2013–2026.
