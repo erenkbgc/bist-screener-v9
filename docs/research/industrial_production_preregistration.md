@@ -48,3 +48,23 @@ Several Turkish studies, typically variance decompositions and cointegration on 
 - **Surprise proxy:** the surprise is not a consensus surprise and is noisier than one.
 - **Vintage:** the latest vintage is used, not the first-release figure.
 - **Release dates:** an approximate rule (m + 2) is used, not the exact release dates.
+
+---
+
+## Results (added 2026-10-13, after the run; the sections above are unchanged)
+
+`python scripts/research_industrial_production.py`. EVDS `TP.TSANAY2021.BCD`, 2005-01 to 2026-08; mean year-on-year growth 4.8%. JSON: `data/reports/research_industrial_production_2026-10-13.json`.
+
+| Test | Result detail | Verdict |
+|---|---|---|
+| I1 reaction in the release month | discovery b −0.011 (t −0.08, 118 months); holdout b +0.043 (t 0.57, 129 months) | FAIL |
+| I2 surprise → next month | in-sample b −0.023 (t −0.30); OOS R² −0.6%, Clark-West p 0.94 | FAIL |
+| I3 growth level → next month | in-sample b −0.050 (t −0.66); OOS R² −0.8%, Clark-West p 0.69 | FAIL |
+
+The correlation of yoy growth with the release-month USD return is −0.02.
+
+**Nothing passes**, so nothing is shown.
+
+How to read it:
+- BIST does not react to the monthly industrial production figure in the month it is published, and the figure does not predict the next month.
+- The literature's "industrial production is the strongest real driver" comes from level relationships and variance decompositions, not from news or prediction. On a monthly, out-of-sample basis, with publication lags respected, there is nothing to use.
