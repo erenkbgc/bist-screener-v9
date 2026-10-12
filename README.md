@@ -136,6 +136,7 @@ flowchart TD
 - **Liquidity cut:** the bottom 30% of non-financial long-term candidates by 60-day median daily TL volume (close × volume, at least 40 bars) are dropped before ranking, as in the tested panel (`factor_backtest.prepare`, `liq_drop_pct=0.3`). The live universe floor of 10M TL is looser; before this cut, about a third of the live top 20% came from the untested illiquid tier.
 - **Rule:** hold the top 20% equal-weighted. The first run of each month stores the list in `rotation_holdings`; later runs in the same month reuse it. A name that leaves the top 20% is sold.
 - **Output:** AL (new), TUT (kept), SAT (dropped).
+- **Locked rule and forward record:** the parameters are fixed in `config/live_rule.json` (version `R0-2026-10-12`); a test fails if `core/rotation.py` drifts from it. From the 2026-11 rebalance, each live decision (list, ranked universe, rule version, UTC timestamp) is appended to `data/forward_record/decisions.jsonl` and committed by CI. `scripts/forward_record_report.py` prices the recorded decisions with the pre-registered portfolio simulator (next-close fills, 1M TL, base costs); it never re-selects. A rule change needs a new pre-registration and version and starts a new series.
 - **Diversification:** average pairwise 60-day log-return correlation of the held basket and the effective number of bets $`N/(1+(N-1)\bar\rho)`$ (`core/correlation.py::effective_bets`).
 
 Hurdle, Piotroski, target-price gates do **not** affect this list: the tested rule did not contain them.

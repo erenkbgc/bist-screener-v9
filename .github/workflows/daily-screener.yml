@@ -107,14 +107,14 @@ jobs:
         # Kosu saatler surdugu icin origin/master bu arada lokalden ilerlemis
         # olabilir (bkz. 2026-09-15: "! [rejected] master -> master (fetch
         # first)" -- gunun tum DB/rapor guncellemesi hic remote'a gitmeden
-        # kayboldu). git add/commit sadece data/bist_history.db ve
-        # data/reports/ dokunuyor, insan commit'leri neredeyse hep baska
+        # kayboldu). git add/commit sadece data/bist_history.db,
+        # data/reports/ ve data/forward_record/ dokunuyor, insan commit'leri neredeyse hep baska
         # dosyalara dokunuyor; fetch+rebase ile birkac deneme bu cakismayi
         # guvenle cozer.
         run: |
           git config user.name "bist-screener-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/bist_history.db data/reports/ config/weights_optimized.json
+          git add data/bist_history.db data/reports/ data/forward_record/ config/weights_optimized.json
           if git diff --cached --quiet; then
             echo "commit edilecek degisiklik yok"
             exit 0
