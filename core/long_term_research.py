@@ -229,3 +229,21 @@ def weighted_composite(df: pd.DataFrame, weights: pd.DataFrame) -> pd.Series:
     w = weights.reindex(df["date"]).set_axis(df.index)
     s = sum(w[f] * df[f].fillna(0.0) for f in weights.columns)
     return s.where(df["value_sn_z"].notna() & w.notna().all(axis=1))
+
+
+# --- Yabanci payi (docs/research/foreign_ownership_preregistration.md) ---
+def foreign_signals(foreign: pd.DataFrame) -> pd.DataFrame:
+    """foreign_monthly.parquet (month, ticker, foreign_pct) -> date, ticker, for_lvl, dfor3.
+
+    date = takvim ay sonu (panel ile ayni). dfor3 = for_t - for_{t-3 ay} (puan);
+    ara ay eksikse veya iki uc eksikse NaN.
+    """
+    f = foreign.assign(date=pd.to_datetime(foreign["month"]) + pd.offsets.MonthEnd(0))
+    wide = f.pivot_table(index="date", columns="ticker", values="foreign_pct", aggfunc="last")
+    full = pd.date_range(wide.index.min(), wide.index.max(), freq="ME")
+    wide = wide.reindex(full)
+    d3 = wide - wide.shift(3)
+    out = wide.stack(future_stack=True).rename("for_lvl").to_frame().join(
+        d3.stack(future_stack=True).rename("dfor3"))
+    out = out.reset_index().rename(columns={"level_0": "date"})
+    return out[out["for_lvl"].notna()].reset_index(drop=True)
