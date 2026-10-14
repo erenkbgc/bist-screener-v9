@@ -3,15 +3,19 @@
 Spec: valuation_engine, ratio_profiles, sector_taxonomy, known_pitfalls P3/P4/P5.
 no_fixed_thresholds ve no_historical_ratio_comparison kurallari: burada HICBIR
 sabit F/K, PD/DD, FD/FAVOK esigi veya bir sirketin kendi gecmisiyle karsilastirmasi
-YOKTUR. Yalnizca ayni (peer_level, reporting_basis, ratio_profile) grubu icindeki
-persentil/z-skor kullanilir.
+YOKTUR. valuation_z, ayni reporting_basis ve oran seti icindeki kesitsel z-skorun
+sektor ortalamasindan farkidir (test edilen value_sn; bkz. compute_valuation_scores).
 """
 from __future__ import annotations
 
 import math
-from statistics import mean, pstdev
+from statistics import mean, stdev
+
+from core.pit_panel import FINANCIAL_SECTORS
 
 MIN_PEER_N = 5  # v13 P1-7: peer_n < 5 ise supersector'e dusulur; kucuk sektorler (sigorta vb.) gereksiz elenmez
+# build_peer_group (core/targets.py hedef fiyat emsalleri) icin; valuation_z artik
+# bu zinciri kullanmaz (bkz. compute_valuation_scores).
 FALLBACK_CHAIN = ["sector", "supersector", "market"]
 CONFIDENCE_MAPPING = {"sector": "high", "supersector": "degraded", "market": "low", "none": "insufficient_peers"}
 
@@ -105,18 +109,11 @@ def _metric_value(c: dict, metric: str) -> float | None:
     return v if v is not None and _finite(v) else None
 
 
-def winsorize(values: list[float], low_pct: float = 1, high_pct: float = 99) -> list[float]:
-    if len(values) < 3:
-        return values[:]
-    s = sorted(values)
-
-    def pct(p):
-        k = (len(s) - 1) * (p / 100)
-        f, c = int(k), min(int(k) + 1, len(s) - 1)
-        return s[f] + (s[c] - s[f]) * (k - f)
-
-    lo, hi = pct(low_pct), pct(high_pct)
-    return [min(max(v, lo), hi) for v in values]
+def _quantile(sorted_vals: list[float], q: float) -> float:
+    """pandas Series.quantile (lineer interpolasyon) ile ayni."""
+    k = (len(sorted_vals) - 1) * q
+    f, c = int(k), min(int(k) + 1, len(sorted_vals) - 1)
+    return sorted_vals[f] + (sorted_vals[c] - sorted_vals[f]) * (k - f)
 
 
 def percentile_rank(value: float, population: list[float]) -> float:
@@ -163,71 +160,129 @@ def build_peer_group(
     return same_basis_profile, "none", CONFIDENCE_MAPPING["none"]
 
 
-Z_CLIP = 3.0
 
 
-def score_metric_z(candidate_value: float, peer_values: list[float], direction: str) -> float:
-    clean = [v for v in peer_values if v is not None and _finite(v)]
-    pool = winsorize(clean)
-    if len(pool) < 2 or candidate_value is None or not _finite(candidate_value):
-        return 0.0
-    mu, sigma = mean(pool), pstdev(pool)
-    if sigma == 0:
-        return 0.0
-    # Adayin kendi degeri de esler havuzunun ayni sinirlarina kirpilir; aksi halde
-    # tek bir uc deger (cokmus fiyat -> asiri dusuk PD/DD) z'yi sinirsiz buyutup
-    # valuation_z ortalamasini domine ediyordu.
-    lo, hi = min(pool), max(pool)
-    z = (min(max(candidate_value, lo), hi) - mu) / sigma
-    z = max(-Z_CLIP, min(Z_CLIP, z))
-    return z if direction == "higher_better" else -z
+# --- valuation_z: test edilen value_sn ile ayni hesap -------------------------
+# Referans: scripts/backtest_factor_model.py::add_composites + core/factor_backtest
+# (prepare, winsorize_z, sector_neutralize). Canli skor eskiden farkli bir formuldu
+# (emsal grubu ici z, adayin emsal min-max'ina kirpilmasi, +-3 siniri, supersector
+# kademesi); Faz 2 sonucu (docs/research/long_term_preregistration.md) o formule ait
+# degildi. tests/test_valuation_parity.py iki hesabin ayni sonucu verdigini dogrular.
+WINSOR_LO, WINSOR_HI = 0.01, 0.99   # factor_backtest.winsorize_z
+MIN_METRIC_N = 3                     # winsorize_z: < 3 gecerli deger -> NaN
+MIN_SECTOR_N = 5                     # factor_backtest.sector_neutralize(min_n=5)
+LIQ_DROP_PCT = 0.30                  # factor_backtest.prepare(liq_drop_pct=0.3)
+NEUTRAL_CONFIDENCE = {"sector": "high", "market": "degraded", "none": "insufficient_peers"}
 
 
-def compute_valuation_z(
-    candidate: dict,
-    all_candidates: list[dict],
-    min_peer_n: int = MIN_PEER_N,
-) -> dict:
-    profile = RATIO_PROFILES[candidate["ratio_profile"]]
-    peers, peer_level, confidence = build_peer_group(candidate, all_candidates, min_peer_n)
-    # dead_hard_filters_repair (v12 T0-2): forbidden_metrics su ana kadar
-    # yalnizca DEKORATIF bir alandi -- hicbir kod bakmiyordu, zararsizdi cunku
-    # ev_ebitda/ev_sales zaten kalici None'di (bkz. ev_ebitda_net_debt_recovery).
-    # O madde bu alanlari canlandirdiginda profile['metrics'] listesine yanlislikla
-    # bir yasakli metrik eklenirse (orn. bank/insurance/reit'e ev_ebitda sizarsa)
-    # SAVUNMA HATTI olarak burada acikca filtreleniyor.
+def _active_metrics(profile: dict) -> list[str]:
+    # dead_hard_filters_repair (v12 T0-2): metrics listesine yanlislikla yasakli bir
+    # metrik eklenirse (orn. bank'a ev_ebitda) burada acikca filtrelenir.
     forbidden = set(profile.get("forbidden_metrics", []))
-    metrics = [m for m in profile["metrics"] if m not in forbidden]
-    z_scores = []
-    for metric in metrics:
-        peer_values = [v for v in (_metric_value(p, metric) for p in peers) if v is not None]
-        cand_value = _metric_value(candidate, metric)
-        if cand_value is None or len(peer_values) < 2:
-            continue
-        direction = profile["direction"][metric]
-        z_scores.append(score_metric_z(cand_value, peer_values, direction))
-    valuation_z = mean(z_scores) if z_scores else None
-    return {
-        "valuation_z": valuation_z,
-        "valuation_z_sector_neutral": valuation_z,
-        "peer_group_used": peer_level,
-        "peer_n": len(peers),
-        "confidence": confidence,
-    }
+    return [m for m in profile["metrics"] if m not in forbidden]
 
 
-def compute_sector_neutral_valuation(
-    candidate: dict,
-    all_candidates: list[dict],
-    min_peer_n: int = MIN_PEER_N,
-) -> dict:
-    """Sektor ici normalizasyon (sektor-notr degerleme z-skoru).
+def _reference_set(members: list[dict], is_value_sn: bool) -> list[dict]:
+    """z istatistiklerinin hesaplandigi kesit: panelin aylik evreni.
 
-    v13 Roadmap P1-7:
-    - Z-skoru oncelikle sektor ici hesaplanir.
-    - Sektordeki peer_n < 5 ise supersector'e (XUMAL, XUSIN, XUHIZ, XUTEK) duser.
-    - Supersector de < 5 ise market geneline duser.
-    Cikti: valuation_z_sector_neutral.
+    Panel finansallari icermez (pit_panel.FINANCIAL_SECTORS) ve 60g medyan TL hacmine
+    gore en az likit %30'u z'den once atar. Likidite verisi hic yoksa (testler, skill
+    CLI) kesim uygulanmaz. Referans disinda kalan adaylar ayni istatistiklerle skorlanir.
     """
-    return compute_valuation_z(candidate, all_candidates, min_peer_n)
+    ref = [c for c in members if not (is_value_sn and c.get("sector") in FINANCIAL_SECTORS)]
+    liq = [c.get("tl_vol_med60") for c in ref]
+    vals = sorted(v for v in liq if v is not None and _finite(v) and v > 0)
+    if not vals:
+        return ref
+    cut = _quantile(vals, LIQ_DROP_PCT)
+    return [c for c in ref if c.get("tl_vol_med60") is not None and _finite(c["tl_vol_med60"])
+            and c["tl_vol_med60"] > 0 and c["tl_vol_med60"] >= cut]
 
+
+def _metric_stats(ref: list[dict], metric: str, sign: int) -> tuple[float, float, float, float] | None:
+    """winsorize_z istatistikleri: (alt sinir, ust sinir, ortalama, orneklem std)."""
+    vals = [sign * v for v in (_metric_value(c, metric) for c in ref) if v is not None]
+    if len(vals) < MIN_METRIC_N:
+        return None
+    s = sorted(vals)
+    lo, hi = _quantile(s, WINSOR_LO), _quantile(s, WINSOR_HI)
+    clipped = [min(max(v, lo), hi) for v in vals]
+    sd = stdev(clipped)
+    return (lo, hi, mean(clipped), sd) if sd > 0 else None
+
+
+def _score_pool(members: list[dict], profile: dict, is_value_sn: bool) -> list[dict]:
+    metrics = _active_metrics(profile)
+    ref = _reference_set(members, is_value_sn)
+    ref_ids = {id(c) for c in ref}
+    stats = {}
+    for m in metrics:
+        sign = 1 if profile["direction"][m] == "higher_better" else -1
+        st = _metric_stats(ref, m, sign)
+        if st is not None:
+            stats[m] = (sign, *st)
+
+    raw: list[tuple[float | None, list[str]]] = []
+    for c in members:
+        zs, used = [], []
+        for m, (sign, lo, hi, mu, sd) in stats.items():
+            v = _metric_value(c, m)
+            if v is None:
+                continue
+            # Winsorize siniri referans kesitin %1/%99'u; aday kendi emsal araligina kirpilmaz.
+            zs.append((min(max(sign * v, lo), hi) - mu) / sd)
+            used.append(m)
+        raw.append((mean(zs) if zs else None, used))
+
+    # sector_neutralize: referans kesitte sektor >= MIN_SECTOR_N ise sektor ortalamasi,
+    # degilse tum kesit ortalamasi cikarilir.
+    by_sector: dict[str, list[float]] = {}
+    market: list[float] = []
+    for c, (v, _) in zip(members, raw):
+        if v is not None and id(c) in ref_ids:
+            by_sector.setdefault(c.get("sector"), []).append(v)
+            market.append(v)
+
+    out = []
+    for c, (v, used) in zip(members, raw):
+        res = {"valuation_z": None, "peer_group_used": "none", "peer_n": len(market),
+               "confidence": NEUTRAL_CONFIDENCE["none"],
+               "valid_metric_count": len(used), "metrics_used": used}
+        if v is not None and len(market) >= MIN_PEER_N:
+            sec = by_sector.get(c.get("sector"), [])
+            level, group = ("sector", sec) if len(sec) >= MIN_SECTOR_N else ("market", market)
+            res.update(valuation_z=v - mean(group), peer_group_used=level, peer_n=len(group),
+                       confidence=NEUTRAL_CONFIDENCE[level])
+        out.append(res)
+    return out
+
+
+def compute_valuation_scores(candidates: list[dict]) -> list[dict]:
+    """Tum adaylar icin sektor-notr valuation_z (girdiyle ayni sirada).
+
+    Havuz: ayni reporting_basis ve ayni oran seti (sanayi/holding/GYO ortak value_sn
+    havuzu, panelde oldugu gibi; banka ve sigorta kendi profilleri). Her sonuc
+    valid_metric_count ve metrics_used tasir: skor kac/hangi orandan olustu.
+    """
+    pools: dict[tuple, list[int]] = {}
+    for i, c in enumerate(candidates):
+        profile = c["ratio_profile"]
+        family = "value_sn" if RATIO_PROFILES[profile]["metrics"] == VALUE_SN_METRICS else profile
+        pools.setdefault((c["reporting_basis"], family), []).append(i)
+    out: list[dict | None] = [None] * len(candidates)
+    for (_, family), idx in pools.items():
+        members = [candidates[i] for i in idx]
+        profile = _VALUE_SN_PROFILE if family == "value_sn" else RATIO_PROFILES[family]
+        for i, res in zip(idx, _score_pool(members, profile, family == "value_sn")):
+            out[i] = res
+    return out
+
+
+def compute_valuation_z(candidate: dict, all_candidates: list[dict]) -> dict:
+    """Tek aday icin sarmalayici; havuz all_candidates (aday icinde degilse eklenir)."""
+    pool = list(all_candidates)
+    pos = next((i for i, c in enumerate(pool) if c is candidate), None)
+    if pos is None:
+        pool.append(candidate)
+        pos = len(pool) - 1
+    return compute_valuation_scores(pool)[pos]
