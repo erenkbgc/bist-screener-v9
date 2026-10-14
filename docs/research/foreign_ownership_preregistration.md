@@ -95,3 +95,28 @@ Fallback: positive in both periods with t > 2 in each is labelled "supported, no
 - **Data source:** this is an undocumented website endpoint. It can change, and its values cannot be checked against MKK for free. Live `foreign_pct` (same source via borsapy) matched within about 0.4 pp on 2026-10-13.
 - **Discovery length:** discovery starts in 2013-09, so it has about 88 months.
 - **Same-close trading:** signal and trade use the same month-end close (panel convention).
+
+---
+
+## Results (added 2026-10-15, after the run; the sections above are unchanged)
+
+`python scripts/fetch_foreign_ownership.py` downloaded 160 consecutive months (2013-06 .. 2026-09), 83,564 rows and 347–785 stocks per month. Eight month-ends fell on holidays, and the previous trading day was used for them. `python scripts/research_foreign_ownership.py` ran the tests from 2013-09 (first month with `dfor3`) to 2026-09: 88 discovery months and 68 holdout months. `dfor3` covers 93.9% of panel rows.
+
+Diagnostics:
+- **Rank IC of `dfor3`:** −0.016 in discovery (t −1.51); 0.000 in holdout (t 0.01).
+- **Spearman correlation of `dfor3`:** 0.056 with 12-1 momentum, 0.255 with 3-month past return. Foreign buying partly follows recent price rises.
+- **value_sn over the same months:** +11.82%/yr (t 2.98) in discovery, +6.96%/yr (t 2.60) in holdout.
+
+| Test | Discovery | Holdout | Holdout USD | Result |
+|---|---|---|---|---|
+| F1 top `dfor3` quintile vs universe | −3.07%/yr (t −0.93) | +5.46%/yr (t 2.38) | +5.30% | **FAIL** |
+| F2 0.5 value + 0.5 `dfor3` vs value_sn (D) | −5.93%/yr (t −1.47) | −1.90%/yr (t −0.55) | — | **FAIL** |
+| F3 top foreign-level quintile (exploratory) | −13.23%/yr (t −3.40) | +7.83%/yr (t 1.64) | +7.44% | — |
+
+**Both confirmatory tests fail.** Rising foreign ownership does not predict next-month returns, and adding it to value lowers returns in both periods.
+
+Reading (post-hoc, not a result):
+- F1 is positive only in 2021+. The sign flips between periods, so it is not a stable signal.
+- The foreign-ownership level (F3) also flips sign: strongly negative in 2013–2020, positive in 2021+. High-foreign stocks are the large, liquid names, and how they fare against the rest depends on the period. This is not a stock-selection signal.
+
+As pre-registered, nothing changes in live scoring. Live collection of `foreign_pct` continues.
