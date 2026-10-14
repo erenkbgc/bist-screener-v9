@@ -192,3 +192,40 @@ def diff_stats(base: pd.DataFrame, alt: pd.DataFrame, col: str = "active_fwd_ret
         return {"months": 0}
     m, t, n = fb.newey_west_t(d, 6)
     return {"months": n, "diff_ann_pct": round(100 * 12 * m, 2), "t": round(t, 2)}
+
+
+# --- Ogrenilen agirliklar (docs/research/learned_weights_preregistration.md) ---
+LW_FACTORS = ["value_sn_z", "gpa_z", "sue_z", "mom_12_1_z", "vol60_z"]
+LW_MIN_MONTHS = 36
+
+
+def monthly_ics(df: pd.DataFrame, factors: list[str], ret: str = "fwd_ret_1m") -> pd.DataFrame:
+    """Satir = ay, sutun = faktor; o ayin Spearman IC'si (>= 30 ad)."""
+    return pd.DataFrame({f: fb.rank_ic(df, f, ret) for f in factors}).sort_index()
+
+
+def learned_ic_weights(ics: pd.DataFrame, dates, min_months: int = LW_MIN_MONTHS) -> pd.DataFrame:
+    """Her t icin yalnizca m < t aylarinin ortalama IC'sinden agirlik.
+
+    w_k = max(IC_k, 0) / sum; hepsi <= 0 ise yalnizca deger. min_months'tan az
+    gecmis IC ayi varsa satir NaN (kompozit yok).
+    """
+    rows = {}
+    for t in sorted(pd.Index(dates).unique()):
+        past = ics[ics.index < t].dropna(how="all")
+        if len(past) < min_months:
+            rows[t] = {f: np.nan for f in ics.columns}
+            continue
+        g = past.mean().clip(lower=0.0)
+        if g.sum() <= 0:
+            g = pd.Series(0.0, index=ics.columns)
+            g["value_sn_z"] = 1.0
+        rows[t] = (g / g.sum()).to_dict()
+    return pd.DataFrame.from_dict(rows, orient="index")
+
+
+def weighted_composite(df: pd.DataFrame, weights: pd.DataFrame) -> pd.Series:
+    """Sum w_k(ay) * z_k; eksik z 0 sayilir, deger yoksa veya agirlik yoksa NaN."""
+    w = weights.reindex(df["date"]).set_axis(df.index)
+    s = sum(w[f] * df[f].fillna(0.0) for f in weights.columns)
+    return s.where(df["value_sn_z"].notna() & w.notna().all(axis=1))
