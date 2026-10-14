@@ -11,7 +11,7 @@ from pathlib import Path
 import yaml
 
 from core import db
-from core.ranking import compute_sector_neutral_valuation, percentile_rank
+from core.ranking import compute_valuation_scores, percentile_rank
 from core.momentum import is_value_trap_risk
 from core.weight_optimizer import load_optimized_weights
 
@@ -124,6 +124,11 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
     piotroski_hard_min = weights["piotroski"].get("hard_filter_min_score", piotroski_threshold)
     top_n = weights["top_n_per_bucket"]
 
+    valuations: dict[int, dict] = {}
+    for bucket in {c["bucket"] for c in raw_candidates}:
+        members = [x for x in raw_candidates if x["bucket"] == bucket]
+        valuations.update(zip(map(id, members), compute_valuation_scores(members)))
+
     scored: list[dict] = []
     for c in raw_candidates:
         if _is_quarantined(as_of_date, c["ticker"]):
@@ -133,12 +138,9 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
             scored.append(c)
             continue
 
-        val = compute_sector_neutral_valuation(c, [x for x in raw_candidates if x["bucket"] == c["bucket"]])
-        c["valuation_z"] = val["valuation_z"]
-        c["valuation_z_sector_neutral"] = val.get("valuation_z_sector_neutral", val["valuation_z"])
-        c["peer_group_used"] = val["peer_group_used"]
-        c["peer_n"] = val["peer_n"]
-        c["confidence"] = val["confidence"]
+        val = valuations[id(c)]
+        for k in ("valuation_z", "peer_group_used", "peer_n", "confidence", "valid_metric_count", "metrics_used"):
+            c[k] = val[k]
         c["value_trap_risk"] = is_value_trap_risk(c)
 
         passed, filtered_by = hard_filters_passed(c, piotroski_hard_min, as_of_date_cutoff)
@@ -210,17 +212,18 @@ def _persist(as_of_date: str, scored: list[dict]) -> None:
         "low_vol_z": c.get("low_vol_z"), "momentum_z": c.get("momentum_z"),
         "final_score": c.get("final_score"), "peer_group_used": c.get("peer_group_used"),
         "peer_n": c.get("peer_n"), "confidence": c.get("confidence"), "filtered_by": c.get("filtered_by"),
-        "valuation_z_sector_neutral": c.get("valuation_z_sector_neutral"),
+        "valid_metric_count": c.get("valid_metric_count"),
+        "metrics_used": ",".join(c["metrics_used"]) if c.get("metrics_used") is not None else None,
     } for c in scored]
     conn = db.get_connection()
     try:
         conn.executemany(
             """INSERT INTO scores (as_of_date, ticker, bucket, candidate_state, valuation_z,
                catalyst_score, ownership_z, low_vol_z, momentum_z, final_score, peer_group_used, peer_n,
-               confidence, filtered_by, valuation_z_sector_neutral)
+               confidence, filtered_by, valid_metric_count, metrics_used)
                VALUES (:as_of_date, :ticker, :bucket, :candidate_state, :valuation_z, :catalyst_score,
                        :ownership_z, :low_vol_z, :momentum_z, :final_score, :peer_group_used, :peer_n, :confidence,
-                       :filtered_by, :valuation_z_sector_neutral)""",
+                       :filtered_by, :valid_metric_count, :metrics_used)""",
             rows,
         )
         conn.commit()

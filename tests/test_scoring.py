@@ -127,14 +127,15 @@ def test_catalyst_unavailable_uses_redistributed_weights(temp_db, monkeypatch):
     """KAP cekilemeyen hissede katalizor 0 'notr' sayilmaz; agirlik dagitilir."""
     from core.scoring import score_candidates
 
-    def cand(ticker, available):
+    def cand(ticker, available, pe=10.0):
         return {"ticker": ticker, "bucket": "long_term", "tedbir_level": 0, "reporting_basis": "adjusted",
                 "listing_days": 500, "free_float_pct": 30, "excess_over_hurdle_pct": 5.0,
                 "effective_at": "2026-09-01", "piotroski_normalized_score": 0.7,
                 "catalyst_score": 0.0, "catalyst_available": available, "ownership_z": 0.0,
                 "low_vol_z": 0.0, "momentum_z": 0.0, "sector": "S", "supersector": "SS",
-                "ratio_profile": "industrial", "pe": 10.0, "pb": 1.0, "ev_ebitda": 5.0, "roe": 10.0}
-    peers = [cand(f"PEER{i}", True) for i in range(6)]  # confidence icin >= 5 akran
+                "ratio_profile": "industrial", "pe": pe, "pb": 1.0, "ev_ebitda": 5.0, "roe": 10.0}
+    # confidence icin >= 5 akran; sabit F/K'da z tanimsiz (std 0) olur
+    peers = [cand(f"PEER{i}", True, pe=8.0 + i) for i in range(6)]
     # Canli agirliklarda katalizor 0 (Faz 2); dagitim mantigi karisik agirlikla sinanir.
     import core.scoring as scoring_mod
     mixed = {"valuation_z": 0.50, "catalyst_score": 0.25, "ownership_quality_z": 0.15, "low_vol_z": 0.10,

@@ -125,7 +125,8 @@ CREATE TABLE IF NOT EXISTS scores (
     valuation_z REAL, catalyst_score REAL, ownership_z REAL, low_vol_z REAL,
     final_score REAL,
     peer_group_used TEXT, peer_n INTEGER, confidence TEXT, filtered_by TEXT,
-    valuation_z_sector_neutral REAL
+    valuation_z_sector_neutral REAL,  -- 2026-10-14 sonrasi yazilmaz (valuation_z ile ayni sayiydi)
+    valid_metric_count INTEGER, metrics_used TEXT
 );
 
 CREATE TABLE IF NOT EXISTS gordon_reference (
@@ -417,6 +418,8 @@ _TABLE_MIGRATIONS = {
         ("low_vol_z", "REAL"),
         ("valuation_z_sector_neutral", "REAL"),
         ("momentum_z", "REAL"),
+        ("valid_metric_count", "INTEGER"),
+        ("metrics_used", "TEXT"),
     ],
     "factor_contributions": [
         ("momentum_contrib", "REAL"),

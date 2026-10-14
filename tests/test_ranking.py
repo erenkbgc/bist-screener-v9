@@ -74,6 +74,7 @@ def test_ratio_profile_only_compares_within_same_profile():
     result = compute_valuation_z(bank, [bank] + industrials)
     # bank'in esler grubu yalnizca kendisi -> insufficient_peers
     assert result["confidence"] == "insufficient_peers"
+    assert result["valuation_z"] is None
 
 
 def test_loss_maker_is_penalized_not_skipped():
@@ -93,15 +94,26 @@ def test_loss_maker_is_penalized_not_skipped():
     assert z_los < z_win
 
 
-def test_extreme_candidate_value_is_clipped_and_nan_ignored():
-    peers = [_make_candidate(f"S{i}", "XGIDA", "XUSIN", pb=1 + 0.1 * i) for i in range(10)]
-    crashed = _make_candidate("CRS", "XGIDA", "XUSIN", pb=0.01)
-    z = ranking.score_metric_z(0.01, [p["pb"] for p in peers], "lower_better")
-    assert z <= ranking.Z_CLIP
-    assert ranking.score_metric_z(float("nan"), [p["pb"] for p in peers], "lower_better") == 0.0
+def test_extreme_candidate_not_clipped_to_peer_range_and_nan_ignored():
+    """Aday emsal min-max'ina kirpilmaz: daha ucuz hisse daha yuksek z alir."""
+    peers = [_make_candidate(f"S{i}", "XGIDA", "XUSIN", pe=8 + i, pb=1 + 0.1 * i) for i in range(10)]
+    cheap = _make_candidate("CHP", "XGIDA", "XUSIN", pb=0.5)
+    cheaper = _make_candidate("CRS", "XGIDA", "XUSIN", pb=0.25)
     nan_peer = _make_candidate("NAN", "XGIDA", "XUSIN", pb=float("nan"))
-    result = compute_valuation_z(crashed, peers + [crashed, nan_peer])
-    assert result["valuation_z"] == result["valuation_z"]  # NaN degil
+    pool = peers + [cheap, cheaper, nan_peer]
+    z = ranking.compute_valuation_scores(pool)
+    assert z[-2]["valuation_z"] > z[-3]["valuation_z"]
+    assert all(r["valuation_z"] == r["valuation_z"] for r in z if r["valuation_z"] is not None)
+    assert z[-1]["metrics_used"] == ["ep"]  # pb NaN -> yalnizca E/P
+
+
+def test_metric_coverage_is_reported():
+    pool = [_make_candidate(f"S{i}", "XGIDA", "XUSIN", pe=8 + i, pb=1 + 0.1 * i) for i in range(8)]
+    pool[0]["pb"] = None
+    res = ranking.compute_valuation_scores(pool)
+    assert res[0]["valid_metric_count"] == 1 and res[0]["metrics_used"] == ["ep"]
+    assert res[1]["valid_metric_count"] == 2 and res[1]["metrics_used"] == ["ep", "bm"]
+    assert "valuation_z_sector_neutral" not in res[1]
 
 
 def test_value_sn_metrics_match_research_definition():
