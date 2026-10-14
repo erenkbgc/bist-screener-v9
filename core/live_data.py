@@ -1049,6 +1049,48 @@ def live_index_return_pct(index_name: str, start_date: str, end_date: str) -> fl
         return None
 
 
+_DOVIZCOM_TAHVIL_URL = "https://www.doviz.com/tahvil"
+_BOND_SLUG = re.compile(r"/tahvil/tr-(\d+)-yillik-tahvil")
+_BOND_YIELD_PLAUSIBLE_RANGE = (1.0, 100.0)
+
+
+def parse_dovizcom_tr_bonds(html: str) -> dict[str, float]:
+    """doviz.com/tahvil sayfasindan TR tahvil faizleri ({"2Y": 39.7, "10Y": 35.44}).
+
+    borsapy 0.11.0 tabloyu id="commodities" ile ariyor; doviz.com 2026-10-14'te
+    id'yi "bonds" yapti ve isim linkindeki class="name" kalkti. Burada iki id de
+    denenir, vade link adresinden (tr-<n>-yillik-tahvil) okunur.
+    """
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", {"id": "bonds"}) or soup.find("table", {"id": "commodities"})
+    tbody = table.find("tbody") if table else None
+    out: dict[str, float] = {}
+    for row in (tbody.find_all("tr") if tbody else []):
+        cells = row.find_all("td")
+        link = cells[0].find("a", href=True) if cells else None
+        m = _BOND_SLUG.search(link["href"]) if link else None
+        if not m or len(cells) < 2:
+            continue
+        try:
+            y = float(cells[1].get_text(strip=True).replace(".", "").replace(",", "."))
+        except ValueError:
+            continue
+        if _BOND_YIELD_PLAUSIBLE_RANGE[0] <= y <= _BOND_YIELD_PLAUSIBLE_RANGE[1]:
+            out[f"{m.group(1)}Y"] = y
+    return out
+
+
+def _fallback_tr_bond_yields() -> dict[str, float]:
+    import httpx  # borsapy bagimliligi
+
+    resp = httpx.get(_DOVIZCOM_TAHVIL_URL, timeout=20, headers={"User-Agent": "Mozilla/5.0"},
+                     follow_redirects=True)
+    resp.raise_for_status()
+    return parse_dovizcom_tr_bonds(resp.text)
+
+
 def live_macro_snapshot(as_of_date: str) -> dict:
     result: dict = {
         "policy_rate_pct": None, "bond_2y_pct": None, "bond_10y_pct": None,
@@ -1066,6 +1108,13 @@ def live_macro_snapshot(as_of_date: str) -> dict:
         result["bond_10y_pct"] = b10.get("yield")
     except Exception:
         pass
+    if result["bond_2y_pct"] is None or result["bond_10y_pct"] is None:
+        try:
+            fb_yields = _fallback_tr_bond_yields()
+            result["bond_2y_pct"] = result["bond_2y_pct"] or fb_yields.get("2Y")
+            result["bond_10y_pct"] = result["bond_10y_pct"] or fb_yields.get("10Y")
+        except Exception:
+            pass
     try:
         pr = bp.policy_rate()
         if pr is not None and _POLICY_RATE_PLAUSIBLE_RANGE[0] <= pr <= _POLICY_RATE_PLAUSIBLE_RANGE[1]:
