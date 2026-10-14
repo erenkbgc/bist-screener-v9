@@ -1,9 +1,9 @@
 name: BIST Haftalik Agirlik Optimizasyonu & Kalibrasyon
 
 on:
-  schedule:
-    # Her Pazar 18:00 UTC (21:00 TSI) - Pazartesi piyasa acilisi oncesi guncel kalibrasyon
-    - cron: "0 18 * * 0"
+  # Zamanlama kapatildi (2026-10-14): ogrenilen agirlik on-kayitli testi gecmedi
+  # (docs/research/learned_weights_preregistration.md); weights_optimized.json'u
+  # canli skor zaten okumuyordu. Elle calistirma acik kalir.
   workflow_dispatch:
     inputs:
       period:

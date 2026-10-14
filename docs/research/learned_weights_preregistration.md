@@ -106,3 +106,38 @@ Fallback: D > 0 in both periods with t > 2 in each is labelled "supported, not c
   - signal and trade at the same month-end close.
 - With a 36-month burn-in, discovery has about 57 months, which gives the test less power.
 - The prior exposure described above.
+
+---
+
+## Results (added 2026-10-14, after the run; the sections above are unchanged)
+
+`python scripts/research_learned_weights.py`. The composite exists from 2016-04 (after 36 IC months) to 2026-09: 57 discovery months and 68 holdout months. value_sn over the same months is +12.81%/yr (t 2.24) in discovery and +6.96%/yr (t 2.60) in holdout.
+
+Full-sample mean rank IC (descriptive): value 0.050, GP/A 0.020, SUE 0.040, momentum 0.007, low volatility 0.075.
+
+Learned weight ranges over time:
+
+| Factor | Weight range |
+|---|---|
+| Value | 0.15–0.27 |
+| GP/A | 0.10–0.21 |
+| SUE | 0.16–0.25 |
+| Momentum | 0.00–0.10 |
+| Low volatility | 0.31–0.40 |
+
+| Test | Discovery D (t) | Holdout D (t) | Holdout active TL / USD | Holdout turnover | Result |
+|---|---|---|---|---|---|
+| H-LW learned IC weights | −20.08% (−2.43) | −0.71% (−0.27) | 6.25% / 5.92% | 30.5% | **FAIL** |
+| E1 value + momentum 50/50 | −14.58% (−2.72) | −8.05% (−1.63) | −1.09% / −1.30% | 25.7% | exploratory |
+| E2 value + GP/A + momentum 1/3 | −8.59% (−2.00) | −9.17% (−1.77) | −2.21% / −2.30% | 19.7% | exploratory |
+
+**H-LW fails**, and in discovery it is significantly worse than plain value.
+
+Reading:
+- The IC rule gives low volatility the largest weight, because its rank IC is the highest. Phase 1, however, found a negative top-quintile active return for low volatility. A factor can rank the whole cross-section well and still not improve a concentrated top quintile. The IC weighting does not see this.
+- Mixing in other factors also dilutes the value tilt. This is the same pattern as H4a.
+- These readings are post-hoc explanations, not results.
+
+As pre-registered:
+- The live score stays plain value_sn.
+- The weekly weight-optimization job no longer runs on a schedule. Its schedule is removed from `.github/workflows/weekly-optimize.yml`, and manual dispatch stays available.
