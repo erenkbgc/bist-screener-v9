@@ -77,3 +77,33 @@ def test_composite_requires_value():
     df = pd.DataFrame({"value_sn_z": [1.0, np.nan], "gpa_z": [np.nan, 1.0]})
     c = ltr.composite(df, "gpa_z")
     assert c.iloc[0] == 0.5 and np.isnan(c.iloc[1])
+
+
+def test_learned_weights_use_only_past_months():
+    dates = pd.date_range("2015-01-31", periods=40, freq="ME")
+    ics = pd.DataFrame({"value_sn_z": 0.05, "gpa_z": -0.02, "sue_z": 0.0,
+                        "mom_12_1_z": 0.0, "vol60_z": 0.0}, index=dates)
+    # Son ayda devasa gpa IC'si: t = son ay icin agirliga GIRMEMELI
+    ics.loc[dates[-1], "gpa_z"] = 50.0
+    w = ltr.learned_ic_weights(ics, dates, min_months=36)
+    assert w.loc[dates[35]].isna().all()            # 35 gecmis ay < 36
+    assert w.loc[dates[36], "value_sn_z"] == 1.0    # gpa negatif -> 0
+    assert w.loc[dates[-1], "gpa_z"] == 0.0         # kendi ayi kullanilmaz
+    assert abs(w.loc[dates[36]].sum() - 1.0) < 1e-12
+
+
+def test_learned_weights_all_negative_fall_back_to_value():
+    dates = pd.date_range("2015-01-31", periods=3, freq="ME")
+    ics = pd.DataFrame({"value_sn_z": -0.01, "gpa_z": -0.02, "sue_z": -0.03,
+                        "mom_12_1_z": -0.01, "vol60_z": -0.01}, index=dates)
+    w = ltr.learned_ic_weights(ics, dates, min_months=1)
+    assert w.loc[dates[1], "value_sn_z"] == 1.0 and w.loc[dates[1]].sum() == 1.0
+
+
+def test_weighted_composite_requires_value_and_weights():
+    df = pd.DataFrame({"date": pd.to_datetime(["2020-01-31"] * 3 + ["2020-02-29"]),
+                       "value_sn_z": [1.0, np.nan, 0.5, 1.0], "gpa_z": [np.nan, 1.0, 2.0, 1.0]})
+    w = pd.DataFrame({"value_sn_z": [0.5, np.nan], "gpa_z": [0.5, np.nan]},
+                     index=pd.to_datetime(["2020-01-31", "2020-02-29"]))
+    s = ltr.weighted_composite(df, w)
+    assert s.iloc[0] == 0.5 and np.isnan(s.iloc[1]) and s.iloc[2] == 1.25 and np.isnan(s.iloc[3])
