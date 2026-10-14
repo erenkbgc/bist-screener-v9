@@ -107,3 +107,18 @@ def test_weighted_composite_requires_value_and_weights():
                      index=pd.to_datetime(["2020-01-31", "2020-02-29"]))
     s = ltr.weighted_composite(df, w)
     assert s.iloc[0] == 0.5 and np.isnan(s.iloc[1]) and s.iloc[2] == 1.25 and np.isnan(s.iloc[3])
+
+
+def test_foreign_signals_three_month_change_and_gaps():
+    months = pd.to_datetime(["2020-01-31", "2020-02-28", "2020-03-31", "2020-04-30", "2020-05-29"])
+    f = pd.DataFrame({"month": list(months) * 2, "ticker": ["A"] * 5 + ["B"] * 5,
+                      "foreign_pct": [10, 11, 12, 15, 20, 30, 30, np.nan, 31, 33]})
+    f = f.dropna()
+    s = ltr.foreign_signals(f).set_index(["date", "ticker"])
+    assert s.loc[(pd.Timestamp("2020-04-30"), "A"), "dfor3"] == 5      # 15 - 10
+    assert s.loc[(pd.Timestamp("2020-05-31"), "A"), "dfor3"] == 9      # 20 - 11, takvim ay sonu
+    assert np.isnan(s.loc[(pd.Timestamp("2020-03-31"), "A"), "dfor3"])  # 3 ay gecmis yok
+    assert s.loc[(pd.Timestamp("2020-04-30"), "B"), "dfor3"] == 1      # 31 - 30
+    assert s.loc[(pd.Timestamp("2020-05-31"), "B"), "dfor3"] == 3      # 33 - 30 (Subat)
+
+    assert (pd.Timestamp("2020-03-31"), "B") not in s.index             # eksik seviye satir uretmez
