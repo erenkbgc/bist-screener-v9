@@ -92,11 +92,15 @@ def sales_yield(c: dict) -> float | None:
 
 
 def ebit_yield(c: dict) -> float | None:
-    """EBIT/EV = faaliyet kari / (piyasa degeri + net borc) (pit_panel 'ey'). EV <= 0 ise None."""
+    """EBIT/EV = faaliyet kari / (piyasa degeri + net borc) (pit_panel 'ey'). EV <= 0 ise None.
+
+    Net borc bilinmiyorsa None: eksik veri 0 borc sayilirsa EV piyasa degerine
+    esitlenir ve borclu sirketin EBIT/EV'si sisar. Gercekten borcsuz sirket
+    net_debt'i 0 (veya negatif, net nakit) olarak tasir."""
     op, mcap, nd = c.get("op_profit_ttm"), c.get("market_cap"), c.get("net_debt")
-    if op is None or not _finite(op) or not mcap or mcap <= 0:
+    if op is None or not _finite(op) or not mcap or mcap <= 0 or nd is None or not _finite(nd):
         return None
-    ev = mcap + (nd if nd is not None and _finite(nd) else 0.0)
+    ev = mcap + nd
     return op / ev if ev > 0 else None
 
 

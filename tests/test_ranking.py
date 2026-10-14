@@ -130,4 +130,6 @@ def test_value_sn_metrics_match_research_definition():
     assert ebit_yield(c) == 60.0 / 1200.0
     assert book_to_market({"pb": -1.0}) is None
     assert ebit_yield({**c, "net_debt": -1500.0}) is None  # EV <= 0
+    assert ebit_yield({**c, "net_debt": None}) is None  # bilinmeyen borc 0 sayilmaz
+    assert ebit_yield({**c, "net_debt": 0.0}) == 60.0 / 1000.0
     assert sales_yield({"revenue_ttm": 1.0, "market_cap": None}) is None

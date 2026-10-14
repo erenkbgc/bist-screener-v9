@@ -270,7 +270,11 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
             ni = last.get("ttm_ni_parent")
             if ni is None or not np.isfinite(ni):
                 ni = last.get("ttm_net_income")
-            ev_val = mcap + (last.get("fin_debt") or 0.0) - (last.get("cash") or 0.0)
+            # Eksik borc/nakit 0 sayilmaz (borcsuz sirket satiri 0 olarak raporlar);
+            # bilinmeyen net borcla EV piyasa degerine esitlenip EBIT/EV sisiyordu.
+            fd, cash = last.get("fin_debt"), last.get("cash")
+            ev_val = (mcap + fd - cash) if fd is not None and cash is not None \
+                and np.isfinite(fd) and np.isfinite(cash) else np.nan
             # SUE: mevsimsel rastgele yuruyus (Foster-Olsen-Shevlin), son 8 degisimin std'si
             qn = avail["q_ni_parent"] if "q_ni_parent" in avail else pd.Series(dtype=float)
             sue = np.nan
@@ -290,7 +294,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
                 "ep": ni / mcap if ni is not None and np.isfinite(ni) else np.nan,
                 "sp": last.get("ttm_revenue") / mcap if last.get("ttm_revenue") else np.nan,
                 "ey": (last.get("ttm_op_profit") / ev_val) if (last.get("ttm_op_profit") is not None
-                                                               and np.isfinite(last.get("ttm_op_profit", np.nan)) and ev_val > 0) else np.nan,
+                                                               and np.isfinite(last.get("ttm_op_profit", np.nan)) and np.isfinite(ev_val) and ev_val > 0) else np.nan,
                 "gpa": (last.get("ttm_gross_profit") / ta) if (ta and ta > 0 and last.get("ttm_gross_profit") is not None) else np.nan,
                 "roe": (ni / eq) if (eq and eq > 0 and ni is not None and np.isfinite(ni)) else np.nan,
                 "mom_12_1": adj[i - 1] / adj[i - 12] - 1 if adj[i - 12] > 0 else np.nan,

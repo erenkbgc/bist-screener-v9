@@ -570,8 +570,10 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         if net_debt is None and bs is not None:
             fin_debt = _val(_row(bs, "Finansal Borçlar", "Kısa Vadeli Borçlanmalar", "Uzun Vadeli Borçlanmalar"))
             cash = _val(_row(bs, "Nakit ve Nakit Benzerleri", "Nakit ve Benzerleri"))
-            if fin_debt is not None or cash is not None:
-                net_debt = (fin_debt or 0.0) - (cash or 0.0)
+            # Iki kalem de gerekli: eksik kalem 0 sayilirsa net borc uydurulmus olur
+            # (pit_panel ile ayni kural; borcsuz sirket satiri 0 olarak raporlar).
+            if fin_debt is not None and cash is not None:
+                net_debt = fin_debt - cash
 
         if ebitda_ttm is None and inc is not None:
             op_inc = _val(_row(inc, "Net Faaliyet Kar/Zararı", "FAALİYET KARI (ZARARI)"))
