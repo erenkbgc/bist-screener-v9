@@ -4,7 +4,9 @@
 Soru: canli kural likiditesi dusuk veya finansal olarak sorunlu hisselerde mi
 yogunlasiyor? Panel: research_long_term.load() (finansal disi, likidite alt %30
 atilmis). Her ay ust dilim ve evren icin oranlar; aylarin ortalamasi raporlanir.
-Canli skoru DEGISTIRMEZ.
+Her oran yalnizca verisi olan satirlarda hesaplanir ve kapsama (_cov, %) ayrica
+raporlanir: eksik veri sorunsuz sayilmaz. Ozkaynak, panelin o ay kullandigi
+ceyrekten (ana ortaklik, yoksa toplam) alinir. Canli skoru DEGISTIRMEZ.
 
     python scripts/diagnose_pick_profile.py
 """
@@ -24,35 +26,59 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from research_long_term import SPLIT, load  # noqa: E402
 
 
-def profile(g: pd.DataFrame) -> dict:
-    chs_cut = g.attrs["chs_p90"]
-    return {
-        "median_tlvol60_mn": g["tlvol60"].median() / 1e6,
-        "net_loss_pct": 100 * (g["ep"] < 0).mean(),
-        "op_loss_pct": 100 * (g["ey"] < 0).mean(),
-        "no_positive_equity_pct": 100 * g["bm"].isna().mean(),
-        "chs_worst_decile_pct": 100 * (g["chs"] >= chs_cut).mean(),
-        "altman_distress_pct": 100 * (g["altman_em"] < 1.1).mean(),
-        "f7_le2_pct": 100 * (g["f7"] <= 2).mean(),
-        "dd5y_le_-70_pct": 100 * (g["dd_5y_pct"] <= -70).mean(),
-        "fwd_6m_xs_mean_pct": 100 * g["xs_6m"].mean(),
-        "trap_rate_pct": 100 * (g["xs_6m"] < -0.30).mean(),
-    }
+def rate_and_coverage(series: pd.Series, condition) -> dict:
+    """Oran yalnizca verisi olan satirlarda; eksik veri sagliksiz/saglikli sayilmaz."""
+    valid = series.notna()
+    return {"rate_pct": 100 * float(condition(series[valid]).mean()) if valid.any() else None,
+            "coverage_pct": 100 * float(valid.mean())}
+
+
+def equity_asof(df: pd.DataFrame, q: pd.DataFrame) -> pd.Series:
+    """Panelin o ay kullandigi ceyregin ozkaynagi (ana ortaklik, yoksa toplam; pit_panel ile ayni)."""
+    qq = q.assign(eq=q["equity_parent"].fillna(q["equity"]),
+                  available_at=pd.to_datetime(q["available_at"]).astype("datetime64[ns]"))
+    qq = qq[["ticker", "available_at", "eq"]].dropna(subset=["available_at"]).sort_values("available_at")
+    left = df[["ticker", "date"]].reset_index()
+    left = left.assign(date=pd.to_datetime(left["date"]).astype("datetime64[ns]")).sort_values("date")
+    m = pd.merge_asof(left, qq, left_on="date", right_on="available_at", by="ticker", direction="backward")
+    return m.set_index("index")["eq"].reindex(df.index)
+
+
+CHECKS = {
+    "net_loss": ("ep", lambda v: v < 0),
+    "op_loss": ("ey", lambda v: v < 0),
+    "equity_le_0": ("eq", lambda v: v <= 0),
+    "altman_em_lt_1.1": ("altman_em", lambda v: v < 1.1),
+    "f7_le2": ("f7", lambda v: v <= 2),
+    "dd5y_le_-70": ("dd_5y_pct", lambda v: v <= -70),
+    "trap_6m_xs_lt_-30": ("xs_6m", lambda v: v < -0.30),
+}
+
+
+def profile(g: pd.DataFrame, chs_cut: float) -> dict:
+    out = {"median_tlvol60_mn": g["tlvol60"].median() / 1e6,
+           "fwd_6m_xs_mean_pct": 100 * g["xs_6m"].mean()}
+    for name, (col, cond) in CHECKS.items():
+        rc = rate_and_coverage(g[col], cond)
+        out[f"{name}_pct"], out[f"{name}_cov"] = rc["rate_pct"], rc["coverage_pct"]
+    rc = rate_and_coverage(g["chs"], lambda v: v >= chs_cut)
+    out["chs_worst_decile_pct"], out["chs_worst_decile_cov"] = rc["rate_pct"], rc["coverage_pct"]
+    return out
 
 
 def main() -> None:
     df = load()
-    df = df[df["fwd_ret_1m"].notna()]
+    df = df[df["fwd_ret_1m"].notna()].copy()
+    df["eq"] = equity_asof(df, pd.read_parquet(ROOT / "data" / "research" / "quarterly.parquet"))
     rows = []
     for dt, g in df.groupby("date"):
         elig = g[g["value_sn_z"].notna()]
         if len(elig) < 30:
             continue
         top = elig.nlargest(max(1, round(0.2 * len(elig))), "value_sn_z")
+        chs_cut = g["chs"].quantile(0.9)
         for name, part in (("top20", top), ("universe", g)):
-            part = part.copy()
-            part.attrs["chs_p90"] = g["chs"].quantile(0.9)
-            rows.append({"date": dt, "group": name, **profile(part)})
+            rows.append({"date": dt, "group": name, **profile(part, chs_cut)})
     p = pd.DataFrame(rows)
     p["period"] = (p["date"] >= SPLIT).map({False: "discovery", True: "holdout"})
     table = p.groupby(["period", "group"]).mean(numeric_only=True).round(2)
