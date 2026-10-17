@@ -255,6 +255,17 @@ def _quarterly_statements_cached(ticker: str):
         return None, None
 
 
+@lru_cache(maxsize=1)
+def _cpi_index_cached():
+    """TUFE endeksi (TUIK aylik degisim zinciri), TMS 29 sabit birim TTM icin (C1)."""
+    from core import pit_panel
+    try:
+        t = bp.Inflation().tufe()
+        return pit_panel.cpi_index(t["MonthlyInflation"].astype(float))
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def live_value_inputs(ticker: str, market_cap: float | None) -> dict:
     """value_sn'in dort orani, test edilen panelle AYNI tanimla (pit_panel.value_ratios):
     son yayinlanmis ceyrek, TTM net kar / satis / faaliyet kari, ayni ceyregin
@@ -262,7 +273,10 @@ def live_value_inputs(ticker: str, market_cap: float | None) -> dict:
     F/K, PD/DD ile DOLDURULMAZ: docs/research/live_vs_panel_audit.md)."""
     from core import pit_panel
     bs, inc = _quarterly_statements_cached(ticker)
-    vi = pit_panel.latest_value_ratios(ticker, bs, inc, market_cap)
+    # TMS 29 akislari ortak satin alma gucunde (C1, ias29_constant_unit_ttm_preregistration.md).
+    # TUFE alinamazsa tum kosu C0 ile hesaplanir ve kayitta ttm_unit ile isaretlenir.
+    cpi = _cpi_index_cached()
+    vi = pit_panel.latest_value_ratios(ticker, bs, inc, market_cap, cpi=cpi)
     clean = lambda v: None if isinstance(v, float) and not math.isfinite(v) else v  # noqa: E731
     out = {k: clean(v) for k, v in vi.items() if k != "inputs"}
     out["inputs"] = {k: clean(v) for k, v in vi["inputs"].items()}
@@ -272,6 +286,7 @@ def live_value_inputs(ticker: str, market_cap: float | None) -> dict:
     out["kap_available_at"] = ((pub.date() + timedelta(days=1)) if pub.hour >= pit_panel.SESSION_CLOSE_HOUR
                                else pub.date()).isoformat() if pub else None
     out["source"] = "isyatirim_quarterly_ytd"
+    out["ttm_unit"] = "C1_constant_unit" if cpi is not None else "C0_fallback_no_cpi"
     out["observed_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     return out
 

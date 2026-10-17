@@ -179,3 +179,24 @@ def test_ias29_constant_unit_ttm():
     a = pit_panel.quarterly_table(pd.DataFrame(old), cpi=cpi)
     b = pit_panel.quarterly_table(pd.DataFrame(old))
     pd.testing.assert_frame_equal(a, b)
+
+
+def test_live_value_inputs_use_constant_unit_ttm(monkeypatch):
+    """Canli value_inputs, panelle ayni C1 tanimini (TUFE ile sabit birim TTM) kullanir;
+    TUFE yoksa C0'a duser ve bunu ttm_unit ile kaydeder."""
+    from core import live_data as ld
+    from core import pit_panel
+    bs, inc, _ = _ytd_statements(9)
+    months = pd.period_range("2024-01", "2026-12", freq="M")
+    cpi = pd.Series(1.02 ** np.arange(len(months)), index=months)
+    monkeypatch.setattr(ld, "_quarterly_statements_cached", lambda tk: (bs, inc))
+    monkeypatch.setattr(ld, "live_financial_report_published_dt", lambda tk, pe: None)
+    monkeypatch.setattr(ld, "_cpi_index_cached", lambda: cpi)
+    vi = ld.live_value_inputs("X", 400.0)
+    ref = pit_panel.latest_value_ratios("X", bs, inc, 400.0, cpi=cpi)
+    c0 = pit_panel.latest_value_ratios("X", bs, inc, 400.0)
+    assert vi["ttm_unit"] == "C1_constant_unit"
+    assert vi["sp"] == pytest.approx(ref["sp"]) and vi["sp"] != pytest.approx(c0["sp"])
+    monkeypatch.setattr(ld, "_cpi_index_cached", lambda: None)
+    fb_ = ld.live_value_inputs("X", 400.0)
+    assert fb_["ttm_unit"] == "C0_fallback_no_cpi" and fb_["sp"] == pytest.approx(c0["sp"])
