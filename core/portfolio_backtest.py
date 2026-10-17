@@ -66,11 +66,14 @@ def liq_percentile(adv: float, universe_liq: np.ndarray) -> float:
     return float(np.searchsorted(universe_liq, adv, side="right") / len(universe_liq))
 
 
-def simulate(targets: dict[pd.Timestamp, list[str]], months: list[pd.Timestamp],
+def simulate(targets: dict[pd.Timestamp, list[str] | None], months: list[pd.Timestamp],
              d0_of: dict[pd.Timestamp, pd.Timestamp], mkt: Market,
              universe_liq: dict[pd.Timestamp, np.ndarray], capital_tl: dict[pd.Timestamp, float],
              costs: Costs = Costs(), fill: str = "close", haircut: float = 0.0) -> pd.DataFrame:
-    """Doner: ay t satirlari (d0_t -> d0_{t+1} NAV getirisi ve t dengelemesinin maliyeti)."""
+    """Doner: ay t satirlari (d0_t -> d0_{t+1} NAV getirisi ve t dengelemesinin maliyeti).
+
+    targets[t] None ise t'de islem yapilmaz (karar uretilemeyen ay, ileriye donuk
+    kayit): pozisyonlar tasinir, satir maliyetsiz ve devir 0 olarak yazilir."""
     days = mkt.close.index
     pos_of = {d: i for i, d in enumerate(days)}
     close = mkt.close.to_numpy(dtype=float)
@@ -112,6 +115,10 @@ def simulate(targets: dict[pd.Timestamp, list[str]], months: list[pd.Timestamp],
 
     def rebalance(i: int, t: pd.Timestamp, px: np.ndarray) -> None:
         nonlocal cash
+        if t in targets and targets[t] is None:
+            month_log[t] = {"commission": 0.0, "spread": 0.0, "impact": 0.0, "buy": 0.0, "fills": 0,
+                            "fills_over_10pct_adv": 0, "n_held": len(values)}
+            return
         nav = cash + sum(values.values())
         cap = capital_tl[t]
         ref = i - 1  # d0: islem oncesi bilinen ADV/sigma

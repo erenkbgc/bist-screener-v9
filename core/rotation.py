@@ -134,15 +134,19 @@ def decision_details(candidates: list[dict], health: dict | None = None) -> dict
     ranking = []
     for i, c in enumerate(pool):
         fnd = c.get("_raw_fundamentals") or {}
+        vi = c.get("value_inputs") or {}
         ranking.append({
             "rank": i + 1, "ticker": c["ticker"], "valuation_z": c["valuation_z"],
             "valid_metric_count": c.get("valid_metric_count"), **value_sn_ratios(c),
             "tl_vol_med60": c.get("tl_vol_med60"), "market_cap": c.get("market_cap"),
             "close": c.get("current_price"), "price_date": c.get("price_date"),
-            "statement_period": ((c.get("value_inputs") or {}).get("stmt_period")
-                                 or (fnd.get("_raw") or {}).get("_statement_period")),
-            "published_at": fnd.get("published_at"), "effective_at": fnd.get("effective_at"),
-            "pit_source": fnd.get("pit_source"),
+            # Kullanilan ceyrek ve ONUN KAP yayini (value_inputs); value_inputs yoksa (mock) bos
+            "statement_period": vi.get("stmt_period"), "statement_period_end": vi.get("stmt_period_end"),
+            "kap_published_at": vi.get("kap_published_at"), "kap_available_at": vi.get("kap_available_at"),
+            "value_source": vi.get("source"), "observed_at": vi.get("observed_at"),
+            "inputs": vi.get("inputs"),
+            # Temel veri katmaninin kendi donemi (hard filter'in point_in_time kontrolu)
+            "fundamentals_period_end": fnd.get("period_end"), "fundamentals_pit_source": fnd.get("pit_source"),
         })
     long_term = [c for c in candidates if c.get("bucket") == "long_term" and not is_financial(c)]
     price_dates = [r["price_date"] for r in ranking if r["price_date"]]

@@ -59,24 +59,60 @@ def test_series_split_on_version_change():
     assert [len(s) for s in rep.series_by_version(ds)] == [2, 1]
 
 
+DAYS = pd.bdate_range("2026-11-02", "2027-02-26")
+ZERO = rep.pb.Costs(commission_bps=0, spread_bps=(0, 0, 0), impact_k=0, impact_cap=0)
+
+
+def _frame(px):
+    return pd.DataFrame({"Close": px, "Open": px, "adv": 1e12, "sigma": 0.0})
+
+
+def _dec(day, holdings, version="v"):
+    return {"rebalance_date": str(pd.Timestamp(day).date()), "rule_version": version,
+            "holdings": holdings, "universe": ["A", "B"]}
+
+
+def _pos(day):
+    return DAYS.get_loc(pd.Timestamp(day))
+
+
 def test_evaluate_prices_recorded_decisions():
-    days = pd.bdate_range("2026-11-02", periods=50)
-    up = pd.Series(100 * 1.01 ** np.arange(50), index=days)  # A her gun +%1
-    flat = pd.Series(100.0, index=days)
-
-    def frame(px):
-        return pd.DataFrame({"Close": px, "Open": px, "adv": 1e12, "sigma": 0.0})
-
-    series = [{"rebalance_date": str(days[0].date()), "rule_version": "v", "holdings": ["A"], "universe": ["A", "B"]},
-              {"rebalance_date": str(days[20].date()), "rule_version": "v", "holdings": ["A"], "universe": ["A", "B"]}]
-    zero = rep.pb.Costs(commission_bps=0, spread_bps=(0, 0, 0), impact_k=0, impact_cap=0)
-    p = rep.evaluate(series, {"A": frame(up), "B": frame(flat)}, flat * 1.0, costs=zero)
-    assert len(p) == 1
-    # ertesi gun kapanisinda alinir: 20 gunluk pencerede 19 gun getiri
-    assert np.isclose(p.iloc[0]["port"], 1.01 ** 19 - 1)
-    assert np.isclose(p.iloc[0]["bench"], (1.01 ** 20 - 1) / 2)
+    up = pd.Series(1.01 ** np.arange(len(DAYS)), index=DAYS)  # A her gun +%1
+    flat = pd.Series(1.0, index=DAYS)
+    series = [_dec("2026-11-02", ["A"]), _dec("2026-12-01", ["A"]), _dec("2027-01-04", ["A"])]
+    p = rep.evaluate(series, {"A": _frame(up), "B": _frame(flat)}, flat, costs=ZERO)
+    # Kasim, Aralik, Ocak tamamlandi (Subat capasi 2027-02-01 son donemi kapatir)
+    assert list(p["date"].dt.strftime("%Y-%m")) == ["2026-11", "2026-12", "2027-01"]
+    # ertesi gun kapanisinda alinir: ilk donemde bir gun eksik getiri
+    n1 = _pos("2026-12-01") - _pos("2026-11-02")
+    assert np.isclose(p.iloc[0]["port"], 1.01 ** (n1 - 1) - 1)
+    assert np.isclose(p.iloc[0]["bench"], (1.01 ** n1 - 1) / 2)
     assert p.iloc[0]["xu"] == 0.0
-    assert rep.summarize(p)["periods"] == 1
+    assert rep.summarize(p)["periods"] == 3
+
+
+def test_missing_month_is_carried_as_its_own_period():
+    """Aralikta karar yok: pozisyon islemsiz tasinir, Aralik ayri bir aylik donemdir
+    (iki aylik getiri tek gozlem olarak yilliklastirilmaz)."""
+    up = pd.Series(1.01 ** np.arange(len(DAYS)), index=DAYS)
+    flat = pd.Series(1.0, index=DAYS)
+    series = [_dec("2026-11-02", ["A"]), _dec("2027-01-04", ["B"])]
+    p = rep.evaluate(series, {"A": _frame(up), "B": _frame(flat)}, flat, costs=ZERO)
+    assert list(p["date"].dt.strftime("%Y-%m-%d")) == ["2026-11-02", "2026-12-01", "2027-01-04"]
+    dec = p.set_index(p["date"].dt.strftime("%Y-%m"))
+    assert list(dec["decision"]) == [True, False, True]
+    assert dec.loc["2026-12", "turnover"] == 0 and dec.loc["2026-12", "cost"] == 0
+    n_dec = _pos("2027-01-04") - _pos("2026-12-01")  # Aralik capasi: 2026-12-01 kapanisi
+    assert np.isclose(dec.loc["2026-12", "port"], 1.01 ** n_dec - 1)  # A tasindi
+    s = rep.summarize(p)
+    assert s["periods"] == 3 and s["periods_carried_without_decision"] == 1
+
+
+def test_schedule_closes_series_at_next_version():
+    series = [_dec("2026-11-02", ["A"]), _dec("2026-12-01", ["A"])]
+    sched = rep.schedule(series, pd.Timestamp("2027-03-31"), stop=pd.Timestamp("2027-02-01"))
+    assert [t.strftime("%Y-%m-%d") for t, _ in sched] == ["2026-11-02", "2026-12-01", "2027-01-01", "2027-02-01"]
+    assert [r is None for _, r in sched] == [False, False, True, True]
 
 
 def test_no_decision_recorded_until_month_decided(tmp_path):
@@ -105,31 +141,35 @@ def test_decision_details_records_ratios_and_dates():
               "valuation_z": float(i), "tl_vol_med60": 1e9 + i, "market_cap": 1e9, "eps_ttm": 1.0,
               "shares_outstanding": 1e8, "valid_metric_count": 2, "current_price": 10.0,
               "price_date": f"2026-11-0{1 + i % 2}",
-              "_raw_fundamentals": {"published_at": "2026-08-10", "pit_source": "kap_financial_report",
-                                    "_raw": {"_statement_period": "2026/6"}}} for i in range(10)]
+              "_raw_fundamentals": {"period_end": "2026-09-30", "pit_source": "observed_at_ingest"},
+              "value_inputs": {"bm": 0.5, "ep": 0.1, "sp": 1.0, "ey": None, "stmt_period": "2026Q2",
+                               "stmt_period_end": "2026-06-30", "kap_published_at": "2026-08-10T18:30",
+                               "kap_available_at": "2026-08-11", "source": "isyatirim_quarterly_ytd",
+                               "observed_at": "2026-11-01T15:31:00+00:00",
+                               "inputs": {"market_cap": 1e9, "equity": 5e8}}} for i in range(10)]
     d = rotation.decision_details(cands, {"status": "OK", "issues": [], "config_hash": "h", "metrics": {}})
     assert d["counts"] == {"long_term_nonfinancial": 10, "eligible": 10, "pool": 7}  # alt %30 likidite
     top = d["ranking"][0]
     assert top["rank"] == 1 and top["ticker"] == "T9" and top["valid_metric_count"] == 2
-    assert set(top) >= {"ep", "bm", "sp", "ey"} and top["statement_period"] == "2026/6"
+    assert set(top) >= {"ep", "bm", "sp", "ey"} and top["statement_period"] == "2026Q2"
+    # yayin tarihi KULLANILAN ceyregin (2026Q2), temel veri katmaninin sorguladigi donemin degil
+    assert top["kap_published_at"] == "2026-08-10T18:30" and top["kap_available_at"] == "2026-08-11"
+    assert top["fundamentals_period_end"] == "2026-09-30" and top["inputs"]["equity"] == 5e8
     assert d["price_date_max"] == "2026-11-02" and d["health"]["status"] == "OK"
 
 
 def test_cash_earns_policy_rate_and_delist_haircut():
-    days = pd.bdate_range("2026-11-02", periods=60)
-    rf = rep.pb.policy_rf_daily(pd.Series([36.0], index=pd.PeriodIndex(["2026-11"], freq="M")), days)
-    assert np.isclose((1 + rf).prod() ** (252 / 60), 1.36)  # seri bitince son faiz surer
-    gone = pd.Series(100.0, index=days).where(np.arange(60) < 10)  # A 10. gunden sonra islem gormez
-
-    def frame(px):
-        return pd.DataFrame({"Close": px, "Open": px, "adv": 1e12, "sigma": 0.0})
-
-    series = [{"rebalance_date": str(days[0].date()), "rule_version": "v", "holdings": ["A"], "universe": ["A", "B"]},
-              {"rebalance_date": str(days[50].date()), "rule_version": "v", "holdings": ["B"], "universe": ["A", "B"]}]
-    zero = rep.pb.Costs(commission_bps=0, spread_bps=(0, 0, 0), impact_k=0, impact_cap=0)
-    frames = {"A": frame(gone), "B": frame(pd.Series(100.0, index=days))}
-    base = rep.evaluate(series, frames, pd.Series(100.0, index=days), rf, costs=zero)
-    cut = rep.evaluate(series, frames, pd.Series(100.0, index=days), rf, costs=zero, haircut=0.5)
+    rf = rep.pb.policy_rf_daily(pd.Series([36.0], index=pd.PeriodIndex(["2026-11"], freq="M")), DAYS)
+    assert np.isclose((1 + rf.iloc[:60]).prod() ** (252 / 60), 1.36)  # seri bitince son faiz surer
+    gone = pd.Series(100.0, index=DAYS).where(np.arange(len(DAYS)) < 5)  # A 5. gunden sonra islem gormez
+    frames = {"A": _frame(gone), "B": _frame(pd.Series(100.0, index=DAYS))}
+    series = [_dec("2026-11-02", ["A"]), _dec("2027-01-04", ["B"])]
+    flat = pd.Series(100.0, index=DAYS)
+    base = rep.evaluate(series, frames, flat, rf, costs=ZERO)
+    cut = rep.evaluate(series, frames, flat, rf, costs=ZERO, haircut=0.5)
     assert base.attrs["delist_events"] == 1 and rep.summarize(base)["delist_events"] == 1
-    assert base.iloc[0]["port"] > 0  # delist sonrasi nakit faiz kazanir
-    assert np.isclose(1 + cut.iloc[0]["port"], (1 + base.iloc[0]["port"]) / 2, rtol=0.05)
+    # Kasim+Aralik (tasima) boyunca: once A, delist sonrasi nakit faiz kazanir
+    two = (1 + base.iloc[0]["port"]) * (1 + base.iloc[1]["port"])
+    two_cut = (1 + cut.iloc[0]["port"]) * (1 + cut.iloc[1]["port"])
+    assert two > 1
+    assert np.isclose(two_cut, two / 2, rtol=0.05)
