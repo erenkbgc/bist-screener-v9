@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/CI-465%20passed%2C%204%20skipped-brightgreen)
+![Tests](https://img.shields.io/badge/CI-468%20passed%2C%204%20skipped-brightgreen)
 ![Backtest](https://img.shields.io/badge/backtest-walk--forward-blueviolet)
 ![Status](https://img.shields.io/badge/status-research%20%E2%80%94%20pre--registered%20value%20rule-orange)
 
@@ -19,7 +19,7 @@
 > This project is for research and decision support only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns are model outputs, not guarantees of future performance.
 
 > **Status (2026-10-17)**
-> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 22 pre-registered studies, the only new signal that passed is the sovereign spread, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. After the same costs, the value rule beats its own equal-weighted universe in 2021+ (+6.9%/yr, t 2.6). It trails BIST 100 total return (−1.7%/yr, t −0.3), because the equal-weighted, non-financial universe itself lagged the bank-heavy index. Adding 39 delisted stocks cuts its 2013–2020 edge by about 2.4%/yr; the ranking itself holds. The 2021+ edge sits close to the t = 2 threshold, so labels such as lag- or survivorship-sensitive flip with small definition changes (see [`c1_panel_rebuild.md`](docs/research/c1_panel_rebuild.md)). Figures are on the C1 panel (IAS 29 flows in one purchasing-power unit) unless a study row says otherwise. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
+> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 24 pre-registered studies, the only new signal that passed is the sovereign spread, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. After the same costs, the value rule beats its own equal-weighted universe in 2021+ (+6.9%/yr, t 2.6). It trails BIST 100 total return (−1.7%/yr, t −0.3), because the equal-weighted, non-financial universe itself lagged the bank-heavy index. Adding 39 delisted stocks cuts its 2013–2020 edge by about 2.4%/yr; the ranking itself holds. The 2021+ edge sits close to the t = 2 threshold, so labels such as lag- or survivorship-sensitive flip with small definition changes (see [`c1_panel_rebuild.md`](docs/research/c1_panel_rebuild.md)). Figures are on the C1 panel (IAS 29 flows in one purchasing-power unit) unless a study row says otherwise. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
 
 ---
 
@@ -426,7 +426,7 @@ The usual pass rule is:
 
 Predictive macro tests also need a positive out-of-sample R² and a significant Clark-West test. Each study document gives its exact rule, its data and its known limits.
 
-**Scorecard: 23 studies (22 pre-registered plus the Phase 1 diagnostics), dozens of confirmatory tests, one confirmatory PASS** (the sovereign spread *explains* BIST in the same month). Some rules were confirmed, though not as passes against a stricter alternative:
+**Scorecard: 25 studies (24 pre-registered plus the Phase 1 diagnostics), dozens of confirmatory tests, one confirmatory PASS** (the sovereign spread *explains* BIST in the same month). Some rules were confirmed, though not as passes against a stricter alternative:
 - value_sn ranks stocks (`long_term`), also under IAS 29 at a lower IC (`ias29_regime`);
 - the live rule survives realistic costs against the EW universe (`portfolio_backtest`), also when the universe pays the same costs (`total_return_benchmarks`). It does **not** beat BIST 100 total return.
 
@@ -474,6 +474,8 @@ No test found a way to time the market or to beat the value rule.
 | [`survivorship_delisted_preregistration.md`](docs/research/survivorship_delisted_preregistration.md) | Does value survive adding delisted stocks (İş Yatırım prices + statements for 39 exits, 2013–2022)? | By the rule: **survivorship-fragile** (KAP-date panel). The KAP-date baseline already fails holdout (t 1.99); with delistings: discovery +9.26% → +6.95%/yr (t 2.13), holdout +5.14% → +5.06% (t 1.94). On the 75/100-day panel it holds in every spec, including a −100% exit for all. The exit-return assumption does not matter: failing stocks drop below the liquidity cut before they exit. The loss comes from value traps while they are still listed (−1.39%/month active). Same result under the current net-debt rule (baseline rebuilt from cache: identical; 0 delisted rows changed). Live rule unchanged. C1 panel: S1 holdout +5.56%/yr (t 2.26) → SURVIVES_ROBUST_TO_WORST_CASE; the pre-registered C0 verdict stays on record (see `c1_panel_rebuild.md`) |
 | [`ias29_regime_preregistration.md`](docs/research/ias29_regime_preregistration.md) | Does value_sn still rank stocks once statements are inflation-adjusted (IAS 29, periods from 2023-12)? | CONSISTENT by the rule. IAS 29 months (2024-05 →, 28): IC +0.034 (t 2.18) vs +0.077 in nominal 2021–2024; net active +2.98%/yr (t 0.70); difference −2.51%/yr (t −0.49). Exploratory: S/P IC turns negative after the switch (both panels); not acted on. Live rule unchanged. C1 panel: ADJ +4.14%/yr (t 1.06), ADJ − NOM −1.35 (t −0.28); still CONSISTENT |
 | [`ias29_constant_unit_ttm_preregistration.md`](docs/research/ias29_constant_unit_ttm_preregistration.md) | Under IAS 29, should YTD flows be put into one purchasing-power unit before forming quarters and TTM (non-inferiority)? | ADOPT_C1. Pre-IAS 29 rows unchanged (0 mismatches). In IAS 29 months: IC unchanged (paired t −0.21), net active +1.16%/yr (t 1.43). The S/P sign flip remains, so it is not a unit artefact |
+| [`value_ablation_preregistration.md`](docs/research/value_ablation_preregistration.md) | Does removing `S/P` (`V1: bm+ep+ey`) or restricting `value_sn` to `bm+ep` (`V2`) improve ranking and costed portfolio returns? | Both `KEEP_V0`. `ey` (`EBIT/EV`) is the strongest single leg (IC +0.042 discovery, +0.053 holdout); dropping it (`V2`) hurts IC in both periods (t −2.42, −2.00). Dropping `S/P` (`V1`) improves IAS 29 Rank-IC (+0.0088, t 4.01) and raises holdout costed active vs `EW net` from +6.89% (t 2.55) to +8.84%/yr (t 3.31; paired D +1.95%/yr, t 1.44), but lost −2.55%/yr (t −1.21) in 2013–2020 discovery. Live rule stays `V0`; `V1` tracked as IAS 29 shadow composite |
+| [`bist_factor_reconciliation_preregistration.md`](docs/research/bist_factor_reconciliation_preregistration.md) | Why do academic BIST factor findings (Gökçen 2026: size, profitability, momentum, low risk) differ from our liquid screener tests? | Reconciled across 4 dimensions: (1) **Size** (+33.7%/yr, t 3.12 unfiltered) lives in the bottom 30% illiquid microcaps; on `liq_drop = 0.30` holdout IC is −0.057 (t −2.45). (2) **Profitability:** `OP/A` (IC +0.030, t 4.23) and `ROE` (holdout IC +0.037, t 3.78) beat `GP/A`, but add negative Fama-MacBeth slope alongside `value_sn` in discovery because `ep` and `ey` already capture earnings. (3) **Momentum:** `6-1` long-short `Q5−Q1` is +10.6%/yr (t 2.30), but long-only `Q5 − Univ` is +2.6%/yr (t 0.91). (4) **Low vol:** 100% high-vol loser avoidance (`Q1 − Univ` −8.6%/yr, t −2.51; `Q5 − Univ` −1.0%/yr, t −0.27); pre-filtering `Q1` from `value_sn` costs −1.84%/yr (t −1.33) |
 | [`learned_weights_preregistration.md`](docs/research/learned_weights_preregistration.md) | Do factor weights learned month by month from past ICs (value, GP/A, SUE, momentum, low vol) beat plain value? | FAIL. D −20.08%/yr discovery (t −2.43), −0.71%/yr holdout (t −0.27). Low vol gets the largest weight (high IC) but does not help the top quintile. Value + momentum and value + GP/A + momentum (exploratory) are worse. The unused weekly optimizer is switched off |
 | [`foreign_ownership_preregistration.md`](docs/research/foreign_ownership_preregistration.md) | Does a rising foreign share (3-month change, İş Yatırım/MKK history from 2013-06) predict returns or improve value? | Both FAIL. Standalone −3.07%/yr discovery, +5.46%/yr holdout (sign flips); value + foreign change −5.93%/yr and −1.90%/yr vs value. Foreign level flips sign too (exploratory) |
 | [`entry_timing_preregistration.md`](docs/research/entry_timing_preregistration.md) | Better entry than the next close? | No. Limit/RSI/SMA rules lost to buying immediately |
@@ -630,7 +632,7 @@ The pipeline is idempotent: a second run for the same `as_of_date` after a sent 
 
 | Workflow | Schedule | Steps |
 |---|---|---|
-| `ci.yml` | push / PR to `master` | `pytest`: 465 passed, 4 skipped (4 test functions need research-only packages, `statsmodels` and `hijridate`, which CI does not install), config/schema checks |
+| `ci.yml` | push / PR to `master` | `pytest`: 468 passed, 4 skipped (4 test functions need research-only packages, `statsmodels` and `hijridate`, which CI does not install), config/schema checks |
 | `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live; KAP red-flag fetch and LLM labels inside) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry). Secrets: `SMTP_*`, `MAIL_*`, `GROQ_API_KEY` (optional) |
 | `kap-llm-smoke.yml` | manual | Checks the LLM provider with 4 sample disclosures and lists available models |
 | `weekly-optimize.yml` | manual only (schedule off since 2026-10-14) | `scripts/optimize_weights.py` → cone $`z`$, ML ensemble → commit `config/weights_optimized.json`. The live score does not read the output; the learned-weights test failed |
@@ -663,7 +665,7 @@ bist-screener-v9/
 ├── config/               # weights.yaml, equity_risk_premium.yaml, transaction_costs.yaml, ...
 ├── data/                 # bist_history.db, reports/ (committed by CI), research/ (ignored)
 ├── docs/research/        # pre-registrations and results
-├── tests/                # 469 tests (465 passed + 4 skipped in CI; 4 need research-only packages)
+├── tests/                # 472 tests (468 passed + 4 skipped in CI; 4 need research-only packages)
 ├── run.py                # daily orchestrator
 └── dashboard.py          # read-only Streamlit
 ```
@@ -717,7 +719,7 @@ streamlit run dashboard.py
 pytest tests/ -q
 ```
 
-469 tests. CI reports `465 passed, 4 skipped` (`465 + 4 = 469`): it does not install `requirements-research.txt`, so the 3 test functions that need `statsmodels` (`test_industrial_production.py`, `test_sovereign_spread.py`) and the 1 test function that needs `hijridate` (`test_ramadan_holiday.py`) are skipped at function level. With `requirements-research.txt` installed, all 469 pass. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
+472 tests. CI reports `468 passed, 4 skipped` (`468 + 4 = 472`): it does not install `requirements-research.txt`, so the 3 test functions that need `statsmodels` (`test_industrial_production.py`, `test_sovereign_spread.py`) and the 1 test function that needs `hijridate` (`test_ramadan_holiday.py`) are skipped at function level. With `requirements-research.txt` installed, all 472 pass. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
 
 ---
 
