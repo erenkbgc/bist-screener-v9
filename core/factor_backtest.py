@@ -71,17 +71,29 @@ def sector_neutralize(df: pd.DataFrame, col: str, min_n: int = 5) -> pd.Series:
 
 
 def newey_west_t(x: pd.Series | np.ndarray, lags: int) -> tuple[float, float, int]:
-    """Ortalama, HAC t-istatistigi (Bartlett cekirdegi), gozlem sayisi."""
-    x = np.asarray(pd.Series(x).dropna(), dtype=float)
-    n = len(x)
+    """Ortalama, HAC t-istatistigi (Bartlett cekirdegi), gozlem sayisi.
+
+    Ic bosluklar (NaN) silinmez; sifir artikla yerinde tutulur ki gecikme k gercek
+    takvim araligini korusun (aylik PeriodIndex varsa eksik takvim aylari da eklenir).
+    """
+    s = pd.Series(x, copy=False, dtype=float)
+    valid = np.isfinite(s.to_numpy(dtype=float))
+    n = int(valid.sum())
     if n < 3:
         return float("nan"), float("nan"), n
-    m = x.mean()
-    e = x - m
-    var = e @ e / n
-    for k in range(1, min(lags, n - 1) + 1):
+    idx = np.flatnonzero(valid)
+    s = s.iloc[idx[0]:idx[-1] + 1]
+    if (isinstance(s.index, pd.PeriodIndex) and s.index.freqstr
+            and s.index.freqstr.startswith("M") and s.index.is_monotonic_increasing and s.index.is_unique):
+        s = s.reindex(pd.period_range(s.index[0], s.index[-1], freq="M"))
+    arr = s.to_numpy(dtype=float)
+    ok = np.isfinite(arr)
+    m = float(arr[ok].mean())
+    e = np.where(ok, arr - m, 0.0)
+    var = float(e @ e) / n
+    for k in range(1, min(lags, len(e) - 1) + 1):
         w = 1 - k / (lags + 1)
-        var += 2 * w * (e[k:] @ e[:-k]) / n
+        var += 2 * w * float(e[k:] @ e[:-k]) / n
     se = math.sqrt(var / n) if var > 0 else float("nan")
     return m, (m / se if se and se > 0 else float("nan")), n
 

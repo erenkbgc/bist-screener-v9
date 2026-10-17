@@ -84,3 +84,31 @@ def test_ew_benchmark_invalid_when_universe_coverage_low():
     s = rep.summarize(q)
     assert s["ew_universe_invalid_periods"] == len(q) and s["ew_universe_min_coverage_pct"] == 90.0
     assert s["cum_ew_universe_pct"] is None
+
+
+def test_ew_benchmark_rejects_stale_ffill_gap_and_measures_price_age():
+    """Onceki ayda fiyati bulunan fakat sonraki ay boyunca fiyati eksik kalan hisse,
+    ffill() ile sifir getirili gozlem gibi kapsama hesabina girmemeli; fiyat yasi olculmeli."""
+    flat = _frame(pd.Series(1.0, index=DAYS))
+    uni = [f"U{i}" for i in range(10)]
+    # U9 Kasim'da islem goruyor, Aralik boyunca fiyati NaN (bosluk)
+    stale_px = pd.Series(1.0, index=DAYS).where(DAYS <= "2026-12-01")
+    frames = {tk: flat for tk in uni[:9]}
+    frames["U9"] = _frame(stale_px)
+    series = [{"rebalance_date": "2026-11-02", "rule_version": "v", "holdings": ["U0"], "universe": uni},
+              {"rebalance_date": "2026-12-01", "rule_version": "v", "holdings": ["U0"], "universe": uni},
+              {"rebalance_date": "2027-01-04", "rule_version": "v", "holdings": ["U0"], "universe": uni}]
+    p = rep.evaluate(series, frames, pd.Series(1.0, index=DAYS))
+    # 1. donem (Kasim): U9'un baslangic ve bitis fiyati gozlemlenebilir -> %100 kapsama
+    assert p.iloc[0]["bench_coverage"] == 1.0 and np.isfinite(p.iloc[0]["bench_net"])
+    assert p.iloc[0]["bench_max_price_age"] == 0
+    # 2. donem (Aralik): U9'un donem sonu fiyati eksik -> kapsama %90 (< %95), EW gecersiz
+    assert np.isclose(p.iloc[1]["bench_coverage"], 0.9)
+    assert np.isnan(p.iloc[1]["bench_net"]) and np.isnan(p.iloc[1]["bench_gross"])
+    assert p.iloc[1]["bench_max_price_age"] >= 20  # 1 ay boyunca islem gormedi
+    s = rep.summarize(p)
+    assert s["ew_universe_invalid_periods"] == 1
+    assert s["ew_universe_min_coverage_pct"] == 90.0
+    assert s["ew_universe_max_price_age_days"] == int(p.iloc[1]["bench_max_price_age"])
+    assert s["cum_ew_universe_net_pct"] is None and s["cum_ew_universe_gross_pct"] is None
+
