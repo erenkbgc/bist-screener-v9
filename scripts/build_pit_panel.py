@@ -91,7 +91,12 @@ def main() -> None:
                 print(f"  {n}/{len(tickers)}", flush=True)
 
     long = pd.concat([x for x in longs if not x.empty], ignore_index=True)
-    q = pit_panel.quarterly_table(long)
+    # TMS 29 akislari ortak satin alma gucunde (C1); macro_monthly yoksa C0
+    macro_path = OUT / "macro_monthly.parquet"
+    cpi = pit_panel.cpi_index(pd.read_parquet(macro_path)["cpi_mom"]) if macro_path.exists() else None
+    if cpi is None:
+        print("UYARI: macro_monthly.parquet yok; TTM C0 (TMS 29 birim duzeltmesi yok).")
+    q = pit_panel.quarterly_table(long, cpi=cpi)
     archive = OUT / "kap_archive.parquet"
     if archive.exists():  # gercek KAP yayin tarihleri (kap_report_dates_preregistration.md, varyant B)
         q = pit_panel.apply_report_dates(q, pit_panel.kap_report_dates(pd.read_parquet(archive)))

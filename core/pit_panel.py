@@ -299,7 +299,7 @@ def value_ratios(last, mcap: float) -> dict[str, float]:
 
 
 def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame | None,
-                        mcap: float | None) -> dict:
+                        mcap: float | None, cpi: pd.Series | None = None) -> dict:
     """Canli: saglayicinin dondurdugu en son ceyrekle value_ratios (+ stmt_period).
     Saglayicidaki her ceyrek yayinlanmistir; tablo yoksa oranlar NaN."""
     out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None,
@@ -307,7 +307,7 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
     long = statements_long(ticker, bs, inc)
     if long.empty or not mcap or mcap <= 0:
         return out
-    q = quarterly_table(long)
+    q = quarterly_table(long, cpi=cpi)
     last = q.iloc[-1]  # period_end'e gore sirali
     # Oranlari yeniden uretmeye yeten temel kalemler (ileriye donuk kayit)
     inputs = {"market_cap": float(mcap), "equity": _equity(last), "ttm_net_income": _ttm_net_income(last),
