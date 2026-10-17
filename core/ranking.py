@@ -57,7 +57,12 @@ def earnings_yield(c: dict) -> float | None:
     """E/P (%). F/K yerine kullanilir: zarar eden sirkette F/K anlamsizdir ("A/D",
     None) ve eskiden metrik SESSIZCE atlaniyordu -- zarar cezalandirilmiyor, skor
     kalan (cogu zaman PD/DD, FD/Satis) metriklerden geliyordu. E/P zarari negatif
-    deger olarak siralamaya sokar (Fama-French ve literatur standardi)."""
+    deger olarak siralamaya sokar (Fama-French ve literatur standardi).
+
+    F/K saglayicidan gelmezse (karli sirkette de bos donebiliyor) EPS / fiyat
+    kullanilir; panel E/P'yi her hisse icin net kar / piyasa degeri olarak hesaplar.
+    Eskiden geri donus yalniz zararda vardi: 2026-10-16 kosusunda karli 52 hissede
+    E/P eksikti (docs/research/ratio_coverage_diagnostics.md)."""
     pe = c.get("pe")
     if pe is not None and _finite(pe) and pe > 0:
         return 100.0 / pe
@@ -65,7 +70,7 @@ def earnings_yield(c: dict) -> float | None:
     price = c.get("current_price")
     if price is None and c.get("market_cap") and c.get("shares_outstanding"):
         price = c["market_cap"] / c["shares_outstanding"]
-    if eps is not None and _finite(eps) and eps < 0 and price and price > 0:
+    if eps is not None and _finite(eps) and price and price > 0:
         return eps / price * 100.0
     return None
 
