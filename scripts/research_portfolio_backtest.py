@@ -59,8 +59,10 @@ def load_daily(ticker: str) -> pd.DataFrame | None:
     return out
 
 
-def selections(df: pd.DataFrame, raw_panel: pd.DataFrame) -> dict[str, dict[pd.Timestamp, list[str]]]:
-    """P0, F1, F2 hedef listeleri (ay -> ticker listesi)."""
+def selections(df: pd.DataFrame, raw_panel: pd.DataFrame,
+               include_universe: bool = False) -> dict[str, dict[pd.Timestamp, list[str]]]:
+    """P0, F1, F2 hedef listeleri (ay -> ticker listesi). include_universe: "EW" = tum
+    siralama evreni (total_return_benchmarks_preregistration.md, B2)."""
     thr50 = raw_panel[raw_panel["tlvol60"] > 0].groupby("date")["tlvol60"].quantile(0.5)
     out = {"P0": {}, "F1": {}, "F2": {}}
     for t, g in df.groupby("date"):
@@ -72,15 +74,17 @@ def selections(df: pd.DataFrame, raw_panel: pd.DataFrame) -> dict[str, dict[pd.T
         for name, h in variants.items():
             r = h["value_sn_z"].rank(ascending=False, pct=True)
             out[name][t] = sorted(h.loc[r <= TOP, "ticker"])
+        if include_universe:
+            out.setdefault("EW", {})[t] = sorted(g["ticker"])
     return out
 
 
-def build():
+def build(include_universe: bool = False):
     df = load()
     df = df[df["value_sn_z"].notna()].copy()
     raw_panel = pd.read_parquet(RESEARCH / "factors_monthly.parquet")
     raw_panel["date"] = month_end(raw_panel["date"])
-    sel = selections(df, raw_panel)
+    sel = selections(df, raw_panel, include_universe)
 
     fx = pd.read_parquet(RESEARCH / "fx.parquet")
     fx["date"] = pd.to_datetime(fx["date"]).dt.normalize()
