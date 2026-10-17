@@ -299,22 +299,37 @@ def value_ratios(last, mcap: float) -> dict[str, float]:
 
 
 def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame | None,
-                        mcap: float | None, cpi: pd.Series | None = None) -> dict:
-    """Canli: saglayicinin dondurdugu en son ceyrekle value_ratios (+ stmt_period).
-    Saglayicidaki her ceyrek yayinlanmistir; tablo yoksa oranlar NaN."""
+                        mcap: float | None, cpi: pd.Series | None = None,
+                        as_of: pd.Timestamp | None = None, kap_dates: pd.DataFrame | None = None) -> dict:
+    """Canli: as_of gunu kullanilabilir en son ceyrekle value_ratios (+ stmt_period).
+
+    Kullanilabilirlik panelle ayni (build_monthly_factors): kap_dates (ticker, period,
+    kap_available_at) eslesirse KAP ilk yayini (18:00 sonrasi ertesi gun), eslesmezse
+    varsayilan gecikme (Q1-Q3 + 75, Q4 + 100 gun); available_at <= as_of olan ceyrekler
+    icinden en son kullanilabilir olan secilir. as_of None ise filtre yok."""
     out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None,
-           "stmt_period_end": None, "inputs": {}}
+           "stmt_period_end": None, "available_at": None, "available_source": None, "inputs": {}}
     long = statements_long(ticker, bs, inc)
     if long.empty or not mcap or mcap <= 0:
         return out
     q = quarterly_table(long, cpi=cpi)
-    last = q.iloc[-1]  # period_end'e gore sirali
+    if kap_dates is not None and not kap_dates.empty:
+        q = apply_report_dates(q, kap_dates)
+    else:
+        q["available_source"] = "assumed"
+    if as_of is not None:
+        q = q[q["available_at"] <= as_of]
+        if q.empty:
+            return out
+    last = q.sort_values(["available_at", "period_end"], kind="stable").iloc[-1]
     # Oranlari yeniden uretmeye yeten temel kalemler (ileriye donuk kayit)
     inputs = {"market_cap": float(mcap), "equity": _equity(last), "ttm_net_income": _ttm_net_income(last),
               "ttm_revenue": last.get("ttm_revenue"), "ttm_op_profit": last.get("ttm_op_profit"),
               "fin_debt": last.get("fin_debt"), "cash": last.get("cash")}
     return {**value_ratios(last, mcap), "stmt_period": last["period"],
             "stmt_period_end": last["period_end"].date().isoformat(),
+            "available_at": pd.Timestamp(last["available_at"]).date().isoformat(),
+            "available_source": last["available_source"],
             "inputs": {k: (float(v) if v is not None else None) for k, v in inputs.items()}}
 
 
