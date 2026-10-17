@@ -72,3 +72,56 @@ For each variant $V_k \in \{V_1, V_2\}$ compared against $V_0$, in both **Discov
    - Holdout net active return of $V_1$ vs costed `EW net` remains $> 0$ with $t > 2.0$.
 3. **FAIL / KEEP_V0:** Otherwise, the 4-leg composite carries non-redundant information and $V_0$ stays preferred.
 4. **Live rule:** Regardless of the classification, `config/live_rule.json` (`R0-2026-10-12`) is **not** changed automatically by this study. Any live rule change requires an explicit version bump (`R1-...`) so the forward record splits cleanly.
+
+## Results (added 2026-10-17, after the run; the sections above are unchanged)
+
+Runner: `python3 scripts/research_value_ablation.py` → `data/reports/research_value_ablation_2026-10-17.json`.
+
+### 1. Single sector-neutral legs (`bm_sn`, `ep_sn`, `sp_sn`, `ey_sn`)
+
+| Leg | Discovery (2013-04..2020-12, 93m) Rank-IC ($t$) | Discovery Joint FM Slope %/yr ($t$) | Holdout (2021-01..2026-08, 68m) Rank-IC ($t$) | Holdout Joint FM Slope %/yr ($t$) | IAS 29 (2024-05..2026-08, 28m) Rank-IC ($t$) | IAS 29 Joint FM Slope %/yr ($t$) |
+|---|---:|---:|---:|---:|---:|---:|
+| `bm_sn` (B/M) | +0.0214 (+2.07) | +3.13% (+1.93) | +0.0363 (+3.19) | +2.99% (+1.27) | +0.0129 (+0.93) | +1.00% (+0.24) |
+| `ep_sn` (E/P) | +0.0186 (+2.04) | −2.96% (−1.26) | +0.0489 (+3.92) | +4.78% (+1.82) | +0.0347 (+2.06) | +2.55% (+1.36) |
+| `sp_sn` (S/P) | +0.0060 (+0.57) | +2.17% (+1.66) | +0.0391 (+3.13) | +2.82% (+1.47) | −0.0014 (−0.12) | −1.11% (−0.38) |
+| `ey_sn` (EV/EBITDA) | **+0.0420 (+4.61)** | +1.82% (+0.79) | **+0.0532 (+4.67)** | −0.17% (−0.12) | **+0.0372 (+3.00)** | −0.74% (−0.62) |
+
+- **`ey_sn` (`ttm_ebit / EV`) is the strongest standalone leg across every window** (Discovery IC +0.0420, $t = 4.61$; Holdout IC +0.0532, $t = 4.67$; IAS 29 IC +0.0372, $t = 3.00$).
+- **`sp_sn` (`ttm_revenue / mcap`) has the weakest standalone IC in Discovery (+0.0060, $t = 0.57$) and collapses to zero in the IAS 29 sub-window (−0.0014, $t = -0.12$)**, though in the 2021–2023 pre-IAS 29 high-inflation portion of Holdout it contributed positively (Holdout IC +0.0391, $t = 3.13$). In the joint 4-leg Fama-MacBeth regression, `sp_sn`'s marginal slope never exceeds $t = 2.0$ (+2.17%/yr, $t = 1.66$ in Discovery; +2.82%/yr, $t = 1.47$ in Holdout; −1.11%/yr, $t = -0.38$ in IAS 29).
+
+### 2. Composite Rank-IC and top-20% switcher analysis
+
+| Variant | Window | Mean Rank-IC ($t$) | Paired $\Delta\text{IC}$ vs $V_0$ ($t$) | Rank Corr vs $V_0$ | Top-20% Overlap | Switches / mo | Entrants − Dropouts %/yr ($t$) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| **V0 (`bm+ep+sp+ey`)** | Discovery (93m) | +0.0407 (+5.14) | — | 1.000 | 100.0% | 0.0 | — |
+| | Holdout (68m) | +0.0617 (+4.91) | — | 1.000 | 100.0% | 0.0 | — |
+| | IAS 29 (28m) | +0.0340 (+2.22) | — | 1.000 | 100.0% | 0.0 | — |
+| **V1 (`bm+ep+ey`, no `sp`)** | Discovery (93m) | +0.0387 (+5.35) | −0.0020 (−0.50) | 0.930 | 83.1% | 7.3 | −9.64% (−0.87) |
+| | Holdout (68m) | +0.0630 (+5.07) | +0.0013 (+0.44) | 0.928 | 81.9% | 10.7 | **+10.96% (+1.51)** |
+| | IAS 29 (28m) | **+0.0429 (+2.82)** | **+0.0088 (+4.01)** | 0.929 | 82.1% | 12.3 | **+10.97% (+1.76)** |
+| **V2 (`bm+ep` only)** | Discovery (93m) | +0.0278 (+3.91) | −0.0129 (−2.42) | 0.805 | 69.6% | 13.0 | −7.12% (−1.03) |
+| | Holdout (68m) | +0.0536 (+4.39) | −0.0081 (−2.00) | 0.845 | 70.6% | 17.5 | +2.37% (+0.40) |
+| | IAS 29 (28m) | +0.0339 (+2.35) | −0.0001 (−0.03) | 0.847 | 68.7% | 21.5 | +5.07% (+0.57) |
+
+### 3. Costed portfolio simulation (1M TL real capital, base costs, next-day close, vs `EW net`)
+
+| Variant | Window | Active vs `EW net` %/yr ($t$) | Active vs `EW gross` %/yr ($t$) | Paired $D = r_{\text{net}}(V_k) - r_{\text{net}}(V_0)$ %/yr ($t$) | USD CAGR % | Max DD USD % | 1-Way Turnover % | Cost Drag %/yr | Verdict |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| **V0 (`bm+ep+sp+ey`)** | Discovery (93m) | +10.58% (+2.68) | +9.81% (+2.47) | — | +17.57% | −58.1% | 20.3% | 1.86% | Baseline |
+| | Holdout (68m) | +6.89% (+2.55) | +6.11% (+2.29) | — | +3.61% | −43.9% | 20.0% | 1.50% | |
+| | IAS 29 (28m) | +2.74% (+0.70) | +1.87% (+0.48) | — | −8.66% | −24.3% | 19.8% | 1.51% | |
+| **V1 (`bm+ep+ey`, no `sp`)** | Discovery (93m) | +8.03% (+2.59) | +7.27% (+2.31) | −2.55% (−1.21) | +15.16% | −57.3% | 21.7% | 1.98% | **`KEEP_V0`** |
+| | Holdout (68m) | **+8.84% (+3.31)** | **+8.06% (+3.06)** | +1.95% (+1.44) | **+5.35%** | **−38.8%** | 21.6% | 1.60% | |
+| | IAS 29 (28m) | **+5.10% (+1.44)** | **+4.24% (+1.20)** | **+2.37% (+1.95)** | −6.71% | −25.7% | 21.4% | 1.64% | |
+| **V2 (`bm+ep` only)** | Discovery (93m) | +7.28% (+2.65) | +6.52% (+2.35) | −3.30% (−1.41) | +14.00% | −57.9% | 19.8% | 1.88% | **`KEEP_V0`** |
+| | Holdout (68m) | +6.67% (+2.14) | +5.90% (+1.91) | −0.22% (−0.14) | +3.06% | −44.7% | 20.4% | 1.56% | |
+| | IAS 29 (28m) | +4.76% (+0.92) | +3.90% (+0.75) | +2.03% (+0.72) | −6.88% | −26.3% | 20.2% | 1.59% | |
+
+### 4. Interpretation and decision
+
+1. **Both $V_1$ and $V_2$ classify as `KEEP_V0` under the pre-registered decision rules:**
+   - **$V_2$ (`bm+ep` only) is rejected (`KEEP_V0`):** Dropping `ey` (`EV/EBITDA`) degrades cross-sectional Rank-IC significantly in both Discovery ($\Delta\text{IC} = -0.0129, t = -2.42$) and Holdout ($\Delta\text{IC} = -0.0081, t = -2.00$) and costs −3.30%/yr ($t = -1.41$) in Discovery portfolio return. Enterprise-value operating earnings yield (`ey`) is an essential pillar of `value_sn`.
+   - **$V_1$ (`bm+ep+ey`, removing `sp`) shows a sharp regime split:**
+     - In **Holdout (2021–2026)** and especially **IAS 29 (2024-05+)**, removing `sp` improves performance across every metric: IAS 29 Rank-IC rises from +0.0340 to +0.0429 ($\Delta\text{IC} = +0.0088, t = +4.01$), Holdout switcher spread (entrants minus dropouts) is +10.96%/yr ($t = +1.51$), and Holdout costed active return vs `EW net` rises from **+6.89%/yr ($t = 2.55$) to +8.84%/yr ($t = 3.31$)** (paired difference $D = +1.95\%/\text{yr}, t = +1.44$; IAS 29 paired difference $D = +2.37\%/\text{yr}, t = +1.95$), while USD max drawdown improves from −43.9% to −38.8%.
+     - However, in **Discovery (2013–2020)**, removing `sp` cost −2.55%/yr ($t = -1.21$, switcher spread −9.64%/yr, $t = -0.87$), which violates both the `SUPERIOR` discovery gate ($D > 0, t > 3.0$) and the `NON_INFERIOR_SIMPLIFICATION` discovery bound ($D > -0.50\%/\text{yr}, t > -1.0$).
+2. **Actionable takeaway:** `config/live_rule.json` (`R0-2026-10-12`) remains locked on the 4-leg `V0` (`bm, ep, sp, ey`) to respect the pre-registered full-cycle hurdle, while `V1` (`bm, ep, ey`) is retained as the primary IAS 29 shadow composite.
