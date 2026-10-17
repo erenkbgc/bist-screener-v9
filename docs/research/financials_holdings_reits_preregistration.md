@@ -94,74 +94,100 @@ Using `core/portfolio_backtest.py::simulate` (1M TL real capital, base costs, ne
 
 Runner: `python3 scripts/research_financials_holdings_reits.py` → `data/reports/research_financials_holdings_reits_2026-10-17.json`.
 
-### 0. Financials point-in-time panel coverage
+### 0. Financials point-in-time panel coverage, sub-sector row matching, and template audit
 
-Across the 53 tickers in `FINANCIAL_SECTORS`, 49 have >= 13 months of point-in-time C1 quarterly statements and price history (`6,582` stock-month observations from 2013-04 to 2026-09):
-- `Bankacılık`: 12 (`AKBNK`, `ALBRK`, `GARAN`, `HALKB`, `ICBCT`, `ISCTR`, `KLNMA`, `QNBTR`, `SKBNK`, `TSKB`, `VAKBN`, `YKBNK`; `ENPRA` has only 8 quarters of history),
-- `Aracı Kurum`: 9, `Menkul Kıymet Yat. Ort.`: 9, `Faktoring`: 5, `Finansal Kiralama`: 4 (`QNBFL` merged/renamed to `QNBFK`), `Sigorta`: 4, `Varlık Yönetimi`: 3, `Emeklilik`: 2, `Tasarruf Finansman`: 1.
+1. **Universe accounting (53 configured tickers $\to$ 52 with statements $\to$ 49 in the monthly factor panel):**
+   - Across the 53 tickers in `FINANCIAL_SECTORS`, **52** have quarterly financial statements in İş Yatırım (`QNBFL` has 0 statement/price rows because it is the legacy ticker code of `QNBFK` — QNB Finansal Kiralama — which is already present in the panel).
+   - **3 recent IPOs** have complete statement rows but fewer than 13 months of trading history (required for 12-month trailing metrics plus 1-month forward return) and are therefore excluded from `financials_factors_monthly.parquet`:
+     - `ENPRA` (`Bankacılık`, 10 statement quarters, 132 trading days — leaving **12** banks in the `S1a` panel: `AKBNK`, `ALBRK`, `GARAN`, `HALKB`, `ICBCT`, `ISCTR`, `KLNMA`, `QNBTR`, `SKBNK`, `TSKB`, `VAKBN`, `YKBNK`),
+     - `QUICK` (`Sigorta`, 1 statement quarter, 52 trading days),
+     - `VAKFA` (`Faktoring`, 17 statement quarters, 228 trading days).
+   - The remaining **49 tickers** yield **6,582 stock-month observations** across 162 months (2013-04 to 2026-09): `Bankacılık` (12), `Aracı Kurum` (9), `Menkul Kıymet Yat. Ort.` (9), `Faktoring` (5), `Finansal Kiralama` (4), `Sigorta` (4), `Varlık Yönetimi` (3), `Emeklilik` (2), `Tasarruf Finansman` (1).
+2. **Sub-sector line-item mapping completeness (`100%` across all 52 non-empty tickers):**
+   - With the BDDK (`UFRS`, `XI_29K`, `UFRS_B`), SEDDK (`UFRS`), and SPK (`XI_29`) row aliases mapped in `FIN_BS_ITEMS` and `FIN_INC_ITEMS`, all 9 required balance-sheet and income-statement items (`total_assets`, `equity`, `paid_in`, `cash`, `fin_debt`, `revenue`, `gross_profit`, `op_profit`, `net_income`) achieve **100.0% ticker match rate** across all 9 financial sub-sectors.
+3. **Cross-template consistency & restatement limitation:**
+   - For `Bankacılık`, `Sigorta`, and `Emeklilik`, İş Yatırım exposes both `UFRS` (unconsolidated regulatory statements) and `UFRS_K` (consolidated group statements). In banks with large industrial/non-bank holdings (e.g., `ISCTR`, which consolidates `SISE`), `UFRS_K` reports ~17% higher equity and ~40% higher net income than solo `UFRS`, and in insurance (`AKGRT`), `UFRS_K` is missing recent quarters that are present in `UFRS`. Our pipeline strictly locks `Bankacılık`, `Sigorta`, and `Emeklilik` to unconsolidated regulatory **`UFRS`** (`SECTOR_TEMPLATE_ORDER` stops at the first non-empty template per ticker) and never mixes `UFRS` and `UFRS_K`. For `Faktoring`/`Finansal Kiralama`/`Tasarruf Finansman` (`XI_29K`), `Aracı Kurum`/`MKYO` (`XI_29`), and `Varlık Yönetimi` (`UFRS_B`), only one template is populated per company.
+   - **Data source restatement limitation:** While `apply_report_dates()` anchors each quarter's availability to the actual KAP filing timestamp (`kap_archive.parquet`), İş Yatırım's `MaliTablo` API returns the latest comparative/restated column for a given `year/quarter` rather than an immutable archival snapshot of the initial KAP filing.
 
 ### S1. Banks (`S1a`, 12 tickers) and All Liquid Financials (`S1b`, 49 tickers, `liq_drop = 0.30`)
 
-| Universe & Model | Window | Mean Rank-IC ($t$) | Top Basket − Sector EW %/yr ($t$) | Paired Diff vs Base %/yr ($t$) |
-|---|---|---:|---:|---:|
-| **S1a: Banks (`B0_bm` = B/M)** | Full (162m) | +0.0654 (+2.42) | +8.30% (+0.90) | — |
-| | Discovery (93m) | −0.0152 (−0.63) | +7.74% (+0.54) | — |
-| | Holdout (69m) | **+0.1739 (+5.15)** | +9.05% (+0.92) | — |
-| **S1a: Banks (`B1_bm_roe` = B/M + E/P + ROE)** | Full (162m) | **+0.0774 (+2.46)** | +2.88% (+0.53) | −5.42% (−0.69) |
-| | Discovery (93m) | −0.0028 (−0.08) | −4.25% (−0.68) | −11.98% (−1.08) |
-| | Holdout (69m) | **+0.1855 (+4.56)** | +12.48% (+1.42) | +3.43% (+0.34) |
-| **S1a: Banks (`B2_pb_roe_resid` = B/M \| ROE)** | Full (162m) | +0.0606 (+2.07) | +7.94% (+0.91) | −0.35% (−0.09) |
-| | Discovery (93m) | −0.0293 (−1.12) | +3.29% (+0.24) | −4.44% (−0.96) |
-| | Holdout (69m) | **+0.1818 (+5.58)** | **+14.21% (+1.75)** | +5.15% (+0.81) |
-| **S1b: All Financials (`F0_bm_sn`)** | Full (162m) | +0.0346 (+2.36) | +3.41% (+0.56) | — |
-| | Discovery (93m) | +0.0275 (+1.50) | +6.01% (+0.65) | — |
-| | Holdout (69m) | +0.0442 (+1.83) | −0.10% (−0.02) | — |
-| **S1b: All Financials (`F1_bm_roe_sn`)** | Full (162m) | **+0.0591 (+3.32)** | +7.01% (+1.56) | +3.61% (+0.55) |
-| | Discovery (93m) | +0.0237 (+1.03) | −2.13% (−0.48) | −8.14% (−1.00) |
-| | Holdout (69m) | **+0.1067 (+5.62)** | **+19.34% (+3.03)** | **+19.44% (+2.34)** |
-| **S1b: All Financials (`F2_pb_roe_resid`)** | Full (162m) | +0.0385 (+2.54) | +8.67% (+1.32) | +5.26% (+1.39) |
-| | Discovery (93m) | +0.0331 (+1.69) | +5.97% (+0.63) | −0.04% (−0.02) |
-| | Holdout (69m) | +0.0457 (+1.94) | +12.31% (+1.52) | +12.41% (+1.61) |
+| Universe & Model | Coverage (Obs / Min Month) | Window | Mean Rank-IC ($t$) | Top Basket − Sector EW %/yr ($t$) | Paired Diff vs Base %/yr ($t$) |
+|---|---:|---|---:|---:|---:|
+| **S1a: Banks (`B0_bm` = B/M)** | 100.0% / 100.0% | Full (162m) | +0.0654 (+2.42) | +8.30% (+0.90) | — |
+| | | Discovery (93m) | −0.0152 (−0.63) | +7.74% (+0.54) | — |
+| | | Holdout (69m) | **+0.1739 (+5.15)** | +9.05% (+0.92) | — |
+| **S1a: Banks (`B1_bm_roe` = B/M + E/P + ROE)** | 100.0% / 100.0% | Full (162m) | **+0.0774 (+2.46)** | +2.88% (+0.53) | −5.42% (−0.69) |
+| | | Discovery (93m) | −0.0028 (−0.08) | −4.25% (−0.68) | −11.98% (−1.08) |
+| | | Holdout (69m) | **+0.1855 (+4.56)** | +12.48% (+1.42) | +3.43% (+0.34) |
+| **S1a: Banks (`B2_pb_roe_resid` = B/M \| ROE)** | 97.3% / 83.3% | Full (162m) | +0.0606 (+2.07) | +7.94% (+0.91) | −0.35% (−0.09) |
+| | | Discovery (93m) | −0.0293 (−1.12) | +3.29% (+0.24) | −4.44% (−0.96) |
+| | | Holdout (69m) | **+0.1818 (+5.58)** | **+14.21% (+1.75)** | +5.15% (+0.81) |
+| **S1b: All Financials (`F0_bm_sn`)** | 100.0% / 100.0% | Full (162m) | +0.0346 (+2.36) | +3.41% (+0.56) | — |
+| | | Discovery (93m) | +0.0275 (+1.50) | +6.01% (+0.65) | — |
+| | | Holdout (69m) | +0.0442 (+1.83) | −0.10% (−0.02) | — |
+| **S1b: All Financials (`F1_bm_roe_sn`)** | 100.0% / 100.0% | Full (162m) | **+0.0591 (+3.32)** | +7.01% (+1.56) | +3.61% (+0.55) |
+| | | Discovery (93m) | +0.0237 (+1.03) | −2.13% (−0.48) | −8.14% (−1.00) |
+| | | Holdout (69m) | **+0.1067 (+5.62)** | **+19.34% (+3.03)** | **+19.44% (+2.34)** |
+| **S1b: All Financials (`F2_pb_roe_resid`)** | 97.9% / 88.9% | Full (162m) | +0.0385 (+2.54) | +8.67% (+1.32) | +5.26% (+1.39) |
+| | | Discovery (93m) | +0.0331 (+1.69) | +5.97% (+0.63) | −0.04% (−0.02) |
+| | | Holdout (69m) | +0.0457 (+1.94) | +12.31% (+1.52) | +12.41% (+1.61) |
 
-- **Interpretation (`S1`):**
-  1. Within the 12-bank cross-section (`S1a`), all three valuation signals show very strong Holdout Rank-IC (`B0_bm` +0.1739, $t = 5.15$; `B1_bm_roe` +0.1855, $t = 4.56$; `B2_pb_roe_resid` +0.1818, $t = 5.58$), and the ROE-conditioned P/B residual (`B2_pb_roe_resid`) produces a +14.21%/yr ($t = 1.75$) top-basket spread over the equal-weighted bank sector in Holdout. As pre-registered, with only 12 banks (top basket = 3 banks), portfolio return $t$-statistics remain below 2.0 due to small-N idiosyncratic variance.
-  2. Across the broader liquid Financials universe (`S1b`, 49 tickers, sector-neutralized), combining valuation with profitability/earnings (`F1_bm_roe_sn` = `mean(bm_z_sn, ep_z_sn, roe_z_sn)`) achieves a full-sample Rank-IC of **+0.0591 ($t = 3.32$)** and a Holdout Rank-IC of **+0.1067 ($t = 5.62$)**, generating **+19.34%/yr ($t = 3.03$)** over the equal-weighted financial universe in Holdout (+19.44%/yr, $t = 2.34$ ahead of book-to-market `F0_bm_sn` alone).
+### S2. Holdings (`Holding`, 52 tickers) and S3. REITs (`Gayrimenkul`, 62 tickers) — Strict `NaN` vs Positive-Backing vs Zero-Fill Sensitivity
 
-### S2. Holdings (`Holding`, 52 tickers) and S3. REITs (`Gayrimenkul`, 62 tickers)
+To ensure missing or unpopulated balance-sheet items are not conflated with genuine zeros, `H2_backing_nav` and `G1_nav_ffo` are evaluated under three explicit missing-data treatments:
+1. **Primary (`strict NaN`, `skipna=False`):** No `.fillna(0.0)` is applied to any balance-sheet or income-statement column, and all 3 legs of the composite must be non-null (`H2_backing_nav` coverage `97.19%`, `G1_nav_ffo` coverage `98.83%`).
+2. **Positive-backing filter (`_pos`, `skipna=False`):** Because İş Yatırım's `XI_29` JSON table encodes unpopulated optional lines (`Finansal Yatırımlar`, `Özkaynak Yöntemiyle Değerlenen Yatırımlar`, `Yatırım Amaçlı Gayrimenkuller`) as `0.0`, `H2_backing_nav_pos` requires `fin_investments + eq_investments > 0` (`93.27%` coverage; excludes `5.5%` of Holding rows where subsidiaries are only consolidated), and `G1_nav_ffo_pos` requires `inv_property > 0` (`93.95%` coverage; excludes `4.9%` of REIT rows where properties are held in `Stoklar` or not yet booked as investment property).
+3. **Zero-fill sensitivity (`_zerofill`, `skipna=True`):** Missing sub-items filled with `0.0` and remaining legs averaged (`100.0%` coverage).
 
-| Sector & Model | Window | Mean Rank-IC ($t$) | Top 20% − Sector EW %/yr ($t$) | Paired Diff vs `value_sn` %/yr ($t$) |
-|---|---|---:|---:|---:|
-| **S2: Holdings `H0_value_sn` (`bm+ep+sp+ey`)** | Full (161m) | **+0.0437 (+2.32)** | +3.11% (+0.44) | — |
-| | Discovery (93m) | +0.0529 (+2.55) | +6.98% (+0.66) | — |
-| | Holdout (68m) | +0.0310 (+0.88) | −2.17% (−0.20) | — |
-| **S2: Holdings `H1_bm_ep_roe` (no `sp`/`ey`)** | Full (161m) | +0.0361 (+1.89) | +2.11% (+0.30) | −1.00% (−0.20) |
-| | Discovery (93m) | +0.0291 (+1.27) | +3.30% (+0.33) | −3.68% (−0.54) |
-| | Holdout (68m) | **+0.0457 (+1.45)** | +0.48% (+0.04) | +2.65% (+0.37) |
-| **S2: Holdings `H2_backing_nav`** | Full (161m) | +0.0228 (+1.61) | +2.49% (+0.44) | −0.62% (−0.12) |
-| | Discovery (93m) | +0.0447 (+3.31) | +8.87% (+1.13) | +1.89% (+0.26) |
-| | Holdout (68m) | −0.0072 (−0.29) | −6.23% (−0.71) | −4.07% (−0.66) |
-| **S3: REITs `G0_value_sn` (`bm+ep+sp+ey`)** | Full (161m) | +0.0399 (+2.47) | +10.85% (+1.91) | — |
-| | Discovery (93m) | +0.0232 (+1.08) | +5.76% (+0.67) | — |
-| | Holdout (68m) | +0.0627 (+2.75) | **+17.81% (+3.01)** | — |
-| **S3: REITs `G1_nav_ffo` (`bm + prop_nav + op_ep`)** | Full (161m) | **+0.0519 (+2.77)** | **+11.36% (+2.13)** | +0.51% (+0.09) |
-| | Discovery (93m) | **+0.0411 (+1.61)** | +3.38% (+0.53) | −2.38% (−0.30) |
-| | Holdout (68m) | **+0.0667 (+2.50)** | **+22.29% (+2.83)** | +4.47% (+0.58) |
-| **S3: REITs `G2_letdin_sirmans_resid`** | Full (161m) | +0.0362 (+2.11) | +5.66% (+1.09) | −5.19% (−0.85) |
-| | Discovery (93m) | +0.0202 (+1.01) | +0.77% (+0.14) | −4.99% (−0.58) |
-| | Holdout (68m) | +0.0581 (+2.01) | +12.35% (+1.31) | −5.47% (−0.65) |
+| Sector & Model | Coverage (Obs / Min Month) | Window | Mean Rank-IC ($t$) | Top 20% − Sector EW %/yr ($t$) | Paired Diff vs `value_sn` %/yr ($t$) |
+|---|---:|---|---:|---:|---:|
+| **S2: Holdings `H0_value_sn` (`bm+ep+sp+ey`)** | 100.0% / 100.0% | Full (161m) | **+0.0437 (+2.32)** | +3.11% (+0.44) | — |
+| | | Discovery (93m) | +0.0529 (+2.55) | +6.98% (+0.66) | — |
+| | | Holdout (68m) | +0.0310 (+0.88) | −2.17% (−0.20) | — |
+| **S2: Holdings `H1_bm_ep_roe` (no `sp`/`ey`)** | 100.0% / 100.0% | Full (161m) | +0.0361 (+1.89) | +2.11% (+0.30) | −1.00% (−0.20) |
+| | | Discovery (93m) | +0.0291 (+1.27) | +3.30% (+0.33) | −3.68% (−0.54) |
+| | | Holdout (68m) | **+0.0457 (+1.45)** | +0.48% (+0.04) | +2.65% (+0.37) |
+| **S2: Holdings `H2_backing_nav` (strict `NaN`)** | 97.2% / 86.2% | Full (161m) | +0.0128 (+0.84) | +2.55% (+0.39) | −0.57% (−0.10) |
+| | | Discovery (93m) | +0.0274 (+1.55) | +8.96% (+0.94) | +1.99% (+0.23) |
+| | | Holdout (68m) | −0.0072 (−0.29) | −6.23% (−0.71) | −4.07% (−0.66) |
+| **S2: Holdings `H2_backing_nav_pos` (`fin+eq > 0`)** | 93.3% / 79.3% | Full (161m) | +0.0131 (+0.91) | +1.52% (+0.24) | −1.60% (−0.30) |
+| | | Discovery (93m) | +0.0263 (+1.58) | +7.40% (+0.84) | +0.43% (+0.05) |
+| | | Holdout (68m) | −0.0049 (−0.21) | −6.53% (−0.69) | −4.36% (−0.71) |
+| **S2: Holdings `H2_backing_nav_zerofill`** | 100.0% / 100.0% | Full (161m) | +0.0228 (+1.61) | +2.49% (+0.44) | −0.62% (−0.12) |
+| | | Discovery (93m) | +0.0447 (+3.31) | +8.87% (+1.13) | +1.89% (+0.26) |
+| | | Holdout (68m) | −0.0072 (−0.29) | −6.23% (−0.71) | −4.07% (−0.66) |
+| **S3: REITs `G0_value_sn` (`bm+ep+sp+ey`)** | 100.0% / 100.0% | Full (161m) | +0.0399 (+2.47) | **+10.85% (+1.91)** | — |
+| | | Discovery (93m) | +0.0232 (+1.08) | +5.76% (+0.67) | — |
+| | | Holdout (68m) | +0.0627 (+2.75) | **+17.81% (+3.01)** | — |
+| **S3: REITs `G1_nav_ffo` (strict `NaN`)** | 98.8% / 93.1% | Full (161m) | **+0.0518 (+2.79)** | +9.58% (+1.87) | −1.27% (−0.24) |
+| | | Discovery (93m) | **+0.0426 (+1.64)** | +3.19% (+0.49) | −2.57% (−0.33) |
+| | | Holdout (68m) | **+0.0644 (+2.54)** | **+18.32% (+2.45)** | +0.51% (+0.08) |
+| **S3: REITs `G1_nav_ffo_pos` (`inv_property > 0`)** | 94.0% / 86.2% | Full (161m) | +0.0511 (+2.74) | +6.75% (+1.20) | −4.10% (−0.70) |
+| | | Discovery (93m) | +0.0430 (+1.60) | +1.56% (+0.24) | −4.20% (−0.53) |
+| | | Holdout (68m) | +0.0622 (+2.57) | +13.86% (+1.44) | −3.95% (−0.46) |
+| **S3: REITs `G1_nav_ffo_zerofill`** | 100.0% / 100.0% | Full (161m) | +0.0519 (+2.77) | +11.36% (+2.13) | +0.51% (+0.09) |
+| | | Discovery (93m) | +0.0411 (+1.61) | +3.38% (+0.53) | −2.38% (−0.30) |
+| | | Holdout (68m) | +0.0667 (+2.50) | +22.29% (+2.83) | +4.47% (+0.58) |
+| **S3: REITs `G2_letdin_sirmans_resid`** | 98.8% / 93.1% | Full (161m) | +0.0362 (+2.11) | +5.66% (+1.09) | −5.19% (−0.85) |
+| | | Discovery (93m) | +0.0202 (+1.01) | +0.77% (+0.14) | −4.99% (−0.58) |
+| | | Holdout (68m) | +0.0581 (+2.01) | +12.35% (+1.31) | −5.47% (−0.65) |
 
 - **Interpretation (`S2` & `S3`):**
-  1. **Holdings (`S2`):** Neither `H1_bm_ep_roe` (−1.00%/yr vs `H0`, $t = -0.20$) nor balance-sheet asset backing `H2_backing_nav` (−0.62%/yr vs `H0`, $t = -0.12$) improves upon `value_sn`. Book-value line items (`Finansal Yatırımlar` and `Özkaynak Yöntemiyle Değerlenen Yatırımlar`) do not capture the live market-value sum-of-the-parts (SOTP) of listed subsidiaries (`KCHOL`, `SAHOL`, etc.).
-  2. **REITs (`S3`):** Standard `value_sn` (`G0`) already works well in REITs (+17.81%/yr, $t = 3.01$ in Holdout) because REIT balance sheets carry investment properties at fair value (`bm` approximates NAV discount). Replacing bottom-line `ep` and `sp` with direct property backing and recurring operating profit yield (`G1_nav_ffo` = `bm + prop_nav + op_ep`) lifts full-sample Rank-IC from +0.0399 ($t = 2.47$) to **+0.0519 ($t = 2.77$)** and Holdout top-20% active return from +17.81%/yr to **+22.29%/yr ($t = 2.83$)**, though the paired difference (+4.47%/yr in Holdout, $t = 0.58$) is well below the replacement hurdle.
+  1. **Holdings (`S2`):** Across all three missing-data treatments (`strict NaN`, `fin+eq > 0`, and `zerofill`), neither `H1_bm_ep_roe` (−1.00%/yr vs `H0`, $t = -0.20$) nor `H2_backing_nav` (`strict NaN` −0.57%/yr, $t = -0.10$; `pos` −1.60%/yr, $t = -0.30$) beats `value_sn`. Book carrying values of financial/equity-method investments do not substitute for live market values of listed subsidiaries.
+  2. **REITs (`S3`):** Requiring complete non-`NaN` legs (`G1_nav_ffo` strict `NaN`, 98.8% coverage) reduces the apparent Holdout top-20% spread from +22.29%/yr (`zerofill`) to **+18.32%/yr ($t = 2.45$)**, which is virtually indistinguishable from `G0_value_sn` (+17.81%/yr, paired diff **+0.51%/yr, $t = 0.08$**, Full diff −1.27%/yr, $t = -0.24$). Further restricting to REITs with `inv_property > 0` (`G1_nav_ffo_pos`, 94.0% coverage) lowers the Holdout spread to +13.86%/yr (−3.95%/yr vs `G0`, $t = -0.46$) because developers carrying properties in `Stoklar` (`EKGYO`, `DAPGM`, etc.) are dropped in those quarters. Neither `H2` nor `G1` clears the replacement hurdle.
 
 ### S4. Costed full-market portfolio simulation (`1M TL`, base costs, next-day close)
 
+Both `P1_nonfin_sector_specialized` (`Holding = H1_bm_ep_roe`, `Gayrimenkul = G1_nav_ffo` strict `NaN`) and `P1b_nonfin_backing_nav` (`Holding = H2_backing_nav` strict `NaN`, `Gayrimenkul = G1_nav_ffo` strict `NaN`) are reported alongside `P0` and `P2`:
+
 | Portfolio Variant | Window | Avg Names | Active vs `EW net` %/yr ($t$) | Active vs `BIST 100 TR` %/yr ($t$) | Paired $D$ vs `P0` %/yr ($t$) | USD CAGR % | Max DD USD % | Turnover % |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
+|---|---|:---:|---:|---:|---:|---:|---:|---:|
 | **`P0_nonfin_baseline` (live `R0`)** | Discovery (93m) | 42.7 | +10.58% (+2.68) | +58.83% (+2.31)* | — | +17.57% | −58.1% | 20.3% |
 | | Holdout (68m) | 59.2 | +6.89% (+2.55) | **−1.71% (−0.28)** | — | +3.61% | −43.9% | 20.0% |
-| **`P1_nonfin_sector_specialized` (`H1`+`G1`)** | Discovery (93m) | 42.7 | +7.65% (+2.13) | +52.17% (+2.19)* | −2.93% (−1.97) | +14.59% | −57.2% | 20.4% |
-| | Holdout (68m) | 59.2 | +5.86% (+2.39) | −2.73% (−0.47) | −1.02% (−1.33) | +2.84% | −43.5% | 21.1% |
+| **`P1_nonfin_sector_specialized` (`H1`+`G1` strict)** | Discovery (93m) | 42.7 | +8.13% (+2.20) | +52.17% (+2.19)* | −2.45% (−1.56) | +15.17% | −57.2% | 20.4% |
+| | Holdout (68m) | 59.1 | +5.85% (+2.38) | −2.75% (−0.47) | −1.04% (−1.31) | +2.83% | −43.4% | 21.1% |
+| **`P1b_nonfin_backing_nav` (`H2`+`G1` strict)** | Discovery (93m) | 42.4 | +8.97% (+2.39) | +54.63% (+2.28)* | −1.61% (−1.09) | +15.88% | −58.1% | 19.7% |
+| | Holdout (68m) | 59.1 | +5.91% (+2.60) | −2.69% (−0.46) | −0.98% (−0.81) | +2.81% | −42.9% | 21.0% |
 | **`P2_all_bist_with_financials` (`P0` + `F1_bm_roe_sn`)** | Discovery (93m) | 47.7 | +8.60% (+2.41) | +58.07% (+2.46)* | −1.98% (−2.13) | +15.57% | −58.1% | 21.2% |
 | | Holdout (68m) | 64.7 | **+8.86% (+3.11)** | **+0.26% (+0.04)** | **+1.97% (+1.85)** | **+5.43%** | −44.3% | 20.8% |
 
@@ -169,6 +195,5 @@ Across the 53 tickers in `FINANCIAL_SECTORS`, 49 have >= 13 months of point-in-t
 
 ### Summary of decisions
 
-1. **Why `P0` lagged BIST 100 Total Return in Holdout is now empirically confirmed:** Adding the top-20% liquid financials ranked by `F1_bm_roe_sn` (`B/M + E/P + ROE`, ~5.5 financial stocks per month alongside 59.2 non-financials in `P2`) **eliminates the −1.71%/yr Holdout lag against BIST 100 Total Return (`−1.71%/yr` $\to$ `+0.26%/yr`)** and lifts Holdout active return vs `EW net` from **+6.89%/yr ($t = 2.55$) to +8.86%/yr ($t = 3.11$)** (paired difference $D = +1.97\%/\text{yr}, t = 1.85$; USD CAGR +3.61% $\to$ +5.43%).
-2. **Why `R0-2026-10-12` (`P0`) stays locked on the main rotation:** In the 2013–2020 Discovery period (when Turkish banks experienced a multi-year valuation compression), including financials (`P2`) dragged portfolio return by −1.98%/yr ($t = -2.13$), which breaches the pre-registered discovery non-degradation bound ($D > -1.0\%/\text{yr}, t > -1.0$), and Holdout paired $t = 1.85$ is just shy of $2.0$.
-3. **Holdings (`S2`) and REITs (`S3`) stays on `value_sn`:** `P1_nonfin_sector_specialized` underperformed `P0` (−2.93%/yr in Discovery, −1.02%/yr in Holdout). Within REITs, `G1_nav_ffo` (`bm + prop_nav + op_ep`) improves Holdout top-20% spread (+17.81% $\to$ +22.29%/yr), but the difference is not statistically significant ($t = 0.58$).
+1. **Why `P0` lagged BIST 100 Total Return in Holdout is explained structurally, but `P2` is a shadow benchmark rather than a confirmed live upgrade:** Adding the top-20% liquid financials ranked by `F1_bm_roe_sn` (`B/M + E/P + ROE`, ~5.5 financial stocks per month alongside 59.2 non-financials in `P2`) closes the −1.71%/yr Holdout lag against BIST 100 Total Return (`−1.71%/yr` $\to$ `+0.26%/yr`) and lifts Holdout active return vs `EW net` from +6.89%/yr ($t = 2.55$) to +8.86%/yr ($t = 3.11$). However, closing the benchmark gap is distinct from passing the pre-registered superiority test over `P0`: `P2`'s paired Holdout improvement ($D = +1.97\%/\text{yr}, t = 1.85$) is below $t > 2.0$, and its Discovery paired difference ($D = -1.98\%/\text{yr}, t = -2.13$) breaches the pre-registered non-degradation bound ($D > -1.0\%/\text{yr}, t > -1.0$). Therefore `R0-2026-10-12` (`P0`) remains unchanged, and `P2` may only be tracked as a shadow model.
+2. **Holdings (`S2`) and REITs (`S3`) remain on `value_sn`:** Both `P1` (`H1`+`G1`, Holdout diff −1.04%/yr, $t = -1.31$) and `P1b` (`H2`+`G1`, Holdout diff −0.98%/yr, $t = -0.81$) trail `P0`, and under strict `NaN` handling `G1_nav_ffo` (+18.32%/yr in Holdout vs +17.81%/yr for `G0`, diff +0.51%/yr, $t = 0.08$) provides no statistically significant advantage over `value_sn`.

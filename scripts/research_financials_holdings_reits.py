@@ -59,19 +59,41 @@ FIN_BS_ITEMS = {
         "A- Ödenmiş Sermaye",
         "1- (Nominal) Sermaye",
     ),
-    "cash": ("Nakit ve Nakit Benzerleri", "I. NAKİT DEĞERLER VE MERKEZ BANKASI"),
-    "fin_debt": ("Finansal Borçlar", "III. ALINAN KREDİLER"),
+    "cash": (
+        "Nakit ve Nakit Benzerleri",
+        "I. NAKİT DEĞERLER VE MERKEZ BANKASI",
+        "I. NAKİT DEĞERLER",
+        "A- Nakit Ve Nakit Benzeri Varlıklar",
+    ),
+    "fin_debt": (
+        "Finansal Borçlar",
+        "III. ALINAN KREDİLER",
+        "II. ALINAN KREDİLER",
+        "A- Finansal Borçlar",
+    ),
 }
 FIN_INC_ITEMS = {
     "revenue": (
         "Satış Gelirleri",
         "VIII. FAALİYET GELİRLERİ/GİDERLERİ TOPLAMI (III+IV+V+VI+VII)",
+        "I. ESAS FAALİYET GELİRLERİ",
+        "A- Hayat Dışı Teknik Gelir",
+        "D- Hayat Teknik Gelir",
+        "G- Emeklilik Teknik Gelir",
     ),
-    "gross_profit": ("BRÜT KAR (ZARAR)", "III. NET FAİZ GELİRİ/GİDERİ (I - II)", "III. NET KAR PAYI GELİRİ/GİDERİ (I-II)"),
+    "gross_profit": (
+        "BRÜT KAR (ZARAR)",
+        "III. NET FAİZ GELİRİ/GİDERİ (I - II)",
+        "III. NET KAR PAYI GELİRİ/GİDERİ (I-II)",
+        "VII. NET FAALİYET K/Z (I+…+VI)",
+        "J- Genel Teknik Bölüm Dengesi",
+    ),
     "op_profit": (
         "FAALİYET KARI (ZARARI)",
         "Net Faaliyet Kar/Zararı",
         "XI. NET FAALİYET KARI/ZARARI (VIII-IX-X)",
+        "VII. NET FAALİYET K/Z (I+…+VI)",
+        "J- Genel Teknik Bölüm Dengesi",
     ),
     "ni_parent": ("Ana Ortaklık Payları", "23.1 Grubun Karı/Zararı"),
     "net_income": (
@@ -298,57 +320,166 @@ def compute_bank_and_financial_scores(fin_df: pd.DataFrame) -> tuple[pd.DataFram
     return banks, all_fin
 
 
-def compute_holding_scores(hold_df: pd.DataFrame) -> pd.DataFrame:
-    """S2 (Holdingler): H0_value_sn, H1_bm_ep_roe, H2_backing_nav skorlarini uretir."""
-    h = hold_df.copy()
-    eq = h["equity_parent"].where(h["equity_parent"].notna(), h.get("equity"))
-    intang = h.get("intangibles", pd.Series(0.0, index=h.index)).fillna(0.0)
-    gw = h.get("goodwill", pd.Series(0.0, index=h.index)).fillna(0.0)
-    h["tangible_bm"] = ((eq - intang - gw) / h["mcap"]).where(h["mcap"] > 0)
+def _col_or_nan(df: pd.DataFrame, col: str) -> pd.Series:
+    """Sutun varsa oldugu gibi (NaN korunarak), yoksa NaN serisi dondurur."""
+    if col in df.columns:
+        return pd.to_numeric(df[col], errors="coerce")
+    return pd.Series(np.nan, index=df.index, dtype=float)
 
-    cash = h.get("cash", pd.Series(0.0, index=h.index)).fillna(0.0)
-    fin_inv = h.get("fin_investments", pd.Series(0.0, index=h.index)).fillna(0.0)
-    eq_inv = h.get("eq_investments", pd.Series(0.0, index=h.index)).fillna(0.0)
-    fdebt = h.get("fin_debt", pd.Series(0.0, index=h.index)).fillna(0.0)
+
+def compute_holding_scores(hold_df: pd.DataFrame) -> pd.DataFrame:
+    """S2 (Holdingler): H0_value_sn, H1_bm_ep_roe, H2_backing_nav (strict NaN),
+    H2_backing_nav_pos (pozitif istirak/finansal yatirim sarti) ve
+    H2_backing_nav_zerofill (0.0 doldurmali duyarlilik) skorlarini uretir."""
+    h = hold_df.copy()
+    eq = _col_or_nan(h, "equity_parent").where(_col_or_nan(h, "equity_parent").notna(), _col_or_nan(h, "equity"))
+    intang = _col_or_nan(h, "intangibles")
+    gw = _col_or_nan(h, "goodwill")
+    cash = _col_or_nan(h, "cash")
+    fin_inv = _col_or_nan(h, "fin_investments")
+    eq_inv = _col_or_nan(h, "eq_investments")
+    fdebt = _col_or_nan(h, "fin_debt")
+
+    # 1. Strict NaN (varsayilan birincil tanim: eksik kalem NaN kalir, 0.0 ile doldurulmaz)
+    h["tangible_bm"] = ((eq - intang - gw) / h["mcap"]).where(h["mcap"] > 0)
     h["fin_backing"] = ((cash + fin_inv + eq_inv - fdebt) / h["mcap"]).where(h["mcap"] > 0)
 
-    for col in ("bm", "ep", "sp", "ey", "roe", "tangible_bm", "fin_backing"):
+    # 2. Pozitif istirak/finansal yatirim sarti (raporlanan fin_inv + eq_inv == 0 olanlari NaN tutar)
+    has_pos_backing = (fin_inv + eq_inv) > 0
+    h["fin_backing_pos"] = h["fin_backing"].where(has_pos_backing)
+
+    # 3. Sifir doldurmali (zerofill) duyarlilik serisi
+    h["tangible_bm_zf"] = ((eq - intang.fillna(0.0) - gw.fillna(0.0)) / h["mcap"]).where(h["mcap"] > 0)
+    h["fin_backing_zf"] = (
+        (cash.fillna(0.0) + fin_inv.fillna(0.0) + eq_inv.fillna(0.0) - fdebt.fillna(0.0)) / h["mcap"]
+    ).where(h["mcap"] > 0)
+
+    for col in ("bm", "ep", "sp", "ey", "roe", "tangible_bm", "fin_backing",
+                "fin_backing_pos", "tangible_bm_zf", "fin_backing_zf"):
         h[f"{col}_hz"] = h.groupby("date")[col].transform(fb.winsorize_z)
+
     h["H0_value_sn"] = h[["bm_hz", "ep_hz", "sp_hz", "ey_hz"]].mean(axis=1)
     h["H1_bm_ep_roe"] = h[["bm_hz", "ep_hz", "roe_hz"]].mean(axis=1)
-    h["H2_backing_nav"] = h[["tangible_bm_hz", "fin_backing_hz", "ep_hz"]].mean(axis=1)
+    h["H2_backing_nav"] = h[["tangible_bm_hz", "fin_backing_hz", "ep_hz"]].mean(axis=1, skipna=False)
+    h["H2_backing_nav_pos"] = h[["tangible_bm_hz", "fin_backing_pos_hz", "ep_hz"]].mean(axis=1, skipna=False)
+    h["H2_backing_nav_zerofill"] = h[["tangible_bm_zf_hz", "fin_backing_zf_hz", "ep_hz"]].mean(axis=1, skipna=True)
     return h
 
 
 def compute_reit_scores(reit_df: pd.DataFrame, q_ext: pd.DataFrame | None = None) -> pd.DataFrame:
-    """S3 (GYO'lar): G0_value_sn, G1_nav_ffo, G2_letdin_sirmans_resid skorlarini uretir."""
+    """S3 (GYO'lar): G0_value_sn, G1_nav_ffo (strict NaN), G1_nav_ffo_pos (inv_property > 0),
+    G1_nav_ffo_zerofill (0.0 doldurmali duyarlilik) ve G2_letdin_sirmans_resid skorlarini uretir."""
     g = reit_df.copy()
     if q_ext is not None and "ttm_op_profit" not in g.columns:
         cols = [c for c in ("ticker", "period", "ttm_op_profit", "ttm_ebit") if c in q_ext.columns]
         g = g.merge(q_ext[cols].rename(columns={"period": "stmt_period"}), on=["ticker", "stmt_period"], how="left")
 
-    inv_prop = g.get("inv_property", pd.Series(0.0, index=g.index)).fillna(0.0)
-    inv_stok = g.get("inventories", pd.Series(0.0, index=g.index)).fillna(0.0)
-    cash = g.get("cash", pd.Series(0.0, index=g.index)).fillna(0.0)
-    fdebt = g.get("fin_debt", pd.Series(0.0, index=g.index)).fillna(0.0)
+    inv_prop = _col_or_nan(g, "inv_property")
+    inv_stok = _col_or_nan(g, "inventories")
+    cash = _col_or_nan(g, "cash")
+    fdebt = _col_or_nan(g, "fin_debt")
+
+    # 1. Strict NaN (varsayilan birincil tanim: eksik kalem NaN kalir, 0.0 ile doldurulmaz)
     g["prop_nav"] = ((inv_prop + inv_stok + cash - fdebt) / g["mcap"]).where(g["mcap"] > 0)
 
-    op = g.get("ttm_op_profit")
-    if op is None:
-        op = g.get("ey") * g["mcap"]
+    # 2. Pozitif yatirim amacli gayrimenkul sarti (inv_property > 0)
+    g["prop_nav_pos"] = g["prop_nav"].where(inv_prop > 0)
+
+    # 3. Sifir doldurmali (zerofill) duyarlilik serisi
+    g["prop_nav_zf"] = (
+        (inv_prop.fillna(0.0) + inv_stok.fillna(0.0) + cash.fillna(0.0) - fdebt.fillna(0.0)) / g["mcap"]
+    ).where(g["mcap"] > 0)
+
+    op = _col_or_nan(g, "ttm_op_profit")
+    if op.isna().all() and "ey" in g.columns:
+        op = _col_or_nan(g, "ey") * g["mcap"]
     g["op_ep"] = (op / g["mcap"]).where(g["mcap"] > 0)
-    ta = g.get("total_assets")
+    ta = _col_or_nan(g, "total_assets")
     g["lev"] = (fdebt / ta).where(ta > 0)
 
-    for col in ("bm", "ep", "sp", "ey", "roe", "prop_nav", "op_ep", "lev", "size"):
+    for col in ("bm", "ep", "sp", "ey", "roe", "prop_nav", "prop_nav_pos", "prop_nav_zf", "op_ep", "lev", "size"):
         if col in g.columns:
             g[f"{col}_gz"] = g.groupby("date")[col].transform(fb.winsorize_z)
     g["G0_value_sn"] = g[["bm_gz", "ep_gz", "sp_gz", "ey_gz"]].mean(axis=1)
-    g["G1_nav_ffo"] = g[["bm_gz", "prop_nav_gz", "op_ep_gz"]].mean(axis=1)
+    g["G1_nav_ffo"] = g[["bm_gz", "prop_nav_gz", "op_ep_gz"]].mean(axis=1, skipna=False)
+    g["G1_nav_ffo_pos"] = g[["bm_gz", "prop_nav_pos_gz", "op_ep_gz"]].mean(axis=1, skipna=False)
+    g["G1_nav_ffo_zerofill"] = g[["bm_gz", "prop_nav_zf_gz", "op_ep_gz"]].mean(axis=1, skipna=True)
     g["G2_letdin_sirmans_resid"] = cross_sectional_residual(
         g, "bm_gz", ["roe_gz", "lev_gz", "size_gz"], min_n=8
     )
     return g
+
+
+def coverage_summary(df: pd.DataFrame, cols: list[str]) -> dict[str, dict]:
+    """Her sutun icin toplam ve aylik kapsama oranini (obs_pct, monthly_mean_pct, monthly_min_pct) raporlar."""
+    out: dict[str, dict] = {}
+    for c in cols:
+        if c not in df.columns:
+            continue
+        valid = df[c].notna()
+        by_m = df.assign(_v=valid).groupby("date")["_v"].agg(["mean", "sum"])
+        out[c] = {
+            "obs_pct": round(100.0 * float(valid.mean()), 2),
+            "monthly_mean_pct": round(100.0 * float(by_m["mean"].mean()), 2) if not by_m.empty else 0.0,
+            "monthly_min_pct": round(100.0 * float(by_m["mean"].min()), 2) if not by_m.empty else 0.0,
+            "avg_valid_names_per_month": round(float(by_m["sum"].mean()), 2) if not by_m.empty else 0.0,
+        }
+    return out
+
+
+def audit_financial_universe(sectors: dict[str, str], fin_df: pd.DataFrame) -> dict:
+    """53 finansal hissenin veri kapsami, elenen 4 hissenin nedeni ve alt-sektor satir eslesme oranlari."""
+    fin_tickers = sorted((t, s) for t, s in sectors.items() if s in pit_panel.FINANCIAL_SECTORS)
+    in_panel = set(fin_df["ticker"].unique())
+    excluded = []
+    subsector_rows = []
+    req_items = list(FIN_BS_ITEMS.keys()) + list(FIN_INC_ITEMS.keys())
+
+    for t, s in fin_tickers:
+        p = RAW_FIN / f"{t}.pkl"
+        d = pickle.loads(p.read_bytes()) if p.exists() else {}
+        tbl = d.get("tbl")
+        px = d.get("px_raw")
+        long_df = fin_statements_long(t, tbl)
+        found = set(long_df["item"].unique()) if not long_df.empty else set()
+        n_per = int(tbl.shape[1]) if tbl is not None and not tbl.empty else 0
+        n_px = int(len(px)) if px is not None else 0
+        if t not in in_panel:
+            reason = (
+                "Ticker renamed to QNBFK (QNB Finansal Kiralama already in panel)"
+                if t == "QNBFL"
+                else f"Recent listing ({n_px} trading days < 13 months required for 12m history + 1m forward return)"
+            )
+            excluded.append({
+                "ticker": t,
+                "sector": s,
+                "statement_quarters": n_per,
+                "price_days": n_px,
+                "reason": reason,
+            })
+        if n_per > 0:
+            subsector_rows.append({"ticker": t, "sector": s, **{k: (k in found) for k in req_items}})
+
+    cov_df = pd.DataFrame(subsector_rows)
+    by_sec = (
+        cov_df.groupby("sector")[req_items].mean().mul(100.0).round(1).to_dict(orient="index")
+        if not cov_df.empty else {}
+    )
+    return {
+        "total_configured_financial_tickers": len(fin_tickers),
+        "non_empty_statement_tickers": int(len(cov_df)),
+        "in_monthly_panel_tickers": int(len(in_panel)),
+        "excluded_tickers": excluded,
+        "subsector_item_match_pct": by_sec,
+        "template_policy_note": (
+            "Each sub-sector uses a deterministic primary regulatory template "
+            "(Bankacılık/Sigorta/Emeklilik: unconsolidated UFRS; Faktoring/Finansal Kiralama/"
+            "Tasarruf Finansman: BDDK XI_29K; Aracı Kurum/MKYO: SPK XI_29; Varlık Yönetimi: UFRS_B), "
+            "never mixing solo (UFRS) and consolidated (UFRS_K) statements within the same ticker. "
+            "Limitation: İş Yatırım MaliTablo serves the latest comparative/restated column for a "
+            "given quarter rather than an immutable archival snapshot of the initial KAP filing."
+        ),
+    }
 
 
 def evaluate_sector_models(df: pd.DataFrame, cols: list[str], base_col: str,
@@ -426,33 +557,40 @@ def main() -> None:
         extra_bs, on=["ticker", "stmt_period"], how="left"
     )
     hold_scored = compute_holding_scores(hold_sub)
+    hold_models = ["H0_value_sn", "H1_bm_ep_roe", "H2_backing_nav", "H2_backing_nav_pos", "H2_backing_nav_zerofill"]
     s2_holdings = evaluate_sector_models(
-        hold_scored, ["H0_value_sn", "H1_bm_ep_roe", "H2_backing_nav"], "H0_value_sn", top_pct=0.20, min_names=8
+        hold_scored, hold_models, "H0_value_sn", top_pct=0.20, min_names=8
     )
 
     reit_sub = nonfin_df[nonfin_df["sector"] == "Gayrimenkul"].merge(
         extra_bs, on=["ticker", "stmt_period"], how="left"
     )
     reit_scored = compute_reit_scores(reit_sub, q_ext=q_ext)
+    reit_models = ["G0_value_sn", "G1_nav_ffo", "G1_nav_ffo_pos", "G1_nav_ffo_zerofill", "G2_letdin_sirmans_resid"]
     s3_reits = evaluate_sector_models(
-        reit_scored, ["G0_value_sn", "G1_nav_ffo", "G2_letdin_sirmans_resid"], "G0_value_sn", top_pct=0.20, min_names=8
+        reit_scored, reit_models, "G0_value_sn", top_pct=0.20, min_names=8
     )
 
-    # 3. Maliyetli portfoy simulasyonu (S4: P0 vs P1 vs P2, EW net ve BIST 100 TR karsisinda)
+    # 3. Maliyetli portfoy simulasyonu (S4: P0 vs P1 [H1+G1] vs P1b [H2+G1] vs P2, EW net ve BIST 100 TR karsisinda)
     h1_map = hold_scored.set_index(["date", "ticker"])["H1_bm_ep_roe"]
+    h2_map = hold_scored.set_index(["date", "ticker"])["H2_backing_nav"]
     g1_map = reit_scored.set_index(["date", "ticker"])["G1_nav_ffo"]
 
     nonfin_p = nonfin_df[nonfin_df["value_sn_z"].notna()].copy()
     nonfin_p["score_P1"] = nonfin_p["value_sn_z"]
+    nonfin_p["score_P1b"] = nonfin_p["value_sn_z"]
     idx_nf = nonfin_p.set_index(["date", "ticker"]).index
     mask_h = nonfin_p["sector"].to_numpy() == "Holding"
     mask_g = nonfin_p["sector"].to_numpy() == "Gayrimenkul"
     nonfin_p.loc[mask_h, "score_P1"] = h1_map.reindex(idx_nf[mask_h]).to_numpy()
     nonfin_p.loc[mask_g, "score_P1"] = g1_map.reindex(idx_nf[mask_g]).to_numpy()
+    nonfin_p.loc[mask_h, "score_P1b"] = h2_map.reindex(idx_nf[mask_h]).to_numpy()
+    nonfin_p.loc[mask_g, "score_P1b"] = g1_map.reindex(idx_nf[mask_g]).to_numpy()
 
     sel: dict[str, dict[pd.Timestamp, list[str]]] = {
         "P0_nonfin_baseline": {},
         "P1_nonfin_sector_specialized": {},
+        "P1b_nonfin_backing_nav": {},
         "P2_all_bist_with_financials": {},
         "EW_nonfin": {},
     }
@@ -466,6 +604,10 @@ def main() -> None:
         g1 = g[g["score_P1"].notna()]
         r1 = g1["score_P1"].rank(ascending=False, pct=True)
         sel["P1_nonfin_sector_specialized"][t] = sorted(g1.loc[r1 <= TOP, "ticker"])
+
+        g1b = g[g["score_P1b"].notna()]
+        r1b = g1b["score_P1b"].rank(ascending=False, pct=True)
+        sel["P1b_nonfin_backing_nav"][t] = sorted(g1b.loc[r1b <= TOP, "ticker"])
 
         fg = fin_by_dt.get(t)
         if fg is not None and len(fg) >= 5:
@@ -521,7 +663,12 @@ def main() -> None:
     costs = pb.Costs()
     ew_sim = pb.simulate(sel["EW_nonfin"], months, d0_of, mkt, universe_liq, cap, costs=costs).set_index("date")
     sims = {}
-    for pname in ("P0_nonfin_baseline", "P1_nonfin_sector_specialized", "P2_all_bist_with_financials"):
+    for pname in (
+        "P0_nonfin_baseline",
+        "P1_nonfin_sector_specialized",
+        "P1b_nonfin_backing_nav",
+        "P2_all_bist_with_financials",
+    ):
         p = attach_benchmarks(pb.simulate(sel[pname], months, d0_of, mkt, universe_liq, cap, costs=costs), ctx)
         p = p.set_index("date")
         p["ew_net"] = ew_sim["port"].reindex(p.index)
@@ -560,6 +707,21 @@ def main() -> None:
             "n_tickers": int(fin_df["ticker"].nunique()),
             "n_rows": int(len(fin_df)),
             "sectors": fin_df.groupby("sector")["ticker"].nunique().to_dict(),
+            "audit": audit_financial_universe(sectors, fin_df),
+        },
+        "coverage_diagnostics": {
+            "banks": coverage_summary(banks_df, ["bm", "ep", "roe", "B0_bm", "B1_bm_roe", "B2_pb_roe_resid"]),
+            "all_financials": coverage_summary(
+                all_fin_df, ["bm", "ep", "roe", "F0_bm_sn", "F1_bm_roe_sn", "F2_pb_roe_resid"]
+            ),
+            "holdings": coverage_summary(
+                hold_scored,
+                ["bm", "ep", "sp", "ey", "roe", "tangible_bm", "fin_backing", "fin_backing_pos", *hold_models],
+            ),
+            "reits": coverage_summary(
+                reit_scored,
+                ["bm", "ep", "sp", "ey", "roe", "prop_nav", "prop_nav_pos", "op_ep", "lev", *reit_models],
+            ),
         },
         "S1a_banks_descriptive": s1_banks,
         "S1b_all_financials_liquid": s1_all_fin,
