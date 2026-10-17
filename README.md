@@ -19,7 +19,7 @@
 > This project is for research and decision support only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns are model outputs, not guarantees of future performance.
 
 > **Status (2026-10-13)**
-> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 19 pre-registered studies, only the sovereign spread passed, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. The value rule's 2021+ edge is lag-sensitive and about zero against XU100. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
+> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 20 pre-registered studies, only the sovereign spread passed, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. The value rule's 2021+ edge is lag-sensitive and about zero against XU100. Adding 39 delisted stocks cuts its 2013–2020 edge by about 2.4%/yr; the ranking itself holds. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
 
 ---
 
@@ -415,7 +415,7 @@ The usual pass rule is:
 
 Predictive macro tests also need a positive out-of-sample R² and a significant Clark-West test. Each study document gives its exact rule, its data and its known limits.
 
-**Scorecard: 20 studies (19 pre-registered plus the Phase 1 diagnostics), dozens of confirmatory tests, one confirmatory PASS** (the sovereign spread *explains* BIST in the same month). Two more rules were confirmed, though not as passes against a stricter alternative:
+**Scorecard: 21 studies (20 pre-registered plus the Phase 1 diagnostics), dozens of confirmatory tests, one confirmatory PASS** (the sovereign spread *explains* BIST in the same month). Two more rules were confirmed, though not as passes against a stricter alternative:
 - value_sn ranks stocks (`long_term`);
 - the live rule survives realistic costs against the EW universe (`portfolio_backtest`).
 
@@ -453,6 +453,7 @@ No test found a way to time the market or to beat the value rule.
 | [`short_term_preregistration.md`](docs/research/short_term_preregistration.md) | Any 20-day signal? | None of 6 passed. The short-term bucket is an experimental watchlist |
 | [`phase1_diagnostics.md`](docs/research/phase1_diagnostics.md) | Why did live picks include crashed stocks? Currency? Survivorship? | Live score ≠ tested proxy; factor IC identical in TL, USD and XU100-excess; value premium fragile to survivorship |
 | [`long_term_preregistration.md`](docs/research/long_term_preregistration.md) | Do distress, crash, momentum, quality or SUE improve value? | None of 9 passed. Live score = plain `value_sn` (+10.65%/yr discovery, +6.96%/yr holdout) |
+| [`survivorship_delisted_preregistration.md`](docs/research/survivorship_delisted_preregistration.md) | Does value survive adding delisted stocks (İş Yatırım prices + statements for 39 exits, 2013–2022)? | By the rule: **survivorship-fragile** (KAP-date panel). The KAP-date baseline already fails holdout (t 1.99); with delistings: discovery +9.26% → +6.95%/yr (t 2.13), holdout +5.14% → +5.06% (t 1.94). On the 75/100-day panel it holds in every spec, including a −100% exit for all. The exit-return assumption does not matter: failing stocks drop below the liquidity cut before they exit. The loss comes from value traps while they are still listed (−1.39%/month active). Live rule unchanged |
 | [`learned_weights_preregistration.md`](docs/research/learned_weights_preregistration.md) | Do factor weights learned month by month from past ICs (value, GP/A, SUE, momentum, low vol) beat plain value? | FAIL. D −20.08%/yr discovery (t −2.43), −0.71%/yr holdout (t −0.27). Low vol gets the largest weight (high IC) but does not help the top quintile. Value + momentum and value + GP/A + momentum (exploratory) are worse. The unused weekly optimizer is switched off |
 | [`foreign_ownership_preregistration.md`](docs/research/foreign_ownership_preregistration.md) | Does a rising foreign share (3-month change, İş Yatırım/MKK history from 2013-06) predict returns or improve value? | Both FAIL. Standalone −3.07%/yr discovery, +5.46%/yr holdout (sign flips); value + foreign change −5.93%/yr and −1.90%/yr vs value. Foreign level flips sign too (exploratory) |
 | [`entry_timing_preregistration.md`](docs/research/entry_timing_preregistration.md) | Better entry than the next close? | No. Limit/RSI/SMA rules lost to buying immediately |
@@ -718,7 +719,7 @@ pytest tests/ -q
 
 | Area | Status |
 |---|---|
-| Factor weights | Plain value (pre-registered, survivorship-sensitive). Live statements are annual, the panel is quarterly TTM. |
+| Factor weights | Plain value (pre-registered; discovery edge −2.4%/yr after adding delisted stocks, see `survivorship_delisted_preregistration.md`). Live statements are annual, the panel is quarterly TTM. |
 | Financials | Valuation rule untested for banks/insurance/brokers; excluded from the rotation and shown separately as untested |
 | Cone $`z`$ | Fitted on one index series, not on stock outcomes |
 | Target $`\alpha`$ | Estimated from the peer leg only; DCF and quality legs and the ML scenario weights are not tested |
