@@ -47,6 +47,7 @@ from core import regime_taxonomy
 from core import universe as universe_mod
 from core import basis_guard
 from core import run_health as run_health_mod
+from core import forward_record
 from core import piotroski as piotroski_mod
 from core import sloan as sloan_mod
 from core import catalysts as catalysts_mod
@@ -438,14 +439,24 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
 
     # 60g medyan TL hacmi: valuation_z referans kesiti (likidite kesimi) ve rotasyon icin.
     for c in all_candidates:
-        c["tl_vol_med60"] = rotation_mod.tl_volume_median_60(prices_by_ticker.get(c["ticker"], []))
+        bars = prices_by_ticker.get(c["ticker"], [])
+        c["tl_vol_med60"] = rotation_mod.tl_volume_median_60(bars)
+        c["price_date"] = bars[-1].get("date") if bars else None
 
     # --- scoring (hard_filters + final_score + candidate_state + Quant Level-Up Faz 1 Rejim Agirliklari) ---
     as_of_date_cutoff = as_of_date
     scored = scoring_mod.score_candidates(as_of_date, all_candidates, as_of_date_cutoff, regime=predicted_regime)
 
+    # --- veri saglik kapisi (roadmap Adim 6; rotasyondan once: ileriye donuk kayda yazilir; bkz. core/run_health.py) ---
+    health = run_health_mod.assess(
+        as_of_date, prices=run_health_mod.price_stats(as_of_date, prices_by_ticker, xu100_prices),
+        catalyst_available=kap_available)
+    run_health_mod.persist(health)
+    print(f"[run_health] {health['status']} issues={health['issues']} config={health['config_hash']} "
+          f"metrics={health['metrics']}", flush=True)
+
     # --- aylik rotasyon listesi (AL/TUT/SAT; on-kayitli satis testi, kural R0) ---
-    rotation = rotation_mod.monthly_rotation(as_of_date, scored)
+    rotation = rotation_mod.monthly_rotation(as_of_date, scored, health=health)
 
     # --- concentration_check + correlation_diagnostic (yalnizca gecen adaylar uzerinde) ---
     passing = [c for c in scored if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")]
@@ -505,14 +516,6 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
 
     # --- predictions kaydi + thesis_invalidation kosullari ---
     _persist_predictions_and_invalidation(as_of_date, passing)
-
-    # --- veri saglik kapisi (roadmap Adim 6; bkz. core/run_health.py) ---
-    health = run_health_mod.assess(
-        as_of_date, prices=run_health_mod.price_stats(as_of_date, prices_by_ticker, xu100_prices),
-        catalyst_available=kap_available)
-    run_health_mod.persist(health)
-    print(f"[run_health] {health['status']} issues={health['issues']} config={health['config_hash']} "
-          f"metrics={health['metrics']}", flush=True)
 
     # --- payload (decision_diff_engine dahil, bkz. core/payload.py) ---
     payload = payload_mod.build_report_payload(
@@ -831,9 +834,15 @@ def main():
     parser.add_argument("--force", action="store_true", help="Idempotency kontrolunu atla, kosuyu zorla calistir")
     args = parser.parse_args()
 
-    result = run(args.as_of_date, min_volume_tl=args.min_volume_tl, force=args.force)
+    try:
+        result = run(args.as_of_date, min_volume_tl=args.min_volume_tl, force=args.force)
+    except Exception as exc:
+        # Karar uretilemeyen ay da ileriye donuk kayda girer (yalnizca basarili ay sayilmasin)
+        forward_record.append_no_decision(args.as_of_date, f"run_error: {exc!r}"[:500])
+        raise
     print(result)
     if result.get("status") == "halted":
+        forward_record.append_no_decision(args.as_of_date, f"halted: {result.get('reason')}"[:500])
         sys.exit(1)
 
 

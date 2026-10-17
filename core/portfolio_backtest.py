@@ -52,6 +52,13 @@ class Market:
     rf_daily: pd.Series   # islem gunu indeksli
 
 
+def policy_rf_daily(policy_pct: pd.Series, days: pd.DatetimeIndex) -> pd.Series:
+    """Aylik politika faizinden (% yillik, PeriodIndex 'M') gunluk nakit getirisi.
+    Serinin bittigi aylarda son bilinen faiz kullanilir."""
+    rate = policy_pct.ffill().reindex(days.to_period("M")).ffill().to_numpy()
+    return pd.Series((1 + rate / 100) ** (1 / 252) - 1, index=days)
+
+
 def liq_percentile(adv: float, universe_liq: np.ndarray) -> float:
     """adv'nin o ayki likit evren tlvol60 dagilimindaki yuzdeligi (0..1)."""
     if not np.isfinite(adv) or len(universe_liq) == 0:

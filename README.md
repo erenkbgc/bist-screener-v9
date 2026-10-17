@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-425%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-449%20passing-brightgreen)
 ![Backtest](https://img.shields.io/badge/backtest-walk--forward-blueviolet)
 ![Status](https://img.shields.io/badge/status-research%20%E2%80%94%20pre--registered%20value%20rule-orange)
 
@@ -18,7 +18,7 @@
 > **Disclaimer**
 > This project is for research and decision support only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns are model outputs, not guarantees of future performance.
 
-> **Status (2026-10-13)**
+> **Status (2026-10-17)**
 > The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 20 pre-registered studies, only the sovereign spread passed, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. The value rule's 2021+ edge is lag-sensitive and about zero against XU100. Adding 39 delisted stocks cuts its 2013–2020 edge by about 2.4%/yr; the ranking itself holds. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
 
 ---
@@ -136,7 +136,7 @@ flowchart TD
 - **Liquidity cut:** the bottom 30% of non-financial long-term candidates by 60-day median daily TL volume (close × volume, at least 40 bars) are dropped before ranking, as in the tested panel (`factor_backtest.prepare`, `liq_drop_pct=0.3`). The live universe floor of 10M TL is looser; before this cut, about a third of the live top 20% came from the untested illiquid tier.
 - **Rule:** hold the top 20% equal-weighted. The first run of each month stores the list in `rotation_holdings`; later runs in the same month reuse it. A name that leaves the top 20% is sold.
 - **Output:** AL (new), TUT (kept), SAT (dropped).
-- **Locked rule and forward record:** the parameters are fixed in `config/live_rule.json` (version `R0-2026-10-12`); a test fails if `core/rotation.py` drifts from it. From the 2026-11 rebalance, each live decision (list, ranked universe, rule version, UTC timestamp) is appended to `data/forward_record/decisions.jsonl` and committed by CI. `scripts/forward_record_report.py` prices the recorded decisions with the pre-registered portfolio simulator (next-close fills, 1M TL, base costs); it never re-selects. A rule change needs a new pre-registration and version and starts a new series.
+- **Locked rule and forward record:** the parameters are fixed in `config/live_rule.json` (version `R0-2026-10-12`); a test fails if `core/rotation.py` drifts from it. From the 2026-11 rebalance, each live decision (list, ranked universe, rule version, UTC timestamp) is appended to `data/forward_record/decisions.jsonl` and committed by CI. Each record (schema 2) also stores the code commit SHA, the run health status, and for every ranked stock the four ratios, `valid_metric_count`, close and price date, 60-day TL volume, the statement period and its KAP publication date. Runs that produce no decision (empty pool, run error, halted run) are recorded as `no_decision` until the month has a decision. `scripts/forward_record_report.py` prices the recorded decisions with the pre-registered portfolio simulator (next-close fills, 1M TL, base costs, cash earns the policy rate); it never re-selects. It reports the pre-registered delisting assumption (no haircut) next to the 50% haircut sensitivity, and lists months without a decision. A rule change needs a new pre-registration and version and starts a new series.
 - **Diversification:** average pairwise 60-day log-return correlation of the held basket and the effective number of bets $`N/(1+(N-1)\bar\rho)`$ (`core/correlation.py::effective_bets`).
 
 Hurdle, Piotroski, target-price gates do **not** affect this list: the tested rule did not contain them.
@@ -269,7 +269,7 @@ flowchart LR
 - **Cost of equity:** $`k_e = r_f + \beta_{\text{Blume}}\cdot\text{ERP}`$, with $`r_f`$ = 2-year bond yield and ERP = 5% (`config/equity_risk_premium.yaml`).
 - **Drift:** under CAPM, a fairly priced stock earns $`k_e`$. The price target is net of the expected dividend $`D_h = \text{DPS}_{\text{TTM}}\cdot h/365`$, because the price drops by the dividend. The dividend is added back at the hurdle gate.
 - **Partial convergence:** $`\alpha = 0.05`$ (`target_convergence_alpha` in `config/weights.yaml`). The cross-sectional target backtest measured 0.031 (t = 2.5); the old value 0.32 came from a single XU100 series. See [Backtests & Evidence](#backtests--evidence).
-- **Volatility cone:** $`\mu = \ln(1+k_e)`$, $`T = 180/365`$, $`z = 2.5`$ (`calibrated_z_score`). $`\sigma_{60d}`$ is the stdev of *daily* returns and is annualised with $`\sqrt{252}`$. Before 2026-09-27 a unit bug treated it as annual, which pinned every ceiling near $`1.2\,P_0`$.
+- **Volatility cone:** $`\mu = \ln(1+k_e)`$, $`T = 180/365`$, $`z = 1.75`$ (`DEFAULT_CONE_Z`, an uncalibrated prior). $`\sigma_{60d}`$ is the stdev of *daily* returns and is annualised with $`\sqrt{252}`$. Before 2026-09-27 a unit bug treated it as annual, which pinned every ceiling near $`1.2\,P_0`$.
 - **Target-hit probability (model):** lognormal with $`E[S_T]`$ equal to the projected price:
 
 ```math
@@ -278,7 +278,7 @@ P(S_T \ge K) = \Phi\!\left(\frac{\ln(E/K) - s^2/2}{s}\right),\quad s = \sigma\sq
 
   This is a model probability, not a realised hit rate. Empirical hit rates of analyst targets are about 40–55% (Bradshaw, Brown & Huang 2013).
 
-> $`z`$ comes from `scripts/optimize_weights.py` on a single XU100 series. Treat it as a prior. $`\alpha`$ is no longer read from that file.
+> $`z`$ is a fixed assumption. `calibrated_z_score` in `config/weights_optimized.json` is not read: it is fitted on a single XU100 series with $`T`$ in trading days, while the cone uses calendar days on single stocks. $`\alpha`$ is not read from that file either.
 
 **Short-term target** (20 days): $`P_0 + 2.5\cdot\text{ATR}_{20}\cdot b`$, where $`b \in [1.0, 1.3]`$ is a liquidity buffer that widens distances for thin books (20-day TL volume between 50M and 10M).
 
@@ -609,10 +609,10 @@ The pipeline is idempotent: a second run for the same `as_of_date` after a sent 
 
 | Workflow | Schedule | Steps |
 |---|---|---|
-| `ci.yml` | push / PR to `master` | `pytest` (381 tests), config/schema checks |
+| `ci.yml` | push / PR to `master` | `pytest` (449 tests), config/schema checks |
 | `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live; KAP red-flag fetch and LLM labels inside) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry). Secrets: `SMTP_*`, `MAIL_*`, `GROQ_API_KEY` (optional) |
 | `kap-llm-smoke.yml` | manual | Checks the LLM provider with 4 sample disclosures and lists available models |
-| `weekly-optimize.yml` | Sunday 18:00 UTC | `scripts/optimize_weights.py` → cone $`z`$, ML ensemble → commit `config/weights_optimized.json` |
+| `weekly-optimize.yml` | manual only (schedule off since 2026-10-14) | `scripts/optimize_weights.py` → cone $`z`$, ML ensemble → commit `config/weights_optimized.json`. The live score does not read the output; the learned-weights test failed |
 
 A full universe run takes about 2.5–3.5 hours. The job timeout is 350 minutes. KAP often drops connections from GitHub runners; the run health gate reports this as `DEGRADED (kap_unavailable)`.
 
@@ -642,7 +642,7 @@ bist-screener-v9/
 ├── config/               # weights.yaml, equity_risk_premium.yaml, transaction_costs.yaml, ...
 ├── data/                 # bist_history.db, reports/ (committed by CI), research/ (ignored)
 ├── docs/research/        # pre-registrations and results
-├── tests/                # 381 tests
+├── tests/                # 449 tests
 ├── run.py                # daily orchestrator
 └── dashboard.py          # read-only Streamlit
 ```
@@ -696,7 +696,7 @@ streamlit run dashboard.py
 pytest tests/ -q
 ```
 
-381 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
+449 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
 
 ---
 
@@ -705,7 +705,7 @@ pytest tests/ -q
 | File | Content |
 |---|---|
 | `config/weights.yaml` | Scoring weights, regime rows, Piotroski thresholds, valuation triangle weights. **Priors.** |
-| `config/weights_optimized.json` | Weekly optimiser output. Only `calibrated_z_score` is used. |
+| `config/weights_optimized.json` | Output of the manual optimizer. **Not read** by the live score, the targets or the bulletin. |
 | `config/equity_risk_premium.yaml` | ERP 5%, TCMB long-term inflation target, corporate tax 25% |
 | `config/transaction_costs.yaml` | Commission 15 bps round trip, base slippage 20 bps |
 | `config/catalyst_decay.yaml` | Catalyst half-lives |
@@ -753,7 +753,7 @@ Current plan (root cause: the stock-level model has never been backtested cross-
 - [x] **Step 1:** point-in-time fundamentals panel (`core/pit_panel.py`)
 - [x] **Step 2:** adjusted prices for all return calculations
 - [x] **Step 3:** `backtest_factor_model.py`: monthly rebalance, rank-IC, Fama-MacBeth, sub-periods 2016–2020 vs. 2021–2026, Harvey-Liu-Zhu $`t > 3`$
-- [ ] **Step 4:** IC-IR shrinkage calibration of `weights.yaml`, only for significant factors (first step done: momentum set to 0; next: SUE in the live score)
+- [x] **Step 4:** factor weight calibration, closed. Momentum is set to 0. SUE, GP/A and IC-learned weights failed their pre-registered tests, so the live score stays plain `value_sn`. A weight change needs a new pre-registration
 - [ ] **Step 5:** Ledoit-Wolf covariance, ADV-based position limits, square-root market impact
 - [x] **Step 6:** data health gate (`core/run_health.py`): fundamentals and price coverage, empty index series, macro presence, data-driven filter share, KAP availability, and a config hash per run, stored in `run_health` and shown as a banner in the bulletin
 
