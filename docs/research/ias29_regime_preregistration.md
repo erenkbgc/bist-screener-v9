@@ -66,3 +66,39 @@ For each window:
 - ADJ has about 28 decision months, I-only about 18. Only a large break can reach t < −2. A null result is weak evidence of no change.
 - The ADJ period also has other changes: the 2023–2024 policy turn, foreign inflows and a market fall in 2025. These are not separated from the accounting change.
 - Within-year IAS 29 YTD figures are restated to each quarter's purchasing power, so quarterly differences mix units. The live score uses the same numbers, so the test measures what the live rule sees.
+
+## Results (added 2026-10-17, after the run; the sections above are unchanged)
+
+Run: `python scripts/research_ias29_regime.py`. Output: `data/reports/research_ias29_regime_2026-10-17.json`.
+
+Implementation detail: the top-quintile portfolio is built once over the whole panel. Months are then selected by regime, so the first month of each window does not pay a full-turnover cost.
+
+Month regimes (kapdates): 131 N, 10 T, 19 I, 2 mixed (2024-03, 2024-04).
+
+**kapdates (primary)**, rank IC mean (NW t); top-quintile net active %/yr (NW t):
+
+| Window | Months | Net active | value_sn IC | B/M IC | E/P IC | S/P IC | EBIT/EV IC |
+|---|---|---|---|---|---|---|---|
+| Discovery 2013–2020 | 93 | +9.26 (2.75) | +0.040 (5.46) | +0.019 (1.79) | +0.034 (2.52) | +0.026 (2.66) | +0.053 (5.09) |
+| NOM 2021-01 → 2024-02 | 38 | +5.49 (1.86) | +0.077 (4.55) | +0.049 (4.77) | +0.069 (4.64) | +0.060 (5.32) | +0.064 (4.23) |
+| **ADJ 2024-05 → 2026-09** | 28 | **+2.98 (0.70)** | **+0.034 (2.18)** | +0.020 (1.01) | +0.053 (3.86) | **−0.019 (−1.29)** | +0.041 (3.07) |
+| I-only 2025-03 → | 18 | +7.46 (1.14) | +0.045 (2.23) | +0.017 (0.60) | +0.066 (3.90) | −0.013 (−0.63) | +0.044 (2.18) |
+| T-only | 10 | −5.08 (−0.83) | +0.014 (1.13) | +0.025 (1.04) | +0.031 (3.40) | −0.030 (−3.07) | +0.037 (5.92) |
+
+- ADJ − NOM net active: −2.51%/yr (t −0.49). I-only − NOM: +1.97%/yr (t 0.27).
+- lag75 gives the same picture. ADJ: +5.34%/yr (t 1.18), IC +0.043 (t 2.54), S/P IC −0.015. ADJ − NOM: −2.92%/yr (t −0.57).
+
+**Verdict by the rule: CONSISTENT.**
+- ADJ IC is positive with t 2.18 > 2.
+- ADJ net active is positive.
+- ADJ − NOM is not significant (t −0.49).
+
+### Reading
+
+- Value still ranks stocks under IAS 29. The IC is about half of the 2021–2024 nominal level (0.034 vs 0.077), but close to the 2013–2020 level (0.040).
+- The top quintile's net active return in ADJ is positive but not significant (t 0.70) over only 28 months. The rule could not detect a modest decline. "Consistent" here means "no break detected", not "unchanged".
+- **Exploratory, not part of the rule:** S/P is the only ratio whose IC turns negative after the switch, in both panels and in both T and I. E/P and EBIT/EV keep their sign and significance. B/M weakens. The restatement of sales under IAS 29 may make S/P a measure of something else. By the rule this is **not** acted on here. It is a candidate hypothesis for a separate pre-registration, which would need data the present test has not seen (for example the forward record from 2026-11).
+
+### Decision (as fixed above)
+
+- CONSISTENT: no change to the live rule. The README notes that value ranking holds under IAS 29, at a lower IC, and records the S/P observation as an open question.
