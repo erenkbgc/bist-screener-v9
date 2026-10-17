@@ -263,7 +263,17 @@ def live_value_inputs(ticker: str, market_cap: float | None) -> dict:
     from core import pit_panel
     bs, inc = _quarterly_statements_cached(ticker)
     vi = pit_panel.latest_value_ratios(ticker, bs, inc, market_cap)
-    return {k: (None if isinstance(v, float) and not math.isfinite(v) else v) for k, v in vi.items()}
+    clean = lambda v: None if isinstance(v, float) and not math.isfinite(v) else v  # noqa: E731
+    out = {k: clean(v) for k, v in vi.items() if k != "inputs"}
+    out["inputs"] = {k: clean(v) for k, v in vi["inputs"].items()}
+    # Kaynak: kullanilan ceyregin KAP ilk yayini (eslesmezse None; UYDURULMAZ) ve gozlem ani
+    pub = live_financial_report_published_dt(ticker, out["stmt_period_end"]) if out["stmt_period_end"] else None
+    out["kap_published_at"] = pub.isoformat(timespec="minutes") if pub else None
+    out["kap_available_at"] = ((pub.date() + timedelta(days=1)) if pub.hour >= pit_panel.SESSION_CLOSE_HOUR
+                               else pub.date()).isoformat() if pub else None
+    out["source"] = "isyatirim_quarterly_ytd"
+    out["observed_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return out
 
 
 @lru_cache(maxsize=2048)
@@ -996,6 +1006,12 @@ def live_financial_report_published_at(ticker: str, period_end: str) -> str | No
     Eslesen bir bildirim bulunamazsa (agsal hata, kapsam disi pencere, cok
     yeni sirket) None doner -- UYDURULMAZ; cagiran taraf (core/fundamentals.py)
     bu durumda point_in_time hard filter'inin adayi elemesine izin verir."""
+    dt = live_financial_report_published_dt(ticker, period_end)
+    return dt.date().isoformat() if dt else None
+
+
+def live_financial_report_published_dt(ticker: str, period_end: str) -> datetime | None:
+    """live_financial_report_published_at ile ayni eslesme, saatiyle (seans sonrasi kurali icin)."""
     try:
         period_end_date = datetime.strptime(period_end, "%Y-%m-%d").date()
     except Exception:
@@ -1011,16 +1027,16 @@ def live_financial_report_published_at(ticker: str, period_end: str) -> str | No
         if not _FINANCIAL_REPORT_TITLE_RE.search(title):
             continue
         try:
-            pub_dt = datetime.strptime(str(row["Date"]), "%d.%m.%Y %H:%M:%S").date()
+            pub_dt = datetime.strptime(str(row["Date"]), "%d.%m.%Y %H:%M:%S")
         except Exception:
             continue
-        lag_days = (pub_dt - period_end_date).days
+        lag_days = (pub_dt.date() - period_end_date).days
         # Finansal rapor HER ZAMAN donem sonundan SONRA yayinlanir; pencere
         # disinda kalanlar (negatif veya > MAX_LAG) baska bir doneme aittir.
         if 0 < lag_days <= _FINANCIAL_REPORT_MAX_LAG_DAYS and (best is None or lag_days < best[0]):
             best = (lag_days, pub_dt)
 
-    return best[1].isoformat() if best else None
+    return best[1] if best else None
 
 
 def live_upcoming_events(tickers: list[str], as_of_date: str) -> list[dict]:

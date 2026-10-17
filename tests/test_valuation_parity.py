@@ -94,8 +94,33 @@ def test_live_value_inputs_use_panel_ttm_definition():
                       ("Ana Ortaklığa Ait Özkaynaklar", "Nakit ve Nakit Benzerleri", "Finansal Borçlar"))
     assert vi["ey"] == pytest.approx(ttm[1] / (400.0 + debt - cash))
     assert (vi["bm"] == pytest.approx(eq / 400.0)) if eq > 0 else np.isnan(vi["bm"])
-    assert all(np.isnan(v) for k, v in pit_panel.latest_value_ratios("X", None, None, 400.0).items()
-               if k != "stmt_period")
+    assert vi["stmt_period_end"] == "2026-06-30"
+    assert vi["inputs"]["ttm_revenue"] == pytest.approx(ttm[0]) and vi["inputs"]["market_cap"] == 400.0
+    empty = pit_panel.latest_value_ratios("X", None, None, 400.0)
+    assert all(np.isnan(empty[k]) for k in ("bm", "ep", "sp", "ey")) and empty["stmt_period"] is None
+
+
+def test_live_value_inputs_record_kap_date_of_used_quarter(monkeypatch):
+    """KAP tarihi kullanilan ceyregin donem sonuyla sorgulanir; 18:00 sonrasi yayin ertesi gun
+    kullanilabilir; eslesme yoksa None (uydurulmaz)."""
+    from datetime import datetime
+
+    from core import live_data as ld
+    bs, inc, _ = _ytd_statements(5)
+    monkeypatch.setattr(ld, "_quarterly_statements_cached", lambda tk: (bs, inc))
+    asked = []
+
+    def fake_pub(tk, period_end):
+        asked.append(period_end)
+        return datetime(2026, 8, 10, 18, 45) if tk == "HAS" else None
+    monkeypatch.setattr(ld, "live_financial_report_published_dt", fake_pub)
+    vi = ld.live_value_inputs("HAS", 400.0)
+    assert asked == ["2026-06-30"]
+    assert vi["kap_published_at"] == "2026-08-10T18:45" and vi["kap_available_at"] == "2026-08-11"
+    assert vi["source"] == "isyatirim_quarterly_ytd" and vi["observed_at"]
+    none = ld.live_value_inputs("NONE", 400.0)
+    assert none["kap_published_at"] is None and none["kap_available_at"] is None
+    assert none["ep"] == vi["ep"]  # yayin tarihi oranlari degistirmez
 
 
 @pytest.mark.parametrize("seed", [1, 7, 42])

@@ -44,7 +44,11 @@ def load_daily(ticker: str) -> pd.DataFrame | None:
     if not f.exists():
         return None
     d = pickle.loads(f.read_bytes())
-    adj, raw = d.get("px_adj"), d.get("px_raw")
+    return daily_frame(d.get("px_adj"), d.get("px_raw"))
+
+
+def daily_frame(adj: pd.DataFrame | None, raw: pd.DataFrame | None) -> pd.DataFrame | None:
+    """borsapy duzeltilmis + ham gunluk seriden simulator girdisi (Open, Close, tl_vol, adv, sigma)."""
     if adj is None or adj.empty or raw is None or raw.empty:
         return None
     adj = adj[["Open", "Close"]].astype(float).copy()
