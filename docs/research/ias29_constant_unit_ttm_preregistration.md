@@ -61,3 +61,37 @@ The S/P sign question is reported (S/P IC under C1 in ADJ), but no ratio is drop
 - The CPI restatement uses the month of period end. Companies restate with the same TÜİK index, but their exact method (and any sector-specific indices) may differ.
 - 2023Q4 is a first-application report. How the provider shows the 2023 Q1–Q3 YTD figures (nominal as published, or restated) is not known. C1 treats them as nominal.
 - The ADJ window is short (about 28 months) and has been seen. This test can only catch a clear deterioration.
+
+## Results (added 2026-10-17, after the run; the sections above are unchanged)
+
+Run: `python scripts/research_ias29_constant_unit.py`. Output: `data/reports/research_ias29_constant_unit_2026-10-17.json`.
+
+**Check (rule 1): valid.** Rows using statements before 2023Q4 are identical under C0 and C1:
+- kapdates: 43,610 rows, 0 mismatches in E/P, S/P, EBIT/EV, B/M and `fwd_ret_1m`;
+- lag75: 43,427 rows, 0 mismatches.
+
+Of the IAS 29 rows, about 12,100 (kapdates) change E/P and EBIT/EV, and about 11,900 change S/P. Q4 rows do not change: their TTM is the annual YTD figure, already in one unit. The NOM window has a few rows (about 5% in 2024-02) already on 2023Q4 statements. That explains the 5.32 → 5.33 change in the NOM S/P t.
+
+**ADJ window, C0 → C1**:
+
+| Panel | Net active %/yr (t) | value_sn IC (t) | E/P IC | S/P IC | EBIT/EV IC |
+|---|---|---|---|---|---|
+| kapdates C0 | +2.98 (0.70) | +0.034 (2.18) | +0.053 | −0.019 | +0.041 |
+| kapdates C1 | +4.14 (1.06) | +0.034 (2.21) | +0.054 | −0.019 | +0.042 |
+| lag75 C0 | +5.34 (1.18) | +0.043 (2.54) | +0.062 | −0.015 | +0.047 |
+| lag75 C1 | +6.29 (1.39) | +0.043 (2.56) | +0.066 | −0.014 | +0.048 |
+
+Paired C1 − C0 over the ADJ months:
+- kapdates: IC −0.0001 (t −0.21); net active +1.16%/yr (t 1.43).
+- lag75: IC −0.0000 (t −0.08); net active +0.94%/yr (t 2.39).
+
+**Decision by the rule: ADOPT_C1** (kapdates). C1 is not worse on either criterion. The improvement is reported but was not the criterion.
+
+### Reading
+
+- The unit fix leaves the rank IC unchanged. It slightly raises the top quintile's net active return in both panels.
+- **The S/P sign flip is not explained by the unit mismatch.** Under C1, S/P IC in ADJ is still −0.019 (kapdates). The cause lies elsewhere: for example sales restatement itself, or sector mix in 2024–2026. Per the pre-registration, no ratio is dropped on this.
+
+### Next step (as fixed above)
+
+A separate PR moves the research panel build and the live value inputs to C1, with a parity test and a dated README note.
