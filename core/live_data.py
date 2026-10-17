@@ -680,6 +680,8 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         # value_sn girdileri (core/ranking.py::sales_yield / ebit_yield)
         "_revenue": revenue,
         "_op_profit": op_inc,
+        # Kullanilan donem (tablonun en yeni sutunu); ileriye donuk kayit icin
+        "_statement_period": str(inc.columns[0]) if inc is not None and len(inc.columns) else None,
         "_nav_per_share": nav_per_share,
         "_portfolio_value": portfolio_val,
     }

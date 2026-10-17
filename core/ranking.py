@@ -113,6 +113,11 @@ def _metric_value(c: dict, metric: str) -> float | None:
     return v if v is not None and _finite(v) else None
 
 
+def value_sn_ratios(c: dict) -> dict[str, float | None]:
+    """value_sn'in dort ham orani (E/P, B/M, S/P, EBIT/EV); hesaplanamayan None."""
+    return {m: _metric_value(c, m) for m in VALUE_SN_METRICS}
+
+
 def _quantile(sorted_vals: list[float], q: float) -> float:
     """pandas Series.quantile (lineer interpolasyon) ile ayni."""
     k = (len(sorted_vals) - 1) * q

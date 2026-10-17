@@ -23,6 +23,7 @@ from bisect import bisect_right
 from statistics import median
 
 from core import db, forward_record
+from core.ranking import value_sn_ratios
 from core.pit_panel import FINANCIAL_SECTORS
 
 TOP_PCT = 0.20
@@ -55,19 +56,24 @@ def _eligible(candidates: list[dict], financial: bool = False) -> list[dict]:
             and c.get("valuation_z") is not None]
 
 
-def _liquid_tickers(candidates: list[dict]) -> set[str]:
-    """Finansal olmayan uzun vade adaylari icinde 60g medyan TL hacmine gore alt %30'u atar."""
+def _liquidity_cut(candidates: list[dict]) -> tuple[dict[str, float], float | None]:
+    """Finansal olmayan uzun vade adaylarinin 60g medyan TL hacmi ve alt %30 kesim degeri."""
     liq = {c["ticker"]: c["tl_vol_med60"] for c in candidates
            if c.get("bucket") == "long_term" and not is_financial(c)
            and c.get("tl_vol_med60") is not None and c["tl_vol_med60"] > 0}
     if not liq:
-        return set()
+        return liq, None
     vals = sorted(liq.values())
     # pandas Series.quantile (lineer) ile ayni kesim
     pos = LIQ_DROP_PCT * (len(vals) - 1)
     lo = int(pos)
-    cut = vals[lo] + (vals[min(lo + 1, len(vals) - 1)] - vals[lo]) * (pos - lo)
-    return {t for t, v in liq.items() if v >= cut}
+    return liq, vals[lo] + (vals[min(lo + 1, len(vals) - 1)] - vals[lo]) * (pos - lo)
+
+
+def _liquid_tickers(candidates: list[dict]) -> set[str]:
+    """Finansal olmayan uzun vade adaylari icinde 60g medyan TL hacmine gore alt %30'u atar."""
+    liq, cut = _liquidity_cut(candidates)
+    return {t for t, v in liq.items() if v >= cut} if cut is not None else set()
 
 
 def _percentiles(values: dict[str, float]) -> dict[str, float]:
@@ -120,6 +126,37 @@ def untested_financials(candidates: list[dict]) -> list[dict]:
     return [{"ticker": c["ticker"], "sector": c.get("sector")} for c in pool[:n_top]]
 
 
+def decision_details(candidates: list[dict], health: dict | None = None) -> dict:
+    """Ileriye donuk kayit icin karar anindaki durum: tum siralama evreni (oranlar,
+    likidite, fiyat ve finansal tablo tarihleri), evren sayimlari ve veri sagligi."""
+    pool = ranking_pool(candidates)
+    _, cut = _liquidity_cut(candidates)
+    ranking = []
+    for i, c in enumerate(pool):
+        fnd = c.get("_raw_fundamentals") or {}
+        ranking.append({
+            "rank": i + 1, "ticker": c["ticker"], "valuation_z": c["valuation_z"],
+            "valid_metric_count": c.get("valid_metric_count"), **value_sn_ratios(c),
+            "tl_vol_med60": c.get("tl_vol_med60"), "market_cap": c.get("market_cap"),
+            "close": c.get("current_price"), "price_date": c.get("price_date"),
+            "statement_period": (fnd.get("_raw") or {}).get("_statement_period"),
+            "published_at": fnd.get("published_at"), "effective_at": fnd.get("effective_at"),
+            "pit_source": fnd.get("pit_source"),
+        })
+    long_term = [c for c in candidates if c.get("bucket") == "long_term" and not is_financial(c)]
+    price_dates = [r["price_date"] for r in ranking if r["price_date"]]
+    return {
+        "ranking": ranking,
+        "counts": {"long_term_nonfinancial": len(long_term), "eligible": len(_eligible(candidates)),
+                   "pool": len(pool)},
+        "liq_cut_tl": cut,
+        "price_date_max": max(price_dates, default=None),
+        "price_date_min": min(price_dates, default=None),
+        "health": ({"status": health.get("status"), "issues": health.get("issues"),
+                    "config_hash": health.get("config_hash")} if health else None),
+    }
+
+
 def _holdings(rebalance_date: str) -> list[dict]:
     rows = db.query("SELECT ticker, valuation_z, rank_pct, market_cap, mcap_pct, liq_pct "
                     "FROM rotation_holdings WHERE rebalance_date=? "
@@ -127,7 +164,7 @@ def _holdings(rebalance_date: str) -> list[dict]:
     return [dict(r) for r in rows]
 
 
-def monthly_rotation(as_of_date: str, candidates: list[dict]) -> dict:
+def monthly_rotation(as_of_date: str, candidates: list[dict], health: dict | None = None) -> dict:
     month = as_of_date[:7]
     rows = db.query("SELECT DISTINCT rebalance_date FROM rotation_holdings WHERE rebalance_date <= ? "
                     "ORDER BY rebalance_date DESC LIMIT 2", (as_of_date,))
@@ -138,14 +175,17 @@ def monthly_rotation(as_of_date: str, candidates: list[dict]) -> dict:
     else:
         current = select_top(candidates)
         current_date, prev_date = as_of_date, (dates[0] if dates else None)
+        details = decision_details(candidates, health)
         if current:
             forward_record.append_decision(as_of_date, [h["ticker"] for h in current],
-                                           [c["ticker"] for c in ranking_pool(candidates)])
+                                           [r["ticker"] for r in details["ranking"]], details=details)
             db.executemany(
                 "INSERT OR REPLACE INTO rotation_holdings (rebalance_date, ticker, valuation_z, rank_pct, "
                 "market_cap, mcap_pct, liq_pct) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 [(as_of_date, h["ticker"], h["valuation_z"], h["rank_pct"], h.get("market_cap"),
                   h.get("mcap_pct"), h.get("liq_pct")) for h in current])
+        else:
+            forward_record.append_no_decision(as_of_date, "empty_pool", details=details)
     prev = {h["ticker"] for h in _holdings(prev_date)} if prev_date else set()
     cur = {h["ticker"] for h in current}
     return {

@@ -99,8 +99,7 @@ def build():
 
     macro = pd.read_parquet(RESEARCH / "macro_monthly.parquet")
     macro.index = pd.to_datetime(macro.index).to_period("M")
-    policy = macro["policy"].ffill()
-    rf_daily = pd.Series((1 + policy.reindex(days.to_period("M")).to_numpy() / 100) ** (1 / 252) - 1, index=days)
+    rf_daily = pb.policy_rf_daily(macro["policy"], days)
     cpi_idx = (1 + macro["cpi_mom"].fillna(0) / 100).cumprod()
     ref = cpi_idx[CAPITAL_REF.to_period("M")]
     cpi_rel = {t: float(cpi_idx[t.to_period("M")] / ref) for t in months}
