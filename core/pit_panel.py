@@ -237,6 +237,78 @@ def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: p
     return paid_in * f
 
 
+def _equity(last) -> float | None:
+    eq = last.get("equity_parent")
+    if eq is None or not np.isfinite(eq):
+        eq = last.get("equity")
+    return eq
+
+
+def _ttm_net_income(last) -> float | None:
+    ni = last.get("ttm_ni_parent")
+    if ni is None or not np.isfinite(ni):
+        ni = last.get("ttm_net_income")
+    return ni
+
+
+def value_ratios(last, mcap: float) -> dict[str, float]:
+    """value_sn'in dort orani (B/M, E/P, S/P, EBIT/EV): son kullanilabilir ceyrek
+    satiri (quarterly_table) ve piyasa degerinden. Panel ve canli skor ayni
+    fonksiyonu kullanir (core/live_data.py::live_value_inputs)."""
+    eq, ni = _equity(last), _ttm_net_income(last)
+    # Eksik borc/nakit 0 sayilmaz (borcsuz sirket satiri 0 olarak raporlar);
+    # bilinmeyen net borcla EV piyasa degerine esitlenip EBIT/EV sisiyordu.
+    fd, cash = last.get("fin_debt"), last.get("cash")
+    ev_val = (mcap + fd - cash) if fd is not None and cash is not None \
+        and np.isfinite(fd) and np.isfinite(cash) else np.nan
+    op = last.get("ttm_op_profit")
+    return {
+        "bm": eq / mcap if eq and eq > 0 else np.nan,
+        "ep": ni / mcap if ni is not None and np.isfinite(ni) else np.nan,
+        "sp": last.get("ttm_revenue") / mcap if last.get("ttm_revenue") else np.nan,
+        "ey": (op / ev_val) if (op is not None and np.isfinite(op) and np.isfinite(ev_val) and ev_val > 0) else np.nan,
+    }
+
+
+def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame | None,
+                        mcap: float | None) -> dict:
+    """Canli: saglayicinin dondurdugu en son ceyrekle value_ratios (+ stmt_period).
+    Saglayicidaki her ceyrek yayinlanmistir; tablo yoksa oranlar NaN."""
+    out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None}
+    long = statements_long(ticker, bs, inc)
+    if long.empty or not mcap or mcap <= 0:
+        return out
+    q = quarterly_table(long)
+    last = q.iloc[-1]  # period_end'e gore sirali
+    return {**value_ratios(last, mcap), "stmt_period": last["period"]}
+
+
+def fetch_statement(ticker: str, statement_type: str, last_n: int) -> pd.DataFrame | None:
+    """Is Yatirim sanayi sablonu, ceyreklik (YTD) son last_n donem. borsapy
+    ``get_financial_statements`` esdegeri, kartezyen join hatasi olmadan
+    (merge_statement_batches). Panel (build_pit_panel) ve canli skor ayni cekimi kullanir."""
+    from datetime import datetime
+
+    from borsapy._providers.isyatirim import get_isyatirim_provider
+
+    prov = get_isyatirim_provider()
+    periods = prov._get_periods(datetime.now().year, True, count=last_n)
+    step = prov._MAX_PERIODS_PER_CALL
+    batches = []
+    for i in range(0, len(periods), step):
+        try:
+            batches.append(prov._fetch_financial_table(
+                symbol=ticker, financial_group=prov.FINANCIAL_GROUP_INDUSTRIAL,
+                periods=periods[i:i + step], quarterly=True, statement_type=statement_type,
+            ))
+        except Exception:  # noqa: BLE001
+            continue
+    df = merge_statement_batches(batches)
+    if df.empty:
+        return None
+    return df[sorted(df.columns, key=prov._period_sort_key, reverse=True)]
+
+
 def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFrame,
                           sectors: dict[str, str]) -> pd.DataFrame:
     """Her (ticker, ay sonu) icin nokta-zamanli faktor satiri + ileri 1 aylik getiri."""
@@ -264,17 +336,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
             mcap = p.at[i, "raw"] * shares
             if not mcap or mcap <= 0:
                 continue
-            eq = last.get("equity_parent")
-            if eq is None or not np.isfinite(eq):
-                eq = last.get("equity")
-            ni = last.get("ttm_ni_parent")
-            if ni is None or not np.isfinite(ni):
-                ni = last.get("ttm_net_income")
-            # Eksik borc/nakit 0 sayilmaz (borcsuz sirket satiri 0 olarak raporlar);
-            # bilinmeyen net borcla EV piyasa degerine esitlenip EBIT/EV sisiyordu.
-            fd, cash = last.get("fin_debt"), last.get("cash")
-            ev_val = (mcap + fd - cash) if fd is not None and cash is not None \
-                and np.isfinite(fd) and np.isfinite(cash) else np.nan
+            eq, ni = _equity(last), _ttm_net_income(last)
             # SUE: mevsimsel rastgele yuruyus (Foster-Olsen-Shevlin), son 8 degisimin std'si
             qn = avail["q_ni_parent"] if "q_ni_parent" in avail else pd.Series(dtype=float)
             sue = np.nan
@@ -290,11 +352,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
             rows.append({
                 "date": t, "ticker": tk, "sector": sectors.get(tk, "BILINMIYOR"),
                 "mcap": mcap, "size": math.log(mcap), "tlvol60": p.at[i, "tlvol60"],
-                "bm": eq / mcap if eq and eq > 0 else np.nan,
-                "ep": ni / mcap if ni is not None and np.isfinite(ni) else np.nan,
-                "sp": last.get("ttm_revenue") / mcap if last.get("ttm_revenue") else np.nan,
-                "ey": (last.get("ttm_op_profit") / ev_val) if (last.get("ttm_op_profit") is not None
-                                                               and np.isfinite(last.get("ttm_op_profit", np.nan)) and np.isfinite(ev_val) and ev_val > 0) else np.nan,
+                **value_ratios(last, mcap),
                 "gpa": (last.get("ttm_gross_profit") / ta) if (ta and ta > 0 and last.get("ttm_gross_profit") is not None) else np.nan,
                 "roe": (ni / eq) if (eq and eq > 0 and ni is not None and np.isfinite(ni)) else np.nan,
                 "mom_12_1": adj[i - 1] / adj[i - 12] - 1 if adj[i - 12] > 0 else np.nan,

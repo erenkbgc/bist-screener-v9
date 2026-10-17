@@ -150,6 +150,8 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
         "payout_ratio": fnd.get("payout_ratio"), "fcf_ttm": fnd.get("fcf_ttm"),
         "financial_expenses_ttm": raw.get("_financial_expenses_ttm"),
         "revenue_ttm": raw.get("_revenue"), "op_profit_ttm": raw.get("_op_profit"),
+        # canli: value_sn oranlari panel tanimiyla (ceyreklik TTM); mock'ta yok -> eski yol
+        "value_inputs": raw.get("_value_inputs"),
         "piotroski_normalized_score": pio.get("normalized_score"),
         "sloan_flag": bool(sl.get("elevated_risk_flag")), "sloan_peer_percentile": sl.get("peer_percentile"),
         "catalyst_score": cat.get("catalyst_score", 0.0),

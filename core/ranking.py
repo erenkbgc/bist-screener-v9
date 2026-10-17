@@ -113,6 +113,12 @@ _DERIVED = {"ep": earnings_yield, "bm": book_to_market, "sp": sales_yield, "ey":
 
 
 def _metric_value(c: dict, metric: str) -> float | None:
+    vi = c.get("value_inputs")
+    if vi is not None and metric in VALUE_SN_METRICS:
+        # Canli: test edilen panel tanimi (pit_panel.value_ratios, ceyreklik TTM).
+        # Eksik oran eksik kalir; saglayici F/K, PD/DD veya yillik tabloyla doldurulmaz.
+        v = vi.get(metric)
+        return v if v is not None and _finite(v) else None
     fn = _DERIVED.get(metric)
     v = fn(c) if fn else c.get(metric)
     return v if v is not None and _finite(v) else None

@@ -31,6 +31,7 @@ UNKNOWN_RATIO_HALT_THRESHOLD=0.30 ustunde kalirsa kosu zaten durur).
 from __future__ import annotations
 
 import json
+import math
 import re
 import socket
 import warnings
@@ -235,6 +236,34 @@ def _earnings_dates_cached(ticker: str):
         return _ticker_obj(ticker).earnings_dates
     except Exception:
         return None
+
+
+# value_sn girdileri icin ceyreklik tablo: TTM son 4 ayrik ceyregi, Q2-Q4 ayriklari
+# bir onceki YTD'yi ister; 8 donem (2 batch) her zaman yeter.
+VALUE_QUARTERS = 8
+
+
+@lru_cache(maxsize=2048)
+def _quarterly_statements_cached(ticker: str):
+    """(balance_sheet, income_stmt) ceyreklik YTD, arastirma paneliyle ayni cekim
+    (core/pit_panel.fetch_statement, sanayi sablonu)."""
+    from core import pit_panel
+    try:
+        return (pit_panel.fetch_statement(ticker, "balance_sheet", VALUE_QUARTERS),
+                pit_panel.fetch_statement(ticker, "income_stmt", VALUE_QUARTERS))
+    except Exception:  # noqa: BLE001
+        return None, None
+
+
+def live_value_inputs(ticker: str, market_cap: float | None) -> dict:
+    """value_sn'in dort orani, test edilen panelle AYNI tanimla (pit_panel.value_ratios):
+    son yayinlanmis ceyrek, TTM net kar / satis / faaliyet kari, ayni ceyregin
+    ozkaynak ve finansal borc - nakdi. Eksik oran None (yillik tablo veya saglayici
+    F/K, PD/DD ile DOLDURULMAZ: docs/research/live_vs_panel_audit.md)."""
+    from core import pit_panel
+    bs, inc = _quarterly_statements_cached(ticker)
+    vi = pit_panel.latest_value_ratios(ticker, bs, inc, market_cap)
+    return {k: (None if isinstance(v, float) and not math.isfinite(v) else v) for k, v in vi.items()}
 
 
 @lru_cache(maxsize=2048)
@@ -663,6 +692,7 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     # veri yok -- bkz. _statements_cached) fundamentals.py'ye "unknown" sinyali
     # gonderilir; bu, regulator eslemesini KASITLI olarak ezer.
     reporting_basis = "unknown" if (bs is None and inc is None) else None
+    value_inputs = None if is_financial else live_value_inputs(ticker, market_cap)
     return {
         "reporting_basis": reporting_basis,  # None ise fundamentals.py basis_guard ile doldurur
         "pe": pe, "pb": pb, "ev_ebitda": ev_ebitda, "ev_sales": ev_sales, "roe": roe,
@@ -682,6 +712,8 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
         "_op_profit": op_inc,
         # Kullanilan donem (tablonun en yeni sutunu); ileriye donuk kayit icin
         "_statement_period": str(inc.columns[0]) if inc is not None and len(inc.columns) else None,
+        # value_sn: test edilen panel tanimi (ceyreklik TTM), core/ranking.py bunu kullanir
+        "_value_inputs": value_inputs,
         "_nav_per_share": nav_per_share,
         "_portfolio_value": portfolio_val,
     }

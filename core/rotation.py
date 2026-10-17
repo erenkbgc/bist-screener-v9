@@ -139,7 +139,8 @@ def decision_details(candidates: list[dict], health: dict | None = None) -> dict
             "valid_metric_count": c.get("valid_metric_count"), **value_sn_ratios(c),
             "tl_vol_med60": c.get("tl_vol_med60"), "market_cap": c.get("market_cap"),
             "close": c.get("current_price"), "price_date": c.get("price_date"),
-            "statement_period": (fnd.get("_raw") or {}).get("_statement_period"),
+            "statement_period": ((c.get("value_inputs") or {}).get("stmt_period")
+                                 or (fnd.get("_raw") or {}).get("_statement_period")),
             "published_at": fnd.get("published_at"), "effective_at": fnd.get("effective_at"),
             "pit_source": fnd.get("pit_source"),
         })

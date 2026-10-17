@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from core import delisted  # noqa: E402
-from build_pit_panel import fetch_statement  # noqa: E402
+from core.pit_panel import fetch_statement  # noqa: E402
 
 RESEARCH = ROOT / "data" / "research"
 OUT = RESEARCH / "raw_delisted"

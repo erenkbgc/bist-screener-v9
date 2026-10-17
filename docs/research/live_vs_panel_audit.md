@@ -58,3 +58,14 @@ Panel 2026-09-30 `value_sn_z` (liquidity cut applied) against live `valuation_z`
 - **Data: not the tested strategy yet.** The live list uses older, annual statements and provider ratios. The tested rule uses quarterly TTM with KAP dates. The overlap is about 80%.
 - **Recommended fix (not done here):** build the live value_sn inputs with the same `pit_panel` functions as the panel: quarterly statements → TTM, `available_at` ≤ run day, E/P and B/M from the panel's own definitions. That is one canonical selection path. It restores the tested definition, so it is a parity fix, not a new rule. It does change the live list, so it should land before the forward series starts, or the series should note the change date.
 - Re-run this script after PR #70 and after the next rebalance to see how much of the gap remains.
+
+## Follow-up (2026-10-17): fixed
+
+Live value_sn inputs now come from the same code as the panel: `pit_panel.fetch_statement` (8 quarters, industrial template) → `quarterly_table` → `value_ratios`, through `live_data.live_value_inputs`. `core/ranking.py` uses these four ratios whenever they are present and never falls back to provider P/E, P/B or annual items for them.
+
+Check on real data: the live fetch path was run for all 527 panel stocks with the panel's 2026-09-30 market caps.
+- 518 stocks use the same quarter as the panel, and all four ratios are identical.
+- 9 stocks use a newer quarter, published after 2026-09-30 (late filers and the June-year football clubs). That is expected.
+- The fetch takes about 45 seconds for the whole universe.
+
+One known difference remains. The panel makes a report usable on the next day when it is published after 18:00. The live run (18:30 Istanbul) uses any quarter the provider already has. This affects at most the reports published between 18:00 and the run on that day.
