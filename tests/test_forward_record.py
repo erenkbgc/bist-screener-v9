@@ -173,3 +173,37 @@ def test_cash_earns_policy_rate_and_delist_haircut():
     two_cut = (1 + cut.iloc[0]["port"]) * (1 + cut.iloc[1]["port"])
     assert two > 1
     assert np.isclose(two_cut, two / 2, rtol=0.05)
+
+
+def test_ew_net_and_gross_benchmarks_and_calendar_hac():
+    """EW net ayni maliyet modeli ve simulatorle calisir (birincil); EW gross maliyetsizdir
+    (tamamlayici). Gecersiz aylar cikarildiginda HAC takvim araligini korur ve eksik ay /
+    gozlem araligi raporlanir."""
+    days = pd.bdate_range("2026-10-01", "2028-04-28")
+    up = pd.Series(1.002 ** np.arange(len(days)), index=days)
+    flat = pd.Series(1.0, index=days)
+    uni = [f"U{i}" for i in range(20)]
+    # U19 yalnizca 2027-04 doneminde islem gormuyor -> o ay kapsama %95'in altina (19/20 değil, U18+U19 = 18/20 = %90) duser
+    gapped = flat.copy()
+    gapped.loc[(days >= "2027-04-05") & (days <= "2027-05-05")] = np.nan
+    frames = {tk: _frame(up if tk == "U0" else flat) for tk in uni}
+    frames["U18"] = _frame(gapped)
+    frames["U19"] = _frame(gapped)
+    months = pd.date_range("2026-11-01", "2028-02-01", freq="MS")
+    series = [{"rebalance_date": str(days[days.searchsorted(m)].date()),
+               "rule_version": "v", "holdings": ["U0"], "universe": uni} for m in months]
+    costs = rep.pb.Costs(commission_bps=10.0, spread_bps=(5.0, 15.0, 30.0), impact_k=0.0, impact_cap=0.10)
+    p = rep.evaluate(series, frames, flat, costs=costs)
+    # Ilk donem islem maliyeti nedeniyle EW net < EW gross
+    assert p.iloc[0]["bench_net_cost"] > 0
+    assert p.iloc[0]["bench_net"] < p.iloc[0]["bench_gross"]
+    s = rep.summarize(p)
+    # 2027-05-03 sinirinda fiyat NaN oldugu icin hem 2027-04 (bitis) hem 2027-05 (baslangic) donemi gecersiz
+    assert s["ew_universe_invalid_periods"] == 2
+    assert s["ew_universe_net_cost_total_pct"] > 0
+    # 17 donemin 2'si gecersiz -> 15 gecerli ay, 2 eksik ay, aralik 2026-11..2028-03
+    assert s["active_univ_net_periods"] == 15 and s["active_univ_net_missing_periods"] == 2
+    assert s["active_univ_net_span"] == ["2026-11", "2028-03"]
+    assert s["active_univ_ann_pct"] == s["active_univ_net_ann_pct"]
+    assert "active_univ_gross_ann_pct" in s and "active_univ_gross_t" in s
+

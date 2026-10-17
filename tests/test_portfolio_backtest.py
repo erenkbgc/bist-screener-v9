@@ -76,3 +76,37 @@ def test_cash_earns_deposit_rate_when_no_targets():
     mkt = _market({"A": [100.0] * 60}, days, rf=0.001)
     out = pb.simulate({t: [] for t in months}, months, d0_of, mkt, {}, {t: 1e6 for t in months}, costs=ZERO)
     assert np.isclose(out.iloc[0]["port"], 1.001 ** 20 - 1)
+
+
+def test_unbuyable_target_weight_stays_in_cash_and_stuck_held_separate():
+    """Islem gununde fiyati olmayan hedef hissenin agirligi diger hisselere dagitilmaz,
+    nakitte kalir; satilamayan mevcut pozisyon (stuck) da ayri tasinir."""
+    days, months, d0_of = _setup()
+    # Ilk dengeleme islem gunu: days[10]. Donem sonu: days[29].
+    uni = [f"T{k}" for k in range(100)]
+    prices = {}
+    for k, tk in enumerate(uni):
+        px = [100.0] * 11 + [110.0] * 49  # islem gunu (days[10]) 100'den alinir, donem sonunda 110 (+%10)
+        if k == 99:
+            px[10] = np.nan  # T99 yalnizca islem gununde fiyatsiz, donem sonunda tekrar 110.0
+        prices[tk] = px
+    mkt = _market(prices, days, rf=0.0)
+    out = pb.simulate({months[0]: uni, months[1]: uni}, months, d0_of, mkt, {},
+                      {t: 1e6 for t in months}, costs=ZERO)
+    # 99 hisse %1'er agirlikla +%10 kazanir, T99'un %1 payi nakitte (%0) kalir -> port = %9.9 (%10 degil)
+    assert out.iloc[0]["n"] == 99
+    assert np.isclose(out.iloc[0]["turnover"], 0.99)
+    assert np.isclose(out.iloc[0]["port"], 0.99 * 0.10, atol=1e-12)
+
+    # Mevcut pozisyonu satilamayan (stuck) hisse: S 1. ayda alinir, 2. ay islem gunu (days[30]) fiyatsizdir;
+    # yeni hedef listedeki B alinabilir, C ise islem gunu fiyatsizdir -> tradable sermayenin yarisi B'ye, yarisi nakde.
+    px_s = [100.0] * 30 + [np.nan] * 5 + [100.0] * 25
+    px_b = [100.0] * 31 + [120.0] * 29  # 2. ayda +%20
+    px_c = [100.0] * 30 + [np.nan] + [120.0] * 29  # yalnizca days[30] islem gununde fiyatsiz
+    mkt2 = _market({"S": px_s, "B": px_b, "C": px_c}, days, rf=0.0)
+    out2 = pb.simulate({months[0]: ["S", "B"], months[1]: ["B", "C"]}, months, d0_of, mkt2, {},
+                       {t: 1e6 for t in months}, costs=ZERO)
+    # 2. ay basinda S (%50) stuck; kalan %50 tradable sermaye ["B", "C"] (2 slot) arasinda bolunur:
+    # B %25 alir (+%20 kazanir -> +%5), C'nin %25 payi nakitte kalir (0 kazanir), S %50 sabit -> toplam +%5
+    assert np.isclose(out2.iloc[1]["port"], 0.25 * 0.20, atol=1e-12)
+

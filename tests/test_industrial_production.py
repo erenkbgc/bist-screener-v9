@@ -9,11 +9,11 @@ import pandas as pd
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-pytest.importorskip("statsmodels")  # arastirma bagimliligi (requirements-research.txt); CI kurmaz
-import research_industrial_production as ip  # noqa: E402
 
 
 def test_signals_and_release_alignment():
+    pytest.importorskip("statsmodels")  # arastirma bagimliligi (requirements-research.txt); CI kurmaz
+    import research_industrial_production as ip
     idx = pd.date_range("2010-01-31", periods=30, freq="ME")
     ipi = pd.Series(100 * 1.01 ** np.arange(30), index=idx)  # sabit %1/ay -> yillik buyume sabit
     sig = ip.signals(ipi)

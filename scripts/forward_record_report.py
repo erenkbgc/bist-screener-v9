@@ -12,7 +12,9 @@ NW t her zaman aylik gozlemlere dayanir. Yalnizca tamamlanmis donemler sayilir.
 
 Ana sonuc on-kayitla ayni delist varsayimini (h = 0) kullanir; on-kayitli
 duyarlilik h = 0.5 (islemden kalkan pozisyonun yarisi kaybedilir) yaninda
-raporlanir. Benchmark'lar: EW evren (maliyetsiz), XU100 fiyat ve BIST 100
+raporlanir. Benchmark'lar: EW net (birincil: ayni simulator, sermaye, islem
+maliyetleri, islem zamanlari ve nakit faiziyle isletilen esit agirlikli evren),
+EW gross (tamamlayici: maliyetsiz evren ortalamasi), XU100 fiyat ve BIST 100
 toplam getiri (XU100_CFNNTLTL; total_return_benchmarks_preregistration.md).
 
 Fiyatlar kosu aninda borsapy'den, ilk karardan bugune cekilir (arastirma onbellegi
@@ -45,7 +47,8 @@ from core import forward_prices  # noqa: E402
 from core import portfolio_backtest as pb  # noqa: E402
 
 CAPITAL_TL = 1e6
-MIN_BENCH_COVERAGE = 0.95  # EW evren karsilastirmasi icin getirisi olculen evren payi alt siniri
+MIN_BENCH_COVERAGE = 0.95  # EW evren karsilastirmasi icin gozlemlenebilir getiri payi alt siniri
+MAX_BENCH_PRICE_AGE = 0    # Donem basi/sonu fiyati icin izin verilen azami fiyat yasi (islem gunu)
 
 
 DELIST_HAIRCUT_SENSITIVITY = 0.5  # portfolio_backtest_preregistration.md
@@ -90,7 +93,8 @@ def schedule(series: list[dict], end: pd.Timestamp,
 def evaluate(series: list[dict], frames: dict[str, pd.DataFrame], xu: pd.Series,
              rf_daily: pd.Series | None = None, costs: pb.Costs = pb.Costs(),
              haircut: float = 0.0, tr: pd.Series | None = None,
-             stop: pd.Timestamp | None = None) -> pd.DataFrame:
+             stop: pd.Timestamp | None = None,
+             max_price_age: int = MAX_BENCH_PRICE_AGE) -> pd.DataFrame:
     """frames[ticker]: gunluk Close, Open, adv, sigma (duzeltilmis); xu: XU100 kapanisi (takvim);
     rf_daily: nakdin gunluk getirisi (pb.policy_rf_daily), yoksa 0; tr: BIST 100 toplam getiri."""
     days = xu.index
@@ -108,6 +112,7 @@ def evaluate(series: list[dict], frames: dict[str, pd.DataFrame], xu: pd.Series,
         cur = rec or cur
         held[t] = cur
     targets = {t: (rec["holdings"] if rec else None) for t, rec in sched}
+    ew_targets = {t: (rec["universe"] if rec else None) for t, rec in sched}
     tickers = sorted({tk for d in series for tk in d["holdings"] + d["universe"]} & set(frames))
     mat = {k: pd.DataFrame({tk: frames[tk][c].reindex(days) for tk in tickers}, index=days, dtype=float)
            for k, c in (("close", "Close"), ("open", "Open"), ("adv", "adv"), ("sigma", "sigma"))}
@@ -116,50 +121,95 @@ def evaluate(series: list[dict], frames: dict[str, pd.DataFrame], xu: pd.Series,
                                .dropna().to_numpy()) for t in months}
     mkt = pb.Market(close=mat["close"], open=mat["open"], adv=mat["adv"], sigma=mat["sigma"],
                     rf_daily=pd.Series(0.0, index=days) if rf_daily is None else rf_daily.reindex(days))
-    p = pb.simulate(targets, months, d0_of, mkt, universe_liq, {t: CAPITAL_TL for t in months},
-                    costs=costs, haircut=haircut)
+    cap = {t: CAPITAL_TL for t in months}
+    p = pb.simulate(targets, months, d0_of, mkt, universe_liq, cap, costs=costs, haircut=haircut)
     if p.empty:
         return p
-    close = mat["close"].ffill()
+    ew = pb.simulate(ew_targets, months, d0_of, mkt, universe_liq, cap,
+                     costs=costs, haircut=haircut).set_index("date")
+    raw_close = mat["close"]
+    close_ffill = raw_close.ffill()
+    idx_grid = np.arange(len(days), dtype=float)[:, None]
+    last_obs = pd.DataFrame(np.where(raw_close.notna(), idx_grid, np.nan),
+                            index=days, columns=raw_close.columns).ffill()
+    price_age = pd.DataFrame(idx_grid - last_obs.to_numpy(), index=days, columns=raw_close.columns)
     trs = tr.reindex(days).ffill() if tr is not None else None
     nxt = {months[k]: months[k + 1] for k in range(len(months) - 1)}
-    bench, xu_ret, tr_ret, coverage = [], [], [], []
+    bench_net, bench_gross, bench_net_cost, xu_ret, tr_ret, coverage, max_ages = [], [], [], [], [], [], []
     for t in p["date"]:
         a, b = d0_of[t], d0_of[nxt[t]]
+        fill_d = days[min(days.get_loc(a) + 1, len(days) - 1)]
         u = [tk for tk in held[t]["universe"] if tk in tickers]
-        r = (close.loc[b, u] / close.loc[a, u] - 1).dropna()
-        # Kapsama: getirisi olculebilen evren payi; esik altinda EW karsilastirmasi gecersiz
+        # Kapsama: doldurulmus seriden degil, donem basi/sonu ve (karar aylarinda) islem gunu
+        # fiyatlarinin gercekten gozlemlenebilir olmasindan (fiyat yasi <= max_price_age) hesaplanir
+        if u:
+            ok_u = ((price_age.loc[a, u] <= max_price_age)
+                    & (price_age.loc[b, u] <= max_price_age)
+                    & (last_obs.loc[b, u] > last_obs.loc[a, u]))
+            if targets[t] is not None:
+                ok_u = ok_u & (price_age.loc[fill_d, u] <= max_price_age)
+            r = (close_ffill.loc[b, u] / close_ffill.loc[a, u] - 1)[ok_u].dropna()
+            age_pts = [a, fill_d, b] if targets[t] is not None else [a, b]
+            ages = price_age.loc[age_pts, u].to_numpy(dtype=float)
+            max_age = int(np.nanmax(ages)) if np.isfinite(ages).any() else 0
+        else:
+            r = pd.Series(dtype=float)
+            max_age = 0
         cov = len(r) / max(1, len(held[t]["universe"]))
         coverage.append(cov)
-        bench.append(float(r.mean()) if len(r) and cov >= MIN_BENCH_COVERAGE else np.nan)
+        max_ages.append(max_age)
+        valid_bench = bool(len(r) and cov >= MIN_BENCH_COVERAGE)
+        bench_gross.append(float(r.mean()) if valid_bench else np.nan)
+        bench_net.append(float(ew.loc[t, "port"]) if valid_bench and t in ew.index else np.nan)
+        bench_net_cost.append(float(ew.loc[t, "cost"]) if t in ew.index else 0.0)
         xu_ret.append(float(xu.loc[b] / xu.loc[a] - 1))
         tr_ret.append(float(trs.loc[b] / trs.loc[a] - 1) if trs is not None else np.nan)
     p["decision"] = p["date"].map(lambda t: targets[t] is not None)
-    p["bench"], p["xu"], p["xu_tr"], p["bench_coverage"] = bench, xu_ret, tr_ret, coverage
-    p["active"], p["active_xu"], p["active_xu_tr"] = p["port"] - p["bench"], p["port"] - p["xu"], p["port"] - p["xu_tr"]
+    p["bench_net"], p["bench_gross"], p["bench"] = bench_net, bench_gross, bench_gross
+    p["bench_net_cost"] = bench_net_cost
+    p["xu"], p["xu_tr"], p["bench_coverage"], p["bench_max_price_age"] = xu_ret, tr_ret, coverage, max_ages
+    p["active_net"] = p["port"] - p["bench_net"]
+    p["active_gross"] = p["port"] - p["bench_gross"]
+    p["active"] = p["active_net"]
+    p["active_xu"], p["active_xu_tr"] = p["port"] - p["xu"], p["port"] - p["xu_tr"]
     return p
 
 
 def summarize(p: pd.DataFrame) -> dict:
-    """Her satir bir takvim ayi; yilliklastirma 12 x aylik ortalama."""
+    """Her satir bir takvim ayi; yilliklastirma 12 x aylik ortalama.
+    EW net (ayni simulator ve maliyet modeli) birincil, EW gross (maliyetsiz) tamamlayici."""
     if p.empty:
         return {"periods": 0}
     out = {"periods": len(p), "periods_carried_without_decision": int((~p["decision"]).sum()),
            "first": str(p["date"].iloc[0].date()), "last": str(p["date"].iloc[-1].date()),
            "cum_return_pct": round(100 * float((1 + p["port"]).prod() - 1), 2),
-           "cum_ew_universe_pct": round(100 * float((1 + p["bench"]).prod() - 1), 2) if p["bench"].notna().all() else None,
+           "cum_ew_universe_net_pct": round(100 * float((1 + p["bench_net"]).prod() - 1), 2) if p["bench_net"].notna().all() else None,
+           "cum_ew_universe_gross_pct": round(100 * float((1 + p["bench_gross"]).prod() - 1), 2) if p["bench_gross"].notna().all() else None,
+           "cum_ew_universe_pct": round(100 * float((1 + p["bench_net"]).prod() - 1), 2) if p["bench_net"].notna().all() else None,
+           "ew_universe_net_cost_total_pct": round(100 * float(p["bench_net_cost"].sum()), 2),
            "ew_universe_min_coverage_pct": round(100 * float(p["bench_coverage"].min()), 1),
-           "ew_universe_invalid_periods": int(p["bench"].isna().sum()),
+           "ew_universe_max_price_age_days": int(p["bench_max_price_age"].max()),
+           "ew_universe_invalid_periods": int(p["bench_net"].isna().sum()),
            "cum_xu100_pct": round(100 * float((1 + p["xu"]).prod() - 1), 2),
            "cum_xu100_tr_pct": round(100 * float((1 + p["xu_tr"]).prod() - 1), 2) if p["xu_tr"].notna().all() else None,
            "cost_total_pct": round(100 * float(p["cost"].sum()), 2),
            "delist_events": int(p.attrs.get("delist_events", 0))}
     if len(p) >= 12:  # anlamli t icin en az bir yil
-        for key, col in (("active_univ", "active"), ("active_xu100", "active_xu"), ("active_xu100_tr", "active_xu_tr")):
-            x = p[col].dropna()  # gecersiz (kapsamasi yetersiz) donemler disarida; sayisi raporda
-            if len(x) >= 12:
-                m, t, n = fb.newey_west_t(x, 6)
-                out[f"{key}_ann_pct"], out[f"{key}_t"], out[f"{key}_periods"] = round(1200 * m, 2), round(t, 2), n
+        months_idx = p["date"].dt.to_period("M")
+        for key, col in (("active_univ", "active_net"), ("active_univ_net", "active_net"),
+                         ("active_univ_gross", "active_gross"),
+                         ("active_xu100", "active_xu"), ("active_xu100_tr", "active_xu_tr")):
+            s = pd.Series(p[col].to_numpy(dtype=float), index=months_idx)
+            valid = s.dropna()
+            if len(valid) >= 12:
+                first_m, last_m = valid.index[0], valid.index[-1]
+                span_s = s.loc[first_m:last_m].reindex(pd.period_range(first_m, last_m, freq="M"))
+                m, t, n = fb.newey_west_t(span_s, 6)
+                out[f"{key}_ann_pct"] = round(1200 * m, 2)
+                out[f"{key}_t"] = round(t, 2)
+                out[f"{key}_periods"] = n
+                out[f"{key}_missing_periods"] = int(span_s.isna().sum())
+                out[f"{key}_span"] = [str(first_m), str(last_m)]
     return out
 
 

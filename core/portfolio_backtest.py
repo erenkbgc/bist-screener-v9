@@ -122,10 +122,16 @@ def simulate(targets: dict[pd.Timestamp, list[str] | None], months: list[pd.Time
         nav = cash + sum(values.values())
         cap = capital_tl[t]
         ref = i - 1  # d0: islem oncesi bilinen ADV/sigma
-        wanted = [tk for tk in targets.get(t, []) if tk in col and np.isfinite(px[i, col[tk]])]
+        target_list = list(dict.fromkeys(targets.get(t, [])))
         stuck = {tk for tk in values if not np.isfinite(px[i, col[tk]])}
         tradable = nav - sum(values[tk] for tk in stuck)
-        tgt = {tk: tradable / len(wanted) for tk in wanted} if wanted else {}
+        # Mevcut pozisyonu satilamayan (stuck) hisseler ayrildiktan sonra, kalan hedef
+        # dilimler (n_slots) esit pay alir; islem gunu fiyati olmayan hedef hisse alinmaz
+        # ve payi diger hisselere dagitilmayip bir sonraki dengelemeye kadar nakitte kalir.
+        target_slots = [tk for tk in target_list if tk not in stuck]
+        n_slots = len(target_slots)
+        wanted = [tk for tk in target_slots if tk in col and np.isfinite(px[i, col[tk]])]
+        tgt = {tk: tradable / n_slots for tk in wanted} if (wanted and n_slots > 0) else {}
         log = {"commission": 0.0, "spread": 0.0, "impact": 0.0, "buy": 0.0, "fills": 0, "fills_over_10pct_adv": 0}
         for tk in set(values) - stuck | set(tgt):
             dv = tgt.get(tk, 0.0) - values.get(tk, 0.0)

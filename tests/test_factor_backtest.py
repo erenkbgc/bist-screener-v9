@@ -52,6 +52,24 @@ def test_newey_west_matches_plain_t_without_lags():
     assert n == 500 and abs(t - plain) < 1e-9
 
 
+def test_newey_west_preserves_calendar_lags_with_missing_months():
+    """Eksik takvim aylari (NaN veya atlanmis PeriodIndex) cikartildiginda uzak aylar
+    yan yana gelip gecikme-1 gibi agirliklandirilmamali."""
+    idx = pd.period_range("2026-01", periods=20, freq="M")
+    vals = np.array([0.02, 0.03, -0.01, 0.01, 0.02, 0.04,
+                     np.nan, np.nan, np.nan, np.nan, np.nan, np.nan,  # 6 ay bosluk (> lag 2)
+                     0.04, 0.02, 0.01, -0.01, 0.03, 0.02, 0.01, 0.02])
+    s_with_nans = pd.Series(vals, index=idx)
+    s_omitted = s_with_nans.dropna()  # PeriodIndex korunuyor ama aradaki 6 ay satirda yok
+    m1, t1, n1 = fb.newey_west_t(s_with_nans, 2)
+    m2, t2, n2 = fb.newey_west_t(s_omitted, 2)
+    # Duz array olarak dropna yapilirsa 6. ay ve 13. ay yan yana (lag=1) sayilir -> farkli t uretir
+    _, t_collapsed, _ = fb.newey_west_t(s_with_nans.dropna().to_numpy(), 2)
+    assert n1 == 14 and n2 == 14
+    assert np.isclose(m1, m2) and np.isclose(t1, t2)
+    assert not np.isclose(t1, t_collapsed)
+
+
 def test_peer_fair_value_ratio_harmonic_mean():
     # 5 akran, hepsinin E/P'si ayni -> HM(P/E)*E/P = 1 (adil fiyatli)
     base = {"sector": "X", "mcap": 100.0, "net_debt": 0.0, "bm": 0.5, "ey": 0.1}
