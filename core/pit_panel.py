@@ -274,13 +274,20 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
                         mcap: float | None) -> dict:
     """Canli: saglayicinin dondurdugu en son ceyrekle value_ratios (+ stmt_period).
     Saglayicidaki her ceyrek yayinlanmistir; tablo yoksa oranlar NaN."""
-    out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None}
+    out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None,
+           "stmt_period_end": None, "inputs": {}}
     long = statements_long(ticker, bs, inc)
     if long.empty or not mcap or mcap <= 0:
         return out
     q = quarterly_table(long)
     last = q.iloc[-1]  # period_end'e gore sirali
-    return {**value_ratios(last, mcap), "stmt_period": last["period"]}
+    # Oranlari yeniden uretmeye yeten temel kalemler (ileriye donuk kayit)
+    inputs = {"market_cap": float(mcap), "equity": _equity(last), "ttm_net_income": _ttm_net_income(last),
+              "ttm_revenue": last.get("ttm_revenue"), "ttm_op_profit": last.get("ttm_op_profit"),
+              "fin_debt": last.get("fin_debt"), "cash": last.get("cash")}
+    return {**value_ratios(last, mcap), "stmt_period": last["period"],
+            "stmt_period_end": last["period_end"].date().isoformat(),
+            "inputs": {k: (float(v) if v is not None else None) for k, v in inputs.items()}}
 
 
 def fetch_statement(ticker: str, statement_type: str, last_n: int) -> pd.DataFrame | None:

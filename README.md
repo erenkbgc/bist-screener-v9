@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-449%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-457%20passing-brightgreen)
 ![Backtest](https://img.shields.io/badge/backtest-walk--forward-blueviolet)
 ![Status](https://img.shields.io/badge/status-research%20%E2%80%94%20pre--registered%20value%20rule-orange)
 
@@ -19,7 +19,7 @@
 > This project is for research and decision support only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns are model outputs, not guarantees of future performance.
 
 > **Status (2026-10-17)**
-> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 20 pre-registered studies, only the sovereign spread passed, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. After the same costs, the value rule beats its own equal-weighted universe in 2021+ (+6.6%/yr, t 2.4). It trails BIST 100 total return (−2.0%/yr, t −0.3), because the equal-weighted, non-financial universe itself lagged the bank-heavy index. The edge is also lag-sensitive. Adding 39 delisted stocks cuts its 2013–2020 edge by about 2.4%/yr; the ranking itself holds. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
+> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 22 pre-registered studies, the only new signal that passed is the sovereign spread, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. After the same costs, the value rule beats its own equal-weighted universe in 2021+ (+6.6%/yr, t 2.4). It trails BIST 100 total return (−2.0%/yr, t −0.3), because the equal-weighted, non-financial universe itself lagged the bank-heavy index. The edge is also lag-sensitive. Adding 39 delisted stocks cuts its 2013–2020 edge by about 2.4%/yr; the ranking itself holds. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
 
 ---
 
@@ -136,7 +136,7 @@ flowchart TD
 - **Liquidity cut:** the bottom 30% of non-financial long-term candidates by 60-day median daily TL volume (close × volume, at least 40 bars) are dropped before ranking, as in the tested panel (`factor_backtest.prepare`, `liq_drop_pct=0.3`). The live universe floor of 10M TL is looser; before this cut, about a third of the live top 20% came from the untested illiquid tier.
 - **Rule:** hold the top 20% equal-weighted. The first run of each month stores the list in `rotation_holdings`; later runs in the same month reuse it. A name that leaves the top 20% is sold.
 - **Output:** AL (new), TUT (kept), SAT (dropped).
-- **Locked rule and forward record:** the parameters are fixed in `config/live_rule.json` (version `R0-2026-10-12`); a test fails if `core/rotation.py` drifts from it. From the 2026-11 rebalance, each live decision (list, ranked universe, rule version, UTC timestamp) is appended to `data/forward_record/decisions.jsonl` and committed by CI. Each record (schema 2) also stores the code commit SHA, the run health status, and for every ranked stock the four ratios, `valid_metric_count`, close and price date, 60-day TL volume, the statement period and its KAP publication date. Runs that produce no decision (empty pool, run error, halted run) are recorded as `no_decision` until the month has a decision. `scripts/forward_record_report.py` prices the recorded decisions with the pre-registered portfolio simulator (next-close fills, 1M TL, base costs, cash earns the policy rate); it never re-selects. It reports the pre-registered delisting assumption (no haircut) next to the 50% haircut sensitivity, and lists months without a decision. A rule change needs a new pre-registration and version and starts a new series.
+- **Locked rule and forward record:** the parameters are fixed in `config/live_rule.json` (version `R0-2026-10-12`); a test fails if `core/rotation.py` drifts from it. From the 2026-11 rebalance, each live decision (list, ranked universe, rule version, UTC timestamp) is appended to `data/forward_record/decisions.jsonl` and committed by CI. Each record (schema 2) also stores the code commit SHA, the run health status, and for every ranked stock the four ratios and the items they are built from (TTM net income, sales and operating profit, equity, financial debt, cash, market cap), `valid_metric_count`, close and price date, 60-day TL volume, the statement quarter used, that quarter's first KAP publication time and first usable day (`None` when no KAP match; never invented), and the observation time. Runs that produce no decision (empty pool, run error, halted run) are recorded as `no_decision` until the month has a decision. `scripts/forward_record_report.py` prices the recorded decisions with the pre-registered portfolio simulator (next-close fills, 1M TL, base costs, cash earns the policy rate); it never re-selects. Evaluation is per calendar month. In a month without a decision, the book is carried without trades and that month is its own period, so annualised figures always rest on monthly observations. Prices are fetched fresh at report time. It reports the pre-registered delisting assumption (no haircut) next to the 50% haircut sensitivity, compares with the EW universe, XU100 price and BIST 100 total return, and lists months without a decision. A rule change needs a new pre-registration and version and starts a new series.
 - **Diversification:** average pairwise 60-day log-return correlation of the held basket and the effective number of bets $`N/(1+(N-1)\bar\rho)`$ (`core/correlation.py::effective_bets`).
 
 Hurdle, Piotroski, target-price gates do **not** affect this list: the tested rule did not contain them.
@@ -426,9 +426,16 @@ The usual pass rule is:
 
 Predictive macro tests also need a positive out-of-sample R² and a significant Clark-West test. Each study document gives its exact rule, its data and its known limits.
 
-**Scorecard: 21 studies (20 pre-registered plus the Phase 1 diagnostics), dozens of confirmatory tests, one confirmatory PASS** (the sovereign spread *explains* BIST in the same month). Two more rules were confirmed, though not as passes against a stricter alternative:
-- value_sn ranks stocks (`long_term`);
-- the live rule survives realistic costs against the EW universe (`portfolio_backtest`).
+**Scorecard: 23 studies (22 pre-registered plus the Phase 1 diagnostics), dozens of confirmatory tests, one confirmatory PASS** (the sovereign spread *explains* BIST in the same month). Some rules were confirmed, though not as passes against a stricter alternative:
+- value_sn ranks stocks (`long_term`), also under IAS 29 at a lower IC (`ias29_regime`);
+- the live rule survives realistic costs against the EW universe (`portfolio_backtest`), also when the universe pays the same costs (`total_return_benchmarks`). It does **not** beat BIST 100 total return.
+
+**Two layers of evidence.** Everything in this table is *historical research*. Its limits stay in force:
+- Statement values are the provider's current version, not the originally published figures; only publication dates are point-in-time.
+- Delisted stocks are only partly covered (39 with statements).
+- The 2021+ holdout has been seen many times.
+
+The *forward record* (`data/forward_record/decisions.jsonl`, from the 2026-11 rebalance) is the second layer. For each decision it stores the data, scores, statement quarter and KAP date, code SHA and run health at decision time, and it is never re-simulated. Over time it will be the stronger evidence. Historical results should not be read as more precise than these limits allow.
 
 No test found a way to time the market or to beat the value rule.
 
@@ -622,7 +629,7 @@ The pipeline is idempotent: a second run for the same `as_of_date` after a sent 
 
 | Workflow | Schedule | Steps |
 |---|---|---|
-| `ci.yml` | push / PR to `master` | `pytest` (449 tests), config/schema checks |
+| `ci.yml` | push / PR to `master` | `pytest` (457 tests), config/schema checks |
 | `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live; KAP red-flag fetch and LLM labels inside) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry). Secrets: `SMTP_*`, `MAIL_*`, `GROQ_API_KEY` (optional) |
 | `kap-llm-smoke.yml` | manual | Checks the LLM provider with 4 sample disclosures and lists available models |
 | `weekly-optimize.yml` | manual only (schedule off since 2026-10-14) | `scripts/optimize_weights.py` → cone $`z`$, ML ensemble → commit `config/weights_optimized.json`. The live score does not read the output; the learned-weights test failed |
@@ -655,7 +662,7 @@ bist-screener-v9/
 ├── config/               # weights.yaml, equity_risk_premium.yaml, transaction_costs.yaml, ...
 ├── data/                 # bist_history.db, reports/ (committed by CI), research/ (ignored)
 ├── docs/research/        # pre-registrations and results
-├── tests/                # 449 tests
+├── tests/                # 457 tests
 ├── run.py                # daily orchestrator
 └── dashboard.py          # read-only Streamlit
 ```
@@ -709,7 +716,7 @@ streamlit run dashboard.py
 pytest tests/ -q
 ```
 
-449 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
+457 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
 
 ---
 
