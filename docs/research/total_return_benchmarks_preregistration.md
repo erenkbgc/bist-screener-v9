@@ -73,3 +73,37 @@ What the labels change:
 - The 2021+ holdout has been seen in every earlier study. It is not clean. The forward record from 2026-11 is the clean test.
 - The panel lacks most delisted stocks (`survivorship_delisted_preregistration.md`). That biases the strategy and B1/B2 alike. B3 and B4 are free of it.
 - The total-return index series come from one source (TradingView via borsapy). They are not checked against Borsa İstanbul's own files.
+
+## Results (added 2026-10-17, after the run; the sections above are unchanged)
+
+Run: `python scripts/research_total_return_benchmarks.py`. Output: `data/reports/research_total_return_benchmarks_2026-10-17.json`. Index cache: `data/research/tr_indices.parquet`.
+
+The strategy reproduces PR #43 exactly: against B1, holdout +5.83%/yr (t 2.11) and discovery +9.81%/yr.
+
+**Holdout 2021-01 → 2026-08, 68 months**, strategy net of costs, NW t with 6 lags:
+
+| Benchmark | Active %/yr (t) | Tracking error | IR | CAGR strategy vs benchmark | Label |
+|---|---|---|---|---|---|
+| B1 EW universe, zero cost | +5.83 (2.11) | 8.0% | 0.73 | 44.5% vs 36.9% | BEATS |
+| **B2 EW universe, same costs** | **+6.60 (2.37)** | 8.0% | 0.82 | 44.5% vs 35.9% | **BEATS** |
+| **B3 BIST 100 total return** | **−2.00 (−0.33)** | 13.6% | −0.15 | 44.5% vs 48.6% | **BEHIND** |
+| B4 BIST All Shares total return | −2.40 (−0.50) | 10.8% | −0.22 | 44.5% vs 49.2% | BEHIND |
+| XU100 price (continuity) | +0.75 (0.13) | 13.5% | 0.06 | 44.5% vs 44.7% | AHEAD_NOT_SIGNIFICANT |
+
+- B2 costs 0.75%/yr at 9.3% monthly turnover (298 names on average). It ends below B1, so the edge over the universe grows slightly once the universe is costed the same way.
+- B4 − B3: +0.40%/yr (t 0.20). In the holdout the broad market did not beat the large caps.
+
+**Early window 2018-08 → 2020-12** (29 months, information only): the strategy beat all benchmarks. It was +17.1%/yr against B2 (t 1.86) and +64.1%/yr against B3 (t 2.68), at a CAGR of 120.6%. In this window the equal-weighted small and mid-cap universe itself compounded at about 91–93% a year, against 24% for BIST 100 total return.
+
+### Reading
+
+- The rule picks well **within its universe**. After the same costs, it beats the equal-weighted universe by about 6.6%/yr in the holdout (t 2.37).
+- The universe itself trailed the market. In the holdout, the costed equal-weighted universe compounded at 35.9% a year, against 48.6% for BIST 100 total return. The universe is equal-weighted and excludes financials. BIST 100 is cap-weighted and bank-heavy. The universe gap is larger than the rule's edge, so **an investor in the rule would have done about 2%/yr worse than a BIST 100 total-return fund**, with 13.6% tracking error. The difference is not significant.
+- Dividends matter. Against XU100 price the rule looked level (+0.75%/yr); against the total-return index it is behind.
+- The 2018–2020 window is dominated by the 2020 small-cap boom. It says little about the rule.
+
+### Decision (as fixed above)
+
+- Labels: B2 **BEATS**, B3 **BEHIND**.
+- The README status line and the realistic-return section now cite B2 and B3. B1 and XU100 price stay in the tables, with a note on their bias.
+- Live rule unchanged. Whether to also hold banks or large caps is a different strategy question. It would need its own pre-registration.

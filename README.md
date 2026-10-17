@@ -19,7 +19,7 @@
 > This project is for research and decision support only. It does **not** constitute investment advice. Scores, rankings, target prices, and expected returns are model outputs, not guarantees of future performance.
 
 > **Status (2026-10-17)**
-> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 20 pre-registered studies, only the sovereign spread passed, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. The value rule's 2021+ edge is lag-sensitive and about zero against XU100. Adding 39 delisted stocks cuts its 2013–2020 edge by about 2.4%/yr; the ranking itself holds. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
+> The live decision rule is a single, pre-registered and backtested rule: hold the **top 20% of non-financial stocks by sector-neutral value (`value_sn`)**, equal-weighted, rebalanced monthly (AL / TUT / SAT). Every other layer (targets, entry bands, stops, catalysts, KAP red flags, LLM labels, sector rotation) is **information only**, because its pre-registered test failed or it has no history to test. Of 20 pre-registered studies, only the sovereign spread passed, and only as a same-month explanation of BIST, not a forecast. It is shown as a risk gauge. After the same costs, the value rule beats its own equal-weighted universe in 2021+ (+6.6%/yr, t 2.4). It trails BIST 100 total return (−2.0%/yr, t −0.3), because the equal-weighted, non-financial universe itself lagged the bank-heavy index. The edge is also lag-sensitive. Adding 39 delisted stocks cuts its 2013–2020 edge by about 2.4%/yr; the ranking itself holds. See [Live Decision Rule](#live-decision-rule-monthly-rotation) and the [research scorecard](#pre-registered-research).
 
 ---
 
@@ -156,6 +156,17 @@ Long-term cards no longer show model targets, expected ROI, entry bands or stops
 | Basket minus deposit | +3.6 pp | +14.2 pp | 50.8% |
 
 The edge is at basket level; a single stock beats XU100 less than half the time. Delisted stocks are missing, so these numbers are optimistic.
+
+**Against total-return and costed benchmarks** ([`total_return_benchmarks_preregistration.md`](docs/research/total_return_benchmarks_preregistration.md)). Holdout 2021-01 → 2026-08, 1M TL, base costs, monthly net active return:
+
+| Benchmark | Active %/yr (t) | Label |
+|---|---|---|
+| Equal-weighted universe, same cost model | +6.60 (2.37) | beats |
+| BIST 100 total return (`XU100_CFNNTLTL`) | −2.00 (−0.33) | behind |
+| BIST All Shares total return (`XUTUM_CFNNTLTL`) | −2.40 (−0.50) | behind |
+| *XU100 price (no dividends; flatters the rule)* | *+0.75 (0.13)* | — |
+
+The tables above use XU100 price. Read them with this bias in mind: a BIST 100 total-return fund did about 2%/yr better than the rule in the holdout.
 
 **Publication-date sensitivity** ([`kap_report_dates_preregistration.md`](docs/research/kap_report_dates_preregistration.md)): with actual KAP publication dates instead of the assumed 75/100-day lag, value_sn still ranks stocks (holdout rank IC t 4.74). The holdout top-quintile net active fell from +6.87%/yr (t 2.09) to +5.26%/yr (t 1.59). By the pre-registered rule the result is **lag-sensitive**. The research panel now uses actual dates by default.
 
@@ -459,6 +470,7 @@ No test found a way to time the market or to beat the value rule.
 | [`entry_timing_preregistration.md`](docs/research/entry_timing_preregistration.md) | Better entry than the next close? | No. Limit/RSI/SMA rules lost to buying immediately |
 | [`exit_rules_preregistration.md`](docs/research/exit_rules_preregistration.md) | Buffers, stops, thesis break? | None passed. Live = monthly R0 rotation |
 | [`portfolio_backtest_preregistration.md`](docs/research/portfolio_backtest_preregistration.md) | Does the live rule survive next-day fills, liquidity-based costs and capital? Do size or liquidity floors help? | Survives against the EW universe at 1M TL (holdout +5.83%/yr, t 2.11; t 1.56 with doubled costs). Against XU100 holdout +0.75%/yr (t 0.13); holdout real TL CAGR −1.0%. Size floor (−8.8%/yr discovery) and stricter liquidity floor (−3.75%/yr holdout) both FAIL |
+| [`total_return_benchmarks_preregistration.md`](docs/research/total_return_benchmarks_preregistration.md) | Against which benchmark does the rule win: costed EW universe, BIST 100 or BIST All Shares total return? | Holdout: beats costed EW universe +6.60%/yr (t 2.37); behind BIST 100 TR −2.00%/yr (t −0.33) and BIST All TR −2.40%/yr (t −0.50). The non-financial EW universe lagged the bank-heavy index. Reporting test; live rule unchanged |
 | [`kap_report_dates_preregistration.md`](docs/research/kap_report_dates_preregistration.md) | Is value robust to actual KAP publication dates? | 6.8% of statements were used before publication under the 75/100-day assumption. Rank IC unchanged; holdout top-quintile +6.87% (t 2.09) → +5.26% (t 1.59): **lag-sensitive**. The panel now uses actual dates |
 | [`dividend_yield_preregistration.md`](docs/research/dividend_yield_preregistration.md) | Do high-dividend stocks outperform? Does dividend yield improve value? | All 3 FAIL. High-yield payers lagged by about 10%/yr in 2013–2020; adding dividend yield to value_sn costs 11.8%/yr (discovery) and 4.2%/yr (holdout) |
 | [`spillovers_preregistration.md`](docs/research/spillovers_preregistration.md) | Do a sector's big stocks lead its small ones? Do peers move with the first quarterly reporter? | All 3 FAIL. Lead-lag slope +0.02–0.03 (t < 2); no same-day transfer or drift. Co-movement is contemporaneous |
