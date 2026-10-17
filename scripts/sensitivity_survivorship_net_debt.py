@@ -44,7 +44,7 @@ from research_survivorship import (BASELINES, RESEARCH, delisted_panel, load_kap
 COMPARE_COLS = ["mcap", "tlvol60", "ep", "bm", "sp", "ey", "fwd_ret_1m"]
 
 
-def rebuild_baseline(sectors: dict[str, str]) -> dict[str, pd.DataFrame]:
+def rebuild_baseline(sectors: dict[str, str], cpi: pd.Series | None = None) -> dict[str, pd.DataFrame]:
     """Bugunku panel, ham onbellekten guncel pit_panel koduyla (build_pit_panel ile ayni adimlar)."""
     longs, pxs, evs = [], [], []
     for f in sorted((RESEARCH / "raw").glob("*.pkl")):
@@ -55,7 +55,7 @@ def rebuild_baseline(sectors: dict[str, str]) -> dict[str, pd.DataFrame]:
         longs.append(pit_panel.statements_long(tk, raw.get("bs"), raw.get("inc")))
         pxs.append(pit_panel.monthly_prices(tk, raw.get("px_raw"), raw.get("px_adj")))
         evs.append(pit_panel.split_events(tk, raw.get("splits")))
-    q = pit_panel.quarterly_table(pd.concat([x for x in longs if not x.empty], ignore_index=True))
+    q = pit_panel.quarterly_table(pd.concat([x for x in longs if not x.empty], ignore_index=True), cpi=cpi)
     px = pd.concat([x for x in pxs if not x.empty], ignore_index=True)
     ev = pd.concat([x for x in evs if not x.empty], ignore_index=True)
     dates = pit_panel.kap_report_dates(pd.read_parquet(RESEARCH / "kap_archive.parquet"))

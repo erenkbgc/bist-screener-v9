@@ -166,9 +166,25 @@ def apply_report_dates(q: pd.DataFrame, dates: pd.DataFrame, strict: bool = Fals
     return out.drop(columns="kap_available_at").reset_index(drop=True)
 
 
-def quarterly_table(long: pd.DataFrame) -> pd.DataFrame:
+IAS29_FIRST_PERIOD = "2023Q4"  # TMS 29: 2023-12-31 ve sonrasi biten donemler
+
+
+def cpi_index(cpi_mom: pd.Series) -> pd.Series:
+    """Aylik TUFE degisiminden (%) zincirleme endeks, PeriodIndex 'M'."""
+    s = cpi_mom.dropna().sort_index()
+    idx = pd.PeriodIndex(pd.to_datetime(s.index), freq="M")
+    return pd.Series((1 + s.to_numpy() / 100).cumprod(), index=idx)
+
+
+def quarterly_table(long: pd.DataFrame, cpi: pd.Series | None = None) -> pd.DataFrame:
     """Genis tablo: index (ticker, period_end), kolonlar kalemler; akis kalemleri
-    icin ceyreklik (q_*) ve TTM (ttm_*) kolonlari eklenir."""
+    icin ceyreklik (q_*) ve TTM (ttm_*) kolonlari eklenir.
+
+    cpi (cpi_index ciktisi) verilirse TMS 29 donemlerinde (>= 2023Q4) akislar ortak
+    satin alma gucune cevrilir (docs/research/ias29_constant_unit_ttm_preregistration.md, C1):
+    onceki YTD satirin birimine tasinarak cikarilir, TTM'deki dort ceyrek satirin donem
+    sonu birimine tasinarak toplanir. Daha eski satirlar degismez (C0). TUFE'si
+    bilinmeyen ayda deger NaN kalir."""
     if long.empty:
         return pd.DataFrame()
     w = long.pivot_table(index=["ticker", "period"], columns="item", values="value", aggfunc="first").reset_index()
@@ -184,12 +200,24 @@ def quarterly_table(long: pd.DataFrame) -> pd.DataFrame:
         prev_q = w.groupby(["ticker", "year"])["q"].shift(1)
         disc = np.where(w["q"] == 1, w[item],
                         np.where(prev_q == w["q"] - 1, w[item] - prev, np.nan))
+        if cpi is not None:
+            c_end = w["period_end"].dt.to_period("M").map(cpi).astype(float)
+            c_prev = c_end.groupby([w["ticker"], w["year"]]).shift(1)
+            adj = (w["period"] >= IAS29_FIRST_PERIOD).to_numpy()
+            disc_c = np.where(w["q"] == 1, w[item],
+                              np.where(prev_q == w["q"] - 1, w[item] - prev * c_end / c_prev, np.nan))
+            disc = np.where(adj, disc_c, disc)
         w[f"q_{item}"] = disc
         # TTM: ardisik 4 ceyrek sart (eksik ceyrek varsa NaN, uydurulmaz)
         consec = w.groupby("ticker")["period_end"].diff().dt.days.between(80, 100)
         roll = w.groupby("ticker")[f"q_{item}"].rolling(4, min_periods=4).sum().reset_index(level=0, drop=True)
         ok = consec.groupby(w["ticker"]).rolling(3, min_periods=3).sum().reset_index(level=0, drop=True) == 3
-        w[f"ttm_{item}"] = roll.where(ok)
+        ttm = roll.where(ok)
+        if cpi is not None:
+            real = (w[f"q_{item}"] / c_end).groupby(w["ticker"]).rolling(4, min_periods=4).sum() \
+                .reset_index(level=0, drop=True)
+            ttm = ttm.where(~adj, (real * c_end).where(ok))
+        w[f"ttm_{item}"] = ttm
     return w.reset_index(drop=True)
 
 
