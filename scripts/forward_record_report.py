@@ -45,6 +45,7 @@ from core import forward_prices  # noqa: E402
 from core import portfolio_backtest as pb  # noqa: E402
 
 CAPITAL_TL = 1e6
+MIN_BENCH_COVERAGE = 0.95  # EW evren karsilastirmasi icin getirisi olculen evren payi alt siniri
 
 
 DELIST_HAIRCUT_SENSITIVITY = 0.5  # portfolio_backtest_preregistration.md
@@ -122,16 +123,19 @@ def evaluate(series: list[dict], frames: dict[str, pd.DataFrame], xu: pd.Series,
     close = mat["close"].ffill()
     trs = tr.reindex(days).ffill() if tr is not None else None
     nxt = {months[k]: months[k + 1] for k in range(len(months) - 1)}
-    bench, xu_ret, tr_ret = [], [], []
+    bench, xu_ret, tr_ret, coverage = [], [], [], []
     for t in p["date"]:
         a, b = d0_of[t], d0_of[nxt[t]]
         u = [tk for tk in held[t]["universe"] if tk in tickers]
         r = (close.loc[b, u] / close.loc[a, u] - 1).dropna()
-        bench.append(float(r.mean()) if len(r) else np.nan)
+        # Kapsama: getirisi olculebilen evren payi; esik altinda EW karsilastirmasi gecersiz
+        cov = len(r) / max(1, len(held[t]["universe"]))
+        coverage.append(cov)
+        bench.append(float(r.mean()) if len(r) and cov >= MIN_BENCH_COVERAGE else np.nan)
         xu_ret.append(float(xu.loc[b] / xu.loc[a] - 1))
         tr_ret.append(float(trs.loc[b] / trs.loc[a] - 1) if trs is not None else np.nan)
     p["decision"] = p["date"].map(lambda t: targets[t] is not None)
-    p["bench"], p["xu"], p["xu_tr"] = bench, xu_ret, tr_ret
+    p["bench"], p["xu"], p["xu_tr"], p["bench_coverage"] = bench, xu_ret, tr_ret, coverage
     p["active"], p["active_xu"], p["active_xu_tr"] = p["port"] - p["bench"], p["port"] - p["xu"], p["port"] - p["xu_tr"]
     return p
 
@@ -143,22 +147,26 @@ def summarize(p: pd.DataFrame) -> dict:
     out = {"periods": len(p), "periods_carried_without_decision": int((~p["decision"]).sum()),
            "first": str(p["date"].iloc[0].date()), "last": str(p["date"].iloc[-1].date()),
            "cum_return_pct": round(100 * float((1 + p["port"]).prod() - 1), 2),
-           "cum_ew_universe_pct": round(100 * float((1 + p["bench"]).prod() - 1), 2),
+           "cum_ew_universe_pct": round(100 * float((1 + p["bench"]).prod() - 1), 2) if p["bench"].notna().all() else None,
+           "ew_universe_min_coverage_pct": round(100 * float(p["bench_coverage"].min()), 1),
+           "ew_universe_invalid_periods": int(p["bench"].isna().sum()),
            "cum_xu100_pct": round(100 * float((1 + p["xu"]).prod() - 1), 2),
            "cum_xu100_tr_pct": round(100 * float((1 + p["xu_tr"]).prod() - 1), 2) if p["xu_tr"].notna().all() else None,
            "cost_total_pct": round(100 * float(p["cost"].sum()), 2),
            "delist_events": int(p.attrs.get("delist_events", 0))}
     if len(p) >= 12:  # anlamli t icin en az bir yil
         for key, col in (("active_univ", "active"), ("active_xu100", "active_xu"), ("active_xu100_tr", "active_xu_tr")):
-            if p[col].notna().all():
-                m, t, _ = fb.newey_west_t(p[col], 6)
-                out[f"{key}_ann_pct"], out[f"{key}_t"] = round(1200 * m, 2), round(t, 2)
+            x = p[col].dropna()  # gecersiz (kapsamasi yetersiz) donemler disarida; sayisi raporda
+            if len(x) >= 12:
+                m, t, n = fb.newey_west_t(x, 6)
+                out[f"{key}_ann_pct"], out[f"{key}_t"], out[f"{key}_periods"] = round(1200 * m, 2), round(t, 2), n
     return out
 
 
-def _index_close(code: str) -> pd.Series:
+def _index_close(code: str, start: pd.Timestamp) -> pd.Series:
+    """Endeks kapanisi start'tan bugune (kayit buyudukce pencere de buyur)."""
     import borsapy as bp
-    h = bp.Index(code).history(period="5y")
+    h = bp.Index(code).history(start=start.strftime("%Y-%m-%d"))
     idx = pd.to_datetime(h.index)
     if getattr(idx, "tz", None) is not None:
         idx = idx.tz_localize(None)
@@ -226,13 +234,23 @@ def price_frames(series: list[dict], days: pd.DatetimeIndex,
 
 def main() -> None:
     decisions = fr.load_decisions()
-    xu = _index_close("XU100")
-    tr = _index_close("XU100_CFNNTLTL")
+    ok = sorted(d["rebalance_date"] for d in decisions if fr.is_ok(d))
+    first = pd.Timestamp(ok[0]) if ok else pd.Timestamp(date.today())
+    start = first - pd.Timedelta(days=120)
+    xu = _index_close("XU100", start)
+    tr = _index_close("XU100_CFNNTLTL", start)
+    # Kapsama: takvim (XU100) ilk karari kapsamali; toplam getiri endeksi kapsamiyorsa kullanilmaz
+    if xu.index.min() > first:
+        raise SystemExit(f"XU100 gecmisi {xu.index.min().date()} basliyor, ilk karar {first.date()}: takvim eksik")
+    tr_ok = not tr.empty and tr.index.min() <= first
+    tr = tr if tr_ok else None
     macro = pd.read_parquet(ROOT / "data" / "research" / "macro_monthly.parquet")
     macro.index = pd.to_datetime(macro.index).to_period("M")
     rf_daily = pb.policy_rf_daily(macro["policy"], xu.index)
     result = {"as_of": date.today().isoformat(), "rule": fr.live_rule()["version"],
               "last_price_day": str(xu.index[-1].date()),
+              "index_coverage": {"xu100_from": str(xu.index.min().date()),
+                                 "xu100_tr_covers_first_decision": tr_ok},
               "policy_rate_last_month": str(macro["policy"].dropna().index[-1]),
               "no_decision_records": sum(not fr.is_ok(d) for d in decisions),
               "months_without_decision": missed_months(decisions), "series": []}

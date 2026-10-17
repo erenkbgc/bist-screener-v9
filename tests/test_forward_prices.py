@@ -67,3 +67,20 @@ def test_provider_must_cover_first_decision():
     series = [{"rebalance_date": "2026-11-02", "rule_version": "v", "holdings": ["A"], "universe": ["A"]}]
     _, src = rep.price_frames(series, DAYS, live=lambda tk, start: late, stored=lambda tk: full)
     assert src["store"] == ["A"]  # saglayici gecmisi kesik: depo kullanilir
+
+
+def test_ew_benchmark_invalid_when_universe_coverage_low():
+    """Evrenin %95'inden azinin getirisi olculebiliyorsa EW karsilastirmasi o donem gecersiz (NaN)."""
+    flat = _frame(pd.Series(1.0, index=DAYS))
+    uni = [f"U{i}" for i in range(10)]
+    series = [{"rebalance_date": "2026-11-02", "rule_version": "v", "holdings": ["U0"], "universe": uni},
+              {"rebalance_date": "2026-12-01", "rule_version": "v", "holdings": ["U0"], "universe": uni}]
+    full = {tk: flat for tk in uni}
+    p = rep.evaluate(series, full, pd.Series(1.0, index=DAYS))
+    assert p["bench"].notna().all() and p["bench_coverage"].min() == 1.0
+    part = {tk: flat for tk in uni[:9]}  # %90 kapsama
+    q = rep.evaluate(series, part, pd.Series(1.0, index=DAYS))
+    assert q["bench"].isna().all() and q["active"].isna().all()
+    s = rep.summarize(q)
+    assert s["ew_universe_invalid_periods"] == len(q) and s["ew_universe_min_coverage_pct"] == 90.0
+    assert s["cum_ew_universe_pct"] is None
