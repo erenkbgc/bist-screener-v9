@@ -94,6 +94,15 @@ def test_loss_maker_is_penalized_not_skipped():
     assert z_los < z_win
 
 
+def test_profitable_without_pe_uses_eps_over_price():
+    """Saglayici F/K'yi bos donerse karli sirkette de E/P = EPS / fiyat (panel: net kar / PD)."""
+    c = _make_candidate("NOPE", "XGIDA", "XUSIN", pe=None)
+    c["current_price"], c["eps_ttm"] = 10.0, 0.5
+    assert ranking.earnings_yield(c) == 5.0
+    c["eps_ttm"] = None
+    assert ranking.earnings_yield(c) is None
+
+
 def test_extreme_candidate_not_clipped_to_peer_range_and_nan_ignored():
     """Aday emsal min-max'ina kirpilmaz: daha ucuz hisse daha yuksek z alir."""
     peers = [_make_candidate(f"S{i}", "XGIDA", "XUSIN", pe=8 + i, pb=1 + 0.1 * i) for i in range(10)]
