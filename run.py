@@ -48,6 +48,7 @@ from core import universe as universe_mod
 from core import basis_guard
 from core import run_health as run_health_mod
 from core import forward_record
+from core import forward_prices
 from core import piotroski as piotroski_mod
 from core import sloan as sloan_mod
 from core import catalysts as catalysts_mod
@@ -459,6 +460,17 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
 
     # --- aylik rotasyon listesi (AL/TUT/SAT; on-kayitli satis testi, kural R0) ---
     rotation = rotation_mod.monthly_rotation(as_of_date, scored, health=health)
+
+    # --- ileriye donuk kayit fiyat deposu: kayittaki hisselerin gunluk barlari (delist sonrasi
+    # saglayici gecmisi kaybolsa da degerlendirme yeniden uretilebilsin; core/forward_prices) ---
+    if forward_record._production_live():
+        fr_tickers = forward_prices.recorded_tickers(forward_record.load_decisions())
+        bars = {t: prices_by_ticker[t] for t in fr_tickers if t in prices_by_ticker}
+        bars.update({t: bist_mcp.get_prices(t, as_of_date, days=PRICE_HISTORY_DAYS)
+                     for t in fr_tickers - set(prices_by_ticker)})
+        since = (datetime.strptime(forward_record.live_rule()["forward_record"]["start"], "%Y-%m-%d")
+                 - timedelta(days=120)).date().isoformat()
+        print(f"[forward_prices] {forward_prices.write(bars, fr_tickers, since)} hisse", flush=True)
 
     # --- concentration_check + correlation_diagnostic (yalnizca gecen adaylar uzerinde) ---
     passing = [c for c in scored if c["candidate_state"] not in ("NO_ACTION", "QUARANTINE")]
