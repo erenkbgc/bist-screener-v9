@@ -144,3 +144,80 @@ The baseline is run with the same code. It is reported for comparison and is not
 - The KAP archive has few disclosures for some delisted stocks. The exit rule therefore puts some corporate exits in "other". S4 shows the effect for the four known cases.
 - Sector labels for delisted stocks are hand-set and partial.
 - The −30% for other exits comes from US data (Shumway 1997). It is not estimated for BIST. S2, S3 and S5 bracket it.
+
+---
+
+## Results (added 2026-10-17, after the run; the sections above are unchanged)
+
+Run with `python scripts/fetch_delisted.py`, then `python scripts/research_survivorship.py`. Output: `data/reports/research_survivorship_2026-10-17.json`.
+
+### Deviation from the plan
+
+The plan said the delisted statements use the same `apply_report_dates` step "as the panel". That was wrong about the panel files on disk:
+- `factors_monthly.parquet`, behind `long_term` (+10.65% / +6.96%), uses the 75/100-day lag;
+- `factors_monthly_kapdates.parquet` (`kap_report_dates`) uses actual KAP dates.
+
+Both files were also built before the missing-net-debt fix, so in both a missing debt or cash value is 0. To keep each comparison like for like, the script runs two variants:
+
+| Variant | Baseline | Delisted rows |
+|---|---|---|
+| **kapdates** (primary, as the plan's text says) | KAP-dates file | KAP dates, missing debt/cash = 0 |
+| **lag75** | long_term file | 75/100-day lag, missing debt/cash = 0 |
+
+Nothing else changed.
+
+### Sample
+
+- 478 codes probed; 57 had prices; 48 were in the window and not financial.
+- 39 had statements; 32 enter the prepared panel (the others never pass the ≥ 13-month and liquidity rules).
+- That gives 1,370 delisted stock-months (1,365 in lag75).
+- Exit class by rule: 20 corporate, 19 other.
+
+### Results
+
+Net active return per year, NW t with 6 lags.
+
+**kapdates (primary)**
+
+| Spec | Discovery TL (t) | Holdout TL (t) | Holdout USD | IC t disc / hold | Delisted share of B picks |
+|---|---|---|---|---|---|
+| baseline | +9.26% (2.75) | +5.14% (1.99) | +5.16% | 5.46 / 4.55 | 0 |
+| **S1** | **+6.95% (2.13)** | **+5.06% (1.94)** | +5.07% | 5.77 / 4.57 | 1.71% |
+| S2 (D = 0) | +6.94% (2.12) | +5.06% (1.94) | +5.07% | 5.76 / 4.57 | 1.71% |
+| S3 (other −100%) | +6.99% (2.15) | +5.06% (1.94) | +5.07% | 5.77 / 4.57 | 1.71% |
+| S4 (known corrections) | +6.95% (2.13) | +5.06% (1.94) | +5.07% | 5.77 / 4.57 | 1.71% |
+| S5 (all −100%) | +7.78% (2.42) | +5.14% (1.95) | +5.15% | 5.81 / 4.57 | 1.71% |
+
+**lag75**
+
+| Spec | Discovery TL (t) | Holdout TL (t) | Holdout USD | IC t disc / hold |
+|---|---|---|---|---|
+| baseline | +10.65% (2.71) | +6.96% (2.60) | +6.82% | 5.14 / 4.90 |
+| **S1** | **+8.13% (2.35)** | **+6.94% (2.57)** | +6.79% | 5.49 / 4.91 |
+| S5 (all −100%) | +8.90% (2.56) | +7.02% (2.58) | +6.87% | 5.53 / 4.91 |
+
+**Verdict by the rule: SURVIVORSHIP_FRAGILE (primary, kapdates).**
+- S1 holdout t is 1.94, below 2.0.
+- The kapdates baseline already fails the same rule (holdout t 1.99). The plan states that a correction cannot make a failing baseline pass. The fragility therefore comes mostly from the KAP-date lag-sensitivity found earlier, and only a little from the delisted stocks (holdout −0.08%/yr).
+- In the lag75 variant every spec meets rules 1–3: SURVIVES_ROBUST_TO_WORST_CASE.
+
+### What the correction shows
+
+1. **Discovery loses about 2.3–2.5%/yr; holdout loses about 0.**
+   - Most delistings in the sample are before 2021 (only OLMK and ARTI are later).
+   - The value ranking itself is not hurt: rank IC t is unchanged or slightly higher (5.46 → 5.77).
+2. **The delisting-return assumption does not matter.** No B pick was held into an exit month, in any spec.
+   - Most "other" (failure) exits fall below the bottom-30% liquidity cut before their last month.
+   - The only one still in the universe at exit, ATPET, was not in B.
+   - S5 is higher than S2 because a −100% exit lowers the universe mean, not the picks.
+3. **Where the loss comes from (exploratory, not part of the rule).** In kapdates discovery, delisted stocks made up 145 picks. While they were still listed, these picks averaged **−1.39% per month** active, against +0.77% for the other picks. The worst were BMEKS (16 months, −7.0%/month), TRNSK (4, −14.6%), EGCYO (11, −4.9%) and KRATL (33, −1.8%). This is the expected survivorship mechanism: value traps decay while still listed, and the losses arrive before the exit.
+
+### Decision
+
+- **Live score: unchanged (plain value_sn).** No tested alternative passed, so there is nothing better to switch to.
+- **Labels.** The value evidence keeps its "lag-sensitive" label in 2021+ and gains "survivorship-corrected discovery +6.95%/yr (t 2.13)".
+- **Live liquidity floor.** The live 10M TL liquidity floor and the bottom-30% research cut matter. They are what keeps most failing stocks out before they exit.
+- **Limits stay.**
+  - Coverage is partial (39 delisted stocks with statements).
+  - Sector labels for delisted stocks are hand-set.
+  - The KAP archive is thin for failing firms.
