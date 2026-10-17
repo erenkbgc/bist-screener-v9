@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Data Layer](https://img.shields.io/badge/data%20modes-mock%20%7C%20live-informational)
 ![Dashboard](https://img.shields.io/badge/dashboard-read--only-lightgrey)
-![Tests](https://img.shields.io/badge/tests-462%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-463%20passing-brightgreen)
 ![Backtest](https://img.shields.io/badge/backtest-walk--forward-blueviolet)
 ![Status](https://img.shields.io/badge/status-research%20%E2%80%94%20pre--registered%20value%20rule-orange)
 
@@ -131,7 +131,7 @@ flowchart TD
 
 `core/rotation.py` implements rule R0 from [`docs/research/exit_rules_preregistration.md`](docs/research/exit_rules_preregistration.md):
 
-- **Universe:** long-term candidates with a sector-relative valuation z (`valuation_z` = the tested `value_sn`: mean z of E/P, B/M, S/P and EBIT/EV, demeaned within sector). The four ratios are built exactly as in the research panel: the latest published quarter from İş Yatırım (`pit_panel.fetch_statement`), TTM net income, sales and operating profit, and that quarter's equity and financial debt minus cash (`pit_panel.value_ratios`, via `live_data.live_value_inputs`). A missing ratio stays missing; it is not filled from provider P/E, P/B or annual statements. Quarantined names and names with too few peers are excluded.
+- **Universe:** long-term candidates with a sector-relative valuation z (`valuation_z` = the tested `value_sn`: mean z of E/P, B/M, S/P and EBIT/EV, demeaned within sector). The four ratios are built exactly as in the research panel: the latest quarter **usable on the decision day** from İş Yatırım (usable from its first KAP publication, or the next day when published after 18:00; without a KAP match, the panel's 75/100-day lag; a quarter usable only after the run day is skipped) (`pit_panel.fetch_statement`), TTM net income, sales and operating profit, and that quarter's equity and financial debt minus cash (`pit_panel.value_ratios`, via `live_data.live_value_inputs`). A missing ratio stays missing; it is not filled from provider P/E, P/B or annual statements. Since 2026-10-17, IAS 29 flows (periods from 2023Q4) are put into one purchasing-power unit with the TÜİK CPI before quarters and TTM are formed (C1, [`ias29_constant_unit_ttm_preregistration.md`](docs/research/ias29_constant_unit_ttm_preregistration.md)). If CPI cannot be fetched, the whole run falls back to C0, and the record says so (`ttm_unit`). Stored research panel files built before this date are C0; `build_pit_panel.py` now builds C1. Quarantined names and names with too few peers are excluded.
 - **Financials excluded:** banks, insurance, pension, factoring, leasing, savings finance, brokers, securities investment trusts and asset managers (`pit_panel.FINANCIAL_SECTORS`). The tested panel never contained them. Their own top 20% is shown separately as "test edilmedi" (untested, information only).
 - **Liquidity cut:** the bottom 30% of non-financial long-term candidates by 60-day median daily TL volume (close × volume, at least 40 bars) are dropped before ranking, as in the tested panel (`factor_backtest.prepare`, `liq_drop_pct=0.3`). The live universe floor of 10M TL is looser; before this cut, about a third of the live top 20% came from the untested illiquid tier.
 - **Rule:** hold the top 20% equal-weighted. The first run of each month stores the list in `rotation_holdings`; later runs in the same month reuse it. A name that leaves the top 20% is sold.
@@ -630,7 +630,7 @@ The pipeline is idempotent: a second run for the same `as_of_date` after a sent 
 
 | Workflow | Schedule | Steps |
 |---|---|---|
-| `ci.yml` | push / PR to `master` | `pytest` (462 tests), config/schema checks |
+| `ci.yml` | push / PR to `master` | `pytest` (463 tests), config/schema checks |
 | `daily-screener.yml` | daily 15:30 UTC (18:30 Istanbul) | `run.py` (live; KAP red-flag fetch and LLM labels inside) → KAP FinBERT → upload reports → commit DB + reports (fetch/rebase retry). Secrets: `SMTP_*`, `MAIL_*`, `GROQ_API_KEY` (optional) |
 | `kap-llm-smoke.yml` | manual | Checks the LLM provider with 4 sample disclosures and lists available models |
 | `weekly-optimize.yml` | manual only (schedule off since 2026-10-14) | `scripts/optimize_weights.py` → cone $`z`$, ML ensemble → commit `config/weights_optimized.json`. The live score does not read the output; the learned-weights test failed |
@@ -663,7 +663,7 @@ bist-screener-v9/
 ├── config/               # weights.yaml, equity_risk_premium.yaml, transaction_costs.yaml, ...
 ├── data/                 # bist_history.db, reports/ (committed by CI), research/ (ignored)
 ├── docs/research/        # pre-registrations and results
-├── tests/                # 462 tests
+├── tests/                # 463 tests
 ├── run.py                # daily orchestrator
 └── dashboard.py          # read-only Streamlit
 ```
@@ -717,7 +717,7 @@ streamlit run dashboard.py
 pytest tests/ -q
 ```
 
-462 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
+463 tests. `tests/conftest.py` forces `BIST_DATA_MODE=mock` before `.env` loads and redirects every test to a temporary DB and reports folder, so tests can never write to `data/bist_history.db`. `tests/test_idempotency.py` runs the full pipeline and asserts that the validation gate passes.
 
 ---
 

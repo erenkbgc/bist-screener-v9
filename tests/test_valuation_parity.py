@@ -100,27 +100,29 @@ def test_live_value_inputs_use_panel_ttm_definition():
     assert all(np.isnan(empty[k]) for k in ("bm", "ep", "sp", "ey")) and empty["stmt_period"] is None
 
 
-def test_live_value_inputs_record_kap_date_of_used_quarter(monkeypatch):
-    """KAP tarihi kullanilan ceyregin donem sonuyla sorgulanir; 18:00 sonrasi yayin ertesi gun
-    kullanilabilir; eslesme yoksa None (uydurulmaz)."""
+def test_live_value_inputs_apply_kap_availability_rule(monkeypatch):
+    """Skor yalnizca karar gunu KULLANILABILIR ceyregi kullanir: KAP ilk yayini (18:00 sonrasi
+    ertesi gun); KAP eslesmezse panelin 75/100 gun varsayimi; yayin tarihi uydurulmaz."""
     from datetime import datetime
 
     from core import live_data as ld
     bs, inc, _ = _ytd_statements(5)
     monkeypatch.setattr(ld, "_quarterly_statements_cached", lambda tk: (bs, inc))
-    asked = []
-
-    def fake_pub(tk, period_end):
-        asked.append(period_end)
-        return datetime(2026, 8, 10, 18, 45) if tk == "HAS" else None
-    monkeypatch.setattr(ld, "live_financial_report_published_dt", fake_pub)
-    vi = ld.live_value_inputs("HAS", 400.0)
-    assert asked == ["2026-06-30"]
-    assert vi["kap_published_at"] == "2026-08-10T18:45" and vi["kap_available_at"] == "2026-08-11"
-    assert vi["source"] == "isyatirim_quarterly_ytd" and vi["observed_at"]
-    none = ld.live_value_inputs("NONE", 400.0)
-    assert none["kap_published_at"] is None and none["kap_available_at"] is None
-    assert none["ep"] == vi["ep"]  # yayin tarihi oranlari degistirmez
+    monkeypatch.setattr(ld, "_cpi_index_cached", lambda: None)
+    pubs = {"2026-06-30": datetime(2026, 8, 10, 18, 45), "2026-03-31": datetime(2026, 5, 8, 10, 0)}
+    monkeypatch.setattr(ld, "live_financial_report_published_dt",
+                        lambda tk, pe: pubs.get(pe) if tk == "HAS" else None)
+    before = ld.live_value_inputs("HAS", 400.0, "2026-08-10")  # Q2 18:45'te yayinlandi -> 08-11
+    assert before["stmt_period"] == "2026Q1" and before["kap_published_at"] == "2026-05-08T10:00"
+    assert before["available_source"] == "kap" and before["as_of"] == "2026-08-10"
+    after = ld.live_value_inputs("HAS", 400.0, "2026-08-11")
+    assert after["stmt_period"] == "2026Q2" and after["kap_available_at"] == "2026-08-11"
+    assert after["ep"] != pytest.approx(before["ep"])
+    # KAP eslesmesi yok: varsayilan gecikme (Q2 -> 09-13), tarih uydurulmaz
+    none = ld.live_value_inputs("NONE", 400.0, "2026-09-01")
+    assert none["stmt_period"] == "2026Q1" and none["available_source"] == "assumed"
+    assert none["available_at"] == "2026-06-14" and none["kap_published_at"] is None
+    assert ld.live_value_inputs("NONE", 400.0, "2026-09-13")["stmt_period"] == "2026Q2"
 
 
 @pytest.mark.parametrize("seed", [1, 7, 42])
@@ -179,3 +181,24 @@ def test_ias29_constant_unit_ttm():
     a = pit_panel.quarterly_table(pd.DataFrame(old), cpi=cpi)
     b = pit_panel.quarterly_table(pd.DataFrame(old))
     pd.testing.assert_frame_equal(a, b)
+
+
+def test_live_value_inputs_use_constant_unit_ttm(monkeypatch):
+    """Canli value_inputs, panelle ayni C1 tanimini (TUFE ile sabit birim TTM) kullanir;
+    TUFE yoksa C0'a duser ve bunu ttm_unit ile kaydeder."""
+    from core import live_data as ld
+    from core import pit_panel
+    bs, inc, _ = _ytd_statements(9)
+    months = pd.period_range("2024-01", "2026-12", freq="M")
+    cpi = pd.Series(1.02 ** np.arange(len(months)), index=months)
+    monkeypatch.setattr(ld, "_quarterly_statements_cached", lambda tk: (bs, inc))
+    monkeypatch.setattr(ld, "live_financial_report_published_dt", lambda tk, pe: None)
+    monkeypatch.setattr(ld, "_cpi_index_cached", lambda: cpi)
+    vi = ld.live_value_inputs("X", 400.0)
+    ref = pit_panel.latest_value_ratios("X", bs, inc, 400.0, cpi=cpi)
+    c0 = pit_panel.latest_value_ratios("X", bs, inc, 400.0)
+    assert vi["ttm_unit"] == "C1_constant_unit"
+    assert vi["sp"] == pytest.approx(ref["sp"]) and vi["sp"] != pytest.approx(c0["sp"])
+    monkeypatch.setattr(ld, "_cpi_index_cached", lambda: None)
+    fb_ = ld.live_value_inputs("X", 400.0)
+    assert fb_["ttm_unit"] == "C0_fallback_no_cpi" and fb_["sp"] == pytest.approx(c0["sp"])

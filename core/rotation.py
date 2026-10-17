@@ -143,7 +143,7 @@ def decision_details(candidates: list[dict], health: dict | None = None) -> dict
             # Kullanilan ceyrek ve ONUN KAP yayini (value_inputs); value_inputs yoksa (mock) bos
             "statement_period": vi.get("stmt_period"), "statement_period_end": vi.get("stmt_period_end"),
             "kap_published_at": vi.get("kap_published_at"), "kap_available_at": vi.get("kap_available_at"),
-            "value_source": vi.get("source"), "observed_at": vi.get("observed_at"),
+            "value_source": vi.get("source"), "ttm_unit": vi.get("ttm_unit"), "observed_at": vi.get("observed_at"),
             "inputs": vi.get("inputs"),
             # Temel veri katmaninin kendi donemi (hard filter'in point_in_time kontrolu)
             "fundamentals_period_end": fnd.get("period_end"), "fundamentals_pit_source": fnd.get("pit_source"),

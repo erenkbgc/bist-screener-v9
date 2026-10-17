@@ -255,23 +255,55 @@ def _quarterly_statements_cached(ticker: str):
         return None, None
 
 
-def live_value_inputs(ticker: str, market_cap: float | None) -> dict:
+@lru_cache(maxsize=1)
+def _cpi_index_cached():
+    """TUFE endeksi (TUIK aylik degisim zinciri), TMS 29 sabit birim TTM icin (C1)."""
+    from core import pit_panel
+    try:
+        t = bp.Inflation().tufe()
+        return pit_panel.cpi_index(t["MonthlyInflation"].astype(float))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def live_value_inputs(ticker: str, market_cap: float | None, as_of_date: str | None = None) -> dict:
     """value_sn'in dort orani, test edilen panelle AYNI tanimla (pit_panel.value_ratios):
-    son yayinlanmis ceyrek, TTM net kar / satis / faaliyet kari, ayni ceyregin
-    ozkaynak ve finansal borc - nakdi. Eksik oran None (yillik tablo veya saglayici
-    F/K, PD/DD ile DOLDURULMAZ: docs/research/live_vs_panel_audit.md)."""
+    as_of_date gunu KULLANILABILIR en son ceyrek (KAP ilk yayini, 18:00 sonrasi ertesi
+    gun; KAP eslesmezse panelin 75/100 gun varsayimi), TTM net kar / satis / faaliyet
+    kari, ayni ceyregin ozkaynak ve finansal borc - nakdi. Eksik oran None (yillik tablo
+    veya saglayici F/K, PD/DD ile DOLDURULMAZ: docs/research/live_vs_panel_audit.md)."""
+    import pandas as pd
+
     from core import pit_panel
     bs, inc = _quarterly_statements_cached(ticker)
-    vi = pit_panel.latest_value_ratios(ticker, bs, inc, market_cap)
+    # TMS 29 akislari ortak satin alma gucunde (C1, ias29_constant_unit_ttm_preregistration.md).
+    # TUFE alinamazsa tum kosu C0 ile hesaplanir ve kayitta ttm_unit ile isaretlenir.
+    cpi = _cpi_index_cached()
+    # Her ceyregin KAP ilk yayini (eslesmezse satir yok -> panel gibi varsayilan gecikme; UYDURULMAZ)
+    pubs = {}
+    for period in ([str(c) for c in inc.columns] if inc is not None else []):
+        try:
+            pe = pit_panel.period_end(period).date().isoformat()
+        except (ValueError, IndexError):
+            continue
+        dt = live_financial_report_published_dt(ticker, pe)
+        if dt is not None:
+            pubs[period] = dt
+    kap_dates = pd.DataFrame([{"ticker": ticker, "period": p, "kap_available_at": pd.Timestamp(
+        dt.date() + timedelta(days=1) if dt.hour >= pit_panel.SESSION_CLOSE_HOUR else dt.date())}
+        for p, dt in pubs.items()], columns=["ticker", "period", "kap_available_at"])
+    vi = pit_panel.latest_value_ratios(ticker, bs, inc, market_cap, cpi=cpi,
+                                       as_of=pd.Timestamp(as_of_date) if as_of_date else None,
+                                       kap_dates=kap_dates)
     clean = lambda v: None if isinstance(v, float) and not math.isfinite(v) else v  # noqa: E731
     out = {k: clean(v) for k, v in vi.items() if k != "inputs"}
     out["inputs"] = {k: clean(v) for k, v in vi["inputs"].items()}
-    # Kaynak: kullanilan ceyregin KAP ilk yayini (eslesmezse None; UYDURULMAZ) ve gozlem ani
-    pub = live_financial_report_published_dt(ticker, out["stmt_period_end"]) if out["stmt_period_end"] else None
+    pub = pubs.get(out["stmt_period"])
     out["kap_published_at"] = pub.isoformat(timespec="minutes") if pub else None
-    out["kap_available_at"] = ((pub.date() + timedelta(days=1)) if pub.hour >= pit_panel.SESSION_CLOSE_HOUR
-                               else pub.date()).isoformat() if pub else None
+    out["kap_available_at"] = out["available_at"] if pub else None
+    out["as_of"] = as_of_date
     out["source"] = "isyatirim_quarterly_ytd"
+    out["ttm_unit"] = "C1_constant_unit" if cpi is not None else "C0_fallback_no_cpi"
     out["observed_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     return out
 
@@ -702,7 +734,7 @@ def live_fundamentals(ticker: str, as_of_date: str, regulator: str, ratio_profil
     # veri yok -- bkz. _statements_cached) fundamentals.py'ye "unknown" sinyali
     # gonderilir; bu, regulator eslemesini KASITLI olarak ezer.
     reporting_basis = "unknown" if (bs is None and inc is None) else None
-    value_inputs = None if is_financial else live_value_inputs(ticker, market_cap)
+    value_inputs = None if is_financial else live_value_inputs(ticker, market_cap, as_of_date)
     return {
         "reporting_basis": reporting_basis,  # None ise fundamentals.py basis_guard ile doldurur
         "pe": pe, "pb": pb, "ev_ebitda": ev_ebitda, "ev_sales": ev_sales, "roe": roe,
