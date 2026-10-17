@@ -35,7 +35,8 @@ SPLIT = pd.Timestamp("2021-01-01")
 T_MIN = 2.0
 
 
-# Taban panel dosyalari (ikisi de net borc duzeltmesinden once kuruldu: eksik borc/nakit = 0).
+# Taban panel dosyalari (ikisi de net borc duzeltmesinden once kuruldu; guncel kodla yeniden
+# kurulunca birebir ayni: sensitivity_survivorship_net_debt.py).
 BASELINES = {
     "kapdates": ("factors_monthly_kapdates.parquet", True),  # gercek KAP yayin tarihleri
     "lag75": ("factors_monthly.parquet", False),              # 75/100 gun gecikmesi (long_term)
