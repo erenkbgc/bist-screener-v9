@@ -63,6 +63,7 @@ def rebuild_baseline(sectors: dict[str, str], cpi: pd.Series | None = None) -> d
     for variant, (_, report_dates) in BASELINES.items():
         qv = pit_panel.apply_report_dates(q, dates) if report_dates else q
         out[variant] = pit_panel.build_monthly_factors(qv, px, ev, sectors)
+    out["_q"], out["_px"], out["_ev"] = q, px, ev
     out["_missing_debt_quarters"] = int((q["fin_debt"].isna() | q["cash"].isna()).sum())
     out["_quarters"] = len(q)
     return out
