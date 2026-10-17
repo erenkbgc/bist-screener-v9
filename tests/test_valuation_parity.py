@@ -124,3 +124,33 @@ def test_live_valuation_z_from_value_inputs_equals_panel(seed):
             assert live[tk] is None
         else:
             assert live[tk] == pytest.approx(v, abs=1e-9), tk
+
+
+def test_ias29_constant_unit_ttm():
+    """TMS 29: her rapor YTD'yi kendi donem sonu biriminde verir. Reel ceyrek akisi sabit R ise
+    C1'de ceyrek = R x CPI(donem sonu), TTM = 4 R x CPI(donem sonu); C0 bunu bozar."""
+    from core import pit_panel
+    months = pd.period_range("2023-01", "2025-12", freq="M")
+    cpi = pd.Series(1.03 ** np.arange(len(months)), index=months)
+    periods = [f"{y}Q{q}" for y in (2024, 2025) for q in (1, 2, 3, 4)]
+    R, rows = 10.0, []
+    for p in periods:
+        c = cpi[pit_panel.period_end(p).to_period("M")]
+        rows.append({"ticker": "X", "period": p, "item": "revenue", "value": int(p[-1]) * R * c})
+    q1 = pit_panel.quarterly_table(pd.DataFrame(rows), cpi=cpi).set_index("period")
+    q0 = pit_panel.quarterly_table(pd.DataFrame(rows)).set_index("period")
+    for p in periods:
+        c = cpi[pit_panel.period_end(p).to_period("M")]
+        assert q1.loc[p, "q_revenue"] == pytest.approx(R * c)
+    for p in periods[3:]:
+        c = cpi[pit_panel.period_end(p).to_period("M")]
+        assert q1.loc[p, "ttm_revenue"] == pytest.approx(4 * R * c)
+    # C0: Q4 TTM = yillik YTD (dogru); yil asan Q1-Q3 TTM bozulur
+    assert q0.loc["2025Q4", "ttm_revenue"] == pytest.approx(4 * R * cpi[pd.Period("2025-12", "M")])
+    assert q0.loc["2025Q2", "ttm_revenue"] != pytest.approx(4 * R * cpi[pd.Period("2025-06", "M")])
+    # TMS 29 oncesi satirlar degismez
+    old = [{"ticker": "Y", "period": p, "item": "revenue", "value": v}
+           for p, v in (("2022Q4", 40.0), ("2023Q1", 11.0), ("2023Q2", 23.0), ("2023Q3", 36.0))]
+    a = pit_panel.quarterly_table(pd.DataFrame(old), cpi=cpi)
+    b = pit_panel.quarterly_table(pd.DataFrame(old))
+    pd.testing.assert_frame_equal(a, b)
