@@ -138,16 +138,20 @@ def evaluate(series: list[dict], frames: dict[str, pd.DataFrame], xu: pd.Series,
     bench_net, bench_gross, bench_net_cost, xu_ret, tr_ret, coverage, max_ages = [], [], [], [], [], [], []
     for t in p["date"]:
         a, b = d0_of[t], d0_of[nxt[t]]
+        fill_d = days[min(days.get_loc(a) + 1, len(days) - 1)]
         u = [tk for tk in held[t]["universe"] if tk in tickers]
-        # Kapsama: doldurulmus seriden degil, donem basi/sonu fiyatlarinin gercekten
-        # gozlemlenebilir olmasindan (fiyat yasi <= max_price_age ve donem icinde yeni fiyat) hesaplanir
+        # Kapsama: doldurulmus seriden degil, donem basi/sonu ve (karar aylarinda) islem gunu
+        # fiyatlarinin gercekten gozlemlenebilir olmasindan (fiyat yasi <= max_price_age) hesaplanir
         if u:
             ok_u = ((price_age.loc[a, u] <= max_price_age)
                     & (price_age.loc[b, u] <= max_price_age)
                     & (last_obs.loc[b, u] > last_obs.loc[a, u]))
+            if targets[t] is not None:
+                ok_u = ok_u & (price_age.loc[fill_d, u] <= max_price_age)
             r = (close_ffill.loc[b, u] / close_ffill.loc[a, u] - 1)[ok_u].dropna()
-            ages_b = price_age.loc[b, u].dropna()
-            max_age = int(ages_b.max()) if len(ages_b) else 0
+            age_pts = [a, fill_d, b] if targets[t] is not None else [a, b]
+            ages = price_age.loc[age_pts, u].to_numpy(dtype=float)
+            max_age = int(np.nanmax(ages)) if np.isfinite(ages).any() else 0
         else:
             r = pd.Series(dtype=float)
             max_age = 0

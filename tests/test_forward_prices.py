@@ -112,3 +112,35 @@ def test_ew_benchmark_rejects_stale_ffill_gap_and_measures_price_age():
     assert s["ew_universe_max_price_age_days"] == int(p.iloc[1]["bench_max_price_age"])
     assert s["cum_ew_universe_net_pct"] is None and s["cum_ew_universe_gross_pct"] is None
 
+
+def test_100_stock_missing_only_on_fill_day_not_redistributed_and_coverage_checked():
+    """100 hisselik hedef portfoyde 1 hissenin yalnizca islem gununde fiyati eksik, donem basi ve
+    sonunda fiyati mevcut: agirligi diger 99 hisseye dagitilmaz (nakitte kalir) ve kapsama %99
+    olarak olculur; >%5 hisse islem gununde eksikse donem gecersiz sayilir."""
+    uni = [f"U{i}" for i in range(100)]
+    d0 = pd.Timestamp("2026-11-02")
+    fill_d = DAYS[DAYS.get_loc(d0) + 1]  # 2026-11-03 (islem gunu)
+    base_px = pd.Series(np.where(DAYS <= fill_d, 100.0, 110.0), index=DAYS)  # islem gunu sonrasi +%10
+    missing_fill_px = base_px.copy()
+    missing_fill_px.loc[fill_d] = np.nan  # yalnizca islem gununde NaN, donem sonunda 110.0
+    frames = {tk: _frame(base_px) for tk in uni[:99]}
+    frames["U99"] = _frame(missing_fill_px)
+    series = [{"rebalance_date": "2026-11-02", "rule_version": "v", "holdings": uni, "universe": uni},
+              {"rebalance_date": "2026-12-01", "rule_version": "v", "holdings": uni, "universe": uni}]
+    zero = rep.pb.Costs(commission_bps=0, spread_bps=(0, 0, 0), impact_k=0, impact_cap=0)
+    p = rep.evaluate(series, frames, pd.Series(100.0, index=DAYS), costs=zero)
+    # U99'un %1 agirligi 99 hisseye dagitilmadi (nakitte %0 aldi): port ve bench_net = 0.99 * 0.10 = 0.099
+    assert np.isclose(p.iloc[0]["port"], 0.99 * 0.10, atol=1e-12)
+    assert np.isclose(p.iloc[0]["bench_net"], 0.99 * 0.10, atol=1e-12)
+    # Kapsama: islem gununde 1 hisse eksik oldugu icin 99/100 = 0.99 (>= 0.95 -> donem gecerli)
+    assert np.isclose(p.iloc[0]["bench_coverage"], 0.99)
+    assert np.isfinite(p.iloc[0]["bench_net"]) and np.isfinite(p.iloc[0]["bench_gross"])
+
+    # 6 hissenin yalnizca islem gununde fiyati eksikse (uc noktalar mevcut olsa bile) kapsama 94/100 < 0.95 -> gecersiz
+    for tk in uni[94:]:
+        frames[tk] = _frame(missing_fill_px)
+    q = rep.evaluate(series, frames, pd.Series(100.0, index=DAYS), costs=zero)
+    assert np.isclose(q.iloc[0]["bench_coverage"], 0.94)
+    assert np.isnan(q.iloc[0]["bench_net"]) and np.isnan(q.iloc[0]["bench_gross"])
+
+
