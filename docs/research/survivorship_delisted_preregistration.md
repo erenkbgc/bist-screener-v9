@@ -221,3 +221,13 @@ Net active return per year, NW t with 6 lags.
   - Coverage is partial (39 delisted stocks with statements).
   - Sector labels for delisted stocks are hand-set.
   - The KAP archive is thin for failing firms.
+
+### Sensitivity: current net-debt rule (added 2026-10-17)
+
+The deviation above left one gap: the run counted a missing debt or cash value as 0, while the live rule and the current `pit_panel` leave EBIT/EV empty in that case. `scripts/sensitivity_survivorship_net_debt.py` repeats the test under the current rule. Its interpretation rule was written in the script before the run: the pre-registered verdict stays; the run only shows whether that verdict depends on the missing-debt assumption.
+
+- **Baseline.** Rebuilt from the raw cache (`data/research/raw/*.pkl`, no network) with the current `pit_panel` code, for both variants. It is identical to the stored files: same rows (58,308 kapdates, 58,223 lag75), and no difference in `mcap`, `tlvol60`, E/P, B/M, S/P, EBIT/EV or `fwd_ret_1m`. The fix in PR #60 changed no row in the current panel, which matches `sensitivity_missing_net_debt.py`.
+- **Delisted rows.** With missing debt/cash left empty, EBIT/EV becomes empty in 0 of 3,275 rows. Every delisted statement in the sample carries both items.
+- **Result.** Every number in the tables above is unchanged. Verdict: SURVIVORSHIP_FRAGILE (kapdates), SURVIVES_ROBUST_TO_WORST_CASE (lag75). The verdict does not depend on the missing-debt assumption.
+
+Output: `data/reports/sensitivity_survivorship_net_debt_2026-10-17.json`.

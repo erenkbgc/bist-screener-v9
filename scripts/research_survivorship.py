@@ -35,18 +35,22 @@ SPLIT = pd.Timestamp("2021-01-01")
 T_MIN = 2.0
 
 
-# Taban panel dosyalari (ikisi de net borc duzeltmesinden once kuruldu: eksik borc/nakit = 0).
+# Taban panel dosyalari (ikisi de net borc duzeltmesinden once kuruldu; guncel kodla yeniden
+# kurulunca birebir ayni: sensitivity_survivorship_net_debt.py).
 BASELINES = {
     "kapdates": ("factors_monthly_kapdates.parquet", True),  # gercek KAP yayin tarihleri
     "lag75": ("factors_monthly.parquet", False),              # 75/100 gun gecikmesi (long_term)
 }
 
 
-def delisted_panel(kap: pd.DataFrame, report_dates: bool) -> tuple[pd.DataFrame, dict]:
+def delisted_panel(kap: pd.DataFrame, report_dates: bool,
+                   fill_missing_debt: bool = True) -> tuple[pd.DataFrame, dict]:
     """Cikmis hisseler icin faktor satirlari (cikis getirisi eklenmemis) ve kod bilgisi.
 
     Taban dosyayla ayni kurallar: report_dates=True ise KAP yayin tarihleri;
     eksik borc/nakit 0 sayilir (taban dosyalar pit_panel'deki NaN kuralindan once kuruldu).
+    fill_missing_debt=False: guncel pit_panel kurali, eksik borc/nakitte EBIT/EV NaN
+    (sensitivity_survivorship_net_debt.py).
     """
     longs, pxs, evs, info = [], [], [], {}
     for f in sorted((RESEARCH / "raw_delisted").glob("*.pkl")):
@@ -71,7 +75,8 @@ def delisted_panel(kap: pd.DataFrame, report_dates: bool) -> tuple[pd.DataFrame,
     q = pit_panel.quarterly_table(pd.concat([x for x in longs if not x.empty], ignore_index=True))
     if report_dates:
         q = pit_panel.apply_report_dates(q, pit_panel.kap_report_dates(pd.read_parquet(RESEARCH / "kap_archive.parquet")))
-    q[["fin_debt", "cash"]] = q[["fin_debt", "cash"]].fillna(0.0)
+    if fill_missing_debt:
+        q[["fin_debt", "cash"]] = q[["fin_debt", "cash"]].fillna(0.0)
     px = pd.concat(pxs, ignore_index=True)
     ev = pd.concat(evs, ignore_index=True)
     factors = pit_panel.build_monthly_factors(q, px, ev, {c: i["sector"] for c, i in info.items()})
@@ -134,11 +139,49 @@ def survives(r: dict) -> bool:
             and r["holdout"]["usd"].get("active_ann_pct", 0) > 0)
 
 
-def main() -> None:
+def run_variant(base_raw: pd.DataFrame, del_raw: pd.DataFrame, info: dict, market_m: pd.DataFrame) -> dict:
+    """Taban + S1..S5 spesifikasyonlari ve on-kayitli karar."""
+    v = {"delisted": {c: {"last_trade": str(i["last_trade"].date()), "exit_class": i["exit_class"],
+                          "sector": i["sector"]} for c, i in sorted(info.items())},
+         "baseline": evaluate(prepared(base_raw, market_m), {}), "specs": {}}
+    for spec in delisted.SPECS:
+        d_by = {c: delisted.exit_return(spec, i["exit_class"], c) for c, i in info.items()}
+        adj_last = {c: (i["last_trade"], i["adj_last"]) for c, i in info.items()}
+        adj_at = {c: i["adj_at"] for c, i in info.items()}
+        dr = delisted.apply_exits(del_raw, adj_last, adj_at, d_by)
+        r = evaluate(prepared(pd.concat([base_raw, dr], ignore_index=True), market_m), info)
+        r["survives"] = survives(r)
+        v["specs"][spec] = r
+    s1 = v["specs"]["S1"]["survives"]
+    v["verdict"] = ("SURVIVES_ROBUST_TO_WORST_CASE" if s1 and v["specs"]["S5"]["survives"]
+                    else "SURVIVES" if s1 else "SURVIVORSHIP_FRAGILE")
+    v["baseline"]["meets_rules_1_3"] = survives(v["baseline"])
+    return v
+
+
+def print_variant(name: str, v: dict, info: dict) -> None:
+    cls = pd.Series({c: i["exit_class"] for c, i in info.items()}).value_counts().to_dict()
+    print(f"\n== {name} | cikmis hisse (tablolu): {len(info)} {cls}")
+    print("Spec   kesif aktif TL (t)   holdout aktif TL (t)   holdout USD   IC t kesif/holdout   B'de cikmis %   cikan secim")
+    for spec, r in [("base", v["baseline"])] + list(v["specs"].items()):
+        d, h = r["discovery"], r["holdout"]
+        cov = r["coverage"]
+        print(f"{spec:5s}  {d['tl']['active_ann_pct']:6.2f} ({d['tl']['t']:5.2f})      {h['tl']['active_ann_pct']:6.2f} ({h['tl']['t']:5.2f})"
+              f"      {h['usd']['active_ann_pct']:6.2f}      {d['ic']['t']:5.2f} / {h['ic']['t']:5.2f}"
+              f"        {cov['pick_share_delisted_pct']:5.2f}      {cov['picks_exiting_next_month']}")
+    print(f"Karar: {v['verdict']}  (taban kural 1-3: {v['baseline']['meets_rules_1_3']})")
+
+
+def load_kap() -> pd.DataFrame:
+    """KAP arsivi, coklu kodlu bildirimler kod basina bir satir."""
     kap = pd.read_parquet(RESEARCH / "kap_archive.parquet", columns=["stock_code", "published_at", "subject", "summary"])
     kap = kap.dropna(subset=["stock_code"])
     codes = kap["stock_code"].str.split(",").explode().str.strip()
-    kap = kap.loc[codes.index].assign(stock_code=codes.values)
+    return kap.loc[codes.index].assign(stock_code=codes.values)
+
+
+def main() -> None:
+    kap = load_kap()
 
     market_m = pit_panel.monthly_market(pd.read_parquet(RESEARCH / "fx.parquet"))
     result = {"as_of": date.today().isoformat(), "split": str(SPLIT.date()), "primary": "kapdates", "variants": {}}
@@ -148,34 +191,10 @@ def main() -> None:
         overlap = set(base_raw["ticker"]) & set(info)
         if overlap:
             raise SystemExit(f"Cikmis kod bugunku panelde de var: {sorted(overlap)}")
-        v = {"baseline_file": fname,
-             "delisted": {c: {"last_trade": str(i["last_trade"].date()), "exit_class": i["exit_class"],
-                              "sector": i["sector"]} for c, i in sorted(info.items())},
-             "baseline": evaluate(prepared(base_raw, market_m), {}), "specs": {}}
-        for spec in delisted.SPECS:
-            d_by = {c: delisted.exit_return(spec, i["exit_class"], c) for c, i in info.items()}
-            adj_last = {c: (i["last_trade"], i["adj_last"]) for c, i in info.items()}
-            adj_at = {c: i["adj_at"] for c, i in info.items()}
-            dr = delisted.apply_exits(del_raw, adj_last, adj_at, d_by)
-            r = evaluate(prepared(pd.concat([base_raw, dr], ignore_index=True), market_m), info)
-            r["survives"] = survives(r)
-            v["specs"][spec] = r
-        s1 = v["specs"]["S1"]["survives"]
-        v["verdict"] = ("SURVIVES_ROBUST_TO_WORST_CASE" if s1 and v["specs"]["S5"]["survives"]
-                        else "SURVIVES" if s1 else "SURVIVORSHIP_FRAGILE")
-        v["baseline"]["meets_rules_1_3"] = survives(v["baseline"])
+        v = {"baseline_file": fname, **run_variant(base_raw, del_raw, info, market_m)}
         result["variants"][variant] = v
 
-        cls = pd.Series({c: i["exit_class"] for c, i in info.items()}).value_counts().to_dict()
-        print(f"\n== {variant} ({fname}) | cikmis hisse (tablolu): {len(info)} {cls}")
-        print("Spec   kesif aktif TL (t)   holdout aktif TL (t)   holdout USD   IC t kesif/holdout   B'de cikmis %   cikan secim")
-        for name, r in [("base", v["baseline"])] + list(v["specs"].items()):
-            d, h = r["discovery"], r["holdout"]
-            cov = r["coverage"]
-            print(f"{name:5s}  {d['tl']['active_ann_pct']:6.2f} ({d['tl']['t']:5.2f})      {h['tl']['active_ann_pct']:6.2f} ({h['tl']['t']:5.2f})"
-                  f"      {h['usd']['active_ann_pct']:6.2f}      {d['ic']['t']:5.2f} / {h['ic']['t']:5.2f}"
-                  f"        {cov['pick_share_delisted_pct']:5.2f}      {cov['picks_exiting_next_month']}")
-        print(f"Karar: {v['verdict']}  (taban kural 1-3: {v['baseline']['meets_rules_1_3']})")
+        print_variant(f"{variant} ({fname})", v, info)
     result["verdict"] = result["variants"]["kapdates"]["verdict"]
 
     out = ROOT / "data" / "reports" / f"research_survivorship_{date.today().isoformat()}.json"
