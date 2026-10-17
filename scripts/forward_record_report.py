@@ -15,8 +15,12 @@ duyarlilik h = 0.5 (islemden kalkan pozisyonun yarisi kaybedilir) yaninda
 raporlanir. Benchmark'lar: EW evren (maliyetsiz), XU100 fiyat ve BIST 100
 toplam getiri (XU100_CFNNTLTL; total_return_benchmarks_preregistration.md).
 
-Fiyatlar ve endeksler kosu aninda borsapy'den cekilir (arastirma onbellegi
-data/research/raw guncellenmez); politika faizi macro_monthly.parquet'ten:
+Fiyatlar kosu aninda borsapy'den, ilk karardan bugune cekilir (arastirma onbellegi
+data/research/raw guncellenmez). Saglayici bir hisseyi artik dondurmezse (delist,
+kod degisikligi) canli kosularin biriktirdigi kalici depo (core/forward_prices,
+data/forward_record/prices/) kullanilir; ikisi de yoksa tutulan hisse muhafazakar
+-%100 sayilir ve raporda price_sources altinda listelenir. Politika faizi
+macro_monthly.parquet'ten:
 
     python scripts/research_macro_drivers.py  # data/research/macro_monthly.parquet (politika faizi)
     python scripts/forward_record_report.py
@@ -37,6 +41,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from core import factor_backtest as fb  # noqa: E402
 from core import forward_record as fr  # noqa: E402
+from core import forward_prices  # noqa: E402
 from core import portfolio_backtest as pb  # noqa: E402
 
 CAPITAL_TL = 1e6
@@ -160,15 +165,63 @@ def _index_close(code: str) -> pd.Series:
     return pd.Series(h["Close"].astype(float).to_numpy(), index=idx.normalize()).sort_index()
 
 
-def _daily_live(ticker: str) -> pd.DataFrame | None:
-    """Guncel gunluk fiyat (borsapy), arastirma onbellegiyle ayni bicimde."""
+LOSS_PRICE = 1e-9  # fiyat gecmisi hic bulunamayan tutulan hisse: muhafazakar -%100
+
+
+def _daily_live(ticker: str, start: pd.Timestamp) -> pd.DataFrame | None:
+    """Saglayicidan start'tan bugune gunluk fiyat (borsapy), simulator bicimde."""
     import borsapy as bp
     from research_portfolio_backtest import daily_frame
     try:
         t = bp.Ticker(ticker)
-        return daily_frame(t.history(period="2y", adjust=True), t.history(period="2y", adjust=False))
+        s = start.strftime("%Y-%m-%d")
+        return daily_frame(t.history(start=s, adjust=True), t.history(start=s, adjust=False))
     except Exception:  # noqa: BLE001
         return None
+
+
+def _daily_stored(ticker: str) -> pd.DataFrame | None:
+    """Kalici depodan (core/forward_prices) simulator bicimi."""
+    from research_portfolio_backtest import daily_frame
+    df = forward_prices.load(ticker)
+    if df is None:
+        return None
+    d = df.dropna(subset=["close", "adj_close"]).set_index("date").sort_index()
+    k = d["adj_close"] / d["close"]
+    return daily_frame(pd.DataFrame({"Open": d["open"] * k, "Close": d["adj_close"]}),
+                       pd.DataFrame({"Close": d["close"], "Volume": d["volume"]}))
+
+
+def price_frames(series: list[dict], days: pd.DatetimeIndex,
+                 live=_daily_live, stored=_daily_stored) -> tuple[dict[str, pd.DataFrame], dict]:
+    """Saglayici (kararin baslangicindan bugune) once; ilk karar gununu kapsamiyorsa kalici depo.
+    Ikisi de yoksa: tutulan hisse ilk tutuldugu kararin dolum gunu sonrasinda muhafazakar
+    -%100 (LOSS_PRICE); yalnizca evrende olan hisse disarida kalir. Hepsi raporlanir."""
+    first = pd.Timestamp(series[0]["rebalance_date"])
+    start = first - pd.Timedelta(days=120)  # 60 islem gunluk ADV penceresi
+    tickers = sorted({tk for d in series for tk in d["holdings"] + d["universe"]})
+    frames, src = {}, {"provider": [], "store": [], "conservative_loss": [], "universe_missing": []}
+    for tk in tickers:
+        f = live(tk, start)
+        if f is not None and not f.empty and f.index.min() <= first:
+            frames[tk] = f
+            src["provider"].append(tk)
+            continue
+        f = stored(tk)
+        if f is not None and not f.empty:
+            frames[tk] = f
+            src["store"].append(tk)
+            continue
+        held = [pd.Timestamp(d["rebalance_date"]) for d in series if tk in d["holdings"]]
+        if not held:
+            src["universe_missing"].append(tk)
+            continue
+        d0 = days[days.searchsorted(held[0], side="right") - 1]
+        fill = days[min(days.get_loc(d0) + 1, len(days) - 1)]
+        px = pd.Series(1.0, index=days).where(days <= fill, LOSS_PRICE)
+        frames[tk] = pd.DataFrame({"Open": px, "Close": px, "adv": 1e15, "sigma": 0.0})
+        src["conservative_loss"].append(tk)
+    return frames, src
 
 
 def main() -> None:
@@ -186,12 +239,11 @@ def main() -> None:
     all_series = series_by_version(decisions)
     for k, s in enumerate(all_series):
         stop = pd.Timestamp(all_series[k + 1][0]["rebalance_date"]) if k + 1 < len(all_series) else None
-        tickers = sorted({tk for d in s for tk in d["holdings"] + d["universe"]})
-        frames = {tk: f for tk in tickers if (f := _daily_live(tk)) is not None}
+        frames, src = price_frames(s, xu.index)
         main_p = evaluate(s, frames, xu, rf_daily, tr=tr, stop=stop)
         sens = summarize(evaluate(s, frames, xu, rf_daily, haircut=DELIST_HAIRCUT_SENSITIVITY, tr=tr, stop=stop))
         result["series"].append({"rule_version": s[0]["rule_version"], "decisions": len(s),
-                                 "tickers_without_prices": sorted(set(tickers) - set(frames)), **summarize(main_p),
+                                 "price_sources": src, **summarize(main_p),
                                  "haircut_0_5": {k2: v for k2, v in sens.items() if k2 not in ("first", "last")}})
     out = ROOT / "data" / "reports" / f"forward_record_{date.today().isoformat()}.json"
     out.write_text(json.dumps(result, indent=2, ensure_ascii=False))
