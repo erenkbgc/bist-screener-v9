@@ -110,3 +110,30 @@ def test_unbuyable_target_weight_stays_in_cash_and_stuck_held_separate():
     # B %25 alir (+%20 kazanir -> +%5), C'nin %25 payi nakitte kalir (0 kazanir), S %50 sabit -> toplam +%5
     assert np.isclose(out2.iloc[1]["port"], 0.25 * 0.20, atol=1e-12)
 
+
+
+def test_limit_rule_blocks_new_buy_and_freezes_held_position():
+    """limit_pct: islem gunu %10 tavan olan yeni hedef alinmaz (nakitte); taban olan eldeki hisse satilamaz."""
+    days, months, d0_of = _setup()
+    # A: ilk islem gunu (gun 10) tavan, sonra +%10 daha; B: duz
+    a = [100.0] * 10 + [110.0] * 20 + [121.0] * 30
+    b = [100.0] * 60
+    mkt = _market({"A": a, "B": b}, days)
+    cap = {t: 1e6 for t in months}
+    on = pb.simulate({t: ["A", "B"] for t in months}, months, d0_of, mkt, {}, cap, costs=ZERO, limit_pct=0.095)
+    off = pb.simulate({t: ["A", "B"] for t in months}, months, d0_of, mkt, {}, cap, costs=ZERO)
+    # kapali: A ilk ayda alinir, ikinci ay +%10 -> ay 2 getirisi %5
+    assert np.isclose(off.iloc[1]["port"], 0.05)
+    # acik: ilk ay A alinamaz (n_held 1), ikinci dengelemede (gun 30) A yine %10 sicradi -> yine alinmaz
+    assert on.iloc[0]["n"] == 1
+    assert on.iloc[1]["n"] == 1 and np.isclose(on.iloc[1]["port"], 0.0)
+
+    # eldeki hisse taban: C ilk ayda alinir, gun 30'da %10 duser ve hedeften cikar ama satilamaz;
+    # sonra %10 daha duser. Kural kapaliyken gun 30 kapanisinda satilir (-%10).
+    c = [100.0] * 30 + [90.0] * 10 + [81.0] * 20
+    mkt2 = _market({"C": c, "B": b}, days)
+    targets = {months[0]: ["C"], months[1]: ["B"], months[2]: ["B"]}
+    on2 = pb.simulate(targets, months, d0_of, mkt2, {}, cap, costs=ZERO, limit_pct=0.095)
+    off2 = pb.simulate(targets, months, d0_of, mkt2, {}, cap, costs=ZERO)
+    assert np.isclose(off2.iloc[1]["port"], -0.10)
+    assert np.isclose(on2.iloc[1]["port"], -0.19)
