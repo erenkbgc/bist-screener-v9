@@ -115,12 +115,13 @@ LONG_COLS = [
 LONG_HIDDEN = ("Alış bandı alt", "Alış bandı üst", "Stop", "Hedef (180g)", "Beklenen getiri %",
                "Hurdle üstü %", "Hedefe ulaşma olasılığı %", "Pozisyon %", "Destek", "Direnç",
                "Direnç hedeften önce")
-SHORT_COLS = [col for col in LONG_COLS if col[0] not in (
-    "Hedef (180g)", "Adil değer (baz)", "Adil değer farkı %", "Adil değer düşük", "Adil değer yüksek",
+# Kisa vadede de hedef (2.5 x ATR), alis bandi, stop ve pozisyon gosterilmez:
+# carpanlar kalibre edilmedi ve kova on-kayitli testte kanit bulmadi (plan_2026-10-21 P2-1).
+SHORT_COLS = [col for col in LONG_COLS if col[0] not in LONG_HIDDEN + (
+    "Adil değer (baz)", "Adil değer farkı %", "Adil değer düşük", "Adil değer yüksek",
     "Değer tuzağı riski", "5 yıllık zirveden %", "52 haftalık zirveden %", "Risk bayrakları",
     "F/K", "PD/DD", "Piotroski (0-1)")]
-SHORT_COLS.insert(8, ("Hedef (20g)", lambda c: c.get("target_price"), PRICE, 11))
-SHORT_COLS.insert(9, ("Hacim oranı (20g)", lambda c: c.get("volume_ratio_20d"), "0.00", 10))
+SHORT_COLS.insert(5, ("Hacim oranı (20g)", lambda c: c.get("volume_ratio_20d"), "0.00", 10))
 LONG_COLS = [col for col in LONG_COLS if col[0] not in LONG_HIDDEN]
 
 
@@ -253,6 +254,40 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
                 "hisselerde value_sn üst %20, eşit ağırlık, aylık.", "006100")
         wr.freeze_panes = "A3"
 
+    checks = rot.get("checks") or []
+    if checks:
+        wc = wb.create_sheet("Tek Hisse Kontrol", 2)
+        check_cols = [
+            ("Hisse", lambda r: r["ticker"], None, 9),
+            ("Sektör", lambda r: r.get("sector"), None, 20),
+            ("Bilanço dönemi", lambda r: r.get("statement_period"), None, 11),
+            ("KAP yayını", lambda r: r.get("kap_published_at"), None, 17),
+            ("Fiyat tarihi", lambda r: r.get("price_date"), None, 11),
+            ("Geçerli oran sayısı", lambda r: r.get("valid_metric_count"), None, 9),
+            ("Zarar", lambda r: _bool_tr(r.get("loss_flag")), None, 8),
+            ("Tahakkuk (Sloan) uyarısı", lambda r: _bool_tr(r.get("sloan_flag")), None, 11),
+            ("FCF getirisi", lambda r: r.get("fcf_yield"), "0.000", 9),
+            ("Net borç / FAVÖK", lambda r: r.get("net_debt_ebitda"), "0.00", 9),
+            ("Sıkıntı", lambda r: _bool_tr(r.get("distress_flag")), None, 8),
+            ("Piotroski (0-1)", lambda r: r.get("piotroski_normalized_score"), "0.00", 9),
+            ("Değer tuzağı riski", lambda r: _bool_tr(r.get("value_trap_risk")), None, 10),
+            ("5 yıllık zirveden %", lambda r: r.get("drawdown_from_5y_peak_pct"), PCT, 10),
+            ("5 yıllık en büyük düşüş %", lambda r: r.get("max_drawdown_5y_pct"), PCT, 10),
+            ("60g volatilite", lambda r: r.get("volatility_60d"), "0.000", 9),
+            ("Risk bayrakları", lambda r: ", ".join(r.get("risk_flags") or []) or None, None, 28),
+            ("Eksik veri", lambda r: ", ".join(r.get("unknown_checks") or []) or None, None, 20),
+        ]
+        _header(wc, 1, check_cols)
+        for i, row in enumerate(checks, 2):
+            for j, (_, fn, fmt, _) in enumerate(check_cols, 1):
+                v = fn(row)
+                cell = wc.cell(row=i, column=j, value=v)
+                cell.border = BORDER
+                if fmt and isinstance(v, (int, float)) and not isinstance(v, bool):
+                    cell.number_format = fmt
+        _banner(wc, "BİLGİ AMAÇLI, TEK HİSSE KONTROLÜ: rotasyondaki her hisse için veri yaşı, kâr kalitesi, borç ve "
+                "düşüş riski. Kanıt sepet düzeyindedir; tek hisse için eşikler test edilmedi ve karar değişmez.", "9C5700")
+
     from core import diagnostics as dg
     w = payload.get("weights") or {}
     wm = wb.create_sheet("Açıklamalar")
@@ -269,7 +304,9 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
          "getiriyi artırmadı ve düşüşü azaltmadı; satış kuralı, hissenin değer sıralamasında üst %20'den çıkmasıdır. "
          "On-kayıtlı alış testi (docs/research/entry_timing_preregistration.md) "
          "geri çekilme/limit, RSI, trend onayı ve kademeli alım kurallarının hemen almaktan iyi olmadığını gösterdi."),
-        "Değer tuzağı riski: fiyat trendi aşağı; ucuzluk düşüşün sonucu olabilir.",
+("Değer tuzağı riski: fiyat trendi aşağı; ucuzluk düşüşün sonucu olabilir. Benzer filtreler (momentum alt dilimi, "
+         "5 yıllık çöküş, CHS/Altman sıkıntı, düşük F-skor) on-kayıtlı testte değer portföyünü iyileştirmedi "
+         "(long_term_preregistration.md); bayrak yalnızca bilgidir."),
         (f"Zirveden % ve risk bayrakları yalnızca bilgidir, skoru değiştirmez: 5 yıllık zirveden "
          f"%{-dg.CRASH_FROM_PEAK_PCT:g}+ düşüş, 52 haftalık zirveden %{-dg.FAR_FROM_52W_HIGH_PCT:g}+ uzaklık, "
          f"zarar (TTM HBK < 0), borç/sıkıntı (negatif özsermaye, negatif FAVÖK + net borç, "

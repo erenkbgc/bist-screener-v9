@@ -22,13 +22,10 @@ scoring_weights:
   momentum_z: 0.00
 
 piotroski:
-  normalized_score_threshold: 0.55  # STRONG_OPPORTUNITY kademesi icin kalite esigi
-  # Sert filtre (hard_filters) esigi. Piotroski (2000) ayrimi: F 8-9 yuksek,
-  # 0-3 dusuk, orta bant notr. 0.55 sert filtre olarak medyan firmayi eliyordu
-  # (evrenin ~%20'si yalnizca bu kapidan dustu; ornek THYAO 4/8=0.50). Nominal
-  # (TMS 29 disi) beslemede kriter 3/5/6/8 enflasyonla bozuldugu icin orta bant
-  # sinyali zayif. Sert kapi yalnizca dusuk kaliteyi (<=3/9 esdegeri) eler.
-  hard_filter_min_score: 0.34
+  normalized_score_threshold: 0.55  # STRONG_OPPORTUNITY kademesi icin kalite esigi (test edilmedi)
+  # Sert filtre (eski hard_filter_min_score 0.34) 2026-10-21'de kaldirildi
+  # (plan_2026-10-21 P2-1): on-kayitli H4b (F7 <= 2 disla) ve H2b testleri
+  # deger portfoyunu iyilestirmedi (long_term_preregistration.md).
 
 # Uzun vade hedefi: beklenen = (P + alpha * (adil deger - P)) * (1 + k_e)^(180/365) - temettu
 # (core/targets.py::compute_long_term_target). alpha = 180 gunde kapanan acik orani.
@@ -68,7 +65,9 @@ top_n_per_bucket: 4
 valuation_triangle_weights:
   dcf: 0.00
   peer_multiples: 0.50
-  quality_premium: 0.25
+  # 2026-10-21: quality 0.25 -> 0.00 (plan_2026-10-21 P2-2). Kalite bacagi da
+  # test edilmedi; hedef artik yalnizca alpha'nin olculdugu emsal bacagindan gelir.
+  quality_premium: 0.00
 
 # Rejim agirliklari kaldirildi (2026-10-10). Faz 2 on-kaydi H6: rejim motoru
 # nokta-zamanli yeniden kurulamiyor ve makro calisma (macro_drivers_preregistration.md)

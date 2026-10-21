@@ -1,4 +1,4 @@
-"""no_action testi, piotroski gate testi, beta hurdle testi (hard_filter DEGIL),
+"""no_action testi, piotroski artik sert filtre degil, beta hurdle testi (hard_filter DEGIL),
 volume breakout testi."""
 import pytest
 
@@ -20,36 +20,32 @@ def _base_candidate(**overrides):
 
 
 def test_hard_filters_pass_for_clean_candidate():
-    passed, reason = hard_filters_passed(_base_candidate(), 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(_base_candidate(), "2026-09-10")
     assert passed is True
     assert reason is None
 
 
 def test_hard_filters_fail_on_tedbir():
-    passed, reason = hard_filters_passed(_base_candidate(tedbir_level=2), 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(_base_candidate(tedbir_level=2), "2026-09-10")
     assert passed is False
     assert reason == "tedbir_level"
 
 
 def test_hard_filters_fail_on_negative_hurdle():
-    passed, reason = hard_filters_passed(_base_candidate(excess_over_hurdle_pct=-1), 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(_base_candidate(excess_over_hurdle_pct=-1), "2026-09-10")
     assert passed is False
     assert reason == "hurdle"
 
 
-def test_piotroski_gate_fails_below_threshold():
-    passed, reason = hard_filters_passed(_base_candidate(piotroski_normalized_score=0.2), 0.55, "2026-09-10")
-    assert passed is False
-    assert reason == "piotroski"
-
-
-def test_piotroski_gate_passes_at_threshold():
-    passed, reason = hard_filters_passed(_base_candidate(piotroski_normalized_score=0.55), 0.55, "2026-09-10")
-    assert passed is True
+def test_low_piotroski_is_not_a_hard_filter():
+    """plan_2026-10-21 P2-1: on-kayitli H4b/H2b basarisiz; Piotroski adayi elemez."""
+    passed, reason = hard_filters_passed(_base_candidate(piotroski_normalized_score=0.1), "2026-09-10")
+    assert passed is True and reason is None
+    assert hard_filters_passed(_base_candidate(piotroski_normalized_score=None), "2026-09-10")[0] is True
 
 
 def test_effective_at_after_cutoff_fails_point_in_time():
-    passed, reason = hard_filters_passed(_base_candidate(effective_at="2026-09-15"), 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(_base_candidate(effective_at="2026-09-15"), "2026-09-10")
     assert passed is False
     assert reason == "point_in_time"
 
@@ -58,21 +54,21 @@ def test_effective_at_none_fails_point_in_time_without_crashing():
     """point_in_time_publication_lag: gercek KAP bildirim tarihi bulunamadiginda
     (bkz. core/fundamentals.py) effective_at None kalir. None <= str karsilastirmasi
     TypeError firlatmamali; aday guvenlik icin elenmeli (UYDURULMAZ)."""
-    passed, reason = hard_filters_passed(_base_candidate(effective_at=None), 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(_base_candidate(effective_at=None), "2026-09-10")
     assert passed is False
     assert reason == "point_in_time"
 
 
 def test_short_term_requires_volume_breakout():
     c = _base_candidate(bucket="short_term", volume_ratio_20d=1.0)
-    passed, reason = hard_filters_passed(c, 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(c, "2026-09-10")
     assert passed is False
     assert reason == "volume_breakout"
 
 
 def test_short_term_passes_with_volume_confirmed():
     c = _base_candidate(bucket="short_term", volume_ratio_20d=1.6)
-    passed, reason = hard_filters_passed(c, 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(c, "2026-09-10")
     assert passed is True
 
 
@@ -80,21 +76,21 @@ def test_long_term_fails_beta_adjusted_hurdle():
     """Hedef k_e = rf + beta*ERP ile buyutuldugu icin sabit rf hurdle'i otomatik
     geciliyordu; uzun vade artik ayni k_e'yi kullanan beta hurdle'ina bakar."""
     c = _base_candidate(excess_over_beta_hurdle_pct=-50)
-    passed, reason = hard_filters_passed(c, 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(c, "2026-09-10")
     assert passed is False and reason == "beta_hurdle"
     c_unknown = _base_candidate(excess_over_beta_hurdle_pct=None)
-    assert hard_filters_passed(c_unknown, 0.55, "2026-09-10")[0] is True
+    assert hard_filters_passed(c_unknown, "2026-09-10")[0] is True
 
 
 def test_hard_filters_fail_on_outlier_roi():
     """180 gunluk gercekci olmayan asiri getiri vaatleri (> %200) guvenlik icin elenir."""
     c_outlier = _base_candidate(expected_roi_pct=1596.0)
-    passed, reason = hard_filters_passed(c_outlier, 0.55, "2026-09-10")
+    passed, reason = hard_filters_passed(c_outlier, "2026-09-10")
     assert passed is False
     assert reason == "outlier_roi"
 
     c_ok = _base_candidate(expected_roi_pct=45.0)
-    passed_ok, reason_ok = hard_filters_passed(c_ok, 0.55, "2026-09-10")
+    passed_ok, reason_ok = hard_filters_passed(c_ok, "2026-09-10")
     assert passed_ok is True
     assert reason_ok is None
 
@@ -244,6 +240,7 @@ def test_live_score_uses_only_preregistered_weights(temp_db, monkeypatch):
     assert not cfg.get("use_optimized_weights")
     assert "regime_scoring_weights" not in cfg
     assert cfg["valuation_triangle_weights"]["dcf"] == 0.0
+    assert cfg["valuation_triangle_weights"]["quality_premium"] == 0.0
 
     def boom(*a, **k):
         raise AssertionError("optimize agirliklar canli yolda okunmamali")
