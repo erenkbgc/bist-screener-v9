@@ -113,6 +113,19 @@ def hard_filters_passed(candidate: dict, piotroski_threshold: float, as_of_date_
     return True, None
 
 
+# Sert filtrede None iken gecen (uygulanmayan) kapilar. Veri yoksa kapi
+# "gecti" sayilmaz: aday elenmez ama en fazla WATCHLIST olur (UNKNOWN).
+UNKNOWN_GATES = {
+    "long_term": ("expected_roi_pct", "valuation_excess_pct", "excess_over_beta_hurdle_pct"),
+    "short_term": ("expected_roi_pct",),
+}
+
+
+def unknown_checks(candidate: dict) -> list[str]:
+    """Verisi olmadigi icin degerlendirilemeyen kapilarin alan adlari."""
+    return [k for k in UNKNOWN_GATES.get(candidate["bucket"], ()) if candidate.get(k) is None]
+
+
 def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cutoff: str, regime: str | None = None) -> list[dict]:
     """raw_candidates: her biri fundamentals + universe + ownership + catalyst + hurdle + piotroski
     alanlarini zaten birlestirilmis halde tasir (bkz. run.py). bucket alani 'long_term' veya
@@ -142,6 +155,7 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
         for k in ("valuation_z", "peer_group_used", "peer_n", "confidence", "valid_metric_count", "metrics_used"):
             c[k] = val[k]
         c["value_trap_risk"] = is_value_trap_risk(c)
+        c["unknown_checks"] = unknown_checks(c)
 
         passed, filtered_by = hard_filters_passed(c, piotroski_hard_min, as_of_date_cutoff)
 
@@ -176,7 +190,9 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
         for c in passing:
             top_tier = percentile_rank(c["final_score"], pool) >= 0.75 if len(pool) >= 2 else True
             positive_margin = c["excess_over_hurdle_pct"] > 0
-            if c["confidence"] == "high" and top_tier and positive_margin and \
+            if c["unknown_checks"]:
+                c["candidate_state"] = "WATCHLIST"
+            elif c["confidence"] == "high" and top_tier and positive_margin and \
                     c["piotroski_normalized_score"] >= piotroski_threshold and not c["value_trap_risk"]:
                 c["candidate_state"] = "STRONG_OPPORTUNITY"
             elif positive_margin and c["confidence"] in ("high", "degraded") and not c["value_trap_risk"]:

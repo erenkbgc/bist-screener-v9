@@ -83,9 +83,10 @@ def test_short_term_target_structural_ceiling():
     assert res["target_price"] == 105.0
 
 
-def test_scenario_probabilities_integrated_in_valuation():
+def test_valuation_target_is_base_fair_value():
+    """p^2 senaryo agirliklari kaldirildi (plan_2026-10-21 P0-2): hedef = baz adil deger."""
     candidate = {
-        "ticker": "TEST_BULL",
+        "ticker": "TEST_BASE",
         "entry_price": 100.0,
         "current_price": 100.0,
         "market_cap": 1_000_000_000.0,
@@ -98,15 +99,9 @@ def test_scenario_probabilities_integrated_in_valuation():
         {"ticker": f"P{i}", "pe": 15.0, "eps_ttm": 10.0, "ratio_profile": "industrial", "entry_price": 100.0}
         for i in range(5)
     ]
-
-    # Boga rejiminde (prob_up = 0.85) hedef daha yuksek olmali
-    bull_res = compute_valuation_triangle(candidate, peers + [candidate], prob_up=0.85)
-    # Ayi rejiminde (prob_up = 0.15) hedef daha temkinli olmali
-    bear_res = compute_valuation_triangle(candidate, peers + [candidate], prob_up=0.15)
-
-    assert bull_res["target_price"] > bear_res["target_price"]
-    assert bull_res["scenario_probabilities"]["bull"] > bear_res["scenario_probabilities"]["bull"]
-    assert bear_res["scenario_probabilities"]["bear"] > bull_res["scenario_probabilities"]["bear"]
+    res = compute_valuation_triangle(candidate, peers + [candidate])
+    assert res["target_price"] == pytest.approx(res["fair_value_base"], abs=0.01)
+    assert "scenario_probabilities" not in res
 
 
 def test_volatility_cone_uses_daily_sigma_annualized():

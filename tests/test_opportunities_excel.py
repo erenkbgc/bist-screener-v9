@@ -23,9 +23,10 @@ def test_sheets_order_and_values(tmp_path):
     assert wb.sheetnames == ["Özet", "Uzun Vade", "Kısa Vade", "Açıklamalar"]
     lt = wb["Uzun Vade"]
     # durum sirasi skordan once gelir: guclu > firsat > izleme
-    assert [lt.cell(row=r, column=1).value for r in (2, 3, 4)] == ["SSS", "OOO", "WWW"]
-    headers = [c.value for c in lt[1]]
-    gap = lt.cell(row=2, column=headers.index("Adil değer farkı %") + 1).value
+    assert lt["A1"].value.startswith("BİLGİ AMAÇLI")
+    assert [lt.cell(row=r, column=1).value for r in (3, 4, 5)] == ["SSS", "OOO", "WWW"]
+    headers = [c.value for c in lt[2]]
+    gap = lt.cell(row=3, column=headers.index("Adil değer farkı %") + 1).value
     assert abs(gap - 20.0) < 1e-9
     assert wb["Kısa Vade"].cell(row=2, column=1).value == "KKK"
     summary = {r[0]: r[1] for r in wb["Özet"].iter_rows(min_row=3, values_only=True) if r[0]}
@@ -34,4 +35,17 @@ def test_sheets_order_and_values(tmp_path):
 
 def test_empty_day(tmp_path):
     wb = load_workbook(write_opportunities_excel(tmp_path / "e.xlsx", "2026-10-02", {}))
-    assert "aday yok" in wb["Uzun Vade"].cell(row=2, column=1).value
+    assert "aday yok" in wb["Uzun Vade"].cell(row=3, column=1).value
+
+
+def test_rotation_sheet_first_and_labelled(tmp_path):
+    payload = {"rotation": {"n_holdings": 1, "buy": [{"ticker": "AAA", "valuation_z": 1.2, "rank_pct": 0.95}],
+                            "hold": [], "sell": [], "rebalance_date": "2026-11-02"},
+               "passing_candidates": [{**_c("AAA", "WATCHLIST", 0.3), "unknown_checks": ["valuation_excess_pct"]}]}
+    wb = load_workbook(write_opportunities_excel(tmp_path / "r.xlsx", "2026-11-02", payload))
+    assert wb.sheetnames[:2] == ["Özet", "Rotasyon"]
+    assert wb["Rotasyon"]["A1"].value.startswith("TEST EDİLEN TEK KARAR KURALI")
+    assert wb["Rotasyon"].cell(row=3, column=2).value == "AAA"
+    lt = wb["Uzun Vade"]
+    headers = [c.value for c in lt[2]]
+    assert lt.cell(row=3, column=headers.index("Eksik veri") + 1).value == "valuation_excess_pct"

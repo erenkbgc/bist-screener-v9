@@ -23,7 +23,6 @@ from core.dcf import (
 )
 from core.weight_optimizer import (
     compute_harmonic_mean,
-    derive_scenario_probabilities,
     load_optimized_weights,
 )
 
@@ -381,7 +380,6 @@ def compute_valuation_triangle(
     peers: list[dict],
     macro_snapshot: dict | None = None,
     custom_weights: dict | None = None,
-    prob_up: float | None = None,
 ) -> dict:
     """Degerleme Ucgeni sentezi:
     DCF (%40) + Emsal Carpanlar (%35) + Kalite Primi (%25).
@@ -398,12 +396,14 @@ def compute_valuation_triangle(
     peers_leg = compute_peers_leg(candidate, peers)
     quality_leg = compute_quality_leg(candidate, macro_snapshot)
 
+    # Agirligi 0 olan bacak (ornegin DCF, weights.yaml) hedefe girmez ve
+    # yontem adinda gorunmez; bacak ciktisi referans olarak dondurulur.
     active_legs = {}
-    if dcf_leg and dcf_leg.get("eligible"):
+    if dcf_leg and dcf_leg.get("eligible") and w_dcf_raw > 0:
         active_legs["dcf"] = (w_dcf_raw, dcf_leg)
-    if peers_leg and peers_leg.get("eligible"):
+    if peers_leg and peers_leg.get("eligible") and w_peers_raw > 0:
         active_legs["peers"] = (w_peers_raw, peers_leg)
-    if quality_leg and quality_leg.get("eligible"):
+    if quality_leg and quality_leg.get("eligible") and w_quality_raw > 0:
         active_legs["quality"] = (w_quality_raw, quality_leg)
 
     if not active_legs:
@@ -418,7 +418,6 @@ def compute_valuation_triangle(
             "peers_leg": None,
             "quality_leg": None,
             "legs_used": 0,
-            "scenario_probabilities": None,
         }
 
     # Normalize active weights to sum to 1.0
@@ -429,23 +428,10 @@ def compute_valuation_triangle(
     fv_low = sum(normalized_weights[k] * leg["fair_value_low"] for k, (_, leg) in active_legs.items())
     fv_high = sum(normalized_weights[k] * leg["fair_value_high"] for k, (_, leg) in active_legs.items())
 
-    # Rejim ve Trend olasilik agirlikli sentetik hedef sentezi (sifir manuel agirlik)
-    effective_prob_up = prob_up
-    if effective_prob_up is None and macro_snapshot:
-        effective_prob_up = macro_snapshot.get("prob_up")
-    if effective_prob_up is None:
-        effective_prob_up = candidate.get("prob_up")
-
-    if effective_prob_up is not None:
-        scenario_probs = derive_scenario_probabilities(effective_prob_up)
-        target_price = (
-            scenario_probs["bull"] * fv_high
-            + scenario_probs["base"] * fv_base
-            + scenario_probs["bear"] * fv_low
-        )
-    else:
-        scenario_probs = {"bull": 0.0, "base": 1.0, "bear": 0.0}
-        target_price = fv_base
+    # Hedef = baz senaryo adil degeri. Eski p^2 / 2p(1-p) / (1-p)^2 senaryo
+    # agirliklari bagimsiz iki yazi-tura varsayiyordu; prob_up canli hedefe hic
+    # ulasmiyordu ve trend tahmincisinin gecen bir testi yok (plan_2026-10-21 P0-2).
+    target_price = fv_base
 
     # Outlier guard: Sentetik hedef fiyat fiyatin 2.5 katini asamaz (> %150) veya 0.3 katindan kucuk olamaz
     entry_price = candidate.get("entry_price") or candidate.get("current_price") or 0.0
@@ -461,7 +447,6 @@ def compute_valuation_triangle(
             "peers_leg": None,
             "quality_leg": None,
             "legs_used": 0,
-            "scenario_probabilities": None,
         }
 
     # Build descriptive valuation method string
@@ -484,7 +469,6 @@ def compute_valuation_triangle(
         "dcf_leg": dcf_leg,
         "peers_leg": peers_leg,
         "quality_leg": quality_leg,
-        "scenario_probabilities": scenario_probs,
         "legs_used": sum(
             (peers_leg.get("legs_used", 1) if k == "peers" else 1)
             for k in active_legs

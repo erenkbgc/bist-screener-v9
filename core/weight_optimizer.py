@@ -26,36 +26,6 @@ OPTIMIZED_WEIGHTS_PATH = CONFIG_DIR / "weights_optimized.json"
 
 
 # =============================================================================
-# 1. ANALITIK SENARYO OLASILIKLARI (TRINOMIAL TRANSITION MAPPING)
-# =============================================================================
-
-def derive_scenario_probabilities(prob_up: float) -> dict[str, float]:
-    """TrendForecaster'in urettigi kalibre edilmis p = prob_up degerinden
-    matematiksel olarak kapali formda (closed-form) ucluk (trinomial) senaryo
-    dagilimini uretir.
-    
-    Formul:
-      P(Bull) = p^2           (Yüksek guvenli yukselis)
-      P(Bear) = (1 - p)^2     (Yüksek guvenli dusus)
-      P(Base) = 2 * p * (1 - p) (Belirsizlik / Merkezcil denge)
-      
-    Ozellik:
-      p^2 + 2p(1-p) + (1-p)^2 = (p + (1-p))^2 = 1.0 (Her zaman tam 1'e esittir).
-      Hicbir elle yazilmis YAML katsayisi icermez.
-    """
-    p = float(np.clip(prob_up, 0.0, 1.0))
-    p_bull = p ** 2
-    p_bear = (1.0 - p) ** 2
-    p_base = 2.0 * p * (1.0 - p)
-
-    return {
-        "bull": round(p_bull, 4),
-        "base": round(p_base, 4),
-        "bear": round(p_bear, 4),
-    }
-
-
-# =============================================================================
 # 2. HARMONIK ORTALAMA (HARMONIC MEAN MULTIPLES)
 # =============================================================================
 

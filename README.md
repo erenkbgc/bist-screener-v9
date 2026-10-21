@@ -227,9 +227,9 @@ Weights (`config/weights.yaml`), set by the Phase 2 pre-registration (`docs/rese
 
 Plain value top quintile: net active +10.65%/yr in discovery (2013–2020, t 2.71) and +7.36%/yr in holdout (2021–2026, t 2.80; +6.96%, t 2.60 on the earlier C0 panel). Distress, crash, momentum, 52-week-high, GP/A and SUE additions did not pass. Regime weights were removed: the regime engine cannot be rebuilt point-in-time, and the macro study found no predictor of market direction. `config/weights_optimized.json` is still not used (`use_optimized=False`).
 
-**Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data, Piotroski normalised score ≥ 0.34. Long-term bucket: additionally `valuation_excess_pct > 0` (scenario-weighted fair value above price). The hurdle gate alone passes almost every stock, because the CAPM drift $`k_e > r_f`$. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
+**Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data, Piotroski normalised score ≥ 0.34. Long-term bucket: additionally `valuation_excess_pct > 0` (base fair value above price) and `excess_over_beta_hurdle_pct > 0`. The hurdle gate alone passes almost every stock, because the CAPM drift $`k_e > r_f`$. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
 
-**Candidate state:** `STRONG_OPPORTUNITY` needs high confidence, top quartile of `final_score` in the bucket, a positive hurdle margin, Piotroski ≥ 0.55, and no value-trap flag. Top 4 per bucket are reported.
+**Candidate state:** `STRONG_OPPORTUNITY` needs high confidence, top quartile of `final_score` in the bucket, a positive hurdle margin, Piotroski ≥ 0.55, and no value-trap flag. A gate whose input is missing (`expected_roi_pct`, `valuation_excess_pct`, `excess_over_beta_hurdle_pct` = `None`) is UNKNOWN, not passed: the candidate stays at most `WATCHLIST` and the gate is listed in `unknown_checks` (Excel column "Eksik veri"). Top 4 per bucket are reported. These labels are not tested and do not affect the rotation; reports show them as information only.
 
 ### 12-1 Momentum & Trend Smoothness
 
@@ -256,13 +256,13 @@ Plain value top quintile: net active +10.65%/yr in discovery (2013–2020, t 2.7
 
 | Leg | Weight | Method |
 |---|---|---|
-| DCF | 0.25 | FCF, WACC (CAPM + cost of debt), low/base/high growth 0/5/10% |
+| DCF | 0.00 | FCF, WACC (CAPM + cost of debt), low/base/high growth 0/5/10%; reference only (`dcf_reference`) |
 | Peer multiples | 0.50 | Harmonic mean of peer P/E, EV/EBITDA, P/B (Liu, Nissim & Thomas 2002); banks/insurance/REITs exclude EV/EBITDA |
 | Quality premium | 0.25 | Justified P/B = ROE / $`k_e`$, with Piotroski, balance sheet, and high-ROE modifiers |
 
-Why DCF has the lowest weight: studies of target-price accuracy show that multiple-based and hybrid methods are more accurate than DCF alone. Also, the DCF here runs on nominal TL FCF with a WACC of about 45%, which makes it very sensitive to terminal assumptions. If a leg is not available, the remaining weights are re-normalised. GYO and holding companies use NAV.
+Why DCF has weight 0 (since 2026-10-21): the DCF here runs on nominal TL FCF with a WACC of about 45%, so terminal assumptions dominate it, and no test covers the DCF leg. Studies of target-price accuracy also favour multiple-based methods. The convergence $`\alpha`$ was measured on the peer leg only. A leg with weight 0 is not in the target or the method name. If a leg is not available, the remaining weights are re-normalised. GYO and holding companies use NAV.
 
-Scenario probabilities come from the ML probability $`p = \mathrm{prob\_up}`$: $`P(\text{bull}) = p^2`$, $`P(\text{base}) = 2p(1-p)`$, $`P(\text{bear}) = (1-p)^2`$.
+The target is the base fair value. The former scenario weights ($`P(\text{bull}) = p^2`$, $`P(\text{base}) = 2p(1-p)`$, $`P(\text{bear}) = (1-p)^2`$ from the trend model's `prob_up`) were removed on 2026-10-21: they treat the scenarios as two independent coin flips, `prob_up` never reached the live target, and the trend model has no passing test.
 
 ### Target Price Engine
 
@@ -746,7 +746,7 @@ pytest tests/ -q
 | Factor weights | Plain value (pre-registered; discovery edge −2.4%/yr after adding delisted stocks, see `survivorship_delisted_preregistration.md`). Since 2026-10-17 the live value ratios use the panel's own definition (quarterly TTM, `pit_panel.value_ratios`); provider P/E and P/B are no longer used for the score. |
 | Financials | Valuation rule untested for banks/insurance/brokers; excluded from the rotation and shown separately as untested |
 | Cone $`z`$ | Fitted on one index series, not on stock outcomes |
-| Target $`\alpha`$ | Estimated from the peer leg only; DCF and quality legs and the ML scenario weights are not tested |
+| Target $`\alpha`$ | Estimated from the peer leg only; the quality leg is not tested (DCF weight 0, scenario weights removed) |
 | Prediction outcomes | `outcomes` table too small for attribution |
 | Financial statements | Pre-2023 statements are nominal; since 2023 IAS 29 adds a net monetary gain/loss line that can inflate earnings of indebted firms (check planned). Inflation distorts some Piotroski criteria and DCF |
 | KAP in CI | KAP often drops GitHub runner connections; red-flag panel then shows "partial" or "unavailable" |

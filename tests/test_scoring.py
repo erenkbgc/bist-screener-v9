@@ -1,6 +1,12 @@
 """no_action testi, piotroski gate testi, beta hurdle testi (hard_filter DEGIL),
 volume breakout testi."""
+import pytest
+
 from core.scoring import hard_filters_passed, run_level_state
+
+
+# UNKNOWN kapilarinin (core.scoring.UNKNOWN_GATES) degerlendirilebilir hali
+_KNOWN = {"expected_roi_pct": 20.0, "valuation_excess_pct": 5.0, "excess_over_beta_hurdle_pct": 3.0}
 
 
 def _base_candidate(**overrides):
@@ -130,7 +136,7 @@ def test_catalyst_unavailable_uses_redistributed_weights(temp_db, monkeypatch):
     def cand(ticker, available, pe=10.0):
         return {"ticker": ticker, "bucket": "long_term", "tedbir_level": 0, "reporting_basis": "adjusted",
                 "listing_days": 500, "free_float_pct": 30, "excess_over_hurdle_pct": 5.0,
-                "effective_at": "2026-09-01", "piotroski_normalized_score": 0.7,
+                "effective_at": "2026-09-01", "piotroski_normalized_score": 0.7, **_KNOWN,
                 "catalyst_score": 0.0, "catalyst_available": available, "ownership_z": 0.0,
                 "low_vol_z": 0.0, "momentum_z": 0.0, "sector": "S", "supersector": "SS",
                 "ratio_profile": "industrial", "pe": pe, "pb": 1.0, "ev_ebitda": 5.0, "roe": 10.0}
@@ -156,7 +162,7 @@ def test_short_term_never_promoted_when_disabled(temp_db):
     def cand(ticker, bucket, val):
         return {"ticker": ticker, "bucket": bucket, "tedbir_level": 0, "reporting_basis": "adjusted",
                 "listing_days": 500, "free_float_pct": 30, "excess_over_hurdle_pct": 5.0,
-                "effective_at": "2026-09-01", "piotroski_normalized_score": 0.9, "volume_ratio_20d": 2.0,
+                "effective_at": "2026-09-01", "piotroski_normalized_score": 0.9, "volume_ratio_20d": 2.0, **_KNOWN,
                 "catalyst_score": 0.0, "ownership_z": 0.0, "low_vol_z": 0.0, "momentum_z": 0.0,
                 "sector": "S", "supersector": "SS", "ratio_profile": "industrial",
                 "pe": val, "pb": val / 5, "ev_ebitda": val / 2, "roe": 20.0}
@@ -190,7 +196,7 @@ def test_top_ranked_non_strong_is_opportunity_and_value_trap_is_watchlist(temp_d
         return {"ticker": t, "bucket": "long_term", "sector": "XGIDA", "supersector": "XUSIN",
                 "ratio_profile": "industrial", "reporting_basis": "adjusted", "tedbir_level": 0,
                 "listing_days": 500, "free_float_pct": 30, "excess_over_hurdle_pct": 5.0,
-                "effective_at": "2026-09-01", "piotroski_normalized_score": pio,
+                "effective_at": "2026-09-01", "piotroski_normalized_score": pio, **_KNOWN,
                 "pb": pb, "roe": 10, "catalyst_score": 0.0, "ownership_z": 0.0,
                 "mom_12_1_pct": -10 if trap else 10, "trend_smoothness_r2": -0.5 if trap else 0.5}
 
@@ -200,3 +206,61 @@ def test_top_ranked_non_strong_is_opportunity_and_value_trap_is_watchlist(temp_d
     out = {c["ticker"]: c for c in scoring.score_candidates("2026-09-10", cands, "2026-09-10")}
     assert out["T0"]["candidate_state"] == "OPPORTUNITY"
     assert out["T1"]["candidate_state"] == "WATCHLIST"
+
+
+def test_unknown_gate_caps_state_at_watchlist(temp_db):
+    """Kritik metrik None ise kapi 'gecti' sayilmaz: aday elenmez, en fazla WATCHLIST."""
+    from core import scoring
+
+    def cand(t, pb, **kw):
+        c = {"ticker": t, "bucket": "long_term", "sector": "XGIDA", "supersector": "XUSIN",
+             "ratio_profile": "industrial", "reporting_basis": "adjusted", "tedbir_level": 0,
+             "listing_days": 500, "free_float_pct": 30, "excess_over_hurdle_pct": 5.0,
+             "effective_at": "2026-09-01", "piotroski_normalized_score": 0.9, **_KNOWN,
+             "pb": pb, "roe": 10, "catalyst_score": 0.0, "ownership_z": 0.0,
+             "mom_12_1_pct": 10, "trend_smoothness_r2": 0.5}
+        c.update(kw)
+        return c
+
+    cands = [cand(f"T{i}", 1 + i * 0.2) for i in range(8)]
+    cands[0]["valuation_excess_pct"] = None
+    out = {c["ticker"]: c for c in scoring.score_candidates("2026-09-10", cands, "2026-09-10")}
+    assert out["T0"]["filtered_by"] is None
+    assert out["T0"]["unknown_checks"] == ["valuation_excess_pct"]
+    assert out["T0"]["candidate_state"] == "WATCHLIST"
+    assert out["T1"]["unknown_checks"] == []
+    assert out["T1"]["candidate_state"] in ("STRONG_OPPORTUNITY", "OPPORTUNITY")
+
+
+def test_live_score_uses_only_preregistered_weights(temp_db, monkeypatch):
+    """plan_2026-10-21 P0-5: canli skor yalnizca weights.yaml'daki on-kayitli
+    agirliklari kullanir; optimize/rejim agirliklari skora sizamaz."""
+    import core.scoring as scoring_mod
+    import core.valuation_triangle as vt
+
+    cfg = scoring_mod.load_weights()
+    assert cfg["scoring_weights"]["valuation_z"] == 1.0
+    assert all(v == 0.0 for k, v in cfg["scoring_weights"].items() if k != "valuation_z")
+    assert not cfg.get("use_optimized_weights")
+    assert "regime_scoring_weights" not in cfg
+    assert cfg["valuation_triangle_weights"]["dcf"] == 0.0
+
+    def boom(*a, **k):
+        raise AssertionError("optimize agirliklar canli yolda okunmamali")
+
+    monkeypatch.setattr(scoring_mod, "load_optimized_weights", boom)
+    monkeypatch.setattr(vt, "load_optimized_weights", boom)
+    assert vt.load_triangle_weights() == cfg["valuation_triangle_weights"]
+
+    def cand(t, pb):
+        return {"ticker": t, "bucket": "long_term", "sector": "XGIDA", "supersector": "XUSIN",
+                "ratio_profile": "industrial", "reporting_basis": "adjusted", "tedbir_level": 0,
+                "listing_days": 500, "free_float_pct": 30, "excess_over_hurdle_pct": 5.0,
+                "effective_at": "2026-09-01", "piotroski_normalized_score": 0.9, **_KNOWN,
+                "pb": pb, "roe": 10, "catalyst_score": 3.0, "ownership_z": 2.0, "low_vol_z": 2.0,
+                "momentum_z": 2.0}
+
+    scored = scoring_mod.score_candidates("2026-09-10", [cand(f"T{i}", 1 + i * 0.2) for i in range(8)],
+                                          "2026-09-10", regime="STRONG_BULL")
+    for c in scored:
+        assert c["final_score"] == pytest.approx(c["valuation_z"])
