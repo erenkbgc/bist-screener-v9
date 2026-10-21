@@ -102,3 +102,14 @@ def test_snapshot_needs_history_and_returns_fields():
     snap = smc.snapshot(rows, swing_size=5, internal_size=3)
     assert snap["smc_swing_trend"] in ("yukari", "asagi")
     assert set(snap) >= {"smc_zone", "smc_last_structure", "smc_bull_ob", "smc_bear_ob", "smc_open_fvg"}
+
+
+def test_states_at_equal_prefix_runs():
+    df = _frame(_zigzag())
+    full = smc.analyze(df, swing_size=5, internal_size=3, atr_length=14, states_at={40, 60})
+    for k in (40, 60):
+        part = smc.analyze(df.iloc[:k + 1], swing_size=5, internal_size=3, atr_length=14)
+        st = full.states[k]
+        assert st["order_blocks"] == part.order_blocks and st["fvgs"] == part.fvgs
+        assert st["internal_bias"] == part.internal_bias and st["swing_bias"] == part.swing_bias
+        assert st["trailing_top"] == part.trailing_top and st["trailing_bottom"] == part.trailing_bottom

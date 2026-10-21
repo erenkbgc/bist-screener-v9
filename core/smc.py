@@ -64,6 +64,8 @@ class SMCResult:
     trailing_top: float
     trailing_bottom: float
     dates: pd.Index = field(repr=False, default=None)
+    # states_at istenen barlarda o barin SONUNDAKI durum (yalnizca o bara kadarki veri)
+    states: dict = field(repr=False, default_factory=dict)
 
 
 def atr_wilder(high: np.ndarray, low: np.ndarray, close: np.ndarray, length: int) -> np.ndarray:
@@ -99,8 +101,11 @@ def _legs(high: np.ndarray, low: np.ndarray, size: int) -> np.ndarray:
 
 def analyze(df: pd.DataFrame, swing_size: int = 50, internal_size: int = 5, equal_size: int = 3,
             equal_threshold: float = 0.1, atr_length: int = 200, confluence_filter: bool = False,
-            fvg_auto_threshold: bool = True, max_blocks: int = 100) -> SMCResult:
-    """df: open, high, low, close sutunlari (tarih sirali). Doner SMCResult."""
+            fvg_auto_threshold: bool = True, max_blocks: int = 100,
+            states_at: set[int] | None = None) -> SMCResult:
+    """df: open, high, low, close sutunlari (tarih sirali). Doner SMCResult.
+    states_at: bu bar indekslerinde durum (order block, FVG, takip araligi, trendler)
+    saklanir; analyze(df.iloc[:k + 1]) ile ayni sonucu verir, tek gecis yeterlidir."""
     o, h, lo, c = (df[k].to_numpy(dtype=float) for k in ("open", "high", "low", "close"))
     n = len(c)
     atr = atr_wilder(h, lo, c, atr_length)
@@ -120,6 +125,7 @@ def analyze(df: pd.DataFrame, swing_size: int = 50, internal_size: int = 5, equa
     events: list[dict] = []
     trail_top, trail_bot = np.nan, np.nan
     delta_sum, delta_n = 0.0, 0
+    states: dict[int, dict] = {}
 
     def store_block(piv: Pivot, scope: str, direction: int, i: int) -> None:
         lo_i = max(piv.bar, 0)
@@ -206,12 +212,17 @@ def analyze(df: pd.DataFrame, swing_size: int = 50, internal_size: int = 5, equa
                 events.append({"bar": i, "kind": "FVG", "scope": "fvg", "direction": BEARISH,
                                "level": float(lo[i - 2]), "ref_bar": i - 1})
 
+        if states_at and i in states_at:
+            states[i] = {"order_blocks": list(blocks), "fvgs": list(fvgs), "swing_bias": bias["swing"],
+                         "internal_bias": bias["internal"], "trailing_top": float(trail_top),
+                         "trailing_bottom": float(trail_bot)}
+
     ev = pd.DataFrame(events, columns=["bar", "kind", "scope", "direction", "level", "ref_bar"])
     if len(ev) and isinstance(df.index, pd.Index):
         ev["date"] = df.index[ev["bar"].to_numpy()]
     return SMCResult(events=ev, order_blocks=list(blocks), fvgs=list(fvgs), swing_bias=bias["swing"],
                      internal_bias=bias["internal"], trailing_top=float(trail_top),
-                     trailing_bottom=float(trail_bot), dates=df.index)
+                     trailing_bottom=float(trail_bot), dates=df.index, states=states)
 
 
 def zone(price: float, top: float, bottom: float) -> str | None:

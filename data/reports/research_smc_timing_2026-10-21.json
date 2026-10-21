@@ -1,0 +1,358 @@
+{
+  "as_of": "2026-10-21",
+  "split": "2021-01-01",
+  "entry": {
+    "S1": {
+      "new_entrants": {
+        "discovery": {
+          "months": 93,
+          "obs": 665,
+          "i_mkt_mean_pct": -0.731,
+          "i_mkt_t": -1.41,
+          "i_cash_mean_pct": -0.842,
+          "i_cash_t": -1.06,
+          "mean_wait_days": 14.0,
+          "median_wait_days": 20.0,
+          "triggered_early_pct": 39.4,
+          "better_than_immediate_pct": 50.1
+        },
+        "holdout": {
+          "months": 62,
+          "obs": 596,
+          "i_mkt_mean_pct": 0.557,
+          "i_mkt_t": 0.74,
+          "i_cash_mean_pct": -0.505,
+          "i_cash_t": -0.43,
+          "mean_wait_days": 16.1,
+          "median_wait_days": 20.0,
+          "triggered_early_pct": 28.7,
+          "better_than_immediate_pct": 59.6
+        },
+        "condition_active_pct": 95.2
+      },
+      "all_members": {
+        "discovery": {
+          "months": 93,
+          "obs": 4010,
+          "i_mkt_mean_pct": -1.269,
+          "i_mkt_t": -2.47,
+          "i_cash_mean_pct": -1.204,
+          "i_cash_t": -1.44,
+          "mean_wait_days": 13.8,
+          "median_wait_days": 20.0,
+          "triggered_early_pct": 40.5,
+          "better_than_immediate_pct": 49.4
+        },
+        "holdout": {
+          "months": 62,
+          "obs": 3615,
+          "i_mkt_mean_pct": 0.742,
+          "i_mkt_t": 1.51,
+          "i_cash_mean_pct": -0.297,
+          "i_cash_t": -0.24,
+          "mean_wait_days": 15.9,
+          "median_wait_days": 20.0,
+          "triggered_early_pct": 30.6,
+          "better_than_immediate_pct": 59.1
+        },
+        "condition_active_pct": 95.2
+      },
+      "verdict": "FAIL"
+    },
+    "S2": {
+      "new_entrants": {
+        "discovery": {
+          "months": 93,
+          "obs": 665,
+          "i_mkt_mean_pct": -0.914,
+          "i_mkt_t": -2.42,
+          "i_cash_mean_pct": -0.804,
+          "i_cash_t": -1.65,
+          "mean_wait_days": 7.4,
+          "median_wait_days": 0.0,
+          "triggered_early_pct": 66.3,
+          "better_than_immediate_pct": 20.8
+        },
+        "holdout": {
+          "months": 62,
+          "obs": 596,
+          "i_mkt_mean_pct": 0.244,
+          "i_mkt_t": 0.57,
+          "i_cash_mean_pct": -0.162,
+          "i_cash_t": -0.25,
+          "mean_wait_days": 6.0,
+          "median_wait_days": 0.0,
+          "triggered_early_pct": 74.5,
+          "better_than_immediate_pct": 22.5
+        },
+        "condition_active_pct": 39.7
+      },
+      "all_members": {
+        "discovery": {
+          "months": 93,
+          "obs": 4010,
+          "i_mkt_mean_pct": -1.063,
+          "i_mkt_t": -2.46,
+          "i_cash_mean_pct": -1.113,
+          "i_cash_t": -2.02,
+          "mean_wait_days": 7.2,
+          "median_wait_days": 0.0,
+          "triggered_early_pct": 67.6,
+          "better_than_immediate_pct": 20.8
+        },
+        "holdout": {
+          "months": 62,
+          "obs": 3615,
+          "i_mkt_mean_pct": 0.112,
+          "i_mkt_t": 0.45,
+          "i_cash_mean_pct": -0.413,
+          "i_cash_t": -0.55,
+          "mean_wait_days": 7.6,
+          "median_wait_days": 0.0,
+          "triggered_early_pct": 66.7,
+          "better_than_immediate_pct": 25.6
+        },
+        "condition_active_pct": 42.8
+      },
+      "verdict": "FAIL"
+    },
+    "S3": {
+      "new_entrants": {
+        "discovery": {
+          "months": 93,
+          "obs": 665,
+          "i_mkt_mean_pct": 0.415,
+          "i_mkt_t": 1.14,
+          "i_cash_mean_pct": 0.616,
+          "i_cash_t": 1.09,
+          "mean_wait_days": 8.1,
+          "median_wait_days": 1.0,
+          "triggered_early_pct": 68.4,
+          "better_than_immediate_pct": 24.5
+        },
+        "holdout": {
+          "months": 62,
+          "obs": 596,
+          "i_mkt_mean_pct": -0.192,
+          "i_mkt_t": -0.57,
+          "i_cash_mean_pct": -0.333,
+          "i_cash_t": -0.75,
+          "mean_wait_days": 8.4,
+          "median_wait_days": 4.5,
+          "triggered_early_pct": 71.1,
+          "better_than_immediate_pct": 25.3
+        },
+        "condition_active_pct": 53.7
+      },
+      "all_members": {
+        "discovery": {
+          "months": 93,
+          "obs": 4010,
+          "i_mkt_mean_pct": -0.232,
+          "i_mkt_t": -1.52,
+          "i_cash_mean_pct": -0.257,
+          "i_cash_t": -0.79,
+          "mean_wait_days": 7.6,
+          "median_wait_days": 0.0,
+          "triggered_early_pct": 71.6,
+          "better_than_immediate_pct": 22.2
+        },
+        "holdout": {
+          "months": 62,
+          "obs": 3615,
+          "i_mkt_mean_pct": 0.14,
+          "i_mkt_t": 0.67,
+          "i_cash_mean_pct": -0.065,
+          "i_cash_t": -0.16,
+          "mean_wait_days": 7.4,
+          "median_wait_days": 0.0,
+          "triggered_early_pct": 73.9,
+          "better_than_immediate_pct": 23.6
+        },
+        "condition_active_pct": 49.2
+      },
+      "verdict": "FAIL"
+    },
+    "S4": {
+      "new_entrants": {
+        "discovery": {
+          "months": 93,
+          "obs": 665,
+          "i_mkt_mean_pct": -0.393,
+          "i_mkt_t": -0.72,
+          "i_cash_mean_pct": -0.425,
+          "i_cash_t": -0.53,
+          "mean_wait_days": 11.0,
+          "median_wait_days": 13.0,
+          "triggered_early_pct": 55.2,
+          "better_than_immediate_pct": 46.6
+        },
+        "holdout": {
+          "months": 62,
+          "obs": 596,
+          "i_mkt_mean_pct": 0.566,
+          "i_mkt_t": 0.86,
+          "i_cash_mean_pct": -0.163,
+          "i_cash_t": -0.15,
+          "mean_wait_days": 14.4,
+          "median_wait_days": 20.0,
+          "triggered_early_pct": 39.3,
+          "better_than_immediate_pct": 60.4
+        },
+        "condition_active_pct": 89.5
+      },
+      "all_members": {
+        "discovery": {
+          "months": 93,
+          "obs": 4010,
+          "i_mkt_mean_pct": -0.834,
+          "i_mkt_t": -2.01,
+          "i_cash_mean_pct": -0.837,
+          "i_cash_t": -1.18,
+          "mean_wait_days": 11.2,
+          "median_wait_days": 13.0,
+          "triggered_early_pct": 53.0,
+          "better_than_immediate_pct": 47.4
+        },
+        "holdout": {
+          "months": 62,
+          "obs": 3615,
+          "i_mkt_mean_pct": 0.555,
+          "i_mkt_t": 1.17,
+          "i_cash_mean_pct": -0.298,
+          "i_cash_t": -0.28,
+          "mean_wait_days": 14.7,
+          "median_wait_days": 20.0,
+          "triggered_early_pct": 37.6,
+          "better_than_immediate_pct": 58.7
+        },
+        "condition_active_pct": 90.8
+      },
+      "verdict": "FAIL"
+    }
+  },
+  "exit": {
+    "X5": {
+      "scope": "swing",
+      "exits": 327,
+      "discovery": {
+        "diff": {
+          "months": 93,
+          "diff_ann_pct": -0.16,
+          "t": -0.48
+        }
+      },
+      "holdout": {
+        "diff": {
+          "months": 67,
+          "diff_ann_pct": 0.13,
+          "t": 0.44
+        }
+      },
+      "verdict": "FAIL"
+    },
+    "X6": {
+      "scope": "internal",
+      "exits": 2312,
+      "discovery": {
+        "diff": {
+          "months": 93,
+          "diff_ann_pct": -2.58,
+          "t": -1.54
+        }
+      },
+      "holdout": {
+        "diff": {
+          "months": 67,
+          "diff_ann_pct": -0.87,
+          "t": -0.48
+        }
+      },
+      "verdict": "FAIL"
+    }
+  },
+  "entry_data": [
+    "2013-04-30",
+    "2026-02-28"
+  ],
+  "exit_summary": {
+    "R1": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": 9.62,
+        "t": 3.43,
+        "active_usd_ann_pct": 9.68,
+        "t_usd": 3.6,
+        "turnover_pct": 9.0,
+        "stops_per_year": 0.0,
+        "avg_names": 53.9,
+        "usd_max_dd_pct": -58.8,
+        "usd_vol_ann_pct": 38.0
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": 5.42,
+        "t": 2.08,
+        "active_usd_ann_pct": 5.18,
+        "t_usd": 2.05,
+        "turnover_pct": 7.4,
+        "stops_per_year": 0.0,
+        "avg_names": 78.6,
+        "usd_max_dd_pct": -39.8,
+        "usd_vol_ann_pct": 34.7
+      }
+    },
+    "X5": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": 9.46,
+        "t": 3.35,
+        "active_usd_ann_pct": 9.51,
+        "t_usd": 3.5,
+        "turnover_pct": 12.0,
+        "stops_per_year": 21.4,
+        "avg_names": 53.3,
+        "usd_max_dd_pct": -59.2,
+        "usd_vol_ann_pct": 38.0
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": 5.54,
+        "t": 2.19,
+        "active_usd_ann_pct": 5.3,
+        "t_usd": 2.16,
+        "turnover_pct": 10.0,
+        "stops_per_year": 28.8,
+        "avg_names": 77.6,
+        "usd_max_dd_pct": -40.4,
+        "usd_vol_ann_pct": 34.7
+      }
+    },
+    "X6": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": 7.04,
+        "t": 2.83,
+        "active_usd_ann_pct": 7.02,
+        "t_usd": 2.9,
+        "turnover_pct": 31.4,
+        "stops_per_year": 144.6,
+        "avg_names": 49.3,
+        "usd_max_dd_pct": -58.9,
+        "usd_vol_ann_pct": 37.3
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": 4.55,
+        "t": 1.7,
+        "active_usd_ann_pct": 4.44,
+        "t_usd": 1.67,
+        "turnover_pct": 31.9,
+        "stops_per_year": 213.3,
+        "avg_names": 67.7,
+        "usd_max_dd_pct": -43.7,
+        "usd_vol_ann_pct": 33.7
+      }
+    }
+  }
+}
