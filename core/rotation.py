@@ -181,6 +181,10 @@ def holding_checks(candidates: list[dict], holdings: list[dict]) -> list[dict]:
             "drawdown_from_5y_peak_pct": c.get("drawdown_from_5y_peak_pct"),
             "max_drawdown_5y_pct": c.get("max_drawdown_5y_pct"), "volatility_60d": c.get("volatility_60d"),
             "risk_flags": c.get("risk_flags") or [], "unknown_checks": c.get("unknown_checks") or [],
+            "smc_swing_trend": c.get("smc_swing_trend"), "smc_internal_trend": c.get("smc_internal_trend"),
+            "smc_last_structure": c.get("smc_last_structure"),
+            "smc_last_structure_date": c.get("smc_last_structure_date"), "smc_zone": c.get("smc_zone"),
+            "smc_bull_ob": c.get("smc_bull_ob"), "smc_bear_ob": c.get("smc_bear_ob"),
             "in_today_candidates": bool(c),
         })
     return rows

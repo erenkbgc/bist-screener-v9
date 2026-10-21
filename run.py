@@ -73,6 +73,7 @@ from core import thesis as thesis_mod
 from core import invalidation as invalidation_mod
 from core import evaluate as evaluate_mod
 from core import momentum as momentum_mod
+from core import smc as smc_mod
 from core import trend_forecaster
 from core import portfolio as portfolio_mod
 from core import sovereign_spread as sovereign_spread_mod
@@ -381,8 +382,10 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["dcf"] = dcf_row
         lt["bucket"] = "long_term"
         lt["events"] = events_by_ticker.get(t, [])
-        lt.update(diagnostics_mod.diagnose(
-            lt, bist_mcp.get_prices(t, as_of_date, days=DIAGNOSTIC_HISTORY_DAYS)))
+        diag_rows = bist_mcp.get_prices(t, as_of_date, days=DIAGNOSTIC_HISTORY_DAYS)
+        lt.update(diagnostics_mod.diagnose(lt, diag_rows))
+        # Smart Money Concepts ozeti: yalnizca bilgi (test edilmedi; plan_2026-10-21 P3-2)
+        lt.update(smc_mod.snapshot(diag_rows))
         long_term_candidates.append(lt)
 
         # --- kisa vade: yalnizca ownership.short_term_rejected degilse ---

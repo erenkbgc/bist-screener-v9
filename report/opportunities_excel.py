@@ -16,6 +16,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
+SMC_ZONE_TR = {"premium": "Premium", "premium_half": "Üst yarı", "equilibrium": "Denge",
+               "discount_half": "Alt yarı", "discount": "İskonto"}
 STATE_TR = {"STRONG_OPPORTUNITY": "Güçlü fırsat", "OPPORTUNITY": "Fırsat", "WATCHLIST": "İzleme"}
 STATE_ORDER = {"STRONG_OPPORTUNITY": 0, "OPPORTUNITY": 1, "WATCHLIST": 2}
 STATE_FILL = {"STRONG_OPPORTUNITY": "C6EFCE", "OPPORTUNITY": "E2EFDA", "WATCHLIST": "FFF2CC"}
@@ -276,6 +278,16 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
             ("60g volatilite", lambda r: r.get("volatility_60d"), "0.000", 9),
             ("Risk bayrakları", lambda r: ", ".join(r.get("risk_flags") or []) or None, None, 28),
             ("Eksik veri", lambda r: ", ".join(r.get("unknown_checks") or []) or None, None, 20),
+            # Smart Money Concepts (core/smc.py): bilgi, test edilmedi
+            ("SMC swing trend", lambda r: r.get("smc_swing_trend"), None, 10),
+            ("SMC iç trend", lambda r: r.get("smc_internal_trend"), None, 10),
+            ("SMC son kırılım", lambda r: " ".join(x for x in (r.get("smc_last_structure"),
+                                                               r.get("smc_last_structure_date")) if x) or None, None, 26),
+            ("SMC bölge", lambda r: SMC_ZONE_TR.get(r.get("smc_zone"), r.get("smc_zone")), None, 13),
+            ("Alttaki boğa OB", lambda r: "–".join(f"{v:g}" for v in r["smc_bull_ob"]) if r.get("smc_bull_ob") else None,
+             None, 14),
+            ("Üstteki ayı OB", lambda r: "–".join(f"{v:g}" for v in r["smc_bear_ob"]) if r.get("smc_bear_ob") else None,
+             None, 14),
         ]
         _header(wc, 1, check_cols)
         for i, row in enumerate(checks, 2):
@@ -286,7 +298,8 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
                 if fmt and isinstance(v, (int, float)) and not isinstance(v, bool):
                     cell.number_format = fmt
         _banner(wc, "BİLGİ AMAÇLI, TEK HİSSE KONTROLÜ: rotasyondaki her hisse için veri yaşı, kâr kalitesi, borç ve "
-                "düşüş riski. Kanıt sepet düzeyindedir; tek hisse için eşikler test edilmedi ve karar değişmez.", "9C5700")
+                "düşüş riski; SMC kolonları piyasa yapısı (BOS/CHoCH, order block, bölge). Kanıt sepet düzeyindedir; "
+                "tek hisse eşikleri ve SMC test edilmedi, karar değişmez.", "9C5700")
 
     from core import diagnostics as dg
     w = payload.get("weights") or {}
