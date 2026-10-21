@@ -4,43 +4,12 @@ import pandas as pd
 import pytest
 
 from core.weight_optimizer import (
-    derive_scenario_probabilities,
     compute_harmonic_mean,
     optimize_ensemble_weights,
     optimize_valuation_weights,
     optimize_factor_weights,
     calibrate_volatility_cone_and_convergence,
 )
-
-
-def test_derive_scenario_probabilities_trinomial_sum():
-    for p in [0.0, 0.1, 0.35, 0.50, 0.72, 0.85, 1.0]:
-        probs = derive_scenario_probabilities(p)
-        tot = sum(probs.values())
-        assert abs(tot - 1.0) < 1e-4, f"Olasiliklar toplami 1.0 olmali, p={p}, tot={tot}"
-        assert 0.0 <= probs["bull"] <= 1.0
-        assert 0.0 <= probs["base"] <= 1.0
-        assert 0.0 <= probs["bear"] <= 1.0
-
-
-def test_derive_scenario_probabilities_behavior():
-    # p=0.5 -> tam simetrik merkezcil dagilim
-    neutral = derive_scenario_probabilities(0.5)
-    assert neutral["bull"] == 0.25
-    assert neutral["base"] == 0.50
-    assert neutral["bear"] == 0.25
-
-    # p=0.8 -> boga agirlikli
-    bullish = derive_scenario_probabilities(0.8)
-    assert bullish["bull"] > bullish["bear"]
-    assert bullish["bull"] == 0.64
-    assert bullish["bear"] == 0.04
-
-    # p=0.2 -> ayi agirlikli
-    bearish = derive_scenario_probabilities(0.2)
-    assert bearish["bear"] > bearish["bull"]
-    assert bearish["bear"] == 0.64
-    assert bearish["bull"] == 0.04
 
 
 def test_compute_harmonic_mean():

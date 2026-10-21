@@ -61,8 +61,12 @@ top_n_per_bucket: 4
 # "optimize" ucgen agirliklari GERCEK bacak ciktilariyla degil, tek XU100
 # serisinden teknik vekillerle (SMA uzakligi, RSI) uretildigi icin
 # KULLANILMAZ (use_optimized_weights kapali).
+# 2026-10-21: dcf 0.25 -> 0.00 (plan_2026-10-21 P0-3). ~%45 WACC ile terminal
+# deger hedefe hakim oluyordu ve DCF bacagini sinayan bir test yok; yakinsama
+# alpha'si (0.05) yalnizca emsal bacaginda olculdu. DCF yalnizca referans
+# (dcf_reference) olarak raporlanir.
 valuation_triangle_weights:
-  dcf: 0.25
+  dcf: 0.00
   peer_multiples: 0.50
   quality_premium: 0.25
 

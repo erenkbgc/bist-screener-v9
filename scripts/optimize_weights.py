@@ -23,7 +23,6 @@ import pandas as pd
 from core.trend_forecaster import compute_indicators, TrendForecastingEngine
 from core.weight_optimizer import (
     calibrate_volatility_cone_and_convergence,
-    derive_scenario_probabilities,
     optimize_factor_weights,
     optimize_valuation_weights,
     save_optimized_weights,
@@ -89,19 +88,6 @@ def run_optimization(period: str = "5y") -> dict:
     w_rf, w_lr = engine.ensemble_weights_
     print(f"  - Random Forest Agirligi (w_rf)       : %{w_rf * 100:.1f}")
     print(f"  - Logistic Regression Agirligi (w_lr) : %{w_lr * 100:.1f}")
-
-    # 4. Trinomial Senaryo Olasiliklarinin Analitik Testi
-    print("\n" + "-" * 80)
-    print("3. ANALITIK SENARYO GECIS OLASILIKLARI (SIFIR MANUEL PARAMETRE)")
-    print("-" * 80)
-    current_forecast = engine.predict_current(df_feat)
-    prob_up = current_forecast["prob_up"]
-    scenario_probs = derive_scenario_probabilities(prob_up)
-    print(f"  - Anlik Model Yukari Olasiligi (p_up) : %{prob_up * 100:.1f}")
-    print(f"  - P(Boga / Bull)  = p^2               : %{scenario_probs['bull'] * 100:.2f}")
-    print(f"  - P(Baz / Base)   = 2*p*(1-p)         : %{scenario_probs['base'] * 100:.2f}")
-    print(f"  - P(Ayi / Bear)   = (1-p)^2           : %{scenario_probs['bear'] * 100:.2f}")
-    print(f"  - Toplam Olasilik                     : %{sum(scenario_probs.values()) * 100:.1f} (Matematiksel Olarak 1.0)")
 
     # 5. Faktor Skorlama ve Bilgi Orani (Information Ratio) Optimizasyonu
     print("\n" + "-" * 80)

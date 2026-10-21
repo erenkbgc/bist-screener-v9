@@ -107,14 +107,14 @@
 
   <!-- aylik rotasyon (on-kayitli test edilmis tek alim/satim kurali) -->
   {% if rotation and rotation.n_holdings %}
-  <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Aylık rotasyon <span style="font-size:12px; font-weight:500; color:#64748b;">(dengeleme {{ rotation.rebalance_date }})</span></td></tr>
+  <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Aylık rotasyon <span style="font-size:12px; font-weight:500; color:#64748b;">(test edilen tek karar kuralı; dengeleme {{ rotation.rebalance_date }})</span></td></tr>
   <tr><td style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.6; color:#334155;">
     <div><b style="color:#047857;">AL:</b> {% if rotation.buy %}{% for h in rotation.buy %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
     <div><b style="color:#1d4ed8;">TUT:</b> {% if rotation.hold %}{% for h in rotation.hold %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
     <div><b style="color:#b91c1c;">SAT:</b> {% if rotation.sell %}{{ rotation.sell | join(", ") }}{% else %}yok{% endif %}</div>
     {% if rotation.untested_financials %}<div style="font-size:12px; color:#64748b; margin-top:4px;"><b>Finansallar (test edilmedi, bilgi amaçlı):</b> {% for f in rotation.untested_financials %}{{ f.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}. Banka/sigorta/aracı kurumlarda bu değerleme kuralı geçmişte test edilmedi; AL/TUT listesine girmez.</div>{% endif %}
     {% if rotation.size_liquidity and rotation.size_liquidity.n %}<div style="font-size:12px; color:#92400e; margin-top:6px;"><b>Küçük / az likit (bilgi amaçlı):</b> {{ rotation.size_liquidity.n | fmt }} / {{ rotation.size_liquidity.n_holdings | fmt }} hisse piyasa değeri veya işlem hacminde adayların alt üçte birinde: {% for n in rotation.size_liquidity.names %}{{ n.ticker }} ({{ n.market_cap_mn | fmt }} mn TL, hacim yüzdeliği {{ n.liq_pct | fmt }}){% if not loop.last %}, {% endif %}{% endfor %}. Küçük tahtalar fiyat oynatmaya daha açıktır. Testte bunları çıkarmak getiriyi düşürdü (küçükleri çıkarmak yılda {{ rotation.size_liquidity.f1_cost_pct | fmt }} puan, daha sıkı hacim sınırı {{ rotation.size_liquidity.f2_cost_pct | fmt }} puan); bu yüzden kurala dahiller. Ağırlığını kendin seç.</div>{% endif %}
-    {% if portfolio_correlation and portfolio_correlation.effective_n %}<div style="font-size:12px; color:#475569; margin-top:6px;">Çeşitlendirme: {{ portfolio_correlation.n_holdings | fmt }} hisse, 60 günlük ortalama getiri korelasyonu {{ portfolio_correlation.avg_pairwise_corr | fmt }}; yaklaşık {{ portfolio_correlation.effective_n | fmt }} bağımsız bahis kadar.</div>{% endif %}
+    {% if portfolio_correlation and portfolio_correlation.effective_n %}<div style="font-size:12px; color:#475569; margin-top:6px;">Çeşitlendirme: {{ portfolio_correlation.n_holdings | fmt }} hisse, 60 günlük ortalama getiri korelasyonu {{ portfolio_correlation.avg_pairwise_corr | fmt }}; yaklaşık {{ portfolio_correlation.effective_n | fmt }} bağımsız bahis kadar (bilgi amaçlı; kuralı değiştirmez).</div>{% endif %}
     {% if kap_red_flags %}<div style="font-size:12px; color:#334155; margin-top:8px; border-top:1px solid #e2e8f0; padding-top:8px;">
       <b>KAP kırmızı bayrak (son {{ kap_red_flags.window_days | fmt }} gün, bilgi amaçlı):</b>
       {% if kap_red_flags.status == "unavailable" %}KAP verisi alınamadı; bayrak durumu bilinmiyor.
@@ -131,7 +131,8 @@
   {% endif %}
 
   <!-- uzun vade -->
-  <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Uzun vade <span style="font-size:12px; font-weight:500; color:#64748b;">(değerleme)</span></td></tr>
+  <tr><td style="padding:0 2px 8px 2px; font-size:16px; font-weight:800; color:#0f172a;">Uzun vade <span style="font-size:12px; font-weight:500; color:#64748b;">(bilgi amaçlı)</span></td></tr>
+  <tr><td style="padding:0 0 10px 0;"><div style="background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:10px 12px; font-size:12px; color:#78350f;">Alım listesi yukarıdaki rotasyondur. Aşağıdaki durum etiketleri (Güçlü fırsat / Fırsat / İzleme), adil değer, Piotroski ve değer tuzağı işareti test edilmedi; geçmiş performans kanıtı yalnızca rotasyon kuralı için var.</div></td></tr>
   {% if sovereign_spread and sovereign_spread.status == "ok" %}
   <tr><td style="padding:0 0 10px 0;">
     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.55; color:#334155;">
@@ -150,7 +151,7 @@
       Bu kurala giren hisselerin 6 aylık getirisi ({{ realized_returns.period_start }} – {{ realized_returns.period_end }}): medyan %{{ rr.stock_tl_6m.median_pct | fmt }} TL; en kötü onda bir %{{ rr.stock_tl_6m.p10_pct | fmt }} altında, en iyi onda bir %{{ rr.stock_tl_6m.p90_pct | fmt }} üstünde.
       Tek hisse XU100'ü yalnızca %{{ rr.stock_vs_xu100_6m.positive_share_pct | fmt }} oranında geçti. Avantaj sepet düzeyinde: eşit ağırlıklı sepet XU100'ü 6 ayda ortalama %{{ rr.basket_vs_xu100_6m.mean_pct | fmt }} puan geçti (dönemlerin %{{ rr.basket_vs_xu100_6m.positive_share_pct | fmt }}'inde).
       {% if rr.basket_usd_6m and rr.basket_vs_deposit_6m %}<br>Dolar ve mevduat karşılaştırması: sepet 6 ayda dolar bazında medyan %{{ rr.basket_usd_6m.median_pct | fmt }} (ortalama %{{ rr.basket_usd_6m.mean_pct | fmt }}; dönemlerin %{{ rr.basket_usd_6m.positive_share_pct | fmt }}'inde artı). Aynı 6 aylarda TL mevduat (politika faizi, brüt) medyan %{{ rr.deposit_tl_6m.median_pct | fmt }} getirdi; sepet mevduatı dönemlerin yalnızca %{{ rr.basket_vs_deposit_6m.positive_share_pct | fmt }}'inde geçti (medyan fark %{{ rr.basket_vs_deposit_6m.median_pct | fmt }} puan).{% endif %}
-      <div style="font-size:12px; color:#64748b; margin-top:4px;">Hisse bazlı hedef fiyat gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi. TL getirinin büyük kısmı piyasa yönüne bağlı ve o öngörülemiyor. Delist olan hisseler veride yok, sayılar iyimser. Bilançoların gerçek KAP yayın tarihleriyle yeniden test edilince son dönemdeki avantaj zayıfladı ve tesadüften ayırt edilemez hale geldi: sonuç, yayın gecikmesi varsayımına duyarlı.</div>
+      <div style="font-size:12px; color:#64748b; margin-top:4px;">Hisse bazlı hedef fiyat gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi. TL getirinin büyük kısmı piyasa yönüne bağlı ve o öngörülemiyor. Delist olan hisseler eklenince eski dönemdeki avantaj azaldı; sıralama korundu. Bilançoların gerçek KAP yayın tarihleriyle yeniden test edilince son dönemdeki avantaj zayıfladı ve tesadüften ayırt edilemez hale geldi: sonuç, yayın gecikmesi varsayımına duyarlı.</div>
     </div>
   </td></tr>
   {% endif %}
