@@ -54,3 +54,22 @@ def test_thesis_break_sells_inside_buffer():
     r1, _ = xr.simulate(xr.RULES["R1"], m, u, c, a, xu, d0)
     x4, _ = xr.simulate(xr.RULES["X4"], m, u, c, a, xu, d0)
     assert r1["n"].iloc[1] == 1 and len(x4) == 1  # X4: A satildi, ust dilimde kimse yok -> ay atlanir
+
+
+def test_event_exit_sells_on_event_day():
+    """smc_timing_preregistration.md: olay gunu kapanisindan satis, gelir XU100'de."""
+    from core import exit_rules as xr
+    days = pd.bdate_range("2020-01-01", periods=45)
+    months = [days[0], days[20], days[40]]
+    d0_of = {t: t for t in months}
+    close = pd.DataFrame({"A": [100.0] * 5 + [90.0] * 40}, index=days)
+    atr = pd.DataFrame({"A": [1.0] * 45}, index=days)
+    xu = pd.Series(100.0, index=days)
+    uni = {t: pd.DataFrame({"rank_pct": [0.1], "ep": [1.0], "f7": [5], "bench": [0.0], "bench_usd": [0.0],
+                            "fx_ret": [0.0]}, index=["A"]) for t in months}
+    rule = xr.Rule("E", keep_pct=0.4, event_exit=True)
+    p, stops = xr.simulate(rule, months, uni, close, atr, xu, d0_of, events={"A": {days[3]}})
+    assert len(stops) == 1 and stops[0]["date"] == days[3]
+    assert abs(p.iloc[0]["port"]) < 1e-12  # 100'den satildi, dusus kacirildi
+    p0, _ = xr.simulate(xr.Rule("R", keep_pct=0.4), months, uni, close, atr, xu, d0_of)
+    assert abs(p0.iloc[0]["port"] + 0.10) < 1e-12

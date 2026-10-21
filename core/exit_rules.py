@@ -21,6 +21,7 @@ class Rule:
     fixed: float | None = None     # giristen dusus orani
     atr_mult: float | None = None  # giris - k*ATR20
     thesis: bool = False           # ep < 0 veya f7 <= 2 ise sat
+    event_exit: bool = False       # simulate(events=...) gunlerinde kapanistan sat (smc_timing_preregistration.md)
 
 
 RULES = {
@@ -47,10 +48,11 @@ def stop_level(rule: Rule, entry: float, peak: float, atr: float) -> float:
 
 
 def simulate(rule: Rule, months: list[pd.Timestamp], universe: dict[pd.Timestamp, pd.DataFrame],
-             close: pd.DataFrame, atr: pd.DataFrame, xu: pd.Series, d0_of: dict[pd.Timestamp, pd.Timestamp]
-             ) -> tuple[pd.DataFrame, list[dict]]:
+             close: pd.DataFrame, atr: pd.DataFrame, xu: pd.Series, d0_of: dict[pd.Timestamp, pd.Timestamp],
+             events: dict[str, set[pd.Timestamp]] | None = None) -> tuple[pd.DataFrame, list[dict]]:
     """universe[t]: ticker indeksli; rank_pct, ep, f7, bench, bench_usd, fx_ret kolonlari.
-    close/atr: islem gunu x ticker (duzeltilmis). Doner: aylik satirlar ve stop olaylari."""
+    close/atr: islem gunu x ticker (duzeltilmis). events: rule.event_exit icin ticker -> cikis
+    tetik gunleri. Doner: aylik satirlar ve stop olaylari."""
     holdings: dict[str, dict] = {}
     rows, stops = [], []
     for k, t in enumerate(months[:-1]):
@@ -87,11 +89,12 @@ def simulate(rule: Rule, months: list[pd.Timestamp], universe: dict[pd.Timestamp
             path = window[tk].ffill().to_numpy()
             p0 = path[0]
             r, stopped = path[-1] / p0 - 1, False
-            if has_stop(rule):
+            if has_stop(rule) or rule.event_exit:
                 peak = st["peak"]
+                ev = (events or {}).get(tk, set()) if rule.event_exit else set()
                 for j in range(1, len(path)):
                     peak = max(peak, path[j])
-                    if path[j] <= stop_level(rule, st["entry"], peak, st["atr"]):
+                    if path[j] <= stop_level(rule, st["entry"], peak, st["atr"]) or window.index[j] in ev:
                         r = path[j] / p0 * (xu_w.iloc[-1] / xu_w.iloc[j]) - 1
                         stopped = True
                         stop_cost += COST_BPS / 1e4  # stop satisi, tek yon
