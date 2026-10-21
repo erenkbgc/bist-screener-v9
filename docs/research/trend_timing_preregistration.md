@@ -79,3 +79,33 @@ A passing overlay would be shown as a hold/step-aside indicator next to the rota
 
 - `core/trend_timing.py`: the three state machines, execution lag and limit rule, overlay simulator.
 - `scripts/research_trend_timing.py`: runs the test and writes `data/reports/research_trend_timing_<date>.json`.
+
+---
+
+## Results (2026-10-21, after the run; the sections above are unchanged)
+
+`python scripts/research_trend_timing.py` → `data/reports/research_trend_timing_2026-10-21.json`. Decision months 2013-04 → 2026-08. B0 reproduces R0 of the exit study exactly (discovery 10.64%/yr, t 2.66).
+
+**All 3 overlays FAIL. None meets the risk-only or `HARMFUL` label.**
+
+| Rule | Window | Net active vs EW %/yr (t) | D vs B0 %/yr (t) | In market | State changes / name / yr | USD max DD | USD vol |
+|---|---|---|---|---|---|---|---|
+| B0 hold all month | discovery | +10.64 (2.66) | — | 100% | — | −57.9% | 38.5% |
+| B0 | holdout | +6.00 (2.25) | — | 100% | — | −43.5% | 35.1% |
+| T1 Donchian 20/10 + ATR | discovery | −4.24 (−0.72) | −14.88 (−1.99) | 28% | 7.4 | −49.4% | 22.3% |
+| T1 | holdout | −4.76 (−0.51) | −10.76 (−1.09) | 29% | 8.7 | −45.9% | 20.9% |
+| T2 Supertrend 10/3 | discovery | +4.08 (0.97) | −6.56 (−1.43) | 51% | 6.0 | −47.6% | 27.2% |
+| T2 | holdout | +1.25 (0.24) | −4.75 (−0.88) | 49% | 6.9 | −44.7% | 27.6% |
+| T3 EMA pullback + ATR | discovery | −2.71 (−0.44) | −13.35 (−1.74) | 39% | 5.2 | −44.4% | 25.5% |
+| T3 | holdout | −5.89 (−1.04) | −11.89 (−1.83) | 42% | 6.3 | −42.8% | 27.2% |
+
+Secondary (slot in XU100 when flat, information only), D vs B0 discovery / holdout: T1 −15.79 (t −2.99) / −3.08 (−0.69); T2 −8.16 (−2.58) / +0.52 (0.19); T3 −12.50 (−2.35) / −1.15 (−0.26).
+
+How to read it:
+- The overlays are out of the market 50–72% of the time. That halves the volatility, but the holdout USD drawdown is not smaller (T1 and T2 slightly worse than B0), so the risk-only label is not met.
+- They give up 5–15 points a year of the value return. The value picks are cheap stocks, often after a fall; a trend filter waits until they have risen, and misses much of the rebound. This is the same result as the stops in the exit study.
+- With the flat slot in XU100 instead of cash, the holdout loss shrinks (the index did well), but discovery is significantly negative for all three.
+
+### Conclusion
+
+Donchian 20/10 + ATR, Supertrend and EMA pullback do not improve the timing of the value picks. As pre-registered, none is added. Together with the entry, exit and SMC studies, 22 entry, exit and timing rules have now been tested on R0 (7 entry, 6 exit, 6 SMC, 3 trend) and none passed: the best rule remains to buy at the next close and hold until the monthly rebalance. These 3 trials go into the trial ledger (N_sel 81 → 84; R0 DSR 0.10, unchanged label).

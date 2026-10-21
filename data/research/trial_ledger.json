@@ -175,6 +175,12 @@
       "family": "stock_selection",
       "trials": 6,
       "source": "S1-S4 entry, X5-X6 exit"
+    },
+    {
+      "study": "trend_timing_preregistration",
+      "family": "stock_selection",
+      "trials": 3,
+      "source": "T1 Donchian 20/10 + ATR, T2 Supertrend, T3 EMA pullback"
     }
   ]
 }
