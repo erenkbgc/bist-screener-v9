@@ -245,6 +245,10 @@ Plain value top quintile: net active +10.65%/yr in discovery (2013–2020, t 2.7
 
 **Value-trap flag:** $`\text{mom}_{12-1} < 0`$ and signed $`R^2 < 0`$. It blocks `STRONG_OPPORTUNITY`. Information only: comparable exclusions (momentum, crash, distress, low F-score) failed their pre-registered tests.
 
+### Smart Money Concepts (information only)
+
+`core/smc.py` is a point-in-time Python implementation of the common Smart Money Concepts ideas, with LuxAlgo's "Smart Money Concepts" TradingView script as the concept reference: swing (50-bar) and internal (5-bar) pivots, break of structure (BOS) and change of character (CHoCH) on closes, order blocks (the extreme bar of the leg, high-volatility bars inverted, removed when price trades through them), fair value gaps with an automatic threshold, equal highs/lows, and premium/discount zones of the trailing swing range. Events are dated on the bar where they become known, so there is no repainting. Each long-term candidate gets a summary (swing and internal trend, last break, zone, nearest bullish order block below and bearish order block above), shown in the Excel sheet "Tek Hisse Kontrol". It is **not tested** and does not change the rotation; a pre-registered timing test is planned (`docs/plan_2026-10-21.md`, P3-2).
+
 ### Financial Quality
 
 - **Piotroski F-Score** (9 criteria, normalised to [0, 1]). Information and the untested `STRONG_OPPORTUNITY` label only; no hard filter. With a nominal (non-IAS 29) feed, criteria 3/5/6/8 are distorted by inflation, so the middle band carries weak signal.

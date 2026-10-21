@@ -55,6 +55,7 @@ def test_single_stock_check_sheet(tmp_path):
     """plan_2026-10-21 P2-4: rotasyon hisseleri icin ayri, bilgi amacli kontrol sayfasi."""
     from core.rotation import holding_checks
     cands = [{"ticker": "AAA", "sector": "S", "loss_flag": True, "net_debt_ebitda": 4.2,
+              "smc_swing_trend": "yukari", "smc_zone": "discount_half", "smc_bull_ob": [9.5, 9.8],
               "value_inputs": {"stmt_period": "2026Q2"}, "unknown_checks": [], "risk_flags": ["Zarar"]}]
     checks = holding_checks(cands, [{"ticker": "AAA"}, {"ticker": "ZZZ"}])
     assert checks[0]["statement_period"] == "2026Q2" and checks[0]["in_today_candidates"]
@@ -68,3 +69,5 @@ def test_single_stock_check_sheet(tmp_path):
     headers = [c.value for c in ws[2]]
     assert ws.cell(row=3, column=headers.index("Net borç / FAVÖK") + 1).value == 4.2
     assert ws.cell(row=3, column=headers.index("Zarar") + 1).value == "Evet"
+    assert ws.cell(row=3, column=headers.index("SMC bölge") + 1).value == "Alt yarı"
+    assert ws.cell(row=3, column=headers.index("Alttaki boğa OB") + 1).value == "9.5–9.8"
