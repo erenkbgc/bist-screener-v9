@@ -743,7 +743,7 @@
   <div class="card">
     <div class="section-header">
       <h2 class="section-title">2. Kisa Vade Izleme Listesi (Deneysel)</h2>
-      <div class="section-desc"><b>Firsat degildir.</b> Hacim teyitli kisa vade kurali gecmis veride piyasa ortalamasinin gerisinde kaldi; onceden kayitli alternatif kurallarin hicbiri testi gecmedi (docs/research/short_term_preregistration.md). Yalnizca izleme amacli gosterilir.</div>
+      <div class="section-desc"><b>Firsat degildir.</b> Hacim teyitli kisa vade kurali gecmis veride piyasa ortalamasinin gerisinde kaldi; onceden kayitli alternatif kurallarin hicbiri testi gecmedi (docs/research/short_term_preregistration.md). Yalnizca izleme amacli gosterilir. ATR hedefi, alis bandi, stop ve pozisyon gosterilmez: ATR carpani ve diger esikler kalibre edilmedi.</div>
     </div>
 
     {% if short_term_candidates %}
@@ -752,12 +752,8 @@
         <thead>
           <tr>
             <th>Hisse</th>
-            <th class="col-num">Giris (Pullback)</th>
-            <th class="col-num">ATR Hedefi</th>
-            <th class="col-roi">Beklenen Getiri</th>
-            <th class="col-stop">Stop-Loss</th>
+            <th class="col-num">Fiyat</th>
             <th class="col-num">Hacim Teyidi</th>
-            <th class="col-num">Onerilen Poz.</th>
           </tr>
         </thead>
         <tbody>
@@ -769,27 +765,10 @@
                 <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
               </div>
             </td>
-            <td class="col-num">
-              {{ c.entry_price | fmt }}
-              {% if c.entry_low is not none and c.entry_high is not none %}
-                <span class="col-sub">Bant: {{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</span>
-              {% else %}
-                <span class="col-sub">Guncel: {{ c.current_price | fmt }}</span>
-              {% endif %}
-            </td>
-            <td class="col-num" style="font-weight:700; color:#0f172a;">{{ c.target_price | fmt }}</td>
-            <td class="col-roi">+%{{ c.expected_roi_pct | fmt }}</td>
-            <td class="col-stop">{{ c.stop_loss | fmt }}</td>
+            <td class="col-num">{{ c.current_price | fmt }}</td>
             <td class="col-num">
               {% if c.volume_ratio_20d is not none %}
                 {{ c.volume_ratio_20d | fmt }}x
-              {% else %}
-                —
-              {% endif %}
-            </td>
-            <td class="col-num" style="font-weight:700;">
-              {% if c.position_size_pct is not none %}
-                %{{ c.position_size_pct | fmt }}
               {% else %}
                 —
               {% endif %}
@@ -805,7 +784,7 @@
       <div class="quick-copy-header">
         <span class="quick-copy-title">Yonetici Hizli Kopyala (WhatsApp / Notlar)</span>
       </div>
-      <div class="quick-copy-box">{% for c in short_term_candidates %}* {{ c.ticker }} | Giris: {{ c.entry_price | fmt }}{% if c.entry_low is not none and c.entry_high is not none %} (Bant: {{ c.entry_low | fmt }} - {{ c.entry_high | fmt }}){% endif %} -> Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.stop_loss is not none %} | Stop: {{ c.stop_loss | fmt }}{% endif %}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %}{% if c.volume_ratio_20d is not none %} | Hacim: {{ c.volume_ratio_20d | fmt }}x{% endif %}{{ '\n' }}{% endfor %}</div>
+      <div class="quick-copy-box">{% for c in short_term_candidates %}* {{ c.ticker }} | Fiyat: {{ c.current_price | fmt }}{% if c.volume_ratio_20d is not none %} | Hacim: {{ c.volume_ratio_20d | fmt }}x{% endif %}{{ '\n' }}{% endfor %}</div>
     </div>
     {% else %}
     <div class="empty-state">Bugun icin kisa vadeli taktiksel aday bulunmamaktadir.</div>

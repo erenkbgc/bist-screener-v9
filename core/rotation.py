@@ -162,6 +162,30 @@ def decision_details(candidates: list[dict], health: dict | None = None) -> dict
     }
 
 
+def holding_checks(candidates: list[dict], holdings: list[dict]) -> list[dict]:
+    """Tutulan her hisse icin tek hisse kontrol satiri (plan_2026-10-21 P2-4). YALNIZCA
+    bilgi: sepet kuralinin kaniti tek hisseye tasinmaz; esikler test edilmedi."""
+    by_ticker = {c["ticker"]: c for c in candidates}
+    rows = []
+    for h in holdings:
+        c = by_ticker.get(h["ticker"], {})
+        vi = c.get("value_inputs") or {}
+        rows.append({
+            "ticker": h["ticker"], "sector": c.get("sector"),
+            "statement_period": vi.get("stmt_period"), "kap_published_at": vi.get("kap_published_at"),
+            "price_date": c.get("price_date"), "valid_metric_count": c.get("valid_metric_count"),
+            "loss_flag": c.get("loss_flag"), "sloan_flag": c.get("sloan_flag"), "fcf_yield": c.get("fcf_yield"),
+            "net_debt_ebitda": c.get("net_debt_ebitda"), "distress_flag": c.get("distress_flag"),
+            "piotroski_normalized_score": c.get("piotroski_normalized_score"),
+            "value_trap_risk": c.get("value_trap_risk"),
+            "drawdown_from_5y_peak_pct": c.get("drawdown_from_5y_peak_pct"),
+            "max_drawdown_5y_pct": c.get("max_drawdown_5y_pct"), "volatility_60d": c.get("volatility_60d"),
+            "risk_flags": c.get("risk_flags") or [], "unknown_checks": c.get("unknown_checks") or [],
+            "in_today_candidates": bool(c),
+        })
+    return rows
+
+
 def _holdings(rebalance_date: str) -> list[dict]:
     rows = db.query("SELECT ticker, valuation_z, rank_pct, market_cap, mcap_pct, liq_pct "
                     "FROM rotation_holdings WHERE rebalance_date=? "
@@ -203,4 +227,5 @@ def monthly_rotation(as_of_date: str, candidates: list[dict], health: dict | Non
         "top_pct": TOP_PCT * 100,
         "untested_financials": untested_financials(candidates),
         "size_liquidity": small_or_illiquid(current),
+        "checks": holding_checks(candidates, current),
     }

@@ -49,3 +49,22 @@ def test_rotation_sheet_first_and_labelled(tmp_path):
     lt = wb["Uzun Vade"]
     headers = [c.value for c in lt[2]]
     assert lt.cell(row=3, column=headers.index("Eksik veri") + 1).value == "valuation_excess_pct"
+
+
+def test_single_stock_check_sheet(tmp_path):
+    """plan_2026-10-21 P2-4: rotasyon hisseleri icin ayri, bilgi amacli kontrol sayfasi."""
+    from core.rotation import holding_checks
+    cands = [{"ticker": "AAA", "sector": "S", "loss_flag": True, "net_debt_ebitda": 4.2,
+              "value_inputs": {"stmt_period": "2026Q2"}, "unknown_checks": [], "risk_flags": ["Zarar"]}]
+    checks = holding_checks(cands, [{"ticker": "AAA"}, {"ticker": "ZZZ"}])
+    assert checks[0]["statement_period"] == "2026Q2" and checks[0]["in_today_candidates"]
+    assert checks[1]["in_today_candidates"] is False
+    payload = {"rotation": {"n_holdings": 2, "buy": [{"ticker": "AAA", "valuation_z": 1.0, "rank_pct": 0.9}],
+                            "hold": [], "sell": [], "checks": checks}}
+    wb = load_workbook(write_opportunities_excel(tmp_path / "c.xlsx", "2026-11-02", payload))
+    assert wb.sheetnames[:3] == ["Özet", "Rotasyon", "Tek Hisse Kontrol"]
+    ws = wb["Tek Hisse Kontrol"]
+    assert ws["A1"].value.startswith("BİLGİ AMAÇLI")
+    headers = [c.value for c in ws[2]]
+    assert ws.cell(row=3, column=headers.index("Net borç / FAVÖK") + 1).value == 4.2
+    assert ws.cell(row=3, column=headers.index("Zarar") + 1).value == "Evet"

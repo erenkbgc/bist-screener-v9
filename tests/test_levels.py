@@ -93,7 +93,7 @@ def test_short_target_capped_by_resistance():
     assert res["entry_method"] == "support"
 
 
-def test_mobile_card_shows_levels_without_orphan_numbers():
+def test_mobile_short_card_hides_uncalibrated_levels():
     from report.render import render_mobile_newsletter
     from report.validate import find_orphan_numbers
     cand = {"ticker": "TEST", "candidate_state": "OPPORTUNITY", "current_price": 100.0,
@@ -102,13 +102,14 @@ def test_mobile_card_shows_levels_without_orphan_numbers():
             "nearest_support": 97.3, "nearest_resistance": 106.8, "resistance_before_target": True,
             "sr_levels": {"supports": [97.31], "resistances": [106.77], "vwap20": 99.12, "poc": 96.4}}
     payload = {"passing_candidates": [cand]}
-    # Seviyeler yalnizca (deneysel) kisa vade kartinda; uzun vadede hedef/stop/bant
-    # gosterilmez (on-kayitli alis ve satis testleri gecmedi).
+    # plan_2026-10-21 P2-1: kisa vadede de hedef (2.5 x ATR), bant, stop, seviye ve
+    # pozisyon gosterilmez; carpanlar kalibre edilmedi.
     ctx = {"as_of_date": "2026-09-27", "long_term_candidates": [], "short_term_candidates": [cand],
            "sector_rotation": [], "no_action_today": False}
     html = render_mobile_newsletter(ctx)
-    assert "Destek / direnç" in html and "106.80" in html
-    assert "Hedef yolunda direnç" in html
+    for hidden in ("Destek / direnç", "106.80", "Hedef yolunda direnç", "112.40", "93.20", "18.20"):
+        assert hidden not in html
+    assert "TEST" in html
     assert find_orphan_numbers(html, payload) == []
 
 

@@ -74,7 +74,7 @@ def _is_quarantined(as_of_date: str, ticker: str) -> bool:
     return bool(rows)
 
 
-def hard_filters_passed(candidate: dict, piotroski_threshold: float, as_of_date_cutoff: str) -> tuple[bool, str | None]:
+def hard_filters_passed(candidate: dict, as_of_date_cutoff: str) -> tuple[bool, str | None]:
     checks: list[tuple[bool, str]] = [
         (candidate["tedbir_level"] <= 1, "tedbir_level"),
         (candidate["reporting_basis"] != "unknown", "reporting_basis"),
@@ -88,8 +88,9 @@ def hard_filters_passed(candidate: dict, piotroski_threshold: float, as_of_date_
         # Outlier ROI guard: 180 gunluk gercekci olmayan asiri getiri vaatleri (> %200) guvenlik icin elenir
         (candidate.get("expected_roi_pct") is None or candidate["expected_roi_pct"] <= 200.0, "outlier_roi"),
         (candidate["effective_at"] is not None and candidate["effective_at"] <= as_of_date_cutoff, "point_in_time"),
-        (candidate["piotroski_normalized_score"] is not None
-         and candidate["piotroski_normalized_score"] >= piotroski_threshold, "piotroski"),
+        # Piotroski sert filtresi kaldirildi (plan_2026-10-21 P2-1): long_term_preregistration.md
+        # H4b (F7 <= 2 disla) ve H2b (dd5y <= -70% ve F7 <= 3 disla) deger portfoyunu iyilestirmedi.
+        # Piotroski yalnizca bilgi kolonu ve STRONG_OPPORTUNITY etiketinde kullanilir.
     ]
     if candidate["bucket"] == "long_term":
         # Hurdle (beklenen getiri > rf) CAPM buyumesi yuzunden adil degerin
@@ -134,7 +135,6 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
     weights = load_weights()
     w = get_regime_weights(regime, weights)
     piotroski_threshold = weights["piotroski"]["normalized_score_threshold"]
-    piotroski_hard_min = weights["piotroski"].get("hard_filter_min_score", piotroski_threshold)
     top_n = weights["top_n_per_bucket"]
 
     valuations: dict[int, dict] = {}
@@ -157,7 +157,7 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
         c["value_trap_risk"] = is_value_trap_risk(c)
         c["unknown_checks"] = unknown_checks(c)
 
-        passed, filtered_by = hard_filters_passed(c, piotroski_hard_min, as_of_date_cutoff)
+        passed, filtered_by = hard_filters_passed(c, as_of_date_cutoff)
 
         if not passed:
             c["candidate_state"] = "NO_ACTION"
@@ -193,7 +193,7 @@ def score_candidates(as_of_date: str, raw_candidates: list[dict], as_of_date_cut
             if c["unknown_checks"]:
                 c["candidate_state"] = "WATCHLIST"
             elif c["confidence"] == "high" and top_tier and positive_margin and \
-                    c["piotroski_normalized_score"] >= piotroski_threshold and not c["value_trap_risk"]:
+                    (c["piotroski_normalized_score"] or 0) >= piotroski_threshold and not c["value_trap_risk"]:
                 c["candidate_state"] = "STRONG_OPPORTUNITY"
             elif positive_margin and c["confidence"] in ("high", "degraded") and not c["value_trap_risk"]:
                 # Eski kural "not top_tier or degraded" idi: ust dilimde olup STRONG

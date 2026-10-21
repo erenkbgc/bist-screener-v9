@@ -227,7 +227,7 @@ Weights (`config/weights.yaml`), set by the Phase 2 pre-registration (`docs/rese
 
 Plain value top quintile: net active +10.65%/yr in discovery (2013–2020, t 2.71) and +7.36%/yr in holdout (2021–2026, t 2.80; +6.96%, t 2.60 on the earlier C0 panel). Distress, crash, momentum, 52-week-high, GP/A and SUE additions did not pass. Regime weights were removed: the regime engine cannot be rebuilt point-in-time, and the macro study found no predictor of market direction. `config/weights_optimized.json` is still not used (`use_optimized=False`).
 
-**Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data, Piotroski normalised score ≥ 0.34. Long-term bucket: additionally `valuation_excess_pct > 0` (base fair value above price) and `excess_over_beta_hurdle_pct > 0`. The hurdle gate alone passes almost every stock, because the CAPM drift $`k_e > r_f`$. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
+**Hard filters** (any failure → `NO_ACTION`): tedbir level ≤ 1, known reporting basis, sufficient peers, listing ≥ 90 days, free float ≥ 15%, `excess_over_hurdle_pct > 0`, expected ROI ≤ 200%, point-in-time data. The former Piotroski hard filter (≥ 0.34) was removed on 2026-10-21: the pre-registered low-F-score exclusions (H4b, H2b) did not help. Long-term bucket: additionally `valuation_excess_pct > 0` (base fair value above price) and `excess_over_beta_hurdle_pct > 0`. The hurdle gate alone passes almost every stock, because the CAPM drift $`k_e > r_f`$. Short-term bucket: additionally `volume_ratio_20d ≥ 1.5`.
 
 **Candidate state:** `STRONG_OPPORTUNITY` needs high confidence, top quartile of `final_score` in the bucket, a positive hurdle margin, Piotroski ≥ 0.55, and no value-trap flag. A gate whose input is missing (`expected_roi_pct`, `valuation_excess_pct`, `excess_over_beta_hurdle_pct` = `None`) is UNKNOWN, not passed: the candidate stays at most `WATCHLIST` and the gate is listed in `unknown_checks` (Excel column "Eksik veri"). Top 4 per bucket are reported. These labels are not tested and do not affect the rotation; reports show them as information only.
 
@@ -243,11 +243,11 @@ Plain value top quintile: net active +10.65%/yr in discovery (2013–2020, t 2.7
 \mathrm{momentum\_score} = \text{clip}_{[0,100]}\Big(50 + \text{clip}(0.3\,\text{mom}_{12-1}, \pm25) + 15\,R^2_{\pm} + \text{clip}(0.5\,\text{rs}_{60}, \pm15)\Big)
 ```
 
-**Value-trap flag:** $`\text{mom}_{12-1} < 0`$ and signed $`R^2 < 0`$. It blocks `STRONG_OPPORTUNITY`.
+**Value-trap flag:** $`\text{mom}_{12-1} < 0`$ and signed $`R^2 < 0`$. It blocks `STRONG_OPPORTUNITY`. Information only: comparable exclusions (momentum, crash, distress, low F-score) failed their pre-registered tests.
 
 ### Financial Quality
 
-- **Piotroski F-Score** (9 criteria, normalised to [0, 1]). The hard filter at 0.34 removes only low quality (≤ 3/9). With a nominal (non-IAS 29) feed, criteria 3/5/6/8 are distorted by inflation, so the middle band carries weak signal.
+- **Piotroski F-Score** (9 criteria, normalised to [0, 1]). Information and the untested `STRONG_OPPORTUNITY` label only; no hard filter. With a nominal (non-IAS 29) feed, criteria 3/5/6/8 are distorted by inflation, so the middle band carries weak signal.
 - **Sloan accrual**: gap between accounting earnings and cash flow.
 
 ### Valuation Triangle
@@ -258,7 +258,7 @@ Plain value top quintile: net active +10.65%/yr in discovery (2013–2020, t 2.7
 |---|---|---|
 | DCF | 0.00 | FCF, WACC (CAPM + cost of debt), low/base/high growth 0/5/10%; reference only (`dcf_reference`) |
 | Peer multiples | 0.50 | Harmonic mean of peer P/E, EV/EBITDA, P/B (Liu, Nissim & Thomas 2002); banks/insurance/REITs exclude EV/EBITDA |
-| Quality premium | 0.25 | Justified P/B = ROE / $`k_e`$, with Piotroski, balance sheet, and high-ROE modifiers |
+| Quality premium | 0.00 (untested; since 2026-10-21) | Justified P/B = ROE / $`k_e`$, with Piotroski, balance sheet, and high-ROE modifiers |
 
 Why DCF has weight 0 (since 2026-10-21): the DCF here runs on nominal TL FCF with a WACC of about 45%, so terminal assumptions dominate it, and no test covers the DCF leg. Studies of target-price accuracy also favour multiple-based methods. The convergence $`\alpha`$ was measured on the peer leg only. A leg with weight 0 is not in the target or the method name. If a leg is not available, the remaining weights are re-normalised. GYO and holding companies use NAV.
 
@@ -748,6 +748,7 @@ pytest tests/ -q
 | Cone $`z`$ | Fitted on one index series, not on stock outcomes |
 | Target $`\alpha`$ | Estimated from the peer leg only; the quality leg is not tested (DCF weight 0, scenario weights removed) |
 | Prediction outcomes | `outcomes` table too small for attribution |
+| Restated statements | A sample audit (`scripts/audit_restatements.py`, 60 first-published KAP reports 2014–2022) found 4 of 42 comparable quarters where the provider's figures differ from the first publication, two with a sign change in net income. Backtests use the provider's figures; the effect on returns is not measured yet (plan P3-1) |
 | Financial statements | Pre-2023 statements are nominal; since 2023 IAS 29 adds a net monetary gain/loss line that can inflate earnings of indebted firms (check planned). Inflation distorts some Piotroski criteria and DCF |
 | KAP in CI | KAP often drops GitHub runner connections; red-flag panel then shows "partial" or "unavailable" |
 | LLM labels | Experimental; can only be evaluated forward (the model knows company outcomes from training data) |
