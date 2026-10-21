@@ -188,3 +188,7 @@ Full grid in the JSON. The edge stays positive at every grid point, but the hold
 
 - **Live rule: nothing** (as pre-registered).
 - README: R0 is described as a beta-1 portfolio with no alpha against BIST 100 TR, an edge against its own universe that comes from within-sector selection and, since 2021, from a low-volatility tilt, and a Sharpe that does not survive the deflation for 75 trials.
+
+### Ledger update (2026-10-21, after `smc_timing_preregistration.md`)
+
+The SMC timing study added 6 stock-selection trials (S1–S4, X5, X6), all failed. `N_sel` is now 81. With the same series and V[SR], DSR at N = 81 is 0.10 (SR₀ 0.419), against 0.12 at N = 75. The label stays `NOT_SIGNIFICANT_AFTER_TRIALS`. Every future pre-registered stock-selection test adds to `N_sel` the same way.
