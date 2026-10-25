@@ -24,10 +24,10 @@
   "change_policy": "Any change to params needs a new pre-registration and a new version. A new version starts a new forward series; earlier decisions are never re-simulated under the new rule.",
   "expectation": {
     "metric": "active_univ_gross",
-    "ann_pct": 6.65,
-    "nw_t": 2.48,
+    "ann_pct": 9.36,
+    "nw_t": 2.74,
     "months": 68,
-    "source": "docs/research/share_count_fix.md (costed P0 holdout 2021-01..2026-08, 1M TL, base costs, vs gross EW universe)",
+    "source": "docs/research/first_published_panel.md (costed P0 holdout 2021-01..2026-08, 1M TL, base costs, vs gross EW universe, point-in-time panel)",
     "band_z": 2.0,
     "rule": "z = (sum of monthly active - n x mean) / (sigma_eff x sqrt(n)), sigma_eff = mean x sqrt(months) / nw_t. z < -2 = record inconsistent with the backtest."
   }
