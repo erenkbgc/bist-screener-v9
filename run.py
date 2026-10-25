@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import sys
+import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -166,7 +167,13 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
     }
 
 
+def _timing(t0: float, stage: str) -> None:
+    """Kosu ~4.5 saat suruyor ve log'da asama sureleri yoktu; nerede gectigini gosterir."""
+    print(f"[timing] {stage} {time.monotonic() - t0:.0f}s", flush=True)
+
+
 def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False) -> dict:
+    t0 = time.monotonic()
     db.init_db()
     run_id = str(uuid.uuid4())
     started_at = datetime.now(timezone.utc).isoformat()
@@ -199,13 +206,16 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     # ihtiyac duyacagi ag cagrilarini PARALEL olarak onceden cache'ler (bkz.
     # core/live_data.py::prefetch_all). Bu adim olmadan ~800 tickerlik tam evren
     # tamamen sirali agsal I/O nedeniyle saatler surebilir.
+    _timing(t0, "universe")
     bist_mcp.prefetch(eligible)
+    _timing(t0, "prefetch")
 
     # --- 4. basis_guard uygulanmis fundamentals ---
     from core import fundamentals as fundamentals_mod
     fundamentals_rows = fundamentals_mod.fetch_and_store_fundamentals(as_of_date, eligible)
     fundamentals_by_ticker = {r["ticker"]: r for r in fundamentals_rows}
 
+    _timing(t0, "fundamentals")
     ur = basis_guard.unknown_ratio(fundamentals_rows)
     if ur > basis_guard.UNKNOWN_RATIO_HALT_THRESHOLD:
         _persist_run(run_id, as_of_date, "halted", "HALTED", started_at,
@@ -218,6 +228,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     sloan_rows = sloan_mod.calculate_earnings_quality(as_of_date, eligible, fundamentals_by_ticker)
     sloan_by_ticker = {r["ticker"]: r for r in sloan_rows}
 
+    _timing(t0, "piotroski_sloan")
     # --- 6. catalysts + event_calendar_engine ---
     tickers = [u["ticker"] for u in eligible]
     catalyst_by_ticker = catalysts_mod.fetch_kap_catalysts(as_of_date, tickers, lookback_days=14)
@@ -251,6 +262,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         print(f"[sector_rotation] atlandi: {exc}")
         sector_rotation = {}
 
+    _timing(t0, "catalysts_prices_regime_sector")
     # --- 7. ownership_quality ---
     ownership_rows = [ownership_mod.fetch_ownership(as_of_date, t, prices_by_ticker[t]) for t in tickers]
     ownership_by_ticker = {r["ticker"]: r for r in ownership_rows}
@@ -435,6 +447,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     all_candidates = long_term_candidates + short_term_candidates
     sector_rotation_mod.annotate_candidates(all_candidates, sector_rotation)
 
+    _timing(t0, "candidates")
     # --- ownership_z + low_vol_z (kesitsel, bucket ici) ---
     for bucket_list in (long_term_candidates, short_term_candidates):
         for c in bucket_list:
@@ -484,6 +497,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     correlation_mod.compute_correlation_flags(as_of_date, held)
     portfolio_correlation = correlation_mod.effective_bets(held)
 
+    _timing(t0, "scoring_rotation")
     # --- KAP kirmizi bayrak paneli (bilgi amacli; on-kayitli test gecmedi,
     # karari DEGISTIRMEZ). Canli modda eksik gunler KAP'tan cekilir. ---
     refresh_error = None
@@ -511,6 +525,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     if sovereign:
         print(f"[sovereign_spread] {sovereign}", flush=True)
 
+    _timing(t0, "kap_panels")
     # --- Quant Level-Up Faz 4 & 5: HRP Portfoy & Faktor Katki Disclosures ---
     if passing:
         factor_disclosure.compute_and_save_factor_contributions(
@@ -649,6 +664,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         except Exception as debug_exc:  # noqa: BLE001 - debug yazimi ASLA ana kosuyu dusurmemeli
             print(f"[validation_gate] debug dump basarisiz (yok sayildi): {debug_exc}")
 
+    _timing(t0, "report_dispatch")
     # --- evaluate_past_predictions + thesis_invalidation_monitor (kosunun sonunda) ---
     # Bu, BIR SONRAKI kosunun payload'unun okuyacagi outcomes/invalidation_checks
     # tablolarini gunceller (bkz. core/evaluate.py dosya-basi notu).
