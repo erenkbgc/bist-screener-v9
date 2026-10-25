@@ -262,10 +262,15 @@ def monthly_prices(ticker: str, raw: pd.DataFrame | None, adj: pd.DataFrame | No
 #    eski kural islemi uygulamiyor, piyasa degeri 2-10 kat dusuk, hisse ucuz gorunuyor;
 #  - erken tescil: bilanco donem sonu islem tarihinden once, ama sermaye zaten artmis
 #    (LINK 2025Q4) -> eski kural islemi ikinci kez uyguluyor.
-# Islem, mevcut bilanconun sermayesi islemden onceki bir yildaki en dusuk sermayenin
-# en az bu orani kadar ise "yansimis" sayilir.
+#  - gerceklesmeyen islem: olay listesinde var ama sermaye hic artmiyor (TSPOR 2025-06,
+#    BJKAS 2025-04) -> her iki kural da piyasa degerini 5-7 kat yuksek buluyordu.
+# Islem, mevcut sermaye islemden onceki bir yildaki en dusuk sermayeye gore artisin en az
+# yarisini gosteriyorsa "yansimis" sayilir (bedelli kismen satilabilir: BJKAS 2024, x5
+# yerine x3.64). Donem sonu islem tarihinden 180 gunden fazla sonra olan bir bilanco
+# islemi hala gostermiyorsa islem gerceklesmemis sayilir.
 SHARE_EVENT_LOOKBACK_DAYS = 365
-SHARE_EVENT_REFLECTED_RATIO = 0.9
+SHARE_EVENT_REFLECTED_SHARE = 0.5
+SHARE_EVENT_EXPIRY_DAYS = 180
 
 
 def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: pd.DataFrame,
@@ -275,7 +280,9 @@ def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: p
     history: t gunu kullanilabilir bilancolar (period_end, paid_in). Verilirse bir islem,
     mevcut sermayeye yansimamissa uygulanir (donem sonundan once olsa bile) ve
     yansimissa uygulanmaz (donem sonundan sonra olsa bile). Islemden onceki bir yilda
-    bilanco yoksa veya history None ise eski kural: yalnizca donem sonundan sonraki islemler."""
+    bilanco yoksa veya history None ise eski kural: yalnizca donem sonundan sonraki islemler.
+    Donem sonu islemden 180 gunden fazla sonra olup sermayesi artmamis bilanco: islem
+    gerceklesmemis sayilir."""
     f = 1.0
     if events.empty:
         return paid_in
@@ -290,10 +297,12 @@ def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: p
             h = h[h > 0]
             before = float(h.min()) if len(h) else None
         if before is None:
-            reflected = e["date"] <= stmt_end
+            apply = e["date"] > stmt_end
         else:
-            reflected = paid_in >= SHARE_EVENT_REFLECTED_RATIO * factor * before
-        if not reflected:
+            reflected = paid_in >= before * (1.0 + SHARE_EVENT_REFLECTED_SHARE * (factor - 1.0))
+            expired = stmt_end > e["date"] + pd.Timedelta(days=SHARE_EVENT_EXPIRY_DAYS)
+            apply = not reflected and not expired
+        if apply:
             f *= factor
     return paid_in * f
 

@@ -136,3 +136,22 @@ def test_shares_at_old_events_already_in_capital_ignored():
     ev = _ev("2020-05-01", rights=100.0)
     h = _hist([("2019-12-31", 5e7), ("2020-03-31", 5e7), ("2020-06-30", 1e8), ("2021-03-31", 1e8)])
     assert pit_panel.shares_at(pd.Timestamp("2021-06-30"), 1e8, pd.Timestamp("2021-03-31"), ev, h) == 1e8
+
+
+def test_shares_at_unrealised_event_expires():
+    """TSPOR: %581.82 bedelli 2025-06-19 olay listesinde, sermaye 7.5 milyarda kaldi."""
+    ev = _ev("2025-06-19", rights=581.82)
+    h = _hist([("2025-03-31", 7.5e9), ("2025-06-30", 7.5e9), ("2025-09-30", 7.5e9), ("2025-12-31", 7.5e9)])
+    # Q2 bilancosu (180 gun dolmadan): tescil gecikmesi olabilir, uygulanir.
+    assert pit_panel.shares_at(pd.Timestamp("2025-09-30"), 7.5e9, pd.Timestamp("2025-06-30"), ev,
+                               h[h["period_end"] <= "2025-06-30"]) > 5e10
+    # Q4 bilancosu hala 7.5 milyar: gerceklesmemis sayilir.
+    assert pit_panel.shares_at(pd.Timestamp("2026-04-30"), 7.5e9, pd.Timestamp("2025-12-31"), ev, h) == 7.5e9
+
+
+def test_shares_at_partially_subscribed_rights_counts_as_reflected():
+    """BJKAS: %400 bedelli (x5), sermaye 1.2 -> 4.36 milyar (kismen satildi)."""
+    ev = _ev("2024-07-03", rights=400.0)
+    h = _hist([("2024-03-31", 1.2e9), ("2024-06-30", 1.2e9), ("2024-09-30", 1.2e9), ("2024-12-31", 4.364569202e9)])
+    assert pit_panel.shares_at(pd.Timestamp("2025-04-30"), 4.364569202e9, pd.Timestamp("2024-12-31"), ev, h) \
+        == 4.364569202e9
