@@ -10,10 +10,13 @@ ifadesi (x1.3-1.5) bu araliktadir. KAP'ta bulunmayan kalem Is Yatirim'da kalir.
 Yazilan dosyalar (mevcut paneller DEGISMEZ):
   data/research/fp/factors_monthly.parquet, factors_monthly_kapdates.parquet, quarterly.parquet
 
-    python scripts/rebuild_panels_first_published.py
+    python scripts/rebuild_panels_first_published.py                 # ilk yayin + Is Yatirim PD
+    python scripts/rebuild_panels_first_published.py --no-fp --out isy   # yalniz Is Yatirim PD
+    python scripts/rebuild_panels_first_published.py --no-isy --out fp_only
 """
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import pickle
@@ -30,7 +33,6 @@ from core import pit_panel  # noqa: E402
 from sensitivity_survivorship_net_debt import BASELINES  # noqa: E402
 
 RESEARCH = ROOT / "data" / "research"
-OUT = RESEARCH / "fp"
 FIRST_PERIOD = "2022Q4"
 ITEMS = ["total_assets", "equity_parent", "equity", "paid_in", "cash", "fin_debt",
          "revenue", "gross_profit", "op_profit", "ni_parent", "net_income"]
@@ -66,6 +68,12 @@ def replace_first_published(long: pd.DataFrame, fp: pd.DataFrame) -> tuple[pd.Da
 
 
 def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--no-fp", action="store_true", help="ilk yayin degisimi yok (Is Yatirim tablolari)")
+    ap.add_argument("--no-isy", action="store_true", help="piyasa degeri fiyat x pay (Is Yatirim PD yok)")
+    ap.add_argument("--out", default="fp")
+    args = ap.parse_args()
+    out_dir = RESEARCH / args.out
     sectors = {r["ticker"]: r["sektor"] for r in
                json.loads((ROOT / "config" / "fintables_ticker_sektor.json").read_text(encoding="utf-8"))}
     cpi = pit_panel.cpi_index(pd.read_parquet(RESEARCH / "macro_monthly.parquet")["cpi_mom"])
@@ -79,20 +87,27 @@ def main() -> None:
         pxs.append(pit_panel.monthly_prices(tk, raw.get("px_raw"), raw.get("px_adj")))
         evs.append(pit_panel.split_events(tk, raw.get("splits")))
     long = pd.concat([x for x in longs if not x.empty], ignore_index=True)
-    long, stats = replace_first_published(long, pd.read_parquet(RESEARCH / "first_published.parquet"))
+    stats = {"first_published": not args.no_fp, "isyatirim_mcap": not args.no_isy}
+    if not args.no_fp:
+        long, rep = replace_first_published(long, pd.read_parquet(RESEARCH / "first_published.parquet"))
+        stats.update(rep)
+    mcaps = None if args.no_isy else pd.read_parquet(RESEARCH / "market_cap_monthly.parquet")[["ticker", "date", "mcap"]]
     print(json.dumps(stats))
     q = pit_panel.quarterly_table(long, cpi=cpi)
     px = pd.concat([x for x in pxs if not x.empty], ignore_index=True)
     ev = pd.concat([x for x in evs if not x.empty], ignore_index=True)
     dates = pit_panel.kap_report_dates(pd.read_parquet(RESEARCH / "kap_archive.parquet"))
-    OUT.mkdir(exist_ok=True)
+    out_dir.mkdir(exist_ok=True)
     names = {"lag75": "factors_monthly.parquet", "kapdates": "factors_monthly_kapdates.parquet"}
     for variant, (_, report_dates) in BASELINES.items():
         qv = pit_panel.apply_report_dates(q, dates) if report_dates else q
-        pit_panel.build_monthly_factors(qv, px, ev, sectors).to_parquet(OUT / names[variant], index=False)
-    q.to_parquet(OUT / "quarterly.parquet", index=False)
-    (OUT / "STATS.json").write_text(json.dumps(stats, indent=1))
-    print("yazildi:", OUT)
+        f = pit_panel.build_monthly_factors(qv, px, ev, sectors, market_caps=mcaps)
+        stats[f"{variant}_mcap_source"] = f["mcap_source"].value_counts().to_dict()
+        f.to_parquet(out_dir / names[variant], index=False)
+    q.to_parquet(out_dir / "quarterly.parquet", index=False)
+    (out_dir / "STATS.json").write_text(json.dumps(stats, indent=1))
+    print(json.dumps(stats))
+    print("yazildi:", out_dir)
 
 
 if __name__ == "__main__":
