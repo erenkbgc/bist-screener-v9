@@ -78,3 +78,54 @@ No live change is made by this study automatically. If E1 is SUPERIOR or ADOPT_C
 ## Results
 
 (Appended after the run; the sections above stay unchanged.)
+
+Added 2026-10-25, after the run. Runner: `python scripts/research_ev_definition.py` → `data/reports/research_ev_definition_2026-10-25.json`.
+
+**Sanity gate: passed.** E0 recomputed from the joined quarterly table equals the stored panel `ey`, `ey_z` and `value_sn_z` exactly (0 NaN mismatches, max relative difference 0.0). Coverage over 24,089 quarters: short-term financial investments non-zero in 35.7%, minority interest non-zero in 39.3%, either item missing in 0.06%. The panel's last decision month is 2026-09 (one month later than the window written above; same panel the other studies use).
+
+### Rank-IC (sector-neutral, `fwd_ret_1m`; NW t, 6 lags)
+
+| Variant | Window | `ey_k` IC (t) | ΔIC vs E0 (t) | `value_sn_k` IC (t) | ΔIC vs E0 (t) |
+|---|---|---:|---:|---:|---:|
+| E0 | Discovery | +0.0420 (4.61) | | +0.0407 (5.14) | |
+| | Holdout | +0.0532 (4.67) | | +0.0617 (4.91) | |
+| | IAS 29 | +0.0372 (3.00) | | +0.0340 (2.22) | |
+| **E1** | Discovery | +0.0398 (4.31) | −0.0022 (−0.85) | +0.0386 (5.05) | −0.0021 (−1.25) |
+| | Holdout | +0.0542 (4.57) | +0.0010 (0.72) | +0.0625 (4.96) | +0.0007 (1.39) |
+| | IAS 29 | +0.0373 (2.85) | +0.0001 (0.10) | +0.0340 (2.23) | +0.0000 (0.02) |
+| E1a (diag.) | Discovery | +0.0399 (4.10) | −0.0022 (−1.41) | +0.0389 (4.93) | −0.0018 (−1.98) |
+| | Holdout | +0.0511 (4.33) | −0.0022 (−1.82) | +0.0609 (4.84) | −0.0009 (−1.70) |
+| E1b (diag.) | Discovery | +0.0418 (4.77) | −0.0002 (−0.14) | +0.0407 (5.10) | +0.0000 (0.03) |
+| | Holdout | +0.0548 (4.68) | +0.0016 (1.45) | +0.0626 (4.95) | +0.0009 (1.85) |
+
+### Top-20% changes vs E0
+
+| Variant | Window | Overlap | Switches / month | Entrants − dropouts %/yr (t) |
+|---|---|---:|---:|---:|
+| **E1** | Discovery | 93.0% | 3.0 | −8.38 (−0.50) |
+| | Holdout | 96.0% | 2.3 | −24.62 (−1.67) |
+| | IAS 29 | 97.3% | 1.9 | −50.82 (−2.72) |
+| E1a (diag.) | Discovery / Holdout | 94.8% / 96.4% | 2.3 / 2.1 | +10.22 (0.97) / −21.02 (−1.11) |
+| E1b (diag.) | Discovery / Holdout | 95.5% / 96.8% | 1.9 / 1.8 | −24.92 (−0.79) / +0.22 (0.01) |
+
+### Costed portfolio (1M TL real, base costs, next-day close)
+
+| Variant | Window | Active vs EW net %/yr (t) | Paired D vs E0 %/yr (t) | USD CAGR | Max DD USD |
+|---|---|---:|---:|---:|---:|
+| E0 | Discovery | +10.58 (2.68) | | +17.57% | −58.1% |
+| | Holdout | +6.89 (2.55) | | +3.61% | −43.9% |
+| | IAS 29 | +2.74 (0.70) | | −8.66% | −24.3% |
+| **E1** | Discovery | +9.55 (2.60) | **−1.03 (−0.69)** | +16.64% | −58.2% |
+| | Holdout | +6.26 (2.37) | **−0.63 (−1.00)** | +3.09% | −42.9% |
+| | IAS 29 | +1.61 (0.41) | −1.12 (−2.29) | −9.71% | −25.4% |
+| E1a (diag.) | Discovery / Holdout | +10.79 (2.83) / +6.05 (2.17) | +0.21 (0.25) / −0.84 (−1.27) | | |
+| E1b (diag.) | Discovery / Holdout | +9.84 (2.54) / +7.33 (2.72) | −0.73 (−0.47) / +0.44 (0.65) | | |
+
+### Verdict: `KEEP_E0`
+
+- E1 is not SUPERIOR (D is negative in both windows).
+- E1 fails ADOPT_CORRECTION: D is −1.03%/yr in discovery (bound −0.50) and −0.63%/yr with t −1.00 in holdout (bound t > −1.0). The other two conditions hold (holdout ΔIC t 1.39; holdout active vs EW net +6.26%/yr).
+- The correction changes only 2–3 of about 60 holdings a month (93–97% overlap). The stocks it removes did better than the ones it adds, most clearly in the IAS 29 window (−50.8%/yr, t −2.72, on about 2 names a month).
+- The live `ey` keeps the current definition. `config/live_rule.json` is unchanged.
+
+**Post-hoc observation (not a result).** Minority interest alone (E1b) is the only variant with a non-negative holdout difference (+0.44%/yr, t 0.65; ΔIC t 1.85), and short-term investments alone (E1a) are the part that hurts in holdout. E1b was a diagnostic, chosen before the run only to explain E1, so it cannot be adopted from this run. A test of E1b alone would need a new pre-registration and would count as another trial.
