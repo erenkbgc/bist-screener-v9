@@ -30,5 +30,13 @@
     "source": "docs/research/first_published_panel.md (costed P0 holdout 2021-01..2026-08, 1M TL, base costs, vs gross EW universe, point-in-time panel)",
     "band_z": 2.0,
     "rule": "z = (sum of monthly active - n x mean) / (sigma_eff x sqrt(n)), sigma_eff = mean x sqrt(months) / nw_t. z < -2 = record inconsistent with the backtest."
-  }
+  },
+  "data_fixes": [
+    {
+      "date": "2026-10-25",
+      "what": "TTM flows from 2023Q4 use vendor-consistent YTD formula (pit_panel.vendor_consistent_ttm); İş Yatırım re-expresses prior-year periods",
+      "doc": "docs/research/vendor_vs_kap_audit.md",
+      "params_changed": false
+    }
+  ]
 }

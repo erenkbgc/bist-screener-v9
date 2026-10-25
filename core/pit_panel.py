@@ -255,13 +255,55 @@ def monthly_prices(ticker: str, raw: pd.DataFrame | None, adj: pd.DataFrame | No
     return m.dropna(subset=["raw"]).reset_index(names="date")
 
 
-def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: pd.DataFrame) -> float:
-    """Bilanco tarihindeki pay sayisini t'ye kadarki bedelli/bedelsiz islemlerle ileri tasi."""
+# Bir sermaye artirimi bilancodaki odenmis sermayeye her zaman donem sonu/islem
+# tarihi sirasina gore yansimiyor (docs/research/share_count_fix.md):
+#  - tescil gecikmesi: islem tarihi donem sonundan once, ama o (ve sonraki) bilanco
+#    hala eski sermayeyi gosteriyor (AZTEK 2025Q4, KATMR 2025Q2, DERIM 2019Q3) ->
+#    eski kural islemi uygulamiyor, piyasa degeri 2-10 kat dusuk, hisse ucuz gorunuyor;
+#  - erken tescil: bilanco donem sonu islem tarihinden once, ama sermaye zaten artmis
+#    (LINK 2025Q4) -> eski kural islemi ikinci kez uyguluyor.
+#  - gerceklesmeyen islem: olay listesinde var ama sermaye hic artmiyor (TSPOR 2025-06,
+#    BJKAS 2025-04) -> her iki kural da piyasa degerini 5-7 kat yuksek buluyordu.
+# Islem, mevcut sermaye islemden onceki bir yildaki en dusuk sermayeye gore artisin en az
+# yarisini gosteriyorsa "yansimis" sayilir (bedelli kismen satilabilir: BJKAS 2024, x5
+# yerine x3.64). Donem sonu islem tarihinden 180 gunden fazla sonra olan bir bilanco
+# islemi hala gostermiyorsa islem gerceklesmemis sayilir.
+SHARE_EVENT_LOOKBACK_DAYS = 365
+SHARE_EVENT_REFLECTED_SHARE = 0.5
+SHARE_EVENT_EXPIRY_DAYS = 180
+
+
+def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: pd.DataFrame,
+              history: pd.DataFrame | None = None) -> float:
+    """Bilanco tarihindeki pay sayisini t'ye kadarki bedelli/bedelsiz islemlerle ileri tasi.
+
+    history: t gunu kullanilabilir bilancolar (period_end, paid_in). Verilirse bir islem,
+    mevcut sermayeye yansimamissa uygulanir (donem sonundan once olsa bile) ve
+    yansimissa uygulanmaz (donem sonundan sonra olsa bile). Islemden onceki bir yilda
+    bilanco yoksa veya history None ise eski kural: yalnizca donem sonundan sonraki islemler.
+    Donem sonu islemden 180 gunden fazla sonra olup sermayesi artmamis bilanco: islem
+    gerceklesmemis sayilir."""
     f = 1.0
-    if not events.empty:
-        ev = events[(events["date"] > stmt_end) & (events["date"] <= t)]
-        for _, e in ev.iterrows():
-            f *= 1.0 + (e["rights_pct"] + e["bonus_pct"]) / 100.0
+    if events.empty:
+        return paid_in
+    lookback = pd.Timedelta(days=SHARE_EVENT_LOOKBACK_DAYS)
+    ev = events[(events["date"] <= t) & (events["date"] > stmt_end - lookback)]
+    for _, e in ev.iterrows():
+        factor = 1.0 + (e["rights_pct"] + e["bonus_pct"]) / 100.0
+        before = None
+        if history is not None and not history.empty:
+            h = history[(history["period_end"] < e["date"]) & (history["period_end"] >= e["date"] - lookback)
+                        & (history["period_end"] <= stmt_end)]["paid_in"]
+            h = h[h > 0]
+            before = float(h.min()) if len(h) else None
+        if before is None:
+            apply = e["date"] > stmt_end
+        else:
+            reflected = paid_in >= before * (1.0 + SHARE_EVENT_REFLECTED_SHARE * (factor - 1.0))
+            expired = stmt_end > e["date"] + pd.Timedelta(days=SHARE_EVENT_EXPIRY_DAYS)
+            apply = not reflected and not expired
+        if apply:
+            f *= factor
     return paid_in * f
 
 
@@ -298,6 +340,37 @@ def value_ratios(last, mcap: float) -> dict[str, float]:
     }
 
 
+def vendor_consistent_ttm(long: pd.DataFrame, period: str, cpi: pd.Series | None) -> dict[str, float]:
+    """TMS 29 donemi canli TTM: YTD_P + YTD_FY(y-1) x CPI(P)/CPI(FY sonu) - YTD_(P-4).
+
+    Is Yatirim bir donemin ertesi yil raporu yayinlaninca o donemin rakamlarini o raporun
+    onceki-donem kolonuyla (bir yil sonraki satin alma gucu) degistiriyor
+    (docs/research/vendor_vs_kap_audit.md: 2024Q4 / ilk KAP = 1.309 = TUFE 2024-12 -> 2025-12).
+    Ardisik YTD'lerin farkiyla kurulan ceyrekler (quarterly_table) bu yuzden birimleri
+    karistiriyor: 2026Q2'de ayrik 2025Q3 hasilati 2024Q3'un 0.4-0.6 kati cikiyordu.
+    Bu formulde YTD_P ve YTD_(P-4) ayni (P donem sonu) birimde, yillik YTD TUFE ile P'ye
+    tasiniyor. Q4'te TTM = yillik YTD. Eksik kalem NaN (uydurulmaz)."""
+    y, q = int(period[:4]), int(period[-1])
+    w = long.pivot_table(index="item", columns="period", values="value", aggfunc="first") if not long.empty else None
+    out = {}
+    for item in INC_ITEMS:
+        def ytd(p):
+            if w is None or item not in w.index or p not in w.columns:
+                return np.nan
+            return float(w.loc[item, p])
+        if q == 4:
+            out[item] = ytd(period)
+            continue
+        fy = ytd(f"{y - 1}Q4")
+        k = 1.0
+        if cpi is not None:
+            c_p = cpi.get(period_end(period).to_period("M"), np.nan)
+            c_fy = cpi.get(period_end(f"{y - 1}Q4").to_period("M"), np.nan)
+            k = c_p / c_fy if np.isfinite(c_p) and np.isfinite(c_fy) and c_fy > 0 else np.nan
+        out[item] = ytd(period) + fy * k - ytd(f"{y - 1}Q{q}")
+    return out
+
+
 def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame | None,
                         mcap: float | None, cpi: pd.Series | None = None,
                         as_of: pd.Timestamp | None = None, kap_dates: pd.DataFrame | None = None) -> dict:
@@ -307,7 +380,7 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
     kap_available_at) eslesirse KAP ilk yayini (18:00 sonrasi ertesi gun), eslesmezse
     varsayilan gecikme (Q1-Q3 + 75, Q4 + 100 gun); available_at <= as_of olan ceyrekler
     icinden en son kullanilabilir olan secilir. as_of None ise filtre yok."""
-    out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None,
+    out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None, "ttm_method": None,
            "stmt_period_end": None, "available_at": None, "available_source": None, "inputs": {}}
     long = statements_long(ticker, bs, inc)
     if long.empty or not mcap or mcap <= 0:
@@ -321,7 +394,12 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
         q = q[q["available_at"] <= as_of]
         if q.empty:
             return out
-    last = q.sort_values(["available_at", "period_end"], kind="stable").iloc[-1]
+    last = q.sort_values(["available_at", "period_end"], kind="stable").iloc[-1].copy()
+    ttm_method = "quarterly_table"
+    if last["period"] >= IAS29_FIRST_PERIOD:
+        for item, v in vendor_consistent_ttm(long, last["period"], cpi).items():
+            last[f"ttm_{item}"] = v
+        ttm_method = "vendor_consistent_ytd"
     # Oranlari yeniden uretmeye yeten temel kalemler (ileriye donuk kayit)
     inputs = {"market_cap": float(mcap), "equity": _equity(last), "ttm_net_income": _ttm_net_income(last),
               "ttm_revenue": last.get("ttm_revenue"), "ttm_op_profit": last.get("ttm_op_profit"),
@@ -329,7 +407,7 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
     return {**value_ratios(last, mcap), "stmt_period": last["period"],
             "stmt_period_end": last["period_end"].date().isoformat(),
             "available_at": pd.Timestamp(last["available_at"]).date().isoformat(),
-            "available_source": last["available_source"],
+            "available_source": last["available_source"], "ttm_method": ttm_method,
             "inputs": {k: (float(v) if v is not None else None) for k, v in inputs.items()}}
 
 
@@ -382,7 +460,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
             paid_in = last.get("paid_in")
             if not paid_in or paid_in <= 0 or not np.isfinite(paid_in):
                 continue
-            shares = shares_at(t, paid_in, last["period_end"], ev)
+            shares = shares_at(t, paid_in, last["period_end"], ev, avail[["period_end", "paid_in"]])
             mcap = p.at[i, "raw"] * shares
             if not mcap or mcap <= 0:
                 continue

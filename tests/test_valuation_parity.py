@@ -202,3 +202,32 @@ def test_live_value_inputs_use_constant_unit_ttm(monkeypatch):
     monkeypatch.setattr(ld, "_cpi_index_cached", lambda: None)
     fb_ = ld.live_value_inputs("X", 400.0)
     assert fb_["ttm_unit"] == "C0_fallback_no_cpi" and fb_["sp"] == pytest.approx(c0["sp"])
+
+
+def test_live_ttm_handles_vendor_reexpressed_prior_year():
+    """Is Yatirim, ertesi yil raporu gelen donemi bir yil sonraki birimle yeniden ifade ediyor.
+    Reel ceyrek akisi sabit R: dogru TTM = 4 R x CPI(P). Ardisik YTD farki (quarterly_table)
+    bunu bozuyor; vendor_consistent_ttm bozmuyor (docs/research/vendor_vs_kap_audit.md)."""
+    from core import pit_panel
+    months = pd.period_range("2023-01", "2026-12", freq="M")
+    cpi = pd.Series(1.03 ** np.arange(len(months)), index=months)
+    c = lambda p: cpi[pit_panel.period_end(p).to_period("M")]  # noqa: E731
+    R, latest = 10.0, "2026Q2"
+    periods = ["2025Q1", "2025Q2", "2025Q3", "2025Q4", "2026Q1", "2026Q2"]
+    inc_vals = {}
+    for p in periods:
+        v = int(p[-1]) * R * c(p)  # ilk yayin: kendi donem sonu biriminde
+        nxt = f"{int(p[:4]) + 1}{p[4:]}"
+        if nxt in periods:  # ertesi yil raporu var: saglayici o kolonla degistirir
+            v *= c(nxt) / c(p)
+        inc_vals[p] = v
+    inc = pd.DataFrame({p: [v, v / 2, v / 4] for p, v in inc_vals.items()},
+                       index=["Satış Gelirleri", "FAALİYET KARI (ZARARI)", "Ana Ortaklık Payları"])
+    bs = pd.DataFrame({p: [1000.0, 500.0, 100.0, 50.0, 80.0] for p in periods},
+                      index=["TOPLAM VARLIKLAR", "Ana Ortaklığa Ait Özkaynaklar", "Ödenmiş Sermaye",
+                             "Nakit ve Nakit Benzerleri", "Finansal Borçlar"])
+    vi = pit_panel.latest_value_ratios("X", bs, inc, 400.0, cpi=cpi)
+    assert vi["stmt_period"] == latest and vi["ttm_method"] == "vendor_consistent_ytd"
+    assert vi["inputs"]["ttm_revenue"] == pytest.approx(4 * R * c(latest))
+    q = pit_panel.quarterly_table(pit_panel.statements_long("X", bs, inc), cpi=cpi).set_index("period")
+    assert q.loc[latest, "ttm_revenue"] < 0.8 * 4 * R * c(latest)  # eski yol: birim karisimi
