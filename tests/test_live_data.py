@@ -155,3 +155,71 @@ def test_live_financial_report_published_at_ignores_out_of_window_matches(monkey
     )
     monkeypatch.setattr(ld, "_financial_report_disclosures_cached", lambda ticker: df)
     assert ld.live_financial_report_published_at("FORTE", "2026-06-30") is None
+
+
+def test_retry_failed_statements_recovers_throttled_ticker(monkeypatch):
+    """Prefetch'te throttle yuzunden bos donen tablo, retry ile cache'e yazilmali;
+    gercekten verisi olmayan hisse bos kalmali (2026-10-23 basis_guard halt'i)."""
+    calls = {"FLAKY_TEST": 0, "EMPTY_TEST": 0}
+    bs = pd.DataFrame({"2025": [1.0]}, index=["AKTİF TOPLAMI"])
+
+    def fake_fetch(ticker, fg):
+        calls[ticker] += 1
+        if ticker == "FLAKY_TEST" and calls[ticker] > 1:
+            return bs, None, None
+        return None, None, None
+
+    monkeypatch.setattr(ld, "_fetch_statements", fake_fetch)
+    monkeypatch.setattr(ld, "_STATEMENTS_CACHE", {})
+    rows = [{"ticker": "FLAKY_TEST", "ratio_profile": "industrial"},
+            {"ticker": "EMPTY_TEST", "ratio_profile": "industrial"}]
+    out = ld.retry_failed_statements(rows, rounds=2, pause_s=0)
+    assert out == {"failed_before": 2, "recovered": 1, "still_failed": 1}
+    assert ld._statements_cached("FLAKY_TEST", None)[0] is bs
+    assert calls == {"FLAKY_TEST": 2, "EMPTY_TEST": 3}
+
+
+def test_kap_breaker_opens_after_consecutive_failures_and_resets_on_success():
+    """CI'da KAP her istegi dusurdugunde borsapy her hissede sirket listesini 20sn
+    bekleyerek yeniden istiyordu; devre kesici art arda hatadan sonra istegi kesmeli."""
+    import pytest
+
+    class Resp:
+        def __init__(self, status):
+            self.status_code = status
+
+    class Client:
+        def __init__(self, plan):
+            self.plan, self.n = plan, 0
+
+        def get(self, url, **kw):
+            self.n += 1
+            step = self.plan.pop(0)
+            if step == "err":
+                raise ConnectionError("Server disconnected without sending a response")
+            return Resp(step)
+
+    client = Client(["err", 200, "err", 503, "err"])
+    br = ld._KapBreaker(client, threshold=3)
+    with pytest.raises(ConnectionError):
+        br.get("u")
+    assert br.get("u").status_code == 200  # basari sayaci sifirlar
+    with pytest.raises(ConnectionError):
+        br.get("u")
+    assert br.get("u").status_code == 503
+    assert not br.open
+    with pytest.raises(ConnectionError):
+        br.get("u")
+    assert br.open
+    with pytest.raises(ConnectionError, match="devre kesici"):
+        br.get("u")
+    assert client.n == 5
+    assert br.stats() == {"calls": 5, "failures": 4, "skipped": 1, "seconds": 0, "open": True}
+
+
+def test_kap_breaker_wraps_borsapy_provider_once():
+    from borsapy._providers.kap import get_kap_provider
+    first = ld.kap_breaker()
+    assert ld.kap_breaker() is first
+    assert get_kap_provider()._client is first
+    assert hasattr(first, "headers")  # diger httpx.Client nitelikleri gecer

@@ -1,6 +1,6 @@
 {
   "description": "Pre-registered studies and the number of candidate rules each tested (docs/research/quant_review_followups_preregistration.md, B1). Counts come from the rule IDs in each study file or the result row in the README scorecard. 'stock_selection' trials were evaluated on the same monthly stock panel; their sum is N_sel.",
-  "as_of": "2026-10-21",
+  "as_of": "2026-10-25",
   "studies": [
     {
       "study": "backtest_factor_model (pre-2026-10, not pre-registered)",
@@ -181,6 +181,12 @@
       "family": "stock_selection",
       "trials": 3,
       "source": "T1 Donchian 20/10 + ATR, T2 Supertrend, T3 EMA pullback"
+    },
+    {
+      "study": "ev_definition_preregistration",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "E1 (EV + short-term investments + minority); E1a/E1b diagnostic only"
     },
     {
       "study": "st_debt_coverage_preregistration",
