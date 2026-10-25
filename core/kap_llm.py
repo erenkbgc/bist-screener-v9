@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import re
+import time
 from datetime import datetime
 
 import httpx
@@ -33,6 +34,13 @@ KEY_ENV = "GROQ_API_KEY"
 BATCH = 20
 # Ucretsiz katman dakika/gun istek limitli; birikmis bildirimler gunler icinde erir.
 MAX_REQUESTS = 20
+# Groq ucretsiz katmani dakikada 8000 token (TPM); bir batch ~2200 token oldugu
+# icin 4. istekten sonra 429 donuyordu ve gunluk 400 bildirimin yalnizca 80'i
+# etiketleniyordu (2026-10-21..24 kosulari). Saglayici "try again in 12.4s"
+# ile bekleme suresini veriyor: bu sure kadar beklenip tekrar denenir. Daha
+# uzun bekleme (gunluk token limiti, TPD) istenirse beklenmez, durulur.
+RATE_LIMIT_MAX_WAIT_S = 65.0
+RATE_LIMIT_RETRIES = 3
 CATEGORIES = [*RED_FLAG_LABELS, "none"]
 
 SYSTEM_PROMPT = (
@@ -79,20 +87,52 @@ def parse(content: str, ids: set[int]) -> dict[int, str]:
     return out
 
 
+class RateLimited(RuntimeError):
+    """HTTP 429; wait_s saglayicinin istedigi bekleme (bilinmiyorsa None)."""
+    def __init__(self, message: str, wait_s: float | None):
+        super().__init__(message)
+        self.wait_s = wait_s
+
+
+def retry_wait_s(headers, text: str) -> float | None:
+    """429 cevabindan bekleme suresi: retry-after basligi, yoksa govdedeki 'try again in 1m2.5s'."""
+    try:
+        return float((headers or {}).get("retry-after"))
+    except (TypeError, ValueError):
+        pass
+    m = re.search(r"try again in (?:(\d+)m)?(\d+(?:\.\d+)?)s", text or "")
+    return int(m.group(1) or 0) * 60 + float(m.group(2)) if m else None
+
+
 def _call(http: httpx.Client, token: str, batch: list[dict]) -> dict[int, str]:
     user = json.dumps([{"id": b["disclosure_index"], "konu": b["subject"], "ozet": b["summary"] or ""}
                        for b in batch], ensure_ascii=False)
     r = http.post(URL, headers={"Authorization": f"Bearer {token}"}, timeout=90, json={
         "model": MODEL, "temperature": 0, "response_format": {"type": "json_object"},
         "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}]})
+    if r.status_code == 429:
+        raise RateLimited(f"HTTP 429: {r.text[:300]}", retry_wait_s(getattr(r, "headers", None), r.text))
     if r.status_code >= 400:
         raise RuntimeError(f"HTTP {r.status_code}: {r.text[:300]}")
     content = r.json()["choices"][0]["message"]["content"]
     return parse(content, {b["disclosure_index"] for b in batch})
 
 
-def label_pending(tickers: list[str], since: str, http: httpx.Client | None = None) -> dict:
-    """Etiketlenmemis bildirimleri etiketler. Hata: durur, eldekini saklar."""
+def _call_with_wait(http, token: str, batch: list[dict], sleep) -> dict[int, str]:
+    for attempt in range(RATE_LIMIT_RETRIES + 1):
+        try:
+            return _call(http, token, batch)
+        except RateLimited as exc:
+            if attempt == RATE_LIMIT_RETRIES or exc.wait_s is None or exc.wait_s > RATE_LIMIT_MAX_WAIT_S:
+                raise
+            sleep(exc.wait_s + 1.0)
+    raise AssertionError("unreachable")
+
+
+def label_pending(tickers: list[str], since: str, http: httpx.Client | None = None,
+                  sleep=time.sleep) -> dict:
+    """Etiketlenmemis bildirimleri etiketler. 429: saglayicinin verdigi kisa sureyi
+    bekleyip tekrar dener; diger hata veya uzun bekleme: durur, eldekini saklar."""
     token = os.environ.get(KEY_ENV)
     if not token:
         return {"labeled": 0, "error": f"{KEY_ENV} yok"}
@@ -104,7 +144,7 @@ def label_pending(tickers: list[str], since: str, http: httpx.Client | None = No
         for k in range(0, len(todo), BATCH):
             batch = todo[k:k + BATCH]
             try:
-                labels = _call(http, token, batch)
+                labels = _call_with_wait(http, token, batch, sleep)
             except Exception as exc:  # noqa: BLE001 - 429/ag/sema hatasi: panel regex ile devam eder
                 error = f"{type(exc).__name__}: {exc}"[:300]
                 break
