@@ -438,9 +438,17 @@ def fetch_statement(ticker: str, statement_type: str, last_n: int) -> pd.DataFra
 
 
 def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFrame,
-                          sectors: dict[str, str]) -> pd.DataFrame:
-    """Her (ticker, ay sonu) icin nokta-zamanli faktor satiri + ileri 1 aylik getiri."""
+                          sectors: dict[str, str], market_caps: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Her (ticker, ay sonu) icin nokta-zamanli faktor satiri + ileri 1 aylik getiri.
+
+    market_caps (ticker, date = ay sonu, mcap): Is Yatirim HisseTekil ay sonu piyasa
+    degeri (docs/research/market_cap_source.md). Verilirse ve o ay icin degeri varsa
+    piyasa degeri odur; yoksa duzeltilmemis fiyat x pay sayisi (shares_at). borsapy'nin
+    "duzeltilmemis" fiyati bedelli artirimlarda geriye donuk duzeltildigi icin fiyat x pay
+    bedelli oncesi donemde dusuk kaliyor. Satir kumesi ayni kalir (odenmis sermaye kosulu)."""
     rows = []
+    mc_by = ({t: g.set_index("date")["mcap"] for t, g in market_caps.groupby("ticker")}
+             if market_caps is not None and not market_caps.empty else {})
     q = q.sort_values(["ticker", "available_at"])
     ev_by = {t: g for t, g in events.groupby("ticker")} if not events.empty else {}
     q_by = {t: g for t, g in q.groupby("ticker")}
@@ -450,6 +458,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
         if qt is None:
             continue
         ev = ev_by.get(tk, pd.DataFrame(columns=["date", "rights_pct", "bonus_pct"]))
+        mc = mc_by.get(tk)
         adj = p["adj"].values
         for i in range(len(p)):
             t = p.at[i, "date"]
@@ -461,7 +470,11 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
             if not paid_in or paid_in <= 0 or not np.isfinite(paid_in):
                 continue
             shares = shares_at(t, paid_in, last["period_end"], ev, avail[["period_end", "paid_in"]])
-            mcap = p.at[i, "raw"] * shares
+            mcap, mcap_source = p.at[i, "raw"] * shares, "price_x_shares"
+            if mc is not None:
+                m_isy = mc.get(t)
+                if m_isy is not None and np.isfinite(m_isy) and m_isy > 0:
+                    mcap, mcap_source = float(m_isy), "isyatirim_pd"
             if not mcap or mcap <= 0:
                 continue
             eq, ni = _equity(last), _ttm_net_income(last)
@@ -490,7 +503,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
                 "sue": sue,
                 "fwd_ret_1m": adj[i + 1] / adj[i] - 1 if i + 1 < len(p) and adj[i] > 0 else np.nan,
                 "fwd_ret_6m": adj[i + 6] / adj[i] - 1 if i + 6 < len(p) and adj[i] > 0 else np.nan,
-                "stmt_period": last["period"],
+                "stmt_period": last["period"], "mcap_source": mcap_source,
             })
     return pd.DataFrame(rows)
 
