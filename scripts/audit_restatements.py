@@ -73,14 +73,23 @@ def parse_number(tok: str) -> float | None:
 def kap_text(index: int) -> str:
     CACHE.mkdir(parents=True, exist_ok=True)
     f = CACHE / f"{index}.txt"
-    if f.exists():
+    if f.exists() and f.stat().st_size > 0:
         return f.read_text(encoding="utf-8")
-    raw = requests.get(f"https://www.kap.org.tr/tr/Bildirim/{index}",
-                       headers={"User-Agent": "Mozilla/5.0"}, timeout=60).text
+    # KAP hiz sinirinda 429 + bos govde donuyor; bos sayfa onbellege yazilirsa
+    # (2026-10-25: 145 dosya) o rapor kalici olarak "eslesmedi" sayiliyordu.
+    for attempt in range(5):
+        resp = requests.get(f"https://www.kap.org.tr/tr/Bildirim/{index}",
+                            headers={"User-Agent": "Mozilla/5.0"}, timeout=60)
+        if resp.status_code == 200 and resp.text:
+            break
+        time.sleep(30 * (attempt + 1))
+    else:
+        raise RuntimeError(f"KAP {index}: HTTP {resp.status_code}")
+    raw = resp.text
     raw = raw.replace("\\u003c", "<").replace("\\u003e", ">").replace('\\"', '"')
     txt = re.sub(r"\|+", "|", re.sub(r"<[^>]+>", "|", raw))
     f.write_text(txt, encoding="utf-8")
-    time.sleep(1.0)
+    time.sleep(3.0)
     return txt
 
 
