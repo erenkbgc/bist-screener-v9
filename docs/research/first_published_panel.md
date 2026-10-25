@@ -36,6 +36,23 @@ What will be done with the result:
 - The README headline figures are updated to it.
 - The live rule does not change (the live score already uses first-published latest quarters, with the vendor-consistent TTM of `vendor_vs_kap_audit.md`).
 
+## Method change (2026-10-25, still before any return was computed)
+
+The full KAP fetch ran at about one page every 15 s under KAP's rate limit (HTTP 429): about 30 hours for 7,691 pages. It was stopped after about 250 new pages. The cached pages showed that the vendor's re-expression follows a simple rule, so the first-published figures can be recovered from the vendor data with one KAP page per company instead.
+
+**Re-expression model** (periods from 2023Q4, whose first report is already in IAS 29 units; checked on the cached pages):
+- Q1–Q3: income items equal first × CPI(P+4)/CPI(P) once the next-year report exists (10–11 of 16 per item; 5 first-published, which are foreign-functional-currency reporters). Balance-sheet items equal first (16 of 16).
+- Q4: the whole column equals first × CPI(L)/CPI(P), where L is the latest report that shows the year-end as a comparative, at most one year later (19 of 26). The 7 misfits are solo/consolidated report mismatches (YESIL, FMIZP, DUNYH, IDGYO) and KAREL.
+- 2022Q4–2023Q3 do **not** follow it. Their first reports were nominal, and the vendor shows the IAS 29 first-application restatement, which is indexed month by month (2022Q4 revenue ×1.8–2.0 against a year-end CPI factor of 1.648).
+
+**Procedure** (`scripts/classify_reexpression.py`, `rebuild_panels_first_published.py`):
+1. Per company, the 2025Q2 first report (2024Q2 if missing), consolidated preferred. The vendor's income item divided by first = CPI(Jun 2026)/CPI(Jun 2025) ±1% → `reexpressed`; 1 ±1% → `not_reexpressed`; otherwise `unknown` (left as vendor).
+2. `undo_reexpression`: for `reexpressed` companies, divide by the model factor (Q4: all items; Q1–Q3: income items).
+3. `bridge_ttm`: for latest periods 2023Q4–2024Q3, TTM comes from the formula the live score uses: YTD(P) + YTD(FY 2023) × CPI(P)/CPI(Dec 2023) − YTD(P−4). The vendor's YTD(P−4) for 2023Q1–Q3 is the restated comparative in P's own report, which is what was known at the time. From 2024Q4 all inputs are first-published, so C1 applies unchanged.
+4. Market value from İş Yatırım HisseTekil `PD` (`market_cap_source.md`), because borsapy's "raw" close is back-adjusted for rights issues.
+
+The comparison section above is unchanged. "First-published panel" now means steps 1–4. The KAP-replacement path (`--kap-fp`) is kept for when the full fetch is completed.
+
 ## Results
 
 (Appended after the run; the sections above stay unchanged.)

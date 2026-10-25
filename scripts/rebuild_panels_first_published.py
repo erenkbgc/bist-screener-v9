@@ -67,9 +67,54 @@ def replace_first_published(long: pd.DataFrame, fp: pd.DataFrame) -> tuple[pd.Da
     return pd.concat([keep, pd.DataFrame(add)], ignore_index=True), stats
 
 
+def undo_reexpression(long: pd.DataFrame, classes: pd.DataFrame, cpi: pd.Series) -> tuple[pd.DataFrame, dict]:
+    """TMS 29 donemi (>= 2023Q4) Is Yatirim yeniden ifadesini geri alir (cls == reexpressed).
+
+    Q4: tum kalemler / CPI(L)/CPI(P), L = min(P + 4 ceyrek, sirketin son donemi).
+    Q1-Q3: gelir tablosu kalemleri / CPI(P+4)/CPI(P) (P+4 varsa); bilanco degismez.
+    docs/research/first_published_panel.md, modelin dogrulamasi orada."""
+    tl = set(classes.loc[classes["cls"] == "reexpressed", "ticker"])
+    c = lambda p: cpi.get(pit_panel.period_end(p).to_period("M"), float("nan"))  # noqa: E731
+    latest = long.groupby("ticker")["period"].max()
+    inc = set(pit_panel.INC_ITEMS)
+    out = long.copy()
+    factor = pd.Series(1.0, index=out.index)
+    m = out["ticker"].isin(tl) & (out["period"] >= pit_panel.IAS29_FIRST_PERIOD)
+    for i in out.index[m]:
+        tk, per, item = out.at[i, "ticker"], out.at[i, "period"], out.at[i, "item"]
+        nxt = f"{int(per[:4]) + 1}{per[4:]}"
+        if per.endswith("Q4"):
+            last = min(nxt, latest[tk])
+            if last > per:
+                factor[i] = c(last) / c(per)
+        elif item in inc and nxt <= latest[tk]:
+            factor[i] = c(nxt) / c(per)
+    out["value"] = out["value"] / factor
+    stats = {"reexpressed_tickers": len(tl), "values_divided": int((factor != 1.0).sum()),
+             "classes": classes["cls"].value_counts().to_dict()}
+    return out, stats
+
+
+def bridge_ttm(q: pd.DataFrame, long: pd.DataFrame, cpi: pd.Series) -> pd.DataFrame:
+    """P = 2023Q4-2024Q3: TTM 2023Q1-Q3 YTD'lerine dayaniyor; Is Yatirim onlari P raporunun
+    onceki-donem kolonuyla (P birimi) veriyor. O satirlarda canli ile ayni formul:
+    TTM = YTD(P) + YTD(FY 2023) x CPI(P)/CPI(Dec 2023) - YTD(P - 4)."""
+    q = q.copy()
+    for tk, g in long.groupby("ticker"):
+        for per in ("2023Q4", "2024Q1", "2024Q2", "2024Q3"):
+            sel = (q["ticker"] == tk) & (q["period"] == per)
+            if not sel.any():
+                continue
+            for item, v in pit_panel.vendor_consistent_ttm(g, per, cpi).items():
+                if f"ttm_{item}" in q:
+                    q.loc[sel, f"ttm_{item}"] = v
+    return q
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--no-fp", action="store_true", help="ilk yayin degisimi yok (Is Yatirim tablolari)")
+    ap.add_argument("--kap-fp", action="store_true", help="KAP ilk yayin rakamlari (first_published.parquet)")
+    ap.add_argument("--no-undo", action="store_true", help="TMS 29 yeniden ifadesi geri alinmaz")
     ap.add_argument("--no-isy", action="store_true", help="piyasa degeri fiyat x pay (Is Yatirim PD yok)")
     ap.add_argument("--out", default="fp")
     args = ap.parse_args()
@@ -87,13 +132,18 @@ def main() -> None:
         pxs.append(pit_panel.monthly_prices(tk, raw.get("px_raw"), raw.get("px_adj")))
         evs.append(pit_panel.split_events(tk, raw.get("splits")))
     long = pd.concat([x for x in longs if not x.empty], ignore_index=True)
-    stats = {"first_published": not args.no_fp, "isyatirim_mcap": not args.no_isy}
-    if not args.no_fp:
+    stats = {"first_published": args.kap_fp, "undo_reexpression": not args.no_undo, "isyatirim_mcap": not args.no_isy}
+    if args.kap_fp:
         long, rep = replace_first_published(long, pd.read_parquet(RESEARCH / "first_published.parquet"))
+        stats.update(rep)
+    if not args.no_undo:
+        long, rep = undo_reexpression(long, pd.read_parquet(RESEARCH / "reexpression_class.parquet"), cpi)
         stats.update(rep)
     mcaps = None if args.no_isy else pd.read_parquet(RESEARCH / "market_cap_monthly.parquet")[["ticker", "date", "mcap"]]
     print(json.dumps(stats))
     q = pit_panel.quarterly_table(long, cpi=cpi)
+    if not args.no_undo:
+        q = bridge_ttm(q, long, cpi)
     px = pd.concat([x for x in pxs if not x.empty], ignore_index=True)
     ev = pd.concat([x for x in evs if not x.empty], ignore_index=True)
     dates = pit_panel.kap_report_dates(pd.read_parquet(RESEARCH / "kap_archive.parquet"))
