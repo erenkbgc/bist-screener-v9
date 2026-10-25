@@ -34,6 +34,7 @@ import json
 import math
 import re
 import socket
+import threading
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
@@ -133,8 +134,78 @@ def _classify_sector(sector_text: str | None) -> tuple[str, str]:
     return "industrial", "SPK_TFRS"
 
 
+class _KapBreaker:
+    """borsapy KAP saglayicisinin HTTP istemcisini saran devre kesici.
+
+    GitHub runner'larindan KAP istekleri cogu gun dusuyor (2026-10-24: 467/476
+    hissede rapor tarihi yok). borsapy KAP sirket listesini yalnizca BASARILI
+    cekimde cache'liyor; bu yuzden KAP'a dokunan her hisse cagrisi (info
+    sirket detayi, news, rapor tarihi) listeyi 20sn zaman asimiyla bastan
+    istiyor. Art arda KAP_BREAKER_THRESHOLD hatadan sonra kosunun geri kalaninda
+    KAP'a istek atilmaz; cagri aninda hata firlatir. borsapy bu hatayi zaten
+    yakalayip None/bos tablo donduruyor, yani sonuc KAP'in cevap vermemesiyle
+    ayni, yalnizca beklemeden."""
+
+    def __init__(self, client, threshold: int):
+        self._client, self.threshold = client, threshold
+        self._lock = threading.Lock()
+        self.consecutive_failures = 0
+        self.calls = self.failures = self.skipped = 0
+        self.seconds = 0.0
+        self.open = False
+
+    def _request(self, method: str, *args, **kwargs):
+        with self._lock:
+            if self.open:
+                self.skipped += 1
+                raise ConnectionError("KAP devre kesici acik (art arda hata)")
+            self.calls += 1
+        t0 = time.monotonic()
+        ok = False
+        try:
+            response = getattr(self._client, method)(*args, **kwargs)
+            ok = response.status_code < 400
+            return response
+        finally:
+            with self._lock:
+                self.seconds += time.monotonic() - t0
+                if ok:
+                    self.consecutive_failures = 0
+                else:
+                    self.failures += 1
+                    self.consecutive_failures += 1
+                    if self.consecutive_failures >= self.threshold:
+                        self.open = True
+
+    def get(self, *args, **kwargs):
+        return self._request("get", *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        return self._request("post", *args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self._client, name)
+
+    def stats(self) -> dict:
+        return {"calls": self.calls, "failures": self.failures, "skipped": self.skipped,
+                "seconds": round(self.seconds), "open": self.open}
+
+
+KAP_BREAKER_THRESHOLD = 10
+
+
+def kap_breaker() -> _KapBreaker:
+    """KAP saglayicisinin (borsapy singleton) istemcisine devre kesiciyi bir kez takar."""
+    from borsapy._providers.kap import get_kap_provider
+    provider = get_kap_provider()
+    if not isinstance(provider._client, _KapBreaker):
+        provider._client = _KapBreaker(provider._client, KAP_BREAKER_THRESHOLD)
+    return provider._client
+
+
 @lru_cache(maxsize=2048)
 def _ticker_obj(ticker: str):
+    kap_breaker()
     return bp.Ticker(ticker)
 
 
@@ -492,6 +563,15 @@ def prefetch_all(universe_rows: list[dict]) -> None:
         futures.extend(pool.submit(_history_adj_cached, t, HISTORY_PERIOD) for t in tickers)
         for f in futures:
             f.result()  # istisnalar zaten fonksiyon icinde yutuluyor, sadece bekle
+
+    # KAP rapor tarihi (core/fundamentals.py) ve value_sn icin ceyreklik tablolar
+    # (live_value_inputs) eskiden sonraki SIRALI dongude ilk kez cekiliyordu.
+    with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
+        list(pool.map(_financial_report_disclosures_cached, tickers))
+        list(pool.map(_quarterly_statements_cached,
+                      [u["ticker"] for u in universe_rows
+                       if u.get("ratio_profile") not in _UFRS_RATIO_PROFILES]))
+    print(f"[prefetch] KAP istemcisi: {kap_breaker().stats()}", flush=True)
 
     retry = retry_failed_statements(universe_rows)
     if retry["failed_before"]:
