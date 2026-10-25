@@ -126,7 +126,13 @@ jobs:
             fi
             echo "push reddedildi (deneme $attempt/5), origin/master ile rebase deneniyor"
             git fetch origin master
-            if ! git rebase origin/master; then
+            # 2026-10-21: elle tetiklenen kosu ile zamanlanmis kosu ayni gunun
+            # data/bist_history.db'sini commit'ledi; ikinci kosu checkout'u
+            # tetiklendigi andaki (eski) SHA'dan aldigi icin ikili DB rebase'de
+            # cakisti ve gunun sonuclari kayboldu. Cakisan hunk'larda bu
+            # kosunun dosyasi (rebase'de "theirs") kazanir: DB/rapor bu kosunun
+            # tam ciktisidir, kaybedilecek olan yalnizca ayni gunun onceki kopyasi.
+            if ! git rebase -X theirs origin/master; then
               git rebase --abort
               echo "rebase basarisiz, cakisma var -- manuel mudahale gerekiyor"
               exit 1
