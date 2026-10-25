@@ -54,3 +54,23 @@ No automatic change. On PASS, the filter would go to the live rule in a separate
 ## Results
 
 (Appended after the run; the sections above stay unchanged.)
+
+Added 2026-10-25, after the run. Runner: `python scripts/research_st_debt_coverage.py` → `data/reports/research_st_debt_coverage_2026-10-25.json`. Panel 2013-04 to 2026-09, 40,693 stock-months.
+
+### Descriptive
+
+- 92.3% of stock-months have short-term financial debt; `cov` is known for all of them.
+- `cov` < 1 (liquid assets below short-term financial debt) in 58.7% of those stock-months. Weak coverage is the normal case on BIST, not an exception.
+- D1 flags 9.4% of stock-months, and 10.8% of the unfiltered value top 20%, so value does not avoid these names more than the universe does.
+- Rank IC of `log(cov)` alone: discovery +0.0146 (t 1.16), holdout +0.0043 (t 0.37). Higher coverage does not predict returns.
+
+### D1: exclude the worst coverage decile
+
+| Window | Base active %/yr (t) | D1 active %/yr (t) | Paired difference %/yr (t) | USD difference %/yr (t) | Names base / D1 | 6-month trap rate base / D1 |
+|---|---:|---:|---:|---:|---:|---:|
+| Discovery | +10.60 (2.78) | +10.96 (2.74) | +0.31 (0.36) | +0.29 (0.34) | 43.1 / 39.1 | 4.3% / 4.1% |
+| Holdout | +7.36 (2.80) | +7.51 (2.39) | +0.14 (0.12) | +0.21 (0.18) | 59.7 / 53.9 | 18.7% / 17.8% |
+
+### Verdict: `FAIL`
+
+The difference is positive in both windows but far from the thresholds (discovery t 0.36 vs 3.0 required; holdout t 0.12 vs 2.0). Removing the weakest short-term debt coverage does not improve the value portfolio, and the measure has no standalone predictive power. Debt maturity stays out of the live rule. It may be shown as information in the single-stock sheet ("Tek Hisse Kontrol"), labelled as untested for returns.

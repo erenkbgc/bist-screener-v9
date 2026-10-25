@@ -181,6 +181,12 @@
       "family": "stock_selection",
       "trials": 3,
       "source": "T1 Donchian 20/10 + ATR, T2 Supertrend, T3 EMA pullback"
+    },
+    {
+      "study": "st_debt_coverage_preregistration",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "D1 exclude worst decile of (cash + ST investments) / ST financial debt"
     }
   ]
 }
