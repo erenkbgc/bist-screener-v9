@@ -21,5 +21,13 @@
     "path": "data/forward_record/decisions.jsonl",
     "evaluation": "scripts/forward_record_report.py: next-close fills, 1M TL, base costs (core/portfolio_backtest.py)"
   },
-  "change_policy": "Any change to params needs a new pre-registration and a new version. A new version starts a new forward series; earlier decisions are never re-simulated under the new rule."
+  "change_policy": "Any change to params needs a new pre-registration and a new version. A new version starts a new forward series; earlier decisions are never re-simulated under the new rule.",
+  "data_fixes": [
+    {
+      "date": "2026-10-25",
+      "what": "TTM flows from 2023Q4 use vendor-consistent YTD formula (pit_panel.vendor_consistent_ttm); İş Yatırım re-expresses prior-year periods",
+      "doc": "docs/research/vendor_vs_kap_audit.md",
+      "params_changed": false
+    }
+  ]
 }
