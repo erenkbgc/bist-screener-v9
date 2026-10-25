@@ -175,6 +175,24 @@ def evaluate(series: list[dict], frames: dict[str, pd.DataFrame], xu: pd.Series,
     return p
 
 
+def expectation_check(active: pd.Series, exp: dict | None) -> dict | None:
+    """Gerceklesen aylik aktif getirilerin toplami, backtest beklentisinin bandinda mi?
+
+    exp (config/live_rule.json -> expectation): yillik ortalama, NW t ve ay sayisi.
+    sigma_eff = ortalama x sqrt(ay) / t, NW standart hatasindan geri cozulen aylik
+    etkin oynaklik. z < -band_z: kayit backtest ile tutarsiz."""
+    a = active.dropna()
+    if exp is None or a.empty:
+        return None
+    mu = exp["ann_pct"] / 1200.0
+    sigma = mu * np.sqrt(exp["months"]) / exp["nw_t"]
+    n = len(a)
+    z = (float(a.sum()) - n * mu) / (sigma * np.sqrt(n))
+    return {"metric": exp["metric"], "months": n, "realized_sum_pct": round(100 * float(a.sum()), 2),
+            "expected_sum_pct": round(100 * n * mu, 2), "band_pct": round(100 * exp["band_z"] * sigma * np.sqrt(n), 2),
+            "z": round(z, 2), "inconsistent_with_backtest": bool(z < -exp["band_z"])}
+
+
 def summarize(p: pd.DataFrame) -> dict:
     """Her satir bir takvim ayi; yilliklastirma 12 x aylik ortalama.
     EW net (ayni simulator ve maliyet modeli) birincil, EW gross (maliyetsiz) tamamlayici."""
@@ -193,7 +211,8 @@ def summarize(p: pd.DataFrame) -> dict:
            "cum_xu100_pct": round(100 * float((1 + p["xu"]).prod() - 1), 2),
            "cum_xu100_tr_pct": round(100 * float((1 + p["xu_tr"]).prod() - 1), 2) if p["xu_tr"].notna().all() else None,
            "cost_total_pct": round(100 * float(p["cost"].sum()), 2),
-           "delist_events": int(p.attrs.get("delist_events", 0))}
+           "delist_events": int(p.attrs.get("delist_events", 0)),
+           "expectation_check": expectation_check(p["active_gross"], fr.live_rule().get("expectation"))}
     if len(p) >= 12:  # anlamli t icin en az bir yil
         months_idx = p["date"].dt.to_period("M")
         for key, col in (("active_univ", "active_net"), ("active_univ_net", "active_net"),
