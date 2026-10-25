@@ -56,3 +56,38 @@ The comparison section above is unchanged. "First-published panel" now means ste
 ## Results
 
 (Appended after the run; the sections above stay unchanged.)
+
+Added 2026-10-25, after the run.
+
+**Classification** (`reexpression_class.parquet`, 488 companies): 421 re-expressed (TL, IAS 29), 34 not re-expressed (foreign functional currency), 33 unknown (left as vendor). 36,185 vendor values divided by the model factor.
+
+**Market value** (`market_cap_source.md`): İş Yatırım `PD` for 57,636 of 58,223 lag-75 stock-months; 587 fall back to price × shares (9 stocks without HisseTekil history).
+
+### Value rule, four panel versions (`scripts/compare_panels.py`; top 20% by value_sn, active vs universe; NW t)
+
+| Panel | Discovery 2013–2020 | Holdout 2021+ | IAS 29 window 2024-05+ | Rank IC discovery / holdout / IAS 29 |
+|---|---:|---:|---:|---:|
+| Current (vendor, share-count fix) | +10.54 (2.73) | +7.91 (2.83) | +4.52 (1.17) | 0.041 / 0.062 / 0.033 |
+| + re-expression undone only | +10.54 (2.73) | +7.26 (2.52) | +2.89 (0.77) | 0.041 / 0.061 / 0.032 |
+| + İş Yatırım market value only | +5.28 (2.14) | +10.32 (3.12) | +2.88 (0.70) | 0.056 / 0.073 / 0.035 |
+| **Both (new baseline, `data/research/fp/`)** | **+5.28 (2.14)** | **+10.75 (3.21)** | **+2.93 (0.76)** | **0.056 / 0.073 / 0.034** |
+
+Paired differences of the new baseline against the current panel: discovery −5.26%/yr (t −1.21), holdout +2.84 (t 1.13), IAS 29 window −1.59 (t −1.93). 2,160 of 8,075 top-20% memberships change.
+
+### Costed backtest on the new baseline (`research_portfolio_backtest.py` → `research_portfolio_backtest_fp_2026-10-25.json`)
+
+| P0, 1M TL | vs EW universe %/yr (t) | vs XU100 price %/yr (t) | USD CAGR | Max DD USD | 3× costs vs EW |
+|---|---:|---:|---:|---:|---:|
+| Discovery | +4.37 (1.67) | +24.33 (3.39) | 12.26% | −56.6% | +2.40 (0.93) |
+| Holdout | +9.36 (2.74) | +4.29 (0.86) | 7.02% | −35.4% | +7.88 (2.30) |
+
+Before the correction (share-count-fixed panel): discovery +9.92 (2.49), holdout +6.65 (2.48), USD CAGR 4.20%, max DD −44.0%.
+
+### What it means
+
+1. **The ranking signal is stronger than measured before.** Value_sn rank IC rises in every window (discovery 0.041 → 0.056, t 5.52). The old market values were noise: rights-adjusted prices understated past market value, by 2–4× for frequent rights issuers.
+2. **The discovery portfolio result was inflated by that noise.** Stocks that looked cheap only because of the rights adjustment had high returns in 2013–2020. Without them the costed discovery edge over the EW universe is +4.37%/yr with t 1.67. That is no longer significant, and at 3× costs it is +2.40 (t 0.93).
+3. **The holdout result improves** to +9.36%/yr (t 2.74) after costs, USD CAGR 7.0% and a −35% USD drawdown.
+4. **The IAS 29 window stays weak** (+2.93%/yr, t 0.76). The vendor's re-expression had added about 1.6 points a year there.
+5. The live rule is unchanged. It was locked on the discovery result, which is now weaker. The holdout, which was never used to choose the rule, is stronger. Both are reported; neither changes `config/live_rule.json`. The forward-record expectation (`expectation` in `config/live_rule.json`, PR #102) should use the new holdout: +9.36%/yr, t 2.74.
+6. Studies before this date used the old panel. Their conclusions were tests of changes **relative** to value_sn on the same panel; this note does not re-run them.
