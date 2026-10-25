@@ -187,6 +187,12 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "E1 (EV + short-term investments + minority); E1a/E1b diagnostic only"
+    },
+    {
+      "study": "st_debt_coverage_preregistration",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "D1 exclude worst decile of (cash + ST investments) / ST financial debt"
     }
   ]
 }
