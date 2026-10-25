@@ -255,13 +255,46 @@ def monthly_prices(ticker: str, raw: pd.DataFrame | None, adj: pd.DataFrame | No
     return m.dropna(subset=["raw"]).reset_index(names="date")
 
 
-def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: pd.DataFrame) -> float:
-    """Bilanco tarihindeki pay sayisini t'ye kadarki bedelli/bedelsiz islemlerle ileri tasi."""
+# Bir sermaye artirimi bilancodaki odenmis sermayeye her zaman donem sonu/islem
+# tarihi sirasina gore yansimiyor (docs/research/share_count_fix.md):
+#  - tescil gecikmesi: islem tarihi donem sonundan once, ama o (ve sonraki) bilanco
+#    hala eski sermayeyi gosteriyor (AZTEK 2025Q4, KATMR 2025Q2, DERIM 2019Q3) ->
+#    eski kural islemi uygulamiyor, piyasa degeri 2-10 kat dusuk, hisse ucuz gorunuyor;
+#  - erken tescil: bilanco donem sonu islem tarihinden once, ama sermaye zaten artmis
+#    (LINK 2025Q4) -> eski kural islemi ikinci kez uyguluyor.
+# Islem, mevcut bilanconun sermayesi islemden onceki bir yildaki en dusuk sermayenin
+# en az bu orani kadar ise "yansimis" sayilir.
+SHARE_EVENT_LOOKBACK_DAYS = 365
+SHARE_EVENT_REFLECTED_RATIO = 0.9
+
+
+def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: pd.DataFrame,
+              history: pd.DataFrame | None = None) -> float:
+    """Bilanco tarihindeki pay sayisini t'ye kadarki bedelli/bedelsiz islemlerle ileri tasi.
+
+    history: t gunu kullanilabilir bilancolar (period_end, paid_in). Verilirse bir islem,
+    mevcut sermayeye yansimamissa uygulanir (donem sonundan once olsa bile) ve
+    yansimissa uygulanmaz (donem sonundan sonra olsa bile). Islemden onceki bir yilda
+    bilanco yoksa veya history None ise eski kural: yalnizca donem sonundan sonraki islemler."""
     f = 1.0
-    if not events.empty:
-        ev = events[(events["date"] > stmt_end) & (events["date"] <= t)]
-        for _, e in ev.iterrows():
-            f *= 1.0 + (e["rights_pct"] + e["bonus_pct"]) / 100.0
+    if events.empty:
+        return paid_in
+    lookback = pd.Timedelta(days=SHARE_EVENT_LOOKBACK_DAYS)
+    ev = events[(events["date"] <= t) & (events["date"] > stmt_end - lookback)]
+    for _, e in ev.iterrows():
+        factor = 1.0 + (e["rights_pct"] + e["bonus_pct"]) / 100.0
+        before = None
+        if history is not None and not history.empty:
+            h = history[(history["period_end"] < e["date"]) & (history["period_end"] >= e["date"] - lookback)
+                        & (history["period_end"] <= stmt_end)]["paid_in"]
+            h = h[h > 0]
+            before = float(h.min()) if len(h) else None
+        if before is None:
+            reflected = e["date"] <= stmt_end
+        else:
+            reflected = paid_in >= SHARE_EVENT_REFLECTED_RATIO * factor * before
+        if not reflected:
+            f *= factor
     return paid_in * f
 
 
@@ -382,7 +415,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
             paid_in = last.get("paid_in")
             if not paid_in or paid_in <= 0 or not np.isfinite(paid_in):
                 continue
-            shares = shares_at(t, paid_in, last["period_end"], ev)
+            shares = shares_at(t, paid_in, last["period_end"], ev, avail[["period_end", "paid_in"]])
             mcap = p.at[i, "raw"] * shares
             if not mcap or mcap <= 0:
                 continue
