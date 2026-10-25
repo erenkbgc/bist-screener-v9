@@ -108,3 +108,44 @@ def test_label_rows_carry_model_and_prompt(temp_db, monkeypatch):
     kap_llm.label_pending(["AAA"], "2026-04-01", http=_FakeHttp())
     r = db.query("SELECT model, prompt_hash FROM kap_llm_labels")[0]
     assert r["model"] == kap_llm.MODEL and r["prompt_hash"] == kap_llm.PROMPT_HASH
+
+
+def test_retry_wait_parsed_from_header_or_body():
+    assert kap_llm.retry_wait_s({"retry-after": "7"}, "") == 7.0
+    assert kap_llm.retry_wait_s({}, "Please try again in 12.4575s. Need more") == 12.4575
+    assert kap_llm.retry_wait_s(None, "Please try again in 7m12.5s.") == 432.5
+    assert kap_llm.retry_wait_s({}, "rate limit") is None
+
+
+class _TpmHttp(_FakeHttp):
+    """Her 2 istekten sonra bir kez 429 + kisa bekleme (dakikalik token limiti)."""
+    def __init__(self, wait_text="Please try again in 12.4s."):
+        super().__init__()
+        self.wait_text, self.ok_since_429 = wait_text, 0
+
+    def post(self, url, headers=None, timeout=None, json=None):
+        if self.ok_since_429 == 2:
+            self.ok_since_429 = 0
+            r = _Resp({}, 429)
+            r.text = self.wait_text
+            return r
+        self.ok_since_429 += 1
+        return super().post(url, headers=headers, timeout=timeout, json=json)
+
+
+def test_short_rate_limit_waits_and_labels_all(temp_db, monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "x")
+    _seed(monkeypatch, 85)  # 5 istek
+    waits = []
+    out = kap_llm.label_pending(["AAA"], "2026-04-01", http=_TpmHttp(), sleep=waits.append)
+    assert out["labeled"] == 85 and out["error"] is None
+    assert waits == [13.4, 13.4]
+
+
+def test_long_rate_limit_stops_without_waiting(temp_db, monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "x")
+    _seed(monkeypatch, 85)
+    waits = []
+    out = kap_llm.label_pending(["AAA"], "2026-04-01", http=_TpmHttp("Please try again in 7m12.5s."),
+                                sleep=waits.append)
+    assert out["labeled"] == 40 and "429" in out["error"] and waits == []
