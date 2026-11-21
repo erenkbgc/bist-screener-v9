@@ -56,3 +56,27 @@ The verdict is taken on the primary (lag-75) panel. The KAP-date panel is report
 - Results are appended below a `## Results` heading; the sections above are not edited after results exist.
 
 A PASS would only make the candidate eligible for a separate pre-registered forward record. The live rule `R0-2026-10-12` is not changed by this study.
+
+## Results
+
+Run 2026-11-22 (`scripts/research_valuation_round2.py`, report `data/reports/research_valuation_round2_2026-11-22.json`). N_sel = 92.
+
+**Parity:** the rebuilt quarterly table matches the baseline exactly (24,089 rows, max relative difference 0), and `ep`/`bm` re-derived from it match the panel. Item coverage in the quarterly table: deferred tax 86.2%, intangibles 99.9%, goodwill 99.9%.
+
+**Verdict: both FAIL.**
+
+| Candidate | Discovery D %/yr (t) | Holdout D %/yr (t) | Holdout USD max DD vs R0 | DSR | Verdict |
+|---|---:|---:|---:|---:|---|
+| V2B `ep_xdt` | −0.15 (−0.34) | −1.20 (−1.77) | +0.5 pp | 0.058 | FAIL |
+| V2A `bm_tan` | −0.05 (−0.09) | +0.50 (+0.93) | +0.5 pp | 0.118 | FAIL |
+| R0 | — | — | — | 0.095 | baseline |
+
+KAP-date panel (robustness only): V2B discovery +0.14 (t 0.37), holdout −1.18 (t −1.37); V2A discovery +0.12 (t 0.17), holdout +0.82 (t 1.03). Same verdicts.
+
+**Descriptive (no decision):**
+- Both candidates are very close to R0: rank correlation 0.993–0.994, top-20% overlap 94–97%. The leg changes in about 85% of stock-months, but the composite and the selection barely move.
+- Deferred tax grows from a median 5–8% of net income (2013–2022) to 24–30% (2024–2026), as expected under IAS 29.
+- In the IAS 29 window (2024-05+, 28 months) removing deferred tax *lowers* the result: V2B −2.38%/yr (t −2.46) vs R0. Stocks whose E/P was raised by deferred tax income did not underperform; if anything the opposite. This is post-hoc and is not a tested claim.
+- V2A is slightly ahead of R0 in the holdout and the IAS 29 window (+0.32%/yr, t 0.54), far from the t ≥ 2 bar.
+
+**Reading:** cleaning one leg of `value_sn` for Turkish accounting effects does not improve it. With round 1 this makes five valuation variants since 2026-11-22, all failing against plain `value_sn`. The live rule `R0-2026-10-12` is unchanged.
