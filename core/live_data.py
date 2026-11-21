@@ -228,6 +228,37 @@ def _fast_info_cached(ticker: str) -> dict | None:
         return None
 
 
+def live_isyatirim_market_caps() -> dict[str, float]:
+    """Tek bp.Screener() cagrisiyla Is Yatirim piyasa degerleri (TL).
+
+    P3-2 piyasa degeri capraz kontrolu (TradingView fast_info vs Is Yatirim)
+    icin kullanilir. borsapy criteria_8 degeri milyon TL'dir; burada TL'ye
+    cevrilir. Hata durumunda bos dict doner (izleme kosuyu durdurmaz).
+    """
+    try:
+        s = bp.Screener()
+        s.add_filter("market_cap", min=0)
+        df = s.run()
+        if df is None or df.empty or "symbol" not in df.columns:
+            return {}
+        criteria_map = getattr(getattr(s, "_provider", None), "CRITERIA_MAP", None) or {}
+        col = "market_cap" if "market_cap" in df.columns else f"criteria_{criteria_map.get('market_cap', '8')}"
+        if col not in df.columns:
+            return {}
+        out: dict[str, float] = {}
+        for _, r in df.iterrows():
+            tk = str(r["symbol"]).strip().upper()
+            try:
+                fv = float(r.get(col))
+            except (TypeError, ValueError):
+                continue
+            if tk and math.isfinite(fv) and fv > 0:
+                out[tk] = fv * 1_000_000.0
+        return out
+    except Exception:  # noqa: BLE001 - izleme kontrolu canli kosuyu durdurmamali
+        return {}
+
+
 @lru_cache(maxsize=2048)
 def _info_cached(ticker: str):
     try:
