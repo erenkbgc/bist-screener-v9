@@ -67,30 +67,49 @@ def replace_first_published(long: pd.DataFrame, fp: pd.DataFrame) -> tuple[pd.Da
     return pd.concat([keep, pd.DataFrame(add)], ignore_index=True), stats
 
 
-def undo_reexpression(long: pd.DataFrame, classes: pd.DataFrame, cpi: pd.Series) -> tuple[pd.DataFrame, dict]:
-    """TMS 29 donemi (>= 2023Q4) Is Yatirim yeniden ifadesini geri alir (cls == reexpressed).
+def _shift_period(period: str, quarters: int) -> str:
+    """Takvim ceyregini `quarters` ceyrek ileri tasir (ozel hesap donemi: +1 = Mart, +2 = Haziran)."""
+    if not quarters:
+        return period
+    y, q = int(period[:4]), int(period[-1])
+    tot = y * 4 + (q - 1) + int(quarters)
+    return f"{tot // 4}Q{tot % 4 + 1}"
 
-    Q4: tum kalemler / CPI(L)/CPI(P), L = min(P + 4 ceyrek, sirketin son donemi).
-    Q1-Q3: gelir tablosu kalemleri / CPI(P+4)/CPI(P) (P+4 varsa); bilanco degismez.
+
+def undo_reexpression(long: pd.DataFrame, classes: pd.DataFrame, cpi: pd.Series) -> tuple[pd.DataFrame, dict]:
+    """TMS 29 donemi (>= 2023Q4) Is Yatirim yeniden ifadesini geri alir.
+
+    cls == 'reexpressed':
+      - Q4: tum kalemler / CPI(L)/CPI(P), L = min(P + 4 ceyrek, sirketin son donemi).
+      - Q1-Q3: gelir tablosu kalemleri / CPI(P+4)/CPI(P) (P+4 varsa); bilanco degismez.
+    cls == 'reexpressed_q4_only' (orn. ozel hesap donemli MARTI, MRGYO):
+      - Yalnizca Q4 tum kalemler geri alinir; Q1-Q3 degismez.
+    fy_shift_q (opsiyonel sutun, varsayilan 0): TUFE ayini ozel hesap donemi sonuna kaydirir.
     docs/research/first_published_panel.md, modelin dogrulamasi orada."""
-    tl = set(classes.loc[classes["cls"] == "reexpressed", "ticker"])
+    full_tl = set(classes.loc[classes["cls"] == "reexpressed", "ticker"])
+    q4_only = set(classes.loc[classes["cls"] == "reexpressed_q4_only", "ticker"])
+    target_tks = full_tl | q4_only
+    shifts = (dict(zip(classes["ticker"], classes["fy_shift_q"].fillna(0).astype(int)))
+              if "fy_shift_q" in classes.columns else {})
     c = lambda p: cpi.get(pit_panel.period_end(p).to_period("M"), float("nan"))  # noqa: E731
     latest = long.groupby("ticker")["period"].max()
     inc = set(pit_panel.INC_ITEMS)
     out = long.copy()
     factor = pd.Series(1.0, index=out.index)
-    m = out["ticker"].isin(tl) & (out["period"] >= pit_panel.IAS29_FIRST_PERIOD)
+    m = out["ticker"].isin(target_tks) & (out["period"] >= pit_panel.IAS29_FIRST_PERIOD)
     for i in out.index[m]:
         tk, per, item = out.at[i, "ticker"], out.at[i, "period"], out.at[i, "item"]
+        sh = shifts.get(tk, 0)
         nxt = f"{int(per[:4]) + 1}{per[4:]}"
         if per.endswith("Q4"):
             last = min(nxt, latest[tk])
             if last > per:
-                factor[i] = c(last) / c(per)
-        elif item in inc and nxt <= latest[tk]:
-            factor[i] = c(nxt) / c(per)
+                factor[i] = c(_shift_period(last, sh)) / c(_shift_period(per, sh))
+        elif tk in full_tl and item in inc and nxt <= latest[tk]:
+            factor[i] = c(_shift_period(nxt, sh)) / c(_shift_period(per, sh))
     out["value"] = out["value"] / factor
-    stats = {"reexpressed_tickers": len(tl), "values_divided": int((factor != 1.0).sum()),
+    stats = {"reexpressed_tickers": len(full_tl), "reexpressed_q4_only_tickers": len(q4_only),
+             "values_divided": int((factor != 1.0).sum()),
              "classes": classes["cls"].value_counts().to_dict()}
     return out, stats
 
