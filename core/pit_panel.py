@@ -21,7 +21,7 @@ Kurallar:
 from __future__ import annotations
 
 import math
-from datetime import timedelta
+from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
@@ -411,17 +411,50 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
             "inputs": {k: (float(v) if v is not None else None) for k, v in inputs.items()}}
 
 
-def fetch_statement(ticker: str, statement_type: str, last_n: int) -> pd.DataFrame | None:
+def last_ended_quarter(as_of: date | None = None) -> tuple[int, int]:
+    """as_of itibariyla takvim olarak bitmis en son ceyrek (yil, ay).
+
+    borsapy._providers.isyatirim._get_periods() current_month <= 11 icin Q2'den
+    basladigi icin Kasim ayinda Q3 yayinlarini hic istemez; burada takvim olarak
+    bitmis en son ceyrekten baslanir. Kullanilabilirlik karari fetch asamasinda
+    degil, latest_value_ratios / apply_report_dates icinde KAP yayin tarihiyle
+    (veya 75/100 gun gecikmesiyle) verilir.
+    """
+    d = as_of or date.today()
+    for m, day in ((12, 31), (9, 30), (6, 30), (3, 31)):
+        if (d.month, d.day) >= (m, day):
+            return d.year, m
+    return d.year - 1, 12
+
+
+def quarter_periods(count: int, as_of: date | None = None) -> list[tuple[int, int]]:
+    """Takvim olarak bitmis en son ceyrekten geriye dogru `count` adet (yil, ay) cifti."""
+    year, period = last_ended_quarter(as_of)
+    out: list[tuple[int, int]] = []
+    for _ in range(count):
+        out.append((year, period))
+        period -= 3
+        if period <= 0:
+            period = 12
+            year -= 1
+    return out
+
+
+def fetch_statement(ticker: str, statement_type: str, last_n: int,
+                    as_of: date | None = None) -> pd.DataFrame | None:
     """Is Yatirim sanayi sablonu, ceyreklik (YTD) son last_n donem. borsapy
     ``get_financial_statements`` esdegeri, kartezyen join hatasi olmadan
-    (merge_statement_batches). Panel (build_pit_panel) ve canli skor ayni cekimi kullanir."""
-    from datetime import datetime
-
+    (merge_statement_batches) ve takvim olarak bitmis en son ceyrege kadar
+    (borsapy._get_periods'in Kasim Q3 kor noktasina takilmadan). Panel
+    (build_pit_panel) ve canli skor ayni cekimi kullanir."""
+    if last_n <= 0:
+        return None
     from borsapy._providers.isyatirim import get_isyatirim_provider
 
     prov = get_isyatirim_provider()
-    periods = prov._get_periods(datetime.now().year, True, count=last_n)
     step = prov._MAX_PERIODS_PER_CALL
+    n = max(step, ((last_n + step - 1) // step) * step)
+    periods = quarter_periods(n, as_of=as_of)
     batches = []
     for i in range(0, len(periods), step):
         try:

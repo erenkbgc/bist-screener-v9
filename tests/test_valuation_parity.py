@@ -231,3 +231,64 @@ def test_live_ttm_handles_vendor_reexpressed_prior_year():
     assert vi["inputs"]["ttm_revenue"] == pytest.approx(4 * R * c(latest))
     q = pit_panel.quarterly_table(pit_panel.statements_long("X", bs, inc), cpi=cpi).set_index("period")
     assert q.loc[latest, "ttm_revenue"] < 0.8 * 4 * R * c(latest)  # eski yol: birim karisimi
+
+
+def _ytd_statements_with_periods(seed: int, periods: list[str]):
+    rng = random.Random(seed)
+    q = {p: (rng.uniform(50, 150), rng.uniform(5, 25), rng.uniform(2, 18)) for p in periods}
+    inc = {}
+    for item, k in (("Satış Gelirleri", 0), ("FAALİYET KARI (ZARARI)", 1), ("Ana Ortaklık Payları", 2)):
+        inc[item] = {p: sum(q[x][k] for x in periods if x[:4] == p[:4] and x[-1] <= p[-1]) for p in periods}
+    bs = {"Ana Ortaklığa Ait Özkaynaklar": {p: rng.uniform(100, 300) for p in periods},
+          "Ödenmiş Sermaye": {p: 10.0 for p in periods},
+          "Nakit ve Nakit Benzerleri": {p: rng.uniform(10, 50) for p in periods},
+          "Finansal Borçlar": {p: rng.uniform(20, 80) for p in periods}}
+    return pd.DataFrame(bs).T[periods], pd.DataFrame(inc).T[periods]
+
+
+def test_live_value_inputs_q3_in_november_respects_kap_availability_and_fallback(monkeypatch):
+    """Kasim 2026'da Q3 cekilir ama KAP yayin kurali (18:00 kapanis + eslesmezse 75 gun)
+    korunur; Q3 bildirmeyen hisse 2026Q2 TTM'sine duzgun duser."""
+    from datetime import datetime
+
+    from core import live_data as ld
+
+    p_q3 = ["2026Q3", "2026Q2", "2026Q1", "2025Q4", "2025Q3", "2025Q2", "2025Q1", "2024Q4"]
+    bs_q3, inc_q3 = _ytd_statements_with_periods(11, p_q3)
+    bs_no_q3, inc_no_q3 = bs_q3.drop(columns=["2026Q3"]), inc_q3.drop(columns=["2026Q3"])
+
+    def fake_stmts(tk):
+        return (bs_no_q3, inc_no_q3) if tk == "NOQ3" else (bs_q3, inc_q3)
+
+    pubs = {
+        "HASQ3": {
+            "2026-09-30": datetime(2026, 11, 5, 18, 20),  # 18:00 sonrasi -> 2026-11-06 kullanilabilir
+            "2026-06-30": datetime(2026, 8, 12, 14, 0),
+        },
+        "NOQ3": {
+            "2026-06-30": datetime(2026, 8, 12, 14, 0),
+        },
+    }
+    monkeypatch.setattr(ld, "_quarterly_statements_cached", fake_stmts)
+    monkeypatch.setattr(ld, "_cpi_index_cached", lambda: None)
+    monkeypatch.setattr(ld, "live_financial_report_published_dt",
+                        lambda tk, pe: pubs.get(tk, {}).get(pe))
+
+    # Yayin gunu 18:20 -> o gun henuz kullanilamaz, 2026Q2 kullanilir
+    same_day = ld.live_value_inputs("HASQ3", 400.0, "2026-11-05")
+    assert same_day["stmt_period"] == "2026Q2" and same_day["available_source"] == "kap"
+
+    # Ertesi gun ve Kasim sonu -> 2026Q3 kullanilir
+    next_day = ld.live_value_inputs("HASQ3", 400.0, "2026-11-06")
+    assert next_day["stmt_period"] == "2026Q3" and next_day["kap_available_at"] == "2026-11-06"
+    assert next_day["ep"] is not None and next_day["sp"] is not None
+
+    # KAP eslesmesi yoksa (CI outage): Q3 varsayilan gecikme 2026-12-14 -> Kasim'da 2026Q2'ye duser
+    no_kap = ld.live_value_inputs("NOKAP", 400.0, "2026-11-22")
+    assert no_kap["stmt_period"] == "2026Q2" and no_kap["available_source"] == "assumed"
+    assert ld.live_value_inputs("NOKAP", 400.0, "2026-12-14")["stmt_period"] == "2026Q3"
+
+    # Q3 bildirmeyen hisse: 2026Q2'ye duser ve tum TTM oranlari hesaplanir
+    no_q3 = ld.live_value_inputs("NOQ3", 400.0, "2026-11-22")
+    assert no_q3["stmt_period"] == "2026Q2"
+    assert all(no_q3[k] is not None for k in ("bm", "ep", "sp", "ey"))

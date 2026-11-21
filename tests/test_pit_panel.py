@@ -155,3 +155,82 @@ def test_shares_at_partially_subscribed_rights_counts_as_reflected():
     h = _hist([("2024-03-31", 1.2e9), ("2024-06-30", 1.2e9), ("2024-09-30", 1.2e9), ("2024-12-31", 4.364569202e9)])
     assert pit_panel.shares_at(pd.Timestamp("2025-04-30"), 4.364569202e9, pd.Timestamp("2024-12-31"), ev, h) \
         == 4.364569202e9
+
+
+def test_last_ended_quarter_calendar_boundaries():
+    """borsapy._get_periods Kasim'da Q2'de kalir; last_ended_quarter takvim olarak
+    bitmis en son ceyregi dondurur (Kasim -> Q3)."""
+    from datetime import date
+
+    assert pit_panel.last_ended_quarter(date(2026, 11, 22)) == (2026, 9)
+    assert pit_panel.last_ended_quarter(date(2026, 10, 1)) == (2026, 9)
+    assert pit_panel.last_ended_quarter(date(2026, 9, 30)) == (2026, 9)
+    assert pit_panel.last_ended_quarter(date(2026, 9, 29)) == (2026, 6)
+    assert pit_panel.last_ended_quarter(date(2026, 6, 30)) == (2026, 6)
+    assert pit_panel.last_ended_quarter(date(2026, 4, 1)) == (2026, 3)
+    assert pit_panel.last_ended_quarter(date(2026, 3, 30)) == (2025, 12)
+    assert pit_panel.last_ended_quarter(date(2026, 1, 15)) == (2025, 12)
+    assert pit_panel.last_ended_quarter(date(2026, 12, 31)) == (2026, 12)
+
+
+def test_quarter_periods_sequence():
+    from datetime import date
+
+    assert pit_panel.quarter_periods(8, as_of=date(2026, 11, 22)) == [
+        (2026, 9), (2026, 6), (2026, 3), (2025, 12),
+        (2025, 9), (2025, 6), (2025, 3), (2024, 12),
+    ]
+
+
+def test_fetch_statement_requests_q3_in_november_and_handles_missing_q3(monkeypatch):
+    """Ag cagrisi mock'lanarak: Kasim 2026'da fetch_statement (2026, 9)'dan baslayarak
+    istek atar (_get_periods cagrilmaz), Q3 bildiren hissede 2026Q3 kolonunu dondurur,
+    bildirmeyen hissede 2026Q2'ye hatasiz duser."""
+    from datetime import date
+    import borsapy._providers.isyatirim as isy
+
+    requested: list[list[tuple[int, int]]] = []
+
+    class FakeProvider:
+        _MAX_PERIODS_PER_CALL = 4
+        FINANCIAL_GROUP_INDUSTRIAL = "XI_29"
+
+        @staticmethod
+        def _period_sort_key(col_name: str):
+            y, q = col_name.split("Q")
+            return (int(y), int(q))
+
+        def _get_periods(self, *args, **kwargs):
+            raise AssertionError("borsapy._get_periods cagrilmamali (Kasim Q3 kor noktasi)")
+
+        def _fetch_financial_table(self, symbol, financial_group, periods, quarterly, statement_type):
+            requested.append(list(periods))
+            cols = []
+            for y, m in periods:
+                if symbol == "NOQ3" and (y, m) == (2026, 9):
+                    continue
+                cols.append(f"{y}Q{m // 3}")
+            if not cols:
+                return pd.DataFrame()
+            idx = pd.Index(["TOPLAM VARLIKLAR", "Finansal Borçlar", "Finansal Borçlar"], name="Item")
+            return pd.DataFrame({c: [100.0, 10.0, 20.0] for c in cols}, index=idx)
+
+    monkeypatch.setattr(isy, "get_isyatirim_provider", lambda: FakeProvider())
+
+    df_has_q3 = pit_panel.fetch_statement("HASQ3", "balance_sheet", 8, as_of=date(2026, 11, 22))
+    assert requested == [
+        [(2026, 9), (2026, 6), (2026, 3), (2025, 12)],
+        [(2025, 9), (2025, 6), (2025, 3), (2024, 12)],
+    ]
+    assert list(df_has_q3.columns) == [
+        "2026Q3", "2026Q2", "2026Q1", "2025Q4", "2025Q3", "2025Q2", "2025Q1", "2024Q4",
+    ]
+    assert len(df_has_q3) == 3  # tekrarlanan "Finansal Borçlar" katlanmadi
+
+    requested.clear()
+    df_no_q3 = pit_panel.fetch_statement("NOQ3", "balance_sheet", 8, as_of=date(2026, 11, 22))
+    assert requested[0][0] == (2026, 9)
+    assert list(df_no_q3.columns) == [
+        "2026Q2", "2026Q1", "2025Q4", "2025Q3", "2025Q2", "2025Q1", "2024Q4",
+    ]
+    assert pit_panel.fetch_statement("HASQ3", "balance_sheet", 0, as_of=date(2026, 11, 22)) is None
