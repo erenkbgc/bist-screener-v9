@@ -1184,7 +1184,7 @@ def live_financial_report_published_dt(ticker: str, period_end: str) -> datetime
     if df is None or df.empty:
         return None
 
-    best: tuple[int, date] | None = None
+    best: tuple[int, datetime] | None = None
     for _, row in df.iterrows():
         title = str(row.get("Title") or "")
         if not _FINANCIAL_REPORT_TITLE_RE.search(title):
@@ -1196,7 +1196,8 @@ def live_financial_report_published_dt(ticker: str, period_end: str) -> datetime
         lag_days = (pub_dt.date() - period_end_date).days
         # Finansal rapor HER ZAMAN donem sonundan SONRA yayinlanir; pencere
         # disinda kalanlar (negatif veya > MAX_LAG) baska bir doneme aittir.
-        if 0 < lag_days <= _FINANCIAL_REPORT_MAX_LAG_DAYS and (best is None or lag_days < best[0]):
+        # Ayni gun birden fazla bildirim varsa en erken yayin zamani secilir.
+        if 0 < lag_days <= _FINANCIAL_REPORT_MAX_LAG_DAYS and (best is None or pub_dt < best[1]):
             best = (lag_days, pub_dt)
 
     return best[1] if best else None

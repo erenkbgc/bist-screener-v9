@@ -62,7 +62,7 @@ def blume_adjusted_beta(beta: float | None) -> float | None:
 
 
 def calculate_beta_adjusted_hurdle(as_of_date: str, ticker: str, stock_prices: list[dict],
-                                     risk_free_annual_pct: float, expected_roi_pct: float,
+                                     risk_free_annual_pct: float, expected_roi_pct: float | None,
                                      market_prices: list[dict] | None = None,
                                      horizon_days: int = 180) -> dict:
     """market_prices verilmezse (eski cagri) mock XU100'e DUSULMEZ; beta None kalir.
@@ -82,7 +82,7 @@ def calculate_beta_adjusted_hurdle(as_of_date: str, ticker: str, stock_prices: l
         row = {
             "as_of_date": as_of_date, "ticker": ticker, "beta_60_120d": beta,
             "hurdle_rate_beta_adjusted_pct": hurdle_beta_adj,
-            "excess_over_beta_hurdle_pct": expected_roi_pct - hurdle_beta_adj,
+            "excess_over_beta_hurdle_pct": (expected_roi_pct - hurdle_beta_adj) if expected_roi_pct is not None else None,
         }
 
     conn = db.get_connection()

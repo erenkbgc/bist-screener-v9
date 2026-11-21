@@ -341,21 +341,40 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["valuation_dcf_leg"] = lt_target.get("dcf_leg")
         lt["valuation_peers_leg"] = lt_target.get("peers_leg")
         lt["valuation_quality_leg"] = lt_target.get("quality_leg")
-        if lt["target_price"] is None:
-            continue
-        lt["target_price"] = targets_mod.bist_tick_round(lt["target_price"])
-        if lt.get("fair_value_low") is not None:
-            lt["fair_value_low"] = targets_mod.bist_tick_round(lt["fair_value_low"])
-        if lt.get("fair_value_high") is not None:
-            lt["fair_value_high"] = targets_mod.bist_tick_round(lt["fair_value_high"])
-        if lt.get("fair_value_base") is not None:
-            lt["fair_value_base"] = targets_mod.bist_tick_round(lt["fair_value_base"])
-        lt["expected_dividend_horizon"] = lt_target.get("expected_dividend_horizon") or 0.0
-        hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro,
-                                           bid=bid_ask["bid"], ask=bid_ask["ask"],
-                                           volume_ratio_20d=last.get("volume_ratio_20d"),
-                                           amihud_illiq=illiq,
-                                           dividend_per_share=lt["expected_dividend_horizon"])
+        if lt["target_price"] is not None:
+            lt["target_price"] = targets_mod.bist_tick_round(lt["target_price"])
+            if lt.get("fair_value_low") is not None:
+                lt["fair_value_low"] = targets_mod.bist_tick_round(lt["fair_value_low"])
+            if lt.get("fair_value_high") is not None:
+                lt["fair_value_high"] = targets_mod.bist_tick_round(lt["fair_value_high"])
+            if lt.get("fair_value_base") is not None:
+                lt["fair_value_base"] = targets_mod.bist_tick_round(lt["fair_value_base"])
+            lt["expected_dividend_horizon"] = lt_target.get("expected_dividend_horizon") or 0.0
+            hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro,
+                                               bid=bid_ask["bid"], ask=bid_ask["ask"],
+                                               volume_ratio_20d=last.get("volume_ratio_20d"),
+                                               amihud_illiq=illiq,
+                                               dividend_per_share=lt["expected_dividend_horizon"])
+        else:
+            # Hedef fiyat yalnizca bilgi katmanidir; None oldugunda aday valuation_z ve
+            # aylik rotasyon havuzundan dusurulmez (orn. Holding sektor medyan NAV
+            # iskontosu > %60 iken 2.5x siniri tum sektoru None yapiyordu, ya da cok
+            # ucuz sanayi/GYO hisseleri 2.5x/3.5x hedef korumasina takiliyordu).
+            # excess_over_hurdle_pct=None -> hard_filters_passed yalnizca bilgi
+            # kartlarindan (NO_ACTION / filtered_by='hurdle') eler; R0 rotasyonu
+            # test edilen panelle birebir ayni evreni siralar.
+            lt["expected_dividend_horizon"] = 0.0
+            hurdle_lt = {
+                "hurdle_rate_pct": hurdle_mod.hurdle_rate_pct(macro["bond_2y_pct"], 180),
+                "expected_roi_pct": None,
+                "excess_over_hurdle_pct": None,
+                "real_return_pct": None,
+                "usd_return_pct": None,
+                "passes_gate": False,
+                "net_expected_roi_pct": None,
+                "net_excess_over_hurdle_pct": None,
+                "transaction_cost_pct": None,
+            }
         lt.update(hurdle_lt)
         lt["horizon_days"] = 180
         # Dinamik Risk Yonetimi (v12 roadmap P0-1: entry_low, entry_high, stop_loss, position_size_pct)
