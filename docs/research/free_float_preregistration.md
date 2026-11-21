@@ -81,4 +81,69 @@ No automatic live change. `config/live_rule.json` (`R0-2026-10-12`) and live sco
 
 ## Results
 
-*(To be appended after the run; the sections above stay unchanged.)*
+Added 2026-11-22, after the run (the pre-registered sections above are unchanged). Runner: `.venv/bin/python scripts/research_free_float.py` → `data/reports/research_free_float_2026-11-22.json`. Panel: `data/research/fp/factors_monthly.parquet` (2013-04 to 2026-09; 93 discovery months, 68 holdout months with full next-month returns, 40,693 liquid stock-months).
+
+### Descriptive
+
+- `ff_mcap` (`HAO_PD`) coverage in the liquid `value_sn` universe: **93.1%** overall (89.2% discovery, 97.0% holdout). Median free-float market cap: 125.2M TL (p10 19.8M TL) in discovery; 1,813.0M TL (p10 371.6M TL) in holdout.
+- `FF1` excludes **9.5%** of liquid stock-months (9.1% discovery, 9.8% holdout), and **7.3%** of `P0`'s top-20% holdings (7.8% discovery, 6.6% holdout). Average held names drop from 42.7 → 38.8 in discovery and 59.2 → 53.4 in holdout; monthly overlap `|P0 ∩ FF1| / |P0|` is **89.9%** (Jaccard 89.3%).
+- Standalone monthly Spearman rank IC vs `fwd_ret_1m` (Newey-West t, 6 lags):
+  - `log(ff_mcap)`: discovery **−0.0077** (t −0.38, 93 mo), holdout **+0.0481** (t +2.53, 68 mo).
+  - Free-float ratio (`ff_mcap / mcap`): discovery **−0.0099** (t −1.21, 93 mo), holdout **−0.0344** (t −2.28, 68 mo).
+
+### Primary test (`data/research/fp/factors_monthly.parquet`, 1M TL, base costs, next-close fills)
+
+Baseline `P0` matches `first_published_panel.md` exactly (+4.37%/yr t 1.67 discovery; +9.36%/yr t 2.74 holdout; USD max DD −56.6% / −35.4%).
+
+| Window | P0 active %/yr (t) | FF1 active %/yr (t) | Paired D %/yr (t) | USD paired D %/yr (t) | USD CAGR P0 / FF1 | USD max DD P0 / FF1 | Cost %/yr P0 / FF1 | Turnover P0 / FF1 | Avg names P0 / FF1 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Discovery (93 mo) | +4.37 (1.67) | +4.87 (1.75) | **+0.50 (0.69)** | +0.52 (0.73) | 12.26% / 12.88% | −56.6% / −56.4% | 1.92% / 1.73% | 21.4% / 20.5% | 42.7 / 38.8 |
+| Holdout (68 mo) | +9.36 (2.74) | +8.07 (2.20) | **−1.29 (−1.73)** | −1.31 (−1.85) | 7.02% / 5.68% | −35.4% / −35.2% | 1.42% / 1.34% | 19.3% / 18.8% | 59.2 / 53.4 |
+
+Against the costed equal-weighted universe (`B2`, 1M TL base costs): `P0` +5.14%/yr (t 1.97) discovery, +10.14%/yr (t 2.97) holdout; `FF1` +5.64%/yr (t 2.03) discovery, +8.84%/yr (t 2.41) holdout.
+
+### Pre-registered decision check (D3)
+
+| Criterion | Threshold | Observed | Status |
+|---|---|---:|---|
+| Discovery paired `D` | > −1.00%/yr | +0.50%/yr | PASS |
+| Discovery NW `t(D)` | > −2.00 | +0.69 | PASS |
+| Holdout paired `D` | > −1.00%/yr | **−1.29%/yr** | **FAIL** |
+| Holdout NW `t(D)` | > −2.00 | −1.73 | PASS |
+| Holdout USD max DD vs P0 | ≥ P0 − 2.0 pp (−37.4%) | −35.2% (+0.2 pp) | PASS |
+
+### Verdict: `FAIL`
+
+`FF1` fails the pre-registered holdout return bound (`D = −1.29%/yr` vs `> −1.00%/yr` required, missing by 0.29 pp), while passing the discovery bound (+0.50%/yr), both t-statistic bounds, and the holdout USD drawdown bound (+0.2 pp better). Live rule `R0-2026-10-12` stays unchanged (`config/live_rule.json` untouched). Free-float market value remains information-only.
+
+### Descriptive sensitivities (do not change the verdict)
+
+**Capital, cost multiplier, and fill timing (`data/research/fp/factors_monthly.parquet`):**
+
+| Scenario | Discovery D %/yr (t) | Holdout D %/yr (t) | Holdout USD max DD P0 / FF1 | Cost/yr holdout P0 / FF1 | D3 check |
+|---|---:|---:|---:|---:|---|
+| 100k TL, base | +0.45 (0.63) | −1.30 (−1.74) | −35.3% / −35.2% | 1.32% / 1.24% | FAIL |
+| 1M TL, base (primary) | +0.50 (0.69) | −1.29 (−1.73) | −35.4% / −35.2% | 1.42% / 1.34% | **FAIL** |
+| 1M TL, stress 2× | +0.70 (0.96) | −1.20 (−1.60) | −35.9% / −35.6% | 2.85% / 2.67% | FAIL |
+| 1M TL, stress 3× | +0.90 (1.23) | −1.10 (−1.47) | −36.4% / −36.1% | 4.27% / 4.01% | FAIL |
+| 1M TL, next-open | +0.55 (0.71) | −1.44 (−1.74) | −35.3% / −35.4% | 1.42% / 1.34% | FAIL |
+| 10M TL, base | +0.64 (0.88) | −1.27 (−1.70) | −35.5% / −35.3% | 1.76% / 1.65% | FAIL |
+| 10M TL, stress 2× | +0.98 (1.33) | −1.15 (−1.54) | −36.1% / −35.9% | 3.52% / 3.30% | FAIL |
+| 100M TL, base | +1.09 (1.45) | −1.20 (−1.61) | −35.9% / −35.7% | 2.82% / 2.65% | FAIL |
+| 100M TL, stress 2× | +1.87 (2.36) | −1.00 (−1.34) | −36.9% / −36.6% | 5.65% / 5.29% | FAIL |
+
+Across every capital and cost cell on the lag-75/100 panel, `FF1` slightly improves discovery returns (+0.45% to +1.87%/yr) and reduces annual trading costs (by 0.08–0.19%/yr at 1M TL and up to 1.55%/yr at 100M TL 2×; >10%-ADV fills in discovery drop from 16.0% to 14.0% at 100M TL), yet consistently costs 1.00–1.44%/yr in holdout.
+
+**Actual KAP publication dates (`data/research/fp/factors_monthly_kapdates.parquet`, 1M TL, base costs, next-close fills):**
+
+| Window | P0 active %/yr (t) | FF1 active %/yr (t) | Paired D %/yr (t) | USD max DD P0 / FF1 | D3 check |
+|---|---:|---:|---:|---:|---|
+| Discovery (93 mo) | +6.47 (2.37) | +6.72 (2.46) | +0.25 (0.37) | −56.0% / −55.6% | — |
+| Holdout (68 mo) | +7.61 (2.53) | +8.30 (2.34) | +0.70 (0.77) | −35.5% / −33.6% | PASS (sensitivity only) |
+
+### How to read it
+
+1. **Much cheaper than size or liquidity floors, but still fails its pre-registered bound.** Unlike `F1` (bottom 30% market cap, −8.83%/yr discovery) and `F2` (50% liquidity cut, −3.75%/yr holdout), dropping the bottom decile of free-float market value is nearly neutral overall (+0.50%/yr discovery, −1.29%/yr holdout) and trims trading costs by ~0.1–0.2%/yr at 1M TL. However, it misses the pre-registered −1.00%/yr holdout floor on the primary lag-75/100 baseline.
+2. **Publication-date sensitivity:** On the KAP-date version of the same `data/research/fp/` panel, `FF1` turns slightly positive in holdout (+0.70%/yr, t 0.77, USD max DD improved by 1.9 pp). Because lag-75/100 was locked as the primary baseline before running, the official verdict stays **`FAIL`** — switching panels post-hoc is not allowed.
+3. **Practical takeaway:** `value_sn` already underweights the bottom free-float decile slightly (7.3% of `P0` holdings vs 9.5% of the liquid universe). Live rule `R0-2026-10-12` stays unchanged; free-float market value remains an information field so users can judge manipulation risk themselves.
+
