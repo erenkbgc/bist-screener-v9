@@ -73,27 +73,35 @@ def parse(txt: str) -> dict | None:
     return row
 
 
-def targets() -> pd.DataFrame:
-    f = pd.read_parquet(RESEARCH / "factors_monthly.parquet")
+def targets(since: str = START) -> pd.DataFrame:
+    fp_path = RESEARCH / "fp" / "factors_monthly.parquet"
+    f_path = fp_path if fp_path.exists() else RESEARCH / "factors_monthly.parquet"
+    f = pd.read_parquet(f_path)
     f = f[f["date"] >= "2023-06-01"]
     liq = f[f["tlvol60"] >= f.groupby("date")["tlvol60"].transform(lambda s: s.quantile(0.3))]["ticker"].unique()
     k = pd.read_parquet(RESEARCH / "kap_archive.parquet")
-    k = k[(k["subject"] == "Finansal Rapor") & k["stock_code"].isin(liq) & (k["published_at"] >= START)]
+    k = k[(k["subject"] == "Finansal Rapor") & k["stock_code"].isin(liq) & (k["published_at"] >= since)]
     return k.sort_values("published_at")[["stock_code", "disclosure_index", "published_at"]]
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--parse-only", action="store_true")
+    ap.add_argument("--since", default=START, help="En erken yayin tarihi YYYY-MM-DD")
+    ap.add_argument("--limit", type=int, default=0, help="Indirilecek en fazla yeni sayfa (0=sinirsiz)")
     args = ap.parse_args()
-    t = targets()
-    rows, failed = [], 0
+    t = targets(since=args.since)
+    rows, failed, fetched = [], 0, 0
     for n, r in enumerate(t.itertuples(index=False), 1):
         f = CACHE / f"{int(r.disclosure_index)}.txt"
-        if args.parse_only and not (f.exists() and f.stat().st_size > 0):
-            continue
+        cached = f.exists() and f.stat().st_size > 0
+        if not cached:
+            if args.parse_only or (args.limit and fetched >= args.limit):
+                continue
         try:
             txt = kap_text(int(r.disclosure_index))
+            if not cached:
+                fetched += 1
         except Exception as exc:  # noqa: BLE001
             failed += 1
             print(f"HATA {r.stock_code} {r.disclosure_index}: {exc}", flush=True)
@@ -103,14 +111,20 @@ def main() -> None:
             rows.append({"ticker": r.stock_code, "disclosure_index": int(r.disclosure_index),
                          "published_at": r.published_at, **p})
         if n % 100 == 0:
-            print(f"{n}/{len(t)} parsed {len(rows)} failed {failed}", flush=True)
+            print(f"{n}/{len(t)} parsed {len(rows)} fetched {fetched} failed {failed}", flush=True)
     df = pd.DataFrame(rows)
+    if args.since > START and OUT.exists():
+        prev = pd.read_parquet(OUT)
+        df = pd.concat([prev, df], ignore_index=True).drop_duplicates(subset=["disclosure_index"], keep="last")
+    if df.empty:
+        print("Uyari: ayrisan rapor yok.")
+        return
     # Donem basina: konsolide rapor varsa onun ilk yayini, yoksa ilk yayin
     df["_rank"] = df["consolidated"].map({True: 0, None: 1, False: 2})
     df = df.sort_values(["ticker", "period", "_rank", "published_at"])
     first = df.groupby(["ticker", "period"], as_index=False).first().drop(columns="_rank")
     first.to_parquet(OUT, index=False)
-    print(f"{len(t)} bildirim, {len(df)} ayrisan, {len(first)} (hisse, donem); basarisiz {failed}. {OUT}")
+    print(f"{len(t)} bildirim, {len(df)} ayrisan, {len(first)} (hisse, donem), yeni indirilen {fetched}, basarisiz {failed}. {OUT}")
 
 
 if __name__ == "__main__":
