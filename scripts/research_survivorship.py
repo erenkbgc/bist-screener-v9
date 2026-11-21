@@ -44,15 +44,16 @@ BASELINES = {
 
 
 def delisted_panel(kap: pd.DataFrame, report_dates: bool,
-                   fill_missing_debt: bool = True) -> tuple[pd.DataFrame, dict]:
+                   fill_missing_debt: bool = False,
+                   use_hisse_tekil_mcap: bool = True) -> tuple[pd.DataFrame, dict]:
     """Cikmis hisseler icin faktor satirlari (cikis getirisi eklenmemis) ve kod bilgisi.
 
     Taban dosyayla ayni kurallar: report_dates=True ise KAP yayin tarihleri;
-    eksik borc/nakit 0 sayilir (taban dosyalar pit_panel'deki NaN kuralindan once kuruldu).
-    fill_missing_debt=False: guncel pit_panel kurali, eksik borc/nakitte EBIT/EV NaN
-    (sensitivity_survivorship_net_debt.py).
+    use_hisse_tekil_mcap=True ise piyasa degeri HisseTekil PD'den gelir (yoksa fiyat x pay);
+    eksik borc/nakitte EBIT/EV NaN (guncel pit_panel kurali; fill_missing_debt=True
+    yalnizca eski sensitivity karsilastirmasi icin saklanir).
     """
-    longs, pxs, evs, info = [], [], [], {}
+    longs, pxs, evs, mcs, info = [], [], [], [], {}
     for f in sorted((RESEARCH / "raw_delisted").glob("*.pkl")):
         raw = pickle.loads(f.read_bytes())
         if raw.get("bs") is None or raw.get("inc") is None:
@@ -72,14 +73,19 @@ def delisted_panel(kap: pd.DataFrame, report_dates: bool,
         longs.append(pit_panel.statements_long(code, raw["bs"], raw["inc"]))
         pxs.append(px)
         evs.append(delisted.share_events(code, daily))
-    q = pit_panel.quarterly_table(pd.concat([x for x in longs if not x.empty], ignore_index=True))
+        if use_hisse_tekil_mcap:
+            mcs.append(delisted.monthly_market_caps(code, daily))
+    macro_path = RESEARCH / "macro_monthly.parquet"
+    cpi = pit_panel.cpi_index(pd.read_parquet(macro_path)["cpi_mom"]) if macro_path.exists() else None
+    q = pit_panel.quarterly_table(pd.concat([x for x in longs if not x.empty], ignore_index=True), cpi=cpi)
     if report_dates:
         q = pit_panel.apply_report_dates(q, pit_panel.kap_report_dates(pd.read_parquet(RESEARCH / "kap_archive.parquet")))
     if fill_missing_debt:
         q[["fin_debt", "cash"]] = q[["fin_debt", "cash"]].fillna(0.0)
     px = pd.concat(pxs, ignore_index=True)
     ev = pd.concat(evs, ignore_index=True)
-    factors = pit_panel.build_monthly_factors(q, px, ev, {c: i["sector"] for c, i in info.items()})
+    mc = pd.concat([x for x in mcs if not x.empty], ignore_index=True) if any(not x.empty for x in mcs) else None
+    factors = pit_panel.build_monthly_factors(q, px, ev, {c: i["sector"] for c, i in info.items()}, market_caps=mc)
     return factors, info
 
 
@@ -191,7 +197,11 @@ def main() -> None:
         overlap = set(base_raw["ticker"]) & set(info)
         if overlap:
             raise SystemExit(f"Cikmis kod bugunku panelde de var: {sorted(overlap)}")
-        v = {"baseline_file": fname, **run_variant(base_raw, del_raw, info, market_m)}
+        v = {
+            "baseline_file": fname,
+            "delisted_mcap_source": del_raw["mcap_source"].value_counts().to_dict() if "mcap_source" in del_raw else {},
+            **run_variant(base_raw, del_raw, info, market_m),
+        }
         result["variants"][variant] = v
 
         print_variant(f"{variant} ({fname})", v, info)
