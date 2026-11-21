@@ -205,6 +205,12 @@
       "family": "stock_selection",
       "trials": 3,
       "source": "S1 (value_eb_ns), M2 (value_real_spread_sn), FV1 (reoi_ev_sn)"
+    },
+    {
+      "study": "valuation_round2_preregistration",
+      "family": "stock_selection",
+      "trials": 2,
+      "source": "V2B ep_xdt (E/P without deferred tax), V2A bm_tan (tangible B/M)"
     }
   ]
 }
