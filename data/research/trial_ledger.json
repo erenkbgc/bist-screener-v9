@@ -199,6 +199,12 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "FF1 exclude bottom decile of point-in-time free-float market value (HAO_PD)"
+    },
+    {
+      "study": "valuation_round1_preregistration",
+      "family": "stock_selection",
+      "trials": 3,
+      "source": "S1 (value_eb_ns), M2 (value_real_spread_sn), FV1 (reoi_ev_sn)"
     }
   ]
 }
