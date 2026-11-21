@@ -27,7 +27,9 @@ import argparse
 import json
 import pickle
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -51,28 +53,136 @@ PANEL_DEFINITION = (
 )
 
 
-def fetch_raw(ticker: str, refresh: bool) -> dict | None:
+UPDATE_QUARTERS = 8  # son 2 batch (8 ceyrek): yeni ceyrek + TMS 29 yeniden ifade edilen onceki yil donemleri
+
+
+def last_ended_quarter(as_of: date | None = None) -> tuple[int, int]:
+    """as_of itibariyla takvim olarak bitmis en son ceyrek (yil, ay).
+
+    borsapy._providers.isyatirim._get_periods Kasim ayinda Q2'de kaldigi icin
+    Q3 yayinlarini atliyor; burada takvim olarak bitmis son ceyrekten baslanir.
+    """
+    d = as_of or date.today()
+    for m, day in ((12, 31), (9, 30), (6, 30), (3, 31)):
+        if (d.month, d.day) >= (m, day):
+            return d.year, m
+    return d.year - 1, 12
+
+
+def quarter_periods(count: int, as_of: date | None = None) -> list[tuple[int, int]]:
+    """Takvim olarak bitmis en son ceyrekten geriye dogru `count` adet (yil, ay) cifti."""
+    year, period = last_ended_quarter(as_of)
+    out: list[tuple[int, int]] = []
+    for _ in range(count):
+        out.append((year, period))
+        period -= 3
+        if period <= 0:
+            period = 12
+            year -= 1
+    return out
+
+
+def fetch_statement_upto_latest(
+    ticker: str,
+    statement_type: str,
+    last_n: int,
+    as_of: date | None = None,
+    retries: int = 2,
+) -> pd.DataFrame | None:
+    """Is Yatirim sanayi sablonu, takvim olarak bitmis son ceyrekten geriye last_n donem.
+
+    Is Yatirim API'si her cagrida 4 donem bekler; last_n 4'un kati secilmelidir.
+    """
+    from borsapy._providers.isyatirim import get_isyatirim_provider
+
+    prov = get_isyatirim_provider()
+    step = prov._MAX_PERIODS_PER_CALL
+    n = max(step, ((last_n + step - 1) // step) * step)
+    periods = quarter_periods(n, as_of=as_of)
+    batches: list[pd.DataFrame] = []
+    for i in range(0, len(periods), step):
+        chunk = periods[i:i + step]
+        for attempt in range(retries + 1):
+            try:
+                df = prov._fetch_financial_table(
+                    symbol=ticker,
+                    financial_group=prov.FINANCIAL_GROUP_INDUSTRIAL,
+                    periods=chunk,
+                    quarterly=True,
+                    statement_type=statement_type,
+                )
+                if df is not None and not df.empty:
+                    batches.append(df)
+                break
+            except Exception:  # noqa: BLE001
+                if attempt < retries:
+                    time.sleep(0.5 * (attempt + 1))
+    merged = pit_panel.merge_statement_batches(batches)
+    if merged.empty:
+        return None
+    return merged[sorted(merged.columns, key=prov._period_sort_key, reverse=True)]
+
+
+def merge_updated_statement(old: pd.DataFrame | None, fresh: pd.DataFrame | None) -> pd.DataFrame | None:
+    """Yeni cekilen son ceyrekleri mevcut gecmis tablo sutunlariyla birlestirir."""
+    if fresh is None or fresh.empty:
+        return old
+    if old is None or old.empty:
+        return fresh
+    keep_cols = [c for c in old.columns if c not in fresh.columns]
+    if not keep_cols:
+        return fresh
+    merged = pit_panel.merge_statement_batches([fresh, old[keep_cols]])
+    if merged.empty:
+        return old
+    from borsapy._providers.isyatirim import get_isyatirim_provider
+    prov = get_isyatirim_provider()
+    return merged[sorted(merged.columns, key=prov._period_sort_key, reverse=True)]
+
+
+def fetch_raw(ticker: str, refresh: bool, update: bool = False, as_of: date | None = None) -> dict | None:
     path = RAW / f"{ticker}.pkl"
     raw = pickle.loads(path.read_bytes()) if path.exists() and not refresh else None
-    if raw is not None and raw.get("version") == RAW_VERSION:
+    if raw is not None and raw.get("version") == RAW_VERSION and not update:
         return raw
     import borsapy as bp
     t = bp.Ticker(ticker)
 
-    def safe(fn, **kw):
-        try:
-            return fn(**kw)
-        except Exception:
-            return None
-    if raw is None:
-        raw = {
-            "px_raw": safe(t.history, period="max", adjust=False),
-            "px_adj": safe(t.history, period="max", adjust=True),
-            "splits": safe(lambda: t.splits),
-        }
-    # v1 onbellekte fiyat/bolunme saglam; yalniz tablolar yeniden cekilir
-    raw["bs"] = safe(pit_panel.fetch_statement, ticker=ticker, statement_type="balance_sheet", last_n=60)
-    raw["inc"] = safe(pit_panel.fetch_statement, ticker=ticker, statement_type="income_stmt", last_n=60)
+    def safe(fn, retries: int = 2, **kw):
+        for attempt in range(retries + 1):
+            try:
+                res = fn(**kw)
+                if res is not None:
+                    return res
+            except Exception:  # noqa: BLE001
+                pass
+            if attempt < retries:
+                time.sleep(0.5 * (attempt + 1))
+        return None
+
+    if raw is None or update:
+        px_raw = safe(t.history, period="max", adjust=False)
+        px_adj = safe(t.history, period="max", adjust=True)
+        splits = safe(lambda: t.splits)
+        if raw is None:
+            raw = {"px_raw": px_raw, "px_adj": px_adj, "splits": splits}
+        else:
+            if px_raw is not None and not px_raw.empty:
+                raw["px_raw"] = px_raw
+            if px_adj is not None and not px_adj.empty:
+                raw["px_adj"] = px_adj
+            if splits is not None:
+                raw["splits"] = splits
+
+    if update and raw.get("bs") is not None and raw.get("inc") is not None:
+        fresh_bs = fetch_statement_upto_latest(ticker, "balance_sheet", UPDATE_QUARTERS, as_of=as_of)
+        fresh_inc = fetch_statement_upto_latest(ticker, "income_stmt", UPDATE_QUARTERS, as_of=as_of)
+        raw["bs"] = merge_updated_statement(raw.get("bs"), fresh_bs)
+        raw["inc"] = merge_updated_statement(raw.get("inc"), fresh_inc)
+    else:
+        # v1 onbellekte fiyat/bolunme saglam; yalniz tablolar yeniden cekilir
+        raw["bs"] = fetch_statement_upto_latest(ticker, "balance_sheet", 60, as_of=as_of)
+        raw["inc"] = fetch_statement_upto_latest(ticker, "income_stmt", 60, as_of=as_of)
     raw["version"] = RAW_VERSION
     RAW.mkdir(parents=True, exist_ok=True)
     path.write_bytes(pickle.dumps(raw))
@@ -188,6 +298,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tickers", default="")
     ap.add_argument("--refresh", action="store_true")
+    ap.add_argument("--update", action="store_true", help="Fiyat/bolunme ve son 8 ceyregi guncelle")
     ap.add_argument("--rebuild", action="store_true",
                     help="Ag erisimi olmadan yalniz data/research/raw/*.pkl onbelleginden paneli yeniden kur")
     ap.add_argument("--no-undo", action="store_true", help="TMS 29 yeniden ifadesini geri alma (teshis icin)")
@@ -217,7 +328,7 @@ def main() -> None:
                 raw_by_ticker[tk] = raw
     else:
         with ThreadPoolExecutor(max_workers=args.workers) as ex:
-            futs = {ex.submit(fetch_raw, t, args.refresh): t for t in tickers}
+            futs = {ex.submit(fetch_raw, t, args.refresh, args.update): t for t in tickers}
             for n, fut in enumerate(as_completed(futs), 1):
                 tk = futs[fut]
                 try:

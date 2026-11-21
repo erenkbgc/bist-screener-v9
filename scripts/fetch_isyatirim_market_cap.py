@@ -14,6 +14,8 @@ tum gunler kurtarilir.
     python scripts/fetch_isyatirim_market_cap.py              # eksikleri ceker
     python scripts/fetch_isyatirim_market_cap.py --retry-empty
     python scripts/fetch_isyatirim_market_cap.py --tickers INTEK LRSHO LYDHO CITAS
+    python scripts/fetch_isyatirim_market_cap.py --update # mevcut hisselerin son tarihinden bugune ekler
+    python scripts/fetch_isyatirim_market_cap.py --update # mevcut hisselerin son tarihinden bugune ekler
     python scripts/fetch_isyatirim_market_cap.py --refresh
 
 Cikti: data/research/isy_daily/<T>.parquet ve data/research/market_cap_monthly.parquet
@@ -151,11 +153,55 @@ def rebuild_monthly() -> pd.DataFrame:
     return monthly
 
 
+def update_existing(ticker: str, end: date) -> str:
+    """Mevcut gunluk dosyayi son tarihten (5 gun ortusmeli) `end` tarihine kadar uzatir."""
+    path = DAILY / f"{ticker}.parquet"
+    if not path.exists():
+        return "missing"
+    old = pd.read_parquet(path)
+    if old.empty:
+        return "empty"
+    last_dt = pd.Timestamp(old["date"].max()).date()
+    if last_dt >= end - timedelta(days=2):
+        return "up_to_date"
+    new = _fetch_window(ticker, last_dt - timedelta(days=5), end)
+    if new.empty:
+        return "no_new"
+    merged = (pd.concat([old, new], ignore_index=True)
+              .drop_duplicates(subset=["date"], keep="last")
+              .sort_values("date").reset_index(drop=True))
+    merged.to_parquet(path, index=False)
+    return "updated"
+
+
+def update_existing(ticker: str, end: date) -> str:
+    """Mevcut gunluk dosyayi son tarihten (5 gun ortusmeli) `end` tarihine kadar uzatir."""
+    path = DAILY / f"{ticker}.parquet"
+    if not path.exists():
+        return "missing"
+    old = pd.read_parquet(path)
+    if old.empty:
+        return "empty"
+    last_dt = pd.Timestamp(old["date"].max()).date()
+    if last_dt >= end - timedelta(days=2):
+        return "up_to_date"
+    new = _fetch_window(ticker, last_dt - timedelta(days=5), end)
+    if new.empty:
+        return "no_new"
+    merged = (pd.concat([old, new], ignore_index=True)
+              .drop_duplicates(subset=["date"], keep="last")
+              .sort_values("date").reset_index(drop=True))
+    merged.to_parquet(path, index=False)
+    return "updated"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--refresh", action="store_true")
     ap.add_argument("--retry-empty", action="store_true", help="yalnizca 0 satirli mevcut dosyalari yeniden dener")
     ap.add_argument("--tickers", nargs="+", help="yalnizca belirtilen hisseleri ceker")
+    ap.add_argument("--update", action="store_true", help="mevcut gunluk dosyalari son tarihten bugune uzatir")
+    ap.add_argument("--end", default=date.today().isoformat(), help="--update bitis tarihi YYYY-MM-DD")
     args = ap.parse_args()
     DAILY.mkdir(parents=True, exist_ok=True)
     if args.tickers:
@@ -168,6 +214,22 @@ def main() -> None:
             for f in (RESEARCH / d).glob("*.pkl")
         })
     empty, failed, fetched = [], [], 0
+    if args.update:
+        end = date.fromisoformat(args.end)
+        counts: dict[str, int] = {}
+        for n, tk in enumerate(tickers, 1):
+            try:
+                st = update_existing(tk, end)
+            except RuntimeError as exc:
+                st = "failed"
+                print(exc, flush=True)
+            counts[st] = counts.get(st, 0) + 1
+            time.sleep(0.3)
+            if n % 50 == 0:
+                print(f"{n}/{len(tickers)} {counts}", flush=True)
+        monthly = rebuild_monthly()
+        print(f"--update: {counts}; aylik satir {len(monthly)} ({monthly['ticker'].nunique()} hisse)")
+        return
     for n, tk in enumerate(tickers, 1):
         path = DAILY / f"{tk}.parquet"
         if path.exists() and not args.refresh and not args.tickers:
