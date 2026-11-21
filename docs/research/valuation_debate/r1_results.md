@@ -3,10 +3,10 @@
 **Date:** 2026-11-22  
 **Branch:** `agent/valuation`  
 **Role:** Backtest Engineer  
-**Pre-registration:** [`docs/research/valuation_round1_preregistration.md`](../docs/research/valuation_round1_preregistration.md)  
-**Runner script:** [`scripts/research_valuation_round1.py`](../scripts/research_valuation_round1.py)  
-**Unit tests:** [`tests/test_valuation_round1.py`](../tests/test_valuation_round1.py)  
-**Report JSON:** [`data/reports/research_valuation_round1_2026-11-22.json`](../data/reports/research_valuation_round1_2026-11-22.json)  
+**Pre-registration:** [`docs/research/valuation_round1_preregistration.md`](../valuation_round1_preregistration.md)  
+**Runner script:** [`scripts/research_valuation_round1.py`](../../../scripts/research_valuation_round1.py)  
+**Unit tests:** [`tests/test_valuation_round1.py`](../../../tests/test_valuation_round1.py)  
+**Report JSON:** [`data/reports/research_valuation_round1_2026-11-22.json`](../../../data/reports/research_valuation_round1_2026-11-22.json)  
 **Updated Trial Ledger (`data/research/trial_ledger.json`):** `N_sel = 89` (`86 + 3` stock-selection trials; cross-variant monthly Sharpe variance $V[\widehat{\text{SR}}] = 0.02335$, expected maximum null monthly Sharpe $\text{SR}_0 = 0.3804$).
 
 ---

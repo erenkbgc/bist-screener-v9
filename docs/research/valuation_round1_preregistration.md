@@ -4,7 +4,7 @@
 **Branch:** `agent/valuation`  
 **Role:** Head of Research (Chair)  
 **Baseline live rule:** `R0-2026-10-12` — monthly top-20% equal-weighted non-financial portfolio by `value_sn` (`bm`, `ep`, `sp`, `ey`, 1%/99% winsorized cross-sectional z-scores, averaged and demeaned within sector with `min_n = 5`) on the promoted point-in-time panel `data/research/factors_monthly.parquet` (`lag75`; `data/research/factors_monthly_kapdates.parquet` for KAP-date sensitivity).  
-**Debate record:** [`debate/r1_proposal_fundamental.md`](../../debate/r1_proposal_fundamental.md), [`debate/r1_proposal_macro.md`](../../debate/r1_proposal_macro.md), [`debate/r1_proposal_statistical.md`](../../debate/r1_proposal_statistical.md), [`debate/r1_critique.md`](../../debate/r1_critique.md), [`debate/r1_rebuttal_fundamental.md`](../../debate/r1_rebuttal_fundamental.md), [`debate/r1_rebuttal_macro.md`](../../debate/r1_rebuttal_macro.md), [`debate/r1_rebuttal_statistical.md`](../../debate/r1_rebuttal_statistical.md), [`debate/r1_decision.md`](../../debate/r1_decision.md).  
+**Debate record:** [`valuation_debate/r1_proposal_fundamental.md`](../../valuation_debate/r1_proposal_fundamental.md), [`valuation_debate/r1_proposal_macro.md`](../../valuation_debate/r1_proposal_macro.md), [`valuation_debate/r1_proposal_statistical.md`](../../valuation_debate/r1_proposal_statistical.md), [`valuation_debate/r1_critique.md`](../../valuation_debate/r1_critique.md), [`valuation_debate/r1_rebuttal_fundamental.md`](../../valuation_debate/r1_rebuttal_fundamental.md), [`valuation_debate/r1_rebuttal_macro.md`](../../valuation_debate/r1_rebuttal_macro.md), [`valuation_debate/r1_rebuttal_statistical.md`](../../valuation_debate/r1_rebuttal_statistical.md), [`valuation_debate/r1_decision.md`](../../valuation_debate/r1_decision.md).  
 **Trial ledger update:** Adds **+3** confirmatory `stock_selection` trials (`S1`, `M2`, `FV1`) to `data/research/trial_ledger.json`, updating `N_sel` from **86 to 89** (committed **before** any backtest script or return evaluation exists).  
 **Planned runner script:** `scripts/research_valuation_round1.py`  
 **Planned output file:** `data/reports/research_valuation_round1_2026-11-22.json`
@@ -50,7 +50,7 @@
 
 ## 2. Candidate Methods Selected for Testing (3 Confirmatory Trials)
 
-Out of 6 proposals debated in Round 1 (`FV1`, `FV2`, `M1`, `M2`, `S1`, `S2`), **3 orthogonal, zero-parameter methods** (one from each research track) are selected for confirmatory testing, and **3 methods** (`FV2`, `S2`, `M1`) were dropped/withdrawn before any return check (see [`debate/r1_decision.md`](../../debate/r1_decision.md) for the full selection and rejection summary).
+Out of 6 proposals debated in Round 1 (`FV1`, `FV2`, `M1`, `M2`, `S1`, `S2`), **3 orthogonal, zero-parameter methods** (one from each research track) are selected for confirmatory testing, and **3 methods** (`FV2`, `S2`, `M1`) were dropped/withdrawn before any return check (see [`valuation_debate/r1_decision.md`](../../valuation_debate/r1_decision.md) for the full selection and rejection summary).
 
 | Trial # | Method ID | Column Name | Track | Core Mechanism | PIT Data Inputs | Discovery Coverage | Free Return-Fitted Params |
 |---:|---|---|---|---|---|---:|---:|

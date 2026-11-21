@@ -3,8 +3,8 @@
 **Author role:** Head of Research (Chair)  
 **Date:** 2026-11-22  
 **Branch:** `agent/valuation`  
-**Pre-registration file:** [`docs/research/valuation_round1_preregistration.md`](../docs/research/valuation_round1_preregistration.md)  
-**Trial ledger updated:** [`data/research/trial_ledger.json`](../data/research/trial_ledger.json) (`N_sel: 86 -> 89`, `+3` stock-selection trials committed prior to any backtest code)
+**Pre-registration file:** [`docs/research/valuation_round1_preregistration.md`](../valuation_round1_preregistration.md)  
+**Trial ledger updated:** [`data/research/trial_ledger.json`](../../../data/research/trial_ledger.json) (`N_sel: 86 -> 89`, `+3` stock-selection trials committed prior to any backtest code)
 
 ---
 
@@ -84,6 +84,6 @@ Although the referee initially ranked `M1` #4 based on its low turnover (`15.0%`
 
 ## 4. Next Steps (Round 2 Execution Protocol)
 
-1. Commit [`docs/research/valuation_round1_preregistration.md`](../docs/research/valuation_round1_preregistration.md), [`data/research/trial_ledger.json`](../data/research/trial_ledger.json) (`N_sel = 89`), and [`debate/r1_decision.md`](r1_decision.md) **before** any backtest runner script is written or executed.
-2. In Round 2, implement `scripts/research_valuation_round1.py` following the locked equations in [`docs/research/valuation_round1_preregistration.md`](../docs/research/valuation_round1_preregistration.md) and write the output to `data/reports/research_valuation_round1_2026-11-22.json`.
+1. Commit [`docs/research/valuation_round1_preregistration.md`](../valuation_round1_preregistration.md), [`data/research/trial_ledger.json`](../../../data/research/trial_ledger.json) (`N_sel = 89`), and [`debate/r1_decision.md`](r1_decision.md) **before** any backtest runner script is written or executed.
+2. In Round 2, implement `scripts/research_valuation_round1.py` following the locked equations in [`docs/research/valuation_round1_preregistration.md`](../valuation_round1_preregistration.md) and write the output to `data/reports/research_valuation_round1_2026-11-22.json`.
 3. Judge every method strictly by the verbatim **FIXED PASS RULE** with zero post-hoc adjustments.
