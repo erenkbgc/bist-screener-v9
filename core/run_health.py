@@ -199,11 +199,23 @@ def market_cap_cross_check(
 def assess(as_of_date: str, prices: dict | None = None,
            catalyst_available: dict[str, bool] | None = None,
            vendor_check: dict | None = None,
-           mcap_check: dict | None = None) -> dict:
+           mcap_check: dict | None = None,
+           companies_status: dict | None = None) -> dict:
     """prices: price_stats() ciktisi; verilmezse prices tablosundan okunur.
     catalyst_available: ticker -> KAP bildirim listesi cekilebildi mi.
     vendor_check: vendor_consistency_check() ciktisi (P3-1).
-    mcap_check: market_cap_cross_check() ciktisi (P3-2)."""
+    mcap_check: market_cap_cross_check() ciktisi (P3-2).
+    companies_status: live_data.get_companies_status() ciktisi (bp.companies() cache fallback bilgisi)."""
+    if companies_status is None:
+        try:
+            from core import live_data as _ld
+            companies_status = _ld.get_companies_status()
+        except Exception:  # noqa: BLE001
+            companies_status = None
+    companies_fallback = bool(companies_status and companies_status.get("fallback_used"))
+    companies_cache_age = (
+        companies_status.get("age_days") if (companies_status and companies_fallback) else None
+    )
     # Uygun evren: universe.py exclusion_reason'i NULL birakan hisseler (hacim/tedbir vb. disi)
     universe_n = db.query("SELECT COUNT(*) AS n FROM universe_snapshot WHERE as_of_date=? AND exclusion_reason IS NULL",
                           (as_of_date,))[0]["n"]
@@ -251,6 +263,8 @@ def assess(as_of_date: str, prices: dict | None = None,
         "mcap_max_diff_share": mcap_check["max_diff_share"] if mcap_check is not None else None,
         "mcap_flagged_tickers": ([f["ticker"] for f in mcap_check["flagged"]]
                                  if mcap_check is not None else None),
+        "companies_cache_fallback": companies_fallback,
+        "companies_cache_age_days": companies_cache_age,
     }
     thresholds = {
         "min_fundamentals_coverage": MIN_FUNDAMENTALS_COVERAGE,
@@ -292,6 +306,8 @@ def assess(as_of_date: str, prices: dict | None = None,
         degraded.append("vendor_inconsistent")
     if mcap_check is not None and mcap_check.get("n_flagged", 0) > 0:
         degraded.append("mcap_mismatch")
+    if companies_fallback:
+        degraded.append("companies_cache_fallback")
 
     status = "FAILED" if failed else ("DEGRADED" if degraded else "OK")
     # Bultende gosterilen yuzdeler payload'dan gelmeli (report/validate.py orphan kontrolu).

@@ -15,6 +15,7 @@
     {% elif issue == "outcomes_stalled" %}<li>Ufku dolmuş {{ run_health.metrics.matured_without_outcome | fmt }} tahminin sonucu hesaplanamadı; canlı performans takibi eksik.</li>
     {% elif issue == "vendor_inconsistent" %}<li>Sağlayıcı TMS 29 tutarlılık uyarısı: örneklem ({{ run_health.metrics.vendor_checked_n | fmt }} hisse) son çeyrek / geçen yıl medyan oranı {{ run_health.metrics.vendor_q_yoy_median | fmt }}x (makul aralık {{ run_health.thresholds.vendor_ratio_min | fmt }}–{{ run_health.thresholds.vendor_ratio_max | fmt }}x).</li>
     {% elif issue == "mcap_mismatch" %}<li>Piyasa değeri çapraz kontrolü: {{ run_health.metrics.mcap_flagged_n | fmt }}/{{ run_health.metrics.mcap_checked_n | fmt }} hissede TradingView–İş Yatırım farkı %{{ run_health.pct.mcap_max_diff | fmt }} eşiğinin üstünde (en yüksek %{{ run_health.pct.mcap_max_diff_share | fmt }}).</li>
+    {% elif issue == "companies_cache_fallback" %}<li>KAP şirket listesi alınamadı; önbellekteki son başarılı şirket listesi kullanıldı{% if run_health.metrics.companies_cache_age_days is not none %} ({{ run_health.metrics.companies_cache_age_days | fmt }} gün önceki liste){% endif %}.</li>
     {% else %}<li>{{ issue }}</li>{% endif %}
   {% endfor %}
   </ul>

@@ -223,3 +223,128 @@ def test_kap_breaker_wraps_borsapy_provider_once():
     assert ld.kap_breaker() is first
     assert get_kap_provider()._client is first
     assert hasattr(first, "headers")  # diger httpx.Client nitelikleri gecer
+
+
+def test_companies_retries_with_exponential_backoff_and_caches(tmp_path, monkeypatch):
+    """2026-11-02 KAP IGS/A HTTP 500: gecici hata backoff ile yeniden denenip basariya ulasmali."""
+    calls = []
+    sleeps = []
+    expected_df = pd.DataFrame([{"ticker": "THYAO", "name": "TURK HAVA YOLLARI"},
+                                {"ticker": "ASELS", "name": "ASELSAN"}])
+
+    def flaky_companies():
+        calls.append(1)
+        if len(calls) < 3:
+            raise RuntimeError("Failed to fetch company list: Server error '500 Internal Server Error' for url 'https://www.kap.org.tr/tr/api/company/generic/excel/IGS/A'")
+        return expected_df
+
+    cache_file = tmp_path / "companies_cache.json"
+    monkeypatch.setattr(ld.bp, "companies", flaky_companies)
+    monkeypatch.setattr(ld.time, "sleep", lambda s: sleeps.append(s))
+    monkeypatch.setattr(ld, "COMPANIES_CACHE_PATH", cache_file)
+    monkeypatch.setattr(ld, "_fintables_sector_map", lambda: {"THYAO": "Ulaştırma", "ASELS": "Savunma"})
+
+    seed = ld.live_universe(as_of_date="2026-11-02")
+    assert len(calls) == 3
+    assert sleeps == [2.0, 4.0]
+    assert [s["ticker"] for s in seed] == ["THYAO", "ASELS"]
+    status = ld.get_companies_status()
+    assert status["source"] == "live" and not status["fallback_used"] and status["attempts"] == 3
+    assert cache_file.exists()
+
+
+def test_companies_falls_back_to_cached_list_on_persistent_500(tmp_path, monkeypatch):
+    """2026-11-02 KAP IGS/A HTTP 500 tum denemelerde surerse son basarili sirket listesine dusmeli."""
+    cache_file = tmp_path / "companies_cache.json"
+    monkeypatch.setattr(ld, "COMPANIES_CACHE_PATH", cache_file)
+    monkeypatch.setattr(ld, "COMPANIES_RETRY_BACKOFF_S", 0.0)
+    monkeypatch.setattr(ld, "_fintables_sector_map", lambda: {"THYAO": "Ulaştırma", "GARAN": "Bankacılık"})
+
+    # 2026-11-01 basarili kosu onbellegi doldurur
+    ok_df = pd.DataFrame([{"ticker": "THYAO", "name": "TURK HAVA YOLLARI"},
+                          {"ticker": "GARAN", "name": "GARANTI BANKASI"}])
+    monkeypatch.setattr(ld.bp, "companies", lambda: ok_df)
+    assert len(ld.live_universe(as_of_date="2026-11-01")) == 2
+
+    # 2026-11-02: KAP 500 hatasi -> onbellekten devam etmeli ve fallback_used=True isaretlemeli
+    def fail_500():
+        raise RuntimeError("Server error '500 Internal Server Error' for url 'https://www.kap.org.tr/tr/api/company/generic/excel/IGS/A'")
+
+    monkeypatch.setattr(ld.bp, "companies", fail_500)
+    seed = ld.live_universe(as_of_date="2026-11-02")
+    assert [s["ticker"] for s in seed] == ["THYAO", "GARAN"]
+    status = ld.get_companies_status()
+    assert status["source"] == "cache_fallback"
+    assert status["fallback_used"] is True
+    assert status["cached_date"] == "2026-11-01"
+    assert status["age_days"] == 1
+    assert status["attempts"] == ld.COMPANIES_MAX_ATTEMPTS
+
+
+def test_companies_falls_back_to_db_universe_snapshot_when_no_json_cache(temp_db, tmp_path, monkeypatch):
+    """Disk JSON onbellegi henuz yokken bile DB universe_snapshot tablosundaki son gunden devam edebilmeli."""
+    from core import db
+    conn = db.get_connection()
+    conn.execute(
+        "INSERT INTO universe_snapshot (as_of_date, ticker, name, sector, ratio_profile, regulator) "
+        "VALUES ('2026-11-01', 'EREGL', 'EREGLI DEMIR CELIK', 'Metal Ana', 'industrial', 'SPK_TFRS')"
+    )
+    conn.commit()
+    conn.close()
+
+    monkeypatch.setattr(ld, "COMPANIES_CACHE_PATH", tmp_path / "missing_cache.json")
+    monkeypatch.setattr(ld, "COMPANIES_RETRY_BACKOFF_S", 0.0)
+    monkeypatch.setattr(ld, "_fintables_sector_map", lambda: {"EREGL": "Metal Ana"})
+    monkeypatch.setattr(ld.bp, "companies", lambda: (_ for _ in ()).throw(RuntimeError("HTTP 500")))
+
+    seed = ld.live_universe(as_of_date="2026-11-02")
+    assert [s["ticker"] for s in seed] == ["EREGL"]
+    status = ld.get_companies_status()
+    assert status["fallback_used"] is True and status["cached_date"] == "2026-11-01" and status["age_days"] == 1
+
+
+def test_companies_raises_when_cache_exceeds_staleness_limit(tmp_path, monkeypatch):
+    """Onbellek COMPANIES_CACHE_MAX_STALE_DAYS (14 gun) sinirindan eskiyse hata yutulmamali."""
+    import pytest
+
+    cache_file = tmp_path / "companies_cache.json"
+    monkeypatch.setattr(ld, "COMPANIES_CACHE_PATH", cache_file)
+    monkeypatch.setattr(ld, "COMPANIES_RETRY_BACKOFF_S", 0.0)
+    ok_df = pd.DataFrame([{"ticker": "THYAO", "name": "TURK HAVA YOLLARI"}])
+    monkeypatch.setattr(ld.bp, "companies", lambda: ok_df)
+    ld.live_universe(as_of_date="2026-10-01")
+
+    monkeypatch.setattr(ld.bp, "companies", lambda: (_ for _ in ()).throw(RuntimeError("HTTP 500 IGS/A")))
+    with pytest.raises(RuntimeError, match="HTTP 500 IGS/A"):
+        ld.live_universe(as_of_date="2026-11-02")
+    status = ld.get_companies_status()
+    assert status["source"] == "failed_stale_cache" and not status["fallback_used"]
+
+
+def test_live_universe_skips_info_for_fintables_mapped_and_matches_serial_vs_parallel(monkeypatch):
+    """Fintables haritasindaki hisseler icin gereksiz _info_cached cagrisi atlanmali;
+    seri (max_workers=1) ve paralel (max_workers=4) cikti birebir ayni olmali."""
+    df = pd.DataFrame([
+        {"ticker": f"T{i:02d}", "name": f"Company {i}"} for i in range(12)
+    ])
+    # Cift indeksli hisseler fintables haritasinda, tek indeksliler _info_cached'den geliyor
+    fintables_map = {f"T{i:02d}": ("Bankacılık" if i % 4 == 0 else "İmalat") for i in range(0, 12, 2)}
+    info_calls = []
+
+    def fake_info(ticker):
+        info_calls.append(ticker)
+        idx = int(ticker[1:])
+        return {"sector": "Gayrimenkul" if idx % 3 == 0 else "Holding"}
+
+    monkeypatch.setattr(ld.bp, "companies", lambda: df)
+    monkeypatch.setattr(ld, "_fintables_sector_map", lambda: fintables_map)
+    monkeypatch.setattr(ld, "_info_cached", fake_info)
+
+    serial = ld.live_universe(as_of_date="2026-11-21", max_workers=1)
+    assert sorted(info_calls) == [f"T{i:02d}" for i in range(1, 12, 2)]
+    assert all(t not in info_calls for t in fintables_map)
+
+    info_calls.clear()
+    parallel = ld.live_universe(as_of_date="2026-11-21", max_workers=4)
+    assert sorted(info_calls) == [f"T{i:02d}" for i in range(1, 12, 2)]
+    assert serial == parallel
