@@ -1,6 +1,6 @@
 {
   "description": "Pre-registered studies and the number of candidate rules each tested (docs/research/quant_review_followups_preregistration.md, B1). Counts come from the rule IDs in each study file or the result row in the README scorecard. 'stock_selection' trials were evaluated on the same monthly stock panel; their sum is N_sel.",
-  "as_of": "2026-10-25",
+  "as_of": "2026-11-22",
   "studies": [
     {
       "study": "backtest_factor_model (pre-2026-10, not pre-registered)",
@@ -193,6 +193,12 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "D1 exclude worst decile of (cash + ST investments) / ST financial debt"
+    },
+    {
+      "study": "valuation_round1_preregistration",
+      "family": "stock_selection",
+      "trials": 3,
+      "source": "S1 (value_eb_ns), M2 (value_real_spread_sn), FV1 (reoi_ev_sn)"
     }
   ]
 }
