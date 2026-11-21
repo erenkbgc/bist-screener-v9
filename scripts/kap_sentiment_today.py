@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT))
 
 from core import kap_sentiment  # noqa: E402
 from core.live_data import _NOISE_TITLE_RE, _categorize_kap_title  # noqa: E402
+from core.run_date import resolve_run_date  # noqa: E402
 
 DEFAULT_TICKERS = ("THYAO,PGSUS,TAVHL,ASELS,FROTO,TOASO,TUPRS,EREGL,BIMAS,MGROS,"
                    "SISE,ARCLK,KCHOL,SAHOL,TCELL,ENKAI,PETKM,KRDMD,DOAS,AKBNK,GARAN,YKBNK")
@@ -30,7 +31,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--tickers", default=DEFAULT_TICKERS)
     ap.add_argument("--days", type=int, default=3, help="Geriye kac takvim gunu")
-    ap.add_argument("--as-of-date", default=date.today().isoformat())
+    ap.add_argument("--as-of-date", default=resolve_run_date())
     ap.add_argument("--limit", type=int, default=30, help="Hisse basina en fazla bildirim")
     ap.add_argument("--from-payload", default=None,
                     help="Gunluk tarama payload JSON'u: hisse listesi predictions'tan alinir "

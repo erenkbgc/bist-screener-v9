@@ -501,32 +501,231 @@ def _val(series, col_pos: int = 0):
 # universe
 # ---------------------------------------------------------------------------
 
-def live_universe(limit: int | None = None, tickers: list[str] | None = None) -> list[dict]:
+COMPANIES_MAX_ATTEMPTS = 3
+COMPANIES_RETRY_BACKOFF_S = 2.0
+COMPANIES_CACHE_MAX_STALE_DAYS = 14
+COMPANIES_CACHE_PATH = Path(__file__).resolve().parent.parent / "data" / "companies_cache.json"
+
+_COMPANIES_STATUS: dict = {
+    "source": "live",
+    "fallback_used": False,
+    "cached_date": None,
+    "age_days": 0,
+    "attempts": 0,
+    "error": None,
+}
+
+
+def get_companies_status() -> dict:
+    """Son bp.companies() / live_universe() cagrisinin kaynak ve fallback durumu (run_health icin)."""
+    return dict(_COMPANIES_STATUS)
+
+
+def reset_companies_status() -> None:
+    _COMPANIES_STATUS.update({
+        "source": "live",
+        "fallback_used": False,
+        "cached_date": None,
+        "age_days": 0,
+        "attempts": 0,
+        "error": None,
+    })
+
+
+def _resolve_reference_date(as_of_date: str | None = None) -> date:
+    if as_of_date:
+        try:
+            return date.fromisoformat(str(as_of_date)[:10])
+        except ValueError:
+            pass
+    from core.run_date import resolve_run_date
+    return date.fromisoformat(resolve_run_date())
+
+
+def _save_companies_cache(companies_df, as_of_date_str: str, cache_path: Path | None = None) -> None:
+    target = cache_path or COMPANIES_CACHE_PATH
+    try:
+        records = [
+            {"ticker": str(r["ticker"]).strip(), "name": str(r.get("name") or r["ticker"]).strip()}
+            for _, r in companies_df.iterrows()
+            if str(r.get("ticker") or "").strip()
+        ]
+        if not records:
+            return
+        target.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "as_of_date": as_of_date_str,
+            "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "companies": records,
+        }
+        target.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _load_cached_companies(ref_date: date, cache_path: Path | None = None):
+    """Disk JSON onbellegi ve DB universe_snapshot tablosundan en guncel (<= ref_date) sirket listesini bulur."""
+    import pandas as pd
+    from core import db
+
+    candidates: list[tuple[date, list[dict]]] = []
+    target = cache_path or COMPANIES_CACHE_PATH
+    if target.exists():
+        try:
+            raw = json.loads(target.read_text(encoding="utf-8"))
+            c_date = date.fromisoformat(str(raw.get("as_of_date", ""))[:10])
+            rows = [
+                {"ticker": str(r["ticker"]).strip(), "name": str(r.get("name") or r["ticker"]).strip()}
+                for r in (raw.get("companies") or [])
+                if str(r.get("ticker") or "").strip()
+            ]
+            if rows:
+                candidates.append((c_date, rows))
+        except Exception:  # noqa: BLE001
+            pass
+
+    try:
+        if Path(db.DB_PATH).exists():
+            latest = db.query(
+                "SELECT MAX(as_of_date) AS d FROM universe_snapshot WHERE as_of_date <= ?",
+                (ref_date.isoformat(),),
+            )
+            snap_date_str = latest[0]["d"] if latest and latest[0]["d"] else None
+            if not snap_date_str:
+                latest_any = db.query("SELECT MAX(as_of_date) AS d FROM universe_snapshot")
+                snap_date_str = latest_any[0]["d"] if latest_any and latest_any[0]["d"] else None
+            if snap_date_str:
+                snap_date = date.fromisoformat(str(snap_date_str)[:10])
+                snap_rows = db.query(
+                    "SELECT ticker, name FROM universe_snapshot WHERE as_of_date = ? ORDER BY ticker",
+                    (snap_date_str,),
+                )
+                rows = [
+                    {"ticker": str(r["ticker"]).strip(), "name": str(r["name"] or r["ticker"]).strip()}
+                    for r in snap_rows
+                    if r["ticker"]
+                ]
+                if rows:
+                    candidates.append((snap_date, rows))
+    except Exception:  # noqa: BLE001
+        pass
+
+    if not candidates:
+        return None, None, None
+
+    # ref_date'ten gelecekte olmayanlari tercih et; en yakin tarihli olani sec.
+    valid_past = [c for c in candidates if c[0] <= ref_date]
+    pool = valid_past if valid_past else candidates
+    best_date, best_rows = max(pool, key=lambda x: x[0])
+    age_days = (ref_date - best_date).days
+    return pd.DataFrame(best_rows), best_date.isoformat(), age_days
+
+
+def _fetch_companies_with_fallback(
+    as_of_date: str | None = None,
+    max_attempts: int | None = None,
+    backoff_s: float | None = None,
+    max_stale_days: int | None = None,
+    cache_path: Path | None = None,
+):
+    """bp.companies() cagrisini ustel backoff ile yeniden dener; basarisiz olursa
+    tazelik siniri (max_stale_days) icindeki son basarili sirket listesine duser
+    ve run_health icin _COMPANIES_STATUS bayragini isaretler."""
+    attempts = max_attempts if max_attempts is not None else COMPANIES_MAX_ATTEMPTS
+    base_backoff = backoff_s if backoff_s is not None else COMPANIES_RETRY_BACKOFF_S
+    stale_limit = max_stale_days if max_stale_days is not None else COMPANIES_CACHE_MAX_STALE_DAYS
+    ref_date = _resolve_reference_date(as_of_date)
+
+    last_exc: Exception | None = None
+    for attempt in range(1, max(1, attempts) + 1):
+        try:
+            df = bp.companies()
+            if df is None or df.empty or "ticker" not in df.columns:
+                raise RuntimeError("bp.companies() bos veya gecersiz tablo dondurdu")
+            _save_companies_cache(df, ref_date.isoformat(), cache_path=cache_path)
+            _COMPANIES_STATUS.update({
+                "source": "live",
+                "fallback_used": False,
+                "cached_date": ref_date.isoformat(),
+                "age_days": 0,
+                "attempts": attempt,
+                "error": None,
+            })
+            return df
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            if attempt < attempts:
+                delay = base_backoff * (2 ** (attempt - 1))
+                if delay > 0:
+                    time.sleep(delay)
+
+    cached_df, cached_date_str, age_days = _load_cached_companies(ref_date, cache_path=cache_path)
+    if cached_df is not None and age_days is not None and 0 <= age_days <= stale_limit:
+        _COMPANIES_STATUS.update({
+            "source": "cache_fallback",
+            "fallback_used": True,
+            "cached_date": cached_date_str,
+            "age_days": age_days,
+            "attempts": attempts,
+            "error": str(last_exc),
+        })
+        print(
+            f"[universe] UYARI: bp.companies() {attempts} denemede basarisiz ({last_exc}); "
+            f"onbellekteki sirket listesi kullaniliyor (tarih={cached_date_str}, yas={age_days}g, n={len(cached_df)})",
+            flush=True,
+        )
+        return cached_df
+
+    _COMPANIES_STATUS.update({
+        "source": "failed_stale_cache" if cached_df is not None else "failed_no_cache",
+        "fallback_used": False,
+        "cached_date": cached_date_str,
+        "age_days": age_days,
+        "attempts": attempts,
+        "error": str(last_exc),
+    })
+    assert last_exc is not None
+    raise last_exc
+
+
+def live_universe(
+    limit: int | None = None,
+    tickers: list[str] | None = None,
+    as_of_date: str | None = None,
+    max_workers: int = PREFETCH_MAX_WORKERS,
+) -> list[dict]:
     """companies() ile TUM BIST evrenini ceker (807 sirket, hardcoded liste DEGIL).
 
-    Sektor/regulator siniflandirmasi icin her ticker'a bir 'info' cagrisi gerekir;
-    bu maliyetlidir (~800 istek) ama gunluk bir toplu is (cron 18:30) icin kabul
-    edilebilir (~0.05-0.2sn/istek). `limit` veya `tickers` yalnizca gelistirme/hizli-test icin:
+    Sektor/regulator siniflandirmasi icin fintables haritasinda olmayan ticker'lara
+    bir 'info' cagrisi gerekir; yalnizca eksik olanlar PREFETCH_MAX_WORKERS kadar
+    paralel cekilir. `limit` veya `tickers` yalnizca gelistirme/hizli-test icin:
     verilirse per-ticker siniflandirma dongusune GIRMEDEN ONCE listeyi kirpar
     (yoksa limit'in hicbir performans faydasi olmazdi).
     """
-    companies_df = bp.companies()
+    companies_df = _fetch_companies_with_fallback(as_of_date=as_of_date)
     if tickers:
         companies_df = companies_df[companies_df["ticker"].isin([t.strip().upper() for t in tickers])]
     elif limit:
         companies_df = companies_df.head(int(limit))
-    tickers = companies_df["ticker"].tolist()
+    tickers_list = companies_df["ticker"].tolist()
 
-    # `info` cekimi (807 ag cagrisina kadar) buradaki tek maliyetli adim;
-    # sirali degil PREFETCH_MAX_WORKERS kadar paralel yapilir.
-    with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
-        list(pool.map(_info_cached, tickers))
+    sector_map = _fintables_sector_map()
+    need_info = [t for t in tickers_list if not sector_map.get(t)]
+    info_by_ticker: dict[str, dict] = {}
+    if need_info:
+        if max_workers and max_workers > 1 and len(need_info) > 1:
+            with ThreadPoolExecutor(max_workers=max_workers) as pool:
+                info_by_ticker = dict(zip(need_info, pool.map(_info_cached, need_info)))
+        else:
+            info_by_ticker = {t: _info_cached(t) for t in need_info}
 
     seed: list[dict] = []
     for _, r in companies_df.iterrows():
         ticker = r["ticker"]
-        info = _info_cached(ticker)  # yukarida zaten cache'lendi, ag cagrisi yok
-        sector = _fintables_sector_map().get(ticker) or info.get("sector") or info.get("industry")
+        sector = sector_map.get(ticker)
+        if not sector:
+            info = info_by_ticker.get(ticker) or {}
+            sector = info.get("sector") or info.get("industry")
         ratio_profile, regulator = _classify_sector(sector)
         seed.append({
             "ticker": ticker, "name": r.get("name") or ticker,

@@ -29,6 +29,9 @@ except ImportError:  # pip install mcp yapilmadiysa da fonksiyonlar dogrudan kul
     HAS_MCP = False
 
 
+_CURRENT_AS_OF_DATE: str | None = None
+
+
 def _live_enabled() -> bool:
     return os.environ.get("BIST_DATA_MODE", "mock").strip().lower() == "live"
 
@@ -44,13 +47,13 @@ def get_universe() -> list[dict]:
         tickers_env = os.environ.get("BIST_LIVE_TICKERS")
         if tickers_env:
             tickers = [t.strip().upper() for t in tickers_env.split(",") if t.strip()]
-            return ld.live_universe(tickers=tickers)
+            return ld.live_universe(tickers=tickers, as_of_date=_CURRENT_AS_OF_DATE)
         limit = os.environ.get("BIST_LIVE_UNIVERSE_LIMIT")
         # YALNIZCA gelistirme/hizli-test icin: gercek, dinamik olarak cekilen
         # evrenin ilk N kaydiyla sinirlar (siniflandirma dongusune girmeden
         # once, performans icin). Hicbir ticker hardcoded SECILMEZ; production'da
         # bu degisken tanimlanmamalidir (tum evren taranir).
-        return ld.live_universe(limit=int(limit) if limit else None)
+        return ld.live_universe(limit=int(limit) if limit else None, as_of_date=_CURRENT_AS_OF_DATE)
     return md.universe_seed()
 
 
