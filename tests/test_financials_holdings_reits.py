@@ -180,3 +180,25 @@ def test_missing_balance_sheet_items_stay_nan_in_primary_h2_and_g1():
     assert cov["H2_backing_nav_pos"]["obs_pct"] == 80.0
     assert cov["H2_backing_nav_zerofill"]["obs_pct"] == 100.0
 
+
+def test_build_monthly_factors_prefers_isyatirim_pd_for_financials():
+    from core import pit_panel
+
+    dates = pd.date_range("2022-01-31", periods=16, freq="ME")
+    px = pd.DataFrame({
+        "date": dates, "ticker": "AKBNK",
+        "raw": np.full(16, 10.0), "adj": np.linspace(10.0, 15.0, 16),
+        "vol60": np.full(16, 0.02), "tlvol60": np.full(16, 1e9),
+    })
+    q = pd.DataFrame({
+        "ticker": ["AKBNK"], "period": ["2022Q4"],
+        "period_end": [pd.Timestamp("2022-12-31")], "available_at": [pd.Timestamp("2023-02-01")],
+        "paid_in": [5.2e9], "equity": [1.5e11], "ttm_net_income": [6.0e10],
+    })
+    mc = pd.DataFrame({"ticker": ["AKBNK"], "date": [dates[13]], "mcap": [9.0e10]})
+    out = pit_panel.build_monthly_factors(q, px, pd.DataFrame(), {"AKBNK": "Bankacılık"}, market_caps=mc)
+    row_isy = out[out["date"] == dates[13]].iloc[0]
+    row_fb = out[out["date"] == dates[14]].iloc[0]
+    assert row_isy["mcap_source"] == "isyatirim_pd" and row_isy["mcap"] == 9.0e10
+    assert row_fb["mcap_source"] == "price_x_shares" and row_fb["mcap"] == 5.2e10
+

@@ -14,12 +14,19 @@ def test_parse_turkish_numbers():
     assert ar.parse_number("(1.234,5)") == -1234.5
     assert ar.parse_number("-814.440") == -814440
     assert ar.parse_number("Total assets") is None
+    # Alt-dipnot referanslari (23.1, 22.01) binlik ayiracli sayi sanilmamali
+    assert ar.parse_number("23.1") is None
+    assert ar.parse_number("22.01") is None
 
 
 def test_first_value_skips_footnote_reference():
     txt = "|DÖNEM KARI (ZARARI)|PROFIT (LOSS)|19|-295.757|120.000|"
     assert ar.first_value(txt, ("DÖNEM KARI (ZARARI)",)) == -295757
     assert ar.first_value("|TOPLAM VARLIKLAR|Total assets|135.503|109.076|", ("TOPLAM VARLIKLAR",)) == 135503
+    # Noktali ve virgullu alt-dipnot referanslari (23.1, 3,11) atlanmali
+    import audit_vendor_vs_kap as avk
+    assert avk.values("|Hasılat|Revenue|23.1|89.555.536|19.542.749|", "Hasılat") == (89555536.0, 19542749.0)
+    assert avk.values("|Hasılat|Revenue|3,11|1.872.858.604|1.202.952.189|", "Hasılat") == (1872858604.0, 1202952189.0)
 
 
 def test_unit_gap_and_period_mapping():
