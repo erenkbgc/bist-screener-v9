@@ -120,3 +120,28 @@ def test_outcomes_stalled_degrades(temp_db):
     h = run_health.assess(D)
     assert h["metrics"]["matured_without_outcome"] == 1
     assert "outcomes_stalled" in h["issues"] and h["status"] == "DEGRADED"
+
+
+def test_companies_cache_fallback_degrades_and_passes_validation_gate(temp_db):
+    _seed()
+    h = run_health.assess(
+        D,
+        companies_status={
+            "source": "cache_fallback",
+            "fallback_used": True,
+            "cached_date": "2026-10-01",
+            "age_days": 1,
+            "attempts": 3,
+            "error": "HTTP 500",
+        },
+    )
+    assert h["status"] == "DEGRADED"
+    assert "companies_cache_fallback" in h["issues"]
+    assert h["metrics"]["companies_cache_fallback"] is True
+    assert h["metrics"]["companies_cache_age_days"] == 1
+
+    env = Environment(loader=FileSystemLoader(str(render._TEMPLATE_DIR)))
+    env.filters["fmt"] = render._fmt
+    html = env.get_template("_run_health.html.j2").render(run_health=h)
+    assert "KAP şirket listesi alınamadı" in html
+    assert validate.find_orphan_numbers(html, {"run_health": h}) == []

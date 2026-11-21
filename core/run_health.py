@@ -65,9 +65,21 @@ def price_stats(as_of_date: str, prices_by_ticker: dict[str, list[dict]], index_
 
 
 def assess(as_of_date: str, prices: dict | None = None,
-           catalyst_available: dict[str, bool] | None = None) -> dict:
+           catalyst_available: dict[str, bool] | None = None,
+           companies_status: dict | None = None) -> dict:
     """prices: price_stats() ciktisi; verilmezse prices tablosundan okunur.
-    catalyst_available: ticker -> KAP bildirim listesi cekilebildi mi."""
+    catalyst_available: ticker -> KAP bildirim listesi cekilebildi mi.
+    companies_status: live_data.get_companies_status() ciktisi (bp.companies() cache fallback bilgisi)."""
+    if companies_status is None:
+        try:
+            from core import live_data as _ld
+            companies_status = _ld.get_companies_status()
+        except Exception:  # noqa: BLE001
+            companies_status = None
+    companies_fallback = bool(companies_status and companies_status.get("fallback_used"))
+    companies_cache_age = (
+        companies_status.get("age_days") if (companies_status and companies_fallback) else None
+    )
     # Uygun evren: universe.py exclusion_reason'i NULL birakan hisseler (hacim/tedbir vb. disi)
     universe_n = db.query("SELECT COUNT(*) AS n FROM universe_snapshot WHERE as_of_date=? AND exclusion_reason IS NULL",
                           (as_of_date,))[0]["n"]
@@ -106,6 +118,8 @@ def assess(as_of_date: str, prices: dict | None = None,
         "matured_without_outcome": _matured_without_outcome(as_of_date),
         "catalyst_missing_share": (_share(sum(1 for v in catalyst_available.values() if not v),
                                           len(catalyst_available)) if catalyst_available else None),
+        "companies_cache_fallback": companies_fallback,
+        "companies_cache_age_days": companies_cache_age,
     }
     thresholds = {
         "min_fundamentals_coverage": MIN_FUNDAMENTALS_COVERAGE,
@@ -140,6 +154,8 @@ def assess(as_of_date: str, prices: dict | None = None,
         degraded.append("catalyst_redistributed")
     if metrics["matured_without_outcome"]:
         degraded.append("outcomes_stalled")
+    if companies_fallback:
+        degraded.append("companies_cache_fallback")
 
     status = "FAILED" if failed else ("DEGRADED" if degraded else "OK")
     # Bultende gosterilen yuzdeler payload'dan gelmeli (report/validate.py orphan kontrolu).

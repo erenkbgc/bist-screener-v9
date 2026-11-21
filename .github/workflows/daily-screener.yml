@@ -21,6 +21,10 @@ on:
         description: "Idempotency kontrolunu atla (true = zorla yeniden calistir)"
         required: false
         default: "false"
+      as_of_date:
+        description: "Hedef islem tarihi (YYYY-MM-DD; bos = zamanlanan/Istanbul islem gunu otomatik)"
+        required: false
+        default: ""
 
 # Ayni anda iki kosunun ayni SQLite dosyasina yazip cakismasini engeller.
 concurrency:
@@ -51,9 +55,12 @@ jobs:
       - name: Bagimliliklari kur
         run: pip install -r requirements.txt
 
-      - name: Istanbul tarihini hesapla
+      - name: Istanbul islem tarihini hesapla
         id: today
-        run: echo "date=$(TZ=Europe/Istanbul date +%F)" >> "$GITHUB_OUTPUT"
+        env:
+          INPUT_AS_OF_DATE: ${{ inputs.as_of_date }}
+          GITHUB_EVENT_SCHEDULE: ${{ github.event.schedule }}
+        run: echo "date=$(python -m core.run_date)" >> "$GITHUB_OUTPUT"
 
       - name: Tarama calistir (BIST_DATA_MODE=live)
         env:

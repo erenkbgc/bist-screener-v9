@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import sys
 import time
 import uuid
@@ -43,6 +44,7 @@ except ImportError:
     pass  # python-dotenv kurulu degilse ortam degiskenleri zaten disaridan export edilmis olmali
 
 from core import db
+from core import run_date as run_date_mod
 from core import regime as regime_mod
 from core import regime_taxonomy
 from core import universe as universe_mod
@@ -172,8 +174,12 @@ def _timing(t0: float, stage: str) -> None:
     print(f"[timing] {stage} {time.monotonic() - t0:.0f}s", flush=True)
 
 
-def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False) -> dict:
+def run(as_of_date: str | None = None, min_volume_tl: float = 10_000_000, force: bool = False) -> dict:
     t0 = time.monotonic()
+    as_of_date = run_date_mod.resolve_run_date(
+        schedule=os.environ.get("GITHUB_EVENT_SCHEDULE"),
+        explicit_date=as_of_date,
+    )
     db.init_db()
     run_id = str(uuid.uuid4())
     started_at = datetime.now(timezone.utc).isoformat()
@@ -880,20 +886,28 @@ def _persist_run(run_id: str, as_of_date: str, status: str, run_level_state: str
 
 def main():
     parser = argparse.ArgumentParser(description="BIST AI Investment Screener - gunluk kosu")
-    parser.add_argument("--as-of-date", default=date.today().isoformat())
+    parser.add_argument(
+        "--as-of-date",
+        default=None,
+        help="Hedef islem tarihi (YYYY-MM-DD; verilmezse GITHUB_EVENT_SCHEDULE / 06:00 Istanbul kuraliyla cozulur)",
+    )
     parser.add_argument("--min-volume-tl", type=float, default=10_000_000)
     parser.add_argument("--force", action="store_true", help="Idempotency kontrolunu atla, kosuyu zorla calistir")
     args = parser.parse_args()
+    resolved_date = run_date_mod.resolve_run_date(
+        schedule=os.environ.get("GITHUB_EVENT_SCHEDULE"),
+        explicit_date=args.as_of_date or os.environ.get("INPUT_AS_OF_DATE"),
+    )
 
     try:
-        result = run(args.as_of_date, min_volume_tl=args.min_volume_tl, force=args.force)
+        result = run(resolved_date, min_volume_tl=args.min_volume_tl, force=args.force)
     except Exception as exc:
         # Karar uretilemeyen ay da ileriye donuk kayda girer (yalnizca basarili ay sayilmasin)
-        forward_record.append_no_decision(args.as_of_date, f"run_error: {exc!r}"[:500])
+        forward_record.append_no_decision(resolved_date, f"run_error: {exc!r}"[:500])
         raise
     print(result)
     if result.get("status") == "halted":
-        forward_record.append_no_decision(args.as_of_date, f"halted: {result.get('reason')}"[:500])
+        forward_record.append_no_decision(resolved_date, f"halted: {result.get('reason')}"[:500])
         sys.exit(1)
 
 
