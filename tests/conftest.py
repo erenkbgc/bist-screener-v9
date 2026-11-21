@@ -31,6 +31,12 @@ def _isolate_production_db(tmp_path, monkeypatch):
     factor_disclosure) mock satirlari dogrudan gercek gecmis DB'ye yaziyordu;
     core/db.py::_assert_not_mock_into_production bunu yakaladi."""
     monkeypatch.setattr(db, "DB_PATH", tmp_path / "isolated.db")
+    try:
+        from core import live_data as ld
+        monkeypatch.setattr(ld, "COMPANIES_CACHE_PATH", tmp_path / "companies_cache.json")
+        ld.reset_companies_status()
+    except Exception:
+        pass
     yield
 
 

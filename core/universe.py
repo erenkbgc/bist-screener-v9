@@ -6,6 +6,7 @@ P10_ipo_wave: 90 gunden yeni sirketler elenir.
 """
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 from core import db
@@ -15,14 +16,25 @@ MIN_VOLUME_TL_DEFAULT = 10_000_000
 MIN_LISTING_DAYS = 90
 MIN_REPORTED_QUARTERS = 2
 MAX_TEDBIR_LEVEL = 1
+# core/live_data.py::PREFETCH_MAX_WORKERS ile ayni ust sinir: TradingView / Is Yatirim
+# eszamanli istek sayisi 4'un uzerine ciktiginda throttle uyguluyor.
+UNIVERSE_MAX_WORKERS = 4
+_SUPERSECTOR_MAP = {
+    "XBANK": "XUMAL", "XFINK": "XUMAL", "XSGRT": "XUMAL", "XHOLD": "XUMAL",
+    "XYORT": "XUMAL", "XGMYO": "XUMAL", "XILTM": "XUTEK", "XBLSM": "XUTEK",
+}
 
 
-def build_universe(as_of_date: str, min_volume_tl: float = MIN_VOLUME_TL_DEFAULT) -> list[dict]:
+def build_universe(
+    as_of_date: str,
+    min_volume_tl: float = MIN_VOLUME_TL_DEFAULT,
+    max_workers: int = UNIVERSE_MAX_WORKERS,
+) -> list[dict]:
+    bist_mcp._CURRENT_AS_OF_DATE = as_of_date
     seed = bist_mcp.get_universe()
-    rows: list[dict] = []
     ingested_at = datetime.now(timezone.utc).isoformat()
 
-    for entry in seed:
+    def _evaluate_entry(entry: dict) -> dict:
         ticker = entry["ticker"]
         size = bist_mcp.get_listing_and_size(ticker, as_of_date)
         tedbir = bist_mcp.get_tedbir_level(ticker, as_of_date)["tedbir_level"]
@@ -43,11 +55,12 @@ def build_universe(as_of_date: str, min_volume_tl: float = MIN_VOLUME_TL_DEFAULT
         elif size["avg_volume_tl_20d"] < min_volume_tl:
             exclusion_reason = "min_volume_tl"
 
-        supersector_map = {"XBANK": "XUMAL", "XFINK": "XUMAL", "XSGRT": "XUMAL", "XHOLD": "XUMAL",
-                            "XYORT": "XUMAL", "XGMYO": "XUMAL", "XILTM": "XUTEK", "XBLSM": "XUTEK"}
-        supersector = supersector_map.get(entry["sector"], "XUSIN" if entry["ratio_profile"] == "industrial" else "XUHIZ")
+        supersector = _SUPERSECTOR_MAP.get(
+            entry["sector"],
+            "XUSIN" if entry["ratio_profile"] == "industrial" else "XUHIZ",
+        )
 
-        row = {
+        return {
             "as_of_date": as_of_date, "ticker": ticker, "name": entry["name"],
             "sector": entry["sector"], "supersector": supersector,
             "ratio_profile": entry["ratio_profile"], "regulator": entry["regulator"],
@@ -55,7 +68,12 @@ def build_universe(as_of_date: str, min_volume_tl: float = MIN_VOLUME_TL_DEFAULT
             "tedbir_level": tedbir, "tedbir_end_date": None, "listing_days": listing_days,
             "exclusion_reason": exclusion_reason, "ingested_at": ingested_at,
         }
-        rows.append(row)
+
+    if max_workers and max_workers > 1 and len(seed) > 1:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            rows = list(pool.map(_evaluate_entry, seed))
+    else:
+        rows = [_evaluate_entry(entry) for entry in seed]
 
     conn = db.get_connection()
     try:

@@ -83,7 +83,7 @@ def append_decision(rebalance_date: str, holdings: list[str], universe: list[str
     if rebalance_date < live_rule()["forward_record"]["start"]:
         return False
     p = path or RECORD_PATH
-    if any(d["rebalance_date"] == rebalance_date and is_ok(d) for d in load_decisions(p)):
+    if any(d["rebalance_date"][:7] == rebalance_date[:7] and is_ok(d) for d in load_decisions(p)):
         return False
     rec = {**_base(rebalance_date, "ok"), "holdings": sorted(holdings), "universe": sorted(universe),
            **(details or {})}
