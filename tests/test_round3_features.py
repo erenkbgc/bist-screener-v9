@@ -688,3 +688,229 @@ def test_real_pit_discovery_scholar_candidates_coverage():
         s = r3f.CANDIDATE_BUILDERS[name](raw, prep, ctx)
         assert s.notna().mean() == pytest.approx(1.0)
         assert not np.isinf(s.to_numpy()).any()
+
+
+# ---------------------------------------------------------------------------
+# 5. Miner Candidate Tests (miner_ocf_ev_real, miner_qgp_surp_real, miner_gp_qop_real)
+# ---------------------------------------------------------------------------
+def test_miner_features_exact_values_and_nonpositive_ev_guard():
+    panel = pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2020-06-30"), pd.Timestamp("2020-06-30")],
+            "ticker": ["AAA", "NEGEV"],
+            "stmt_period": ["2020Q1", "2020Q1"],
+            "mcap": [1000.0, 100.0],
+        }
+    )
+    q = pd.DataFrame(
+        [
+            {
+                "ticker": "AAA",
+                "period": "2019Q1",
+                "period_end": pd.Timestamp("2019-03-31"),
+                "available_at": pd.Timestamp("2019-06-14"),
+                "year": 2019,
+                "q": 1,
+                "total_assets": 1000.0,
+                "cash": 100.0,
+                "current_liab": 200.0,
+                "noncurrent_liab": 300.0,
+                "fin_debt": 200.0,
+                "ttm_op_profit": 150.0,
+                "ttm_gross_profit": 300.0,
+                "q_gross_profit": 100.0,
+                "q_op_profit": 50.0,
+            },
+            {
+                "ticker": "AAA",
+                "period": "2020Q1",
+                "period_end": pd.Timestamp("2020-03-31"),
+                "available_at": pd.Timestamp("2020-06-14"),
+                "year": 2020,
+                "q": 1,
+                "total_assets": 1200.0,
+                "cash": 100.0,
+                "current_liab": 250.0,
+                "noncurrent_liab": 300.0,
+                "fin_debt": 300.0,
+                "ttm_op_profit": 260.0,
+                "ttm_gross_profit": 400.0,
+                "q_gross_profit": 150.0,
+                "q_op_profit": 80.0,
+            },
+            {
+                "ticker": "NEGEV",
+                "period": "2019Q1",
+                "period_end": pd.Timestamp("2019-03-31"),
+                "available_at": pd.Timestamp("2019-06-14"),
+                "year": 2019,
+                "q": 1,
+                "total_assets": 500.0,
+                "cash": 300.0,
+                "current_liab": 100.0,
+                "noncurrent_liab": 100.0,
+                "fin_debt": 50.0,
+                "ttm_op_profit": 50.0,
+                "ttm_gross_profit": 100.0,
+                "q_gross_profit": 25.0,
+                "q_op_profit": 10.0,
+            },
+            {
+                "ticker": "NEGEV",
+                "period": "2020Q1",
+                "period_end": pd.Timestamp("2020-03-31"),
+                "available_at": pd.Timestamp("2020-06-14"),
+                "year": 2020,
+                "q": 1,
+                "total_assets": 500.0,
+                "cash": 300.0,
+                "current_liab": 100.0,
+                "noncurrent_liab": 100.0,
+                "fin_debt": 50.0,
+                "ttm_op_profit": 50.0,
+                "ttm_gross_profit": 100.0,
+                "q_gross_profit": 30.0,
+                "q_op_profit": 15.0,
+            },
+        ]
+    )
+    cpi = pd.Series([100.0, 120.0], index=pd.PeriodIndex(["2019-03", "2020-03"], freq="M"))
+
+    # AAA: NOA_19Q1 = 600, NOA_20Q1 = (1200-100) - (250+300-300) = 850
+    # NOA_19Q1_real = 600 * 1.2 = 720 -> delta_NOA_real = 130 -> ocf_real = 260 - 130 = 130
+    # EV = 1000 + (300 - 100) = 1200 -> ocf_ev_real = 130 / 1200
+    # NEGEV: EV = 100 + (50 - 300) = -150 <= 0 -> NaN
+    ocf_ev = r3f.ocf_ev_real_feature(panel, q, cpi=cpi)
+    assert ocf_ev.iloc[0] == pytest.approx(130.0 / 1200.0)
+    assert np.isnan(ocf_ev.iloc[1])
+
+    # gp_mcap: 400 / 1000 = 0.40
+    gp_y = r3f.gross_profit_yield_feature(panel, q)
+    assert gp_y.iloc[0] == pytest.approx(0.40)
+
+    # qgp_surp_real_mcap: (150 - 100 * 1.2) / 1000 = 0.03
+    qgp_s = r3f.real_quarterly_surprise_yield(panel, q, col="q_gross_profit", cpi=cpi)
+    assert qgp_s.iloc[0] == pytest.approx(0.03)
+
+    # qop_surp_real_mcap: (80 - 50 * 1.2) / 1000 = 0.02
+    qop_s = r3f.real_quarterly_surprise_yield(panel, q, col="q_op_profit", cpi=cpi)
+    assert qop_s.iloc[0] == pytest.approx(0.02)
+
+
+def test_miner_candidates_units_invariance_lookahead_and_kap_lag():
+    p1, q1, macro, fx = _make_scholar_universe(scale=1.0)
+    p2, q2, _, _ = _make_scholar_universe(scale=1e-3)
+
+    # 1. Scale invariance & missing value_sn_z mask
+    for name, fn in (
+        ("miner_ocf_ev_real", lambda p, q: r3f.signal_miner_ocf_ev_real(p, q, macro)),
+        ("miner_qgp_surp_real", lambda p, q: r3f.signal_miner_qgp_surp_real(p, q, macro)),
+        ("miner_gp_qop_real", lambda p, q: r3f.signal_miner_gp_qop_real(p, q, macro)),
+    ):
+        s1 = fn(p1, q1)
+        s2 = fn(p2, q2)
+        assert s1.notna().all(), name
+        np.testing.assert_allclose(s1.to_numpy(), s2.to_numpy(), rtol=1e-9, atol=1e-11, err_msg=name)
+        p_nan = p1.copy()
+        p_nan.loc[0, "value_sn_z"] = np.nan
+        assert np.isnan(fn(p_nan, q1).iloc[0]), name
+
+    # 2. Zero lookahead when future quarterly, macro CPI, and panel rows are corrupted
+    cutoff = pd.Timestamp("2019-12-31")
+    pre = p1["date"] <= cutoff
+    q_fut = q1.copy()
+    m_q = q_fut["available_at"] > cutoff
+    for c in ("total_assets", "cash", "fin_debt", "ttm_op_profit", "ttm_gross_profit", "q_gross_profit", "q_op_profit"):
+        q_fut.loc[m_q, c] = q_fut.loc[m_q, c] * 500.0
+    macro_fut = macro.copy()
+    macro_fut.loc[macro_fut.index > cutoff, "cpi_mom"] = 90.0
+    p_fut = p1.copy()
+    p_fut.loc[~pre, "mcap"] = 1e9
+    p_fut.loc[~pre, "value_sn_z"] = 100.0
+
+    for name, s_base, s_fut in (
+        (
+            "miner_ocf_ev_real",
+            r3f.signal_miner_ocf_ev_real(p1, q1, macro),
+            r3f.signal_miner_ocf_ev_real(p_fut, q_fut, macro_fut),
+        ),
+        (
+            "miner_qgp_surp_real",
+            r3f.signal_miner_qgp_surp_real(p1, q1, macro),
+            r3f.signal_miner_qgp_surp_real(p_fut, q_fut, macro_fut),
+        ),
+        (
+            "miner_gp_qop_real",
+            r3f.signal_miner_gp_qop_real(p1, q1, macro),
+            r3f.signal_miner_gp_qop_real(p_fut, q_fut, macro_fut),
+        ),
+    ):
+        np.testing.assert_allclose(
+            s_base[pre].to_numpy(), s_fut[pre].to_numpy(), rtol=0.0, atol=0.0, equal_nan=True, err_msg=name
+        )
+
+    # 3. KAP availability lag test
+    cpi = r3f.cpi_index_from_macro(macro)
+    p_kap = pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2020-04-30"), pd.Timestamp("2020-05-31"), pd.Timestamp("2020-06-30")],
+            "ticker": ["TK00", "TK00", "TK00"],
+            "mcap": [2000.0, 2000.0, 2000.0],
+        }
+    )
+    kap_dates = pd.DataFrame(
+        [
+            {"ticker": "TK00", "period": "2019Q4", "kap_available_at": pd.Timestamp("2020-03-05")},
+            {"ticker": "TK00", "period": "2020Q1", "kap_available_at": pd.Timestamp("2020-05-15")},
+        ]
+    )
+    f_lag75 = r3f.real_quarterly_surprise_yield(p_kap, q1, col="q_gross_profit", cpi=cpi, kap_dates=None)
+    f_kap = r3f.real_quarterly_surprise_yield(p_kap, q1, col="q_gross_profit", cpi=cpi, kap_dates=kap_dates)
+    assert f_lag75.iloc[0] == pytest.approx(f_lag75.iloc[1])
+    assert f_lag75.iloc[2] != pytest.approx(f_lag75.iloc[1])
+    assert f_kap.iloc[0] == pytest.approx(f_lag75.iloc[0])
+    assert f_kap.iloc[1] == pytest.approx(f_lag75.iloc[2])
+    assert f_kap.iloc[2] == pytest.approx(f_lag75.iloc[2])
+
+    # 4. Registry harness interface
+    ctx = {"quarterly": q1, "macro": macro, "fx": fx, "panel_tag": "lag75"}
+    for name in ("miner_ocf_ev_real", "miner_qgp_surp_real", "miner_gp_qop_real"):
+        assert name in r3f.CANDIDATE_BUILDERS
+        assert name in r3f.CANDIDATE_META
+        s = r3f.CANDIDATE_BUILDERS[name](p1, p1, ctx)
+        assert isinstance(s, pd.Series)
+        assert s.index.equals(p1.index)
+        assert s.notna().all()
+
+
+def test_real_pit_discovery_miner_candidates_coverage():
+    """Discovery-only (2013-2020) coverage verification for all 3 Miner candidates on FP PIT panel."""
+    fp = Path("/home/eren/bist_project/data/research/fp")
+    res_dir = Path("/home/eren/bist_project/data/research")
+    if not (fp / "factors_monthly.parquet").exists():
+        pytest.skip("Read-only FP PIT panel not present")
+
+    from backtest_factor_model import FACTORS, add_composites
+    from core import factor_backtest as fb
+
+    raw = pd.read_parquet(fp / "factors_monthly.parquet")
+    raw["date"] = r3f.normalize_month_end(raw["date"])
+    raw = raw[(raw["date"] >= r3f.DISCOVERY_START) & (raw["date"] <= r3f.DISCOVERY_END)].copy()
+    prep = add_composites(fb.prepare(raw, FACTORS, liq_drop_pct=0.3))
+    prep = prep[prep["value_sn_z"].notna()].copy()
+
+    q = pd.read_parquet(fp / "quarterly.parquet")
+    macro = pd.read_parquet(res_dir / "macro_monthly.parquet")
+    fx = pd.read_parquet(res_dir / "fx.parquet")
+    cpi = r3f.cpi_index_from_macro(macro)
+    ctx = {"quarterly": q, "macro": macro, "fx": fx, "panel_tag": "lag75"}
+
+    assert r3f.ocf_ev_real_feature(prep, q, cpi=cpi).notna().mean() > 0.95
+    assert r3f.gross_profit_yield_feature(prep, q).notna().mean() > 0.95
+    assert r3f.real_quarterly_surprise_yield(prep, q, "q_gross_profit", cpi=cpi).notna().mean() > 0.95
+    assert r3f.real_quarterly_surprise_yield(prep, q, "q_op_profit", cpi=cpi).notna().mean() > 0.95
+
+    for name in ("miner_ocf_ev_real", "miner_qgp_surp_real", "miner_gp_qop_real"):
+        s = r3f.CANDIDATE_BUILDERS[name](raw, prep, ctx)
+        assert s.notna().mean() == pytest.approx(1.0)
+        assert not np.isinf(s.to_numpy()).any()
