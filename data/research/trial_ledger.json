@@ -1,6 +1,6 @@
 {
   "description": "Pre-registered studies and the number of candidate rules each tested (docs/research/quant_review_followups_preregistration.md, B1). Counts come from the rule IDs in each study file or the result row in the README scorecard. 'stock_selection' trials were evaluated on the same monthly stock panel; their sum is N_sel.",
-  "as_of": "2026-11-22",
+  "as_of": "2026-11-24",
   "studies": [
     {
       "study": "backtest_factor_model (pre-2026-10, not pre-registered)",
@@ -211,6 +211,12 @@
       "family": "stock_selection",
       "trials": 2,
       "source": "V2B ep_xdt (E/P without deferred tax), V2A bm_tan (tangible B/M)"
+    },
+    {
+      "study": "round3_scholar_cbop",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "scholar_cbop: Cash-Based Operating Profitability tilt on value_sn (80/20 fixed)"
     }
   ]
 }
