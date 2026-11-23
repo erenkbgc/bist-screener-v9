@@ -247,6 +247,36 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "miner_gp_qop_real: Gross Profit Yield + Real Operating Profit Surprise Yield tilt on value_sn (70/15/15 fixed)"
+    },
+    {
+      "study": "round4_risk_score_rank",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_score_rank: Rank-linear score weighting within value_sn top-20%"
+    },
+    {
+      "study": "round4_risk_score_exp_cap",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_score_exp_cap: Exponential score weighting within value_sn top-20% with 5% name cap & 20% sector cap"
+    },
+    {
+      "study": "round4_risk_invvol",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_invvol: PIT 6m trailing inverse-volatility weighting within value_sn top-20%"
+    },
+    {
+      "study": "round4_risk_smooth_k3",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_smooth_k3: 3-month staggered cohort smoothing of R0 equal-weight top-20%"
+    },
+    {
+      "study": "round4_risk_invvol_smooth_k3",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_invvol_smooth_k3: 3-month staggered cohort smoothing of PIT 6m inverse-vol top-20%"
     }
   ]
 }
