@@ -1,0 +1,826 @@
+{
+  "as_of": "2026-11-24",
+  "candidate": "miner_gp_qop_real",
+  "description": "Gross Profit Yield + Real Operating Profit Surprise Yield tilt on value_sn (70/15/15 fixed)",
+  "is_combination": true,
+  "frozen_params": {
+    "w_value_sn": 0.7,
+    "w_gp_mcap_sn": 0.15,
+    "w_qop_surp_real_sn": 0.15,
+    "winsor_lo": 0.01,
+    "winsor_hi": 0.99,
+    "min_sector_n": 5
+  },
+  "fixed_pass_rule": "candidate monthly top-20% vs R0 value_sn top-20%, same universe, liquidity cut, 1M TL costs, next-close fills. D = net active(cand) - net active(R0). PASS iff D>0 discovery 2013-2020 NW t>=1.0 AND D>0 holdout 2021+ NW t>=2.0 AND holdout USD maxDD not worse than R0 by >2pp. Report DSR at updated N_sel. Every tested candidate +1 N_sel.",
+  "trial_ledger_N_sel": 98,
+  "var_sr_monthly": 0.02335,
+  "prereg_path": "/home/eren/bist_wt/r3-board/prereg/miner_gp_qop_real.md",
+  "primary_lag75": {
+    "n_discovery": 93,
+    "n_holdout": 68,
+    "n_ias29": 28,
+    "n_full": 161,
+    "trial_ledger_N_sel": 98,
+    "portfolio_simulation": {
+      "R0": {
+        "discovery": {
+          "months": 93,
+          "months_with_signal": 93,
+          "vs_ew_net": {
+            "mean_ann_pct": 5.14,
+            "mean_raw": 0.0043,
+            "t": 1.97,
+            "months": 93
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 4.37,
+            "mean_raw": 0.0036,
+            "t": 1.67,
+            "months": 93
+          },
+          "cagr_tl_pct": 34.6,
+          "cagr_usd_pct": 12.26,
+          "cagr_real_pct": 20.65,
+          "max_dd_tl_pct": -26.0,
+          "max_dd_usd_pct": -56.6,
+          "turnover_pct": 21.4,
+          "cost_ann_pct": 1.92,
+          "avg_names": 42.7,
+          "coverage_pct": 100.0
+        },
+        "holdout": {
+          "months": 68,
+          "months_with_signal": 69,
+          "vs_ew_net": {
+            "mean_ann_pct": 10.14,
+            "mean_raw": 0.0084,
+            "t": 2.97,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 9.36,
+            "mean_raw": 0.0078,
+            "t": 2.74,
+            "months": 68
+          },
+          "cagr_tl_pct": 49.69,
+          "cagr_usd_pct": 7.02,
+          "cagr_real_pct": 2.59,
+          "max_dd_tl_pct": -25.3,
+          "max_dd_usd_pct": -35.4,
+          "turnover_pct": 19.3,
+          "cost_ann_pct": 1.42,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "holdout_dd_usd_diff_vs_R0_pp": 0.0
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "months_with_signal": 29,
+          "vs_ew_net": {
+            "mean_ann_pct": 2.19,
+            "mean_raw": 0.0018,
+            "t": 0.56,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 1.33,
+            "mean_raw": 0.0011,
+            "t": 0.34,
+            "months": 28
+          },
+          "cagr_tl_pct": 8.75,
+          "cagr_usd_pct": -9.15,
+          "cagr_real_pct": -17.66,
+          "max_dd_tl_pct": -18.6,
+          "max_dd_usd_pct": -25.1,
+          "turnover_pct": 18.4,
+          "cost_ann_pct": 1.43,
+          "avg_names": 68.7,
+          "coverage_pct": 100.0
+        },
+        "full": {
+          "months": 161,
+          "months_with_signal": 162,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.25,
+            "mean_raw": 0.006,
+            "t": 3.38,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.48,
+            "mean_raw": 0.0054,
+            "t": 3.01,
+            "months": 161
+          },
+          "cagr_tl_pct": 40.78,
+          "cagr_usd_pct": 10.02,
+          "cagr_real_pct": 12.66,
+          "max_dd_tl_pct": -26.0,
+          "max_dd_usd_pct": -56.6,
+          "turnover_pct": 20.5,
+          "cost_ann_pct": 1.71,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0
+        }
+      },
+      "miner_gp_qop_real": {
+        "discovery": {
+          "months": 93,
+          "months_with_signal": 93,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.45,
+            "mean_raw": 0.0062,
+            "t": 2.82,
+            "months": 93
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.68,
+            "mean_raw": 0.0056,
+            "t": 2.5,
+            "months": 93
+          },
+          "cagr_tl_pct": 37.68,
+          "cagr_usd_pct": 14.83,
+          "cagr_real_pct": 23.41,
+          "max_dd_tl_pct": -24.2,
+          "max_dd_usd_pct": -56.0,
+          "turnover_pct": 22.8,
+          "cost_ann_pct": 2.02,
+          "avg_names": 42.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 2.31,
+            "mean_raw": 0.0019,
+            "t": 1.46,
+            "months": 93
+          }
+        },
+        "holdout": {
+          "months": 68,
+          "months_with_signal": 69,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.93,
+            "mean_raw": 0.0066,
+            "t": 2.01,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.15,
+            "mean_raw": 0.006,
+            "t": 1.81,
+            "months": 68
+          },
+          "cagr_tl_pct": 46.36,
+          "cagr_usd_pct": 4.64,
+          "cagr_real_pct": 0.31,
+          "max_dd_tl_pct": -23.2,
+          "max_dd_usd_pct": -35.9,
+          "turnover_pct": 20.6,
+          "cost_ann_pct": 1.51,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "holdout_dd_usd_diff_vs_R0_pp": -0.5,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.21,
+            "mean_raw": -0.0018,
+            "t": -1.23,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "months_with_signal": 29,
+          "vs_ew_net": {
+            "mean_ann_pct": -3.97,
+            "mean_raw": -0.0033,
+            "t": -0.98,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -4.83,
+            "mean_raw": -0.004,
+            "t": -1.2,
+            "months": 28
+          },
+          "cagr_tl_pct": 2.19,
+          "cagr_usd_pct": -14.63,
+          "cagr_real_pct": -22.63,
+          "max_dd_tl_pct": -19.8,
+          "max_dd_usd_pct": -29.9,
+          "turnover_pct": 21.3,
+          "cost_ann_pct": 1.65,
+          "avg_names": 68.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -6.16,
+            "mean_raw": -0.0051,
+            "t": -3.95,
+            "months": 28
+          }
+        },
+        "full": {
+          "months": 161,
+          "months_with_signal": 162,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.65,
+            "mean_raw": 0.0064,
+            "t": 3.37,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.88,
+            "mean_raw": 0.0057,
+            "t": 3.01,
+            "months": 161
+          },
+          "cagr_tl_pct": 41.28,
+          "cagr_usd_pct": 10.41,
+          "cagr_real_pct": 13.06,
+          "max_dd_tl_pct": -24.2,
+          "max_dd_usd_pct": -56.0,
+          "turnover_pct": 21.9,
+          "cost_ann_pct": 1.8,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.4,
+            "mean_raw": 0.0003,
+            "t": 0.31,
+            "months": 161
+          }
+        }
+      }
+    },
+    "rank_ic": {
+      "R0": {
+        "discovery": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0558,
+          "t": 5.52,
+          "months": 93
+        },
+        "holdout": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0734,
+          "t": 4.85,
+          "months": 68
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.03,
+          "mean_raw": 0.0344,
+          "t": 2.3,
+          "months": 28
+        },
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0632,
+          "t": 7.02,
+          "months": 161
+        }
+      },
+      "miner_gp_qop_real": {
+        "discovery": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0621,
+          "t": 6.82,
+          "months": 93,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0063,
+            "t": 2.18,
+            "months": 93
+          }
+        },
+        "holdout": {
+          "mean_ann_pct": 0.08,
+          "mean_raw": 0.0764,
+          "t": 4.83,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.003,
+            "t": 1.07,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.03,
+          "mean_raw": 0.0338,
+          "t": 2.29,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0006,
+            "t": -0.11,
+            "months": 28
+          }
+        },
+        "full": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0682,
+          "t": 7.77,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0049,
+            "t": 2.35,
+            "months": 161
+          }
+        }
+      }
+    },
+    "switcher_analysis": {
+      "miner_gp_qop_real": {
+        "discovery": {
+          "mean_rank_corr": 0.9295,
+          "mean_top20_overlap_pct": 82.82,
+          "mean_switches_per_month": 7.41,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 11.44,
+            "mean_raw": 0.0095,
+            "t": 1.15,
+            "months": 93
+          }
+        },
+        "holdout": {
+          "mean_rank_corr": 0.9485,
+          "mean_top20_overlap_pct": 85.25,
+          "mean_switches_per_month": 8.76,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -17.6,
+            "mean_raw": -0.0147,
+            "t": -1.36,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9448,
+          "mean_top20_overlap_pct": 84.83,
+          "mean_switches_per_month": 10.39,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -39.94,
+            "mean_raw": -0.0333,
+            "t": -3.29,
+            "months": 28
+          }
+        },
+        "full": {
+          "mean_rank_corr": 0.9375,
+          "mean_top20_overlap_pct": 83.85,
+          "mean_switches_per_month": 7.98,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -0.83,
+            "mean_raw": -0.0007,
+            "t": -0.1,
+            "months": 161
+          }
+        }
+      }
+    },
+    "dsr": {
+      "R0": {
+        "T": 161,
+        "sr_monthly": 0.283,
+        "skew": 0.5091,
+        "kurtosis": 3.9113,
+        "sr0": 0.3856,
+        "n_trials": 98,
+        "dsr": 0.0872,
+        "var_sr_cross_variant": 0.02335
+      },
+      "miner_gp_qop_real": {
+        "T": 161,
+        "sr_monthly": 0.2917,
+        "skew": 0.46,
+        "kurtosis": 3.9499,
+        "sr0": 0.3856,
+        "n_trials": 98,
+        "dsr": 0.1088,
+        "var_sr_cross_variant": 0.02335
+      }
+    },
+    "verdicts": {
+      "miner_gp_qop_real": {
+        "disc_D_ann_pct": 2.31,
+        "disc_t": 1.46,
+        "disc_D_pos": true,
+        "disc_t_ge_1": true,
+        "hold_D_ann_pct": -2.21,
+        "hold_t": -1.23,
+        "hold_D_pos": false,
+        "hold_t_ge_2": false,
+        "hold_max_dd_usd_pct": -35.9,
+        "r0_hold_max_dd_usd_pct": -35.4,
+        "hold_dd_usd_diff_vs_R0_pp": -0.5,
+        "hold_dd_usd_ok": true,
+        "verdict": "FAIL"
+      }
+    }
+  },
+  "sensitivity_kapdates": {
+    "n_discovery": 93,
+    "n_holdout": 68,
+    "n_ias29": 28,
+    "n_full": 161,
+    "trial_ledger_N_sel": 98,
+    "portfolio_simulation": {
+      "R0": {
+        "discovery": {
+          "months": 93,
+          "months_with_signal": 93,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.25,
+            "mean_raw": 0.006,
+            "t": 2.68,
+            "months": 93
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.47,
+            "mean_raw": 0.0054,
+            "t": 2.37,
+            "months": 93
+          },
+          "cagr_tl_pct": 37.43,
+          "cagr_usd_pct": 14.63,
+          "cagr_real_pct": 23.19,
+          "max_dd_tl_pct": -25.9,
+          "max_dd_usd_pct": -56.0,
+          "turnover_pct": 20.6,
+          "cost_ann_pct": 1.84,
+          "avg_names": 42.8,
+          "coverage_pct": 100.0
+        },
+        "holdout": {
+          "months": 68,
+          "months_with_signal": 69,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.38,
+            "mean_raw": 0.007,
+            "t": 2.79,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.61,
+            "mean_raw": 0.0063,
+            "t": 2.53,
+            "months": 68
+          },
+          "cagr_tl_pct": 46.91,
+          "cagr_usd_pct": 5.03,
+          "cagr_real_pct": 0.69,
+          "max_dd_tl_pct": -25.2,
+          "max_dd_usd_pct": -35.5,
+          "turnover_pct": 19.9,
+          "cost_ann_pct": 1.45,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "holdout_dd_usd_diff_vs_R0_pp": 0.0
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "months_with_signal": 29,
+          "vs_ew_net": {
+            "mean_ann_pct": 2.85,
+            "mean_raw": 0.0024,
+            "t": 0.72,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.02,
+            "mean_raw": 0.0017,
+            "t": 0.51,
+            "months": 28
+          },
+          "cagr_tl_pct": 9.53,
+          "cagr_usd_pct": -8.5,
+          "cagr_real_pct": -17.07,
+          "max_dd_tl_pct": -17.9,
+          "max_dd_usd_pct": -24.3,
+          "turnover_pct": 19.6,
+          "cost_ann_pct": 1.51,
+          "avg_names": 68.6,
+          "coverage_pct": 100.0
+        },
+        "full": {
+          "months": 161,
+          "months_with_signal": 162,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.73,
+            "mean_raw": 0.0064,
+            "t": 3.86,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.95,
+            "mean_raw": 0.0058,
+            "t": 3.45,
+            "months": 161
+          },
+          "cagr_tl_pct": 41.36,
+          "cagr_usd_pct": 10.47,
+          "cagr_real_pct": 13.13,
+          "max_dd_tl_pct": -25.9,
+          "max_dd_usd_pct": -56.0,
+          "turnover_pct": 20.3,
+          "cost_ann_pct": 1.67,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0
+        }
+      },
+      "miner_gp_qop_real": {
+        "discovery": {
+          "months": 93,
+          "months_with_signal": 93,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.85,
+            "mean_raw": 0.0074,
+            "t": 3.14,
+            "months": 93
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.08,
+            "mean_raw": 0.0067,
+            "t": 2.82,
+            "months": 93
+          },
+          "cagr_tl_pct": 39.7,
+          "cagr_usd_pct": 16.51,
+          "cagr_real_pct": 25.22,
+          "max_dd_tl_pct": -26.7,
+          "max_dd_usd_pct": -55.9,
+          "turnover_pct": 22.6,
+          "cost_ann_pct": 2.03,
+          "avg_names": 42.8,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 1.6,
+            "mean_raw": 0.0013,
+            "t": 1.18,
+            "months": 93
+          }
+        },
+        "holdout": {
+          "months": 68,
+          "months_with_signal": 69,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.44,
+            "mean_raw": 0.0062,
+            "t": 2.27,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.66,
+            "mean_raw": 0.0056,
+            "t": 2.04,
+            "months": 68
+          },
+          "cagr_tl_pct": 45.71,
+          "cagr_usd_pct": 4.17,
+          "cagr_real_pct": -0.14,
+          "max_dd_tl_pct": -26.1,
+          "max_dd_usd_pct": -36.7,
+          "turnover_pct": 21.9,
+          "cost_ann_pct": 1.59,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "holdout_dd_usd_diff_vs_R0_pp": -1.2,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.94,
+            "mean_raw": -0.0008,
+            "t": -0.76,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "months_with_signal": 29,
+          "vs_ew_net": {
+            "mean_ann_pct": -0.63,
+            "mean_raw": -0.0005,
+            "t": -0.15,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -1.47,
+            "mean_raw": -0.0012,
+            "t": -0.35,
+            "months": 28
+          },
+          "cagr_tl_pct": 5.87,
+          "cagr_usd_pct": -11.55,
+          "cagr_real_pct": -19.84,
+          "max_dd_tl_pct": -17.6,
+          "max_dd_usd_pct": -24.3,
+          "turnover_pct": 22.4,
+          "cost_ann_pct": 1.72,
+          "avg_names": 68.6,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -3.49,
+            "mean_raw": -0.0029,
+            "t": -2.38,
+            "months": 28
+          }
+        },
+        "full": {
+          "months": 161,
+          "months_with_signal": 162,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.25,
+            "mean_raw": 0.0069,
+            "t": 3.82,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.48,
+            "mean_raw": 0.0062,
+            "t": 3.44,
+            "months": 161
+          },
+          "cagr_tl_pct": 42.21,
+          "cagr_usd_pct": 11.13,
+          "cagr_real_pct": 13.8,
+          "max_dd_tl_pct": -26.7,
+          "max_dd_usd_pct": -55.9,
+          "turnover_pct": 22.3,
+          "cost_ann_pct": 1.84,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.53,
+            "mean_raw": 0.0004,
+            "t": 0.54,
+            "months": 161
+          }
+        }
+      }
+    },
+    "rank_ic": {
+      "R0": {
+        "discovery": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0571,
+          "t": 5.96,
+          "months": 93
+        },
+        "holdout": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0748,
+          "t": 4.64,
+          "months": 68
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0363,
+          "t": 2.45,
+          "months": 28
+        },
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0646,
+          "t": 7.1,
+          "months": 161
+        }
+      },
+      "miner_gp_qop_real": {
+        "discovery": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0648,
+          "t": 7.5,
+          "months": 93,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0077,
+            "t": 2.31,
+            "months": 93
+          }
+        },
+        "holdout": {
+          "mean_ann_pct": 0.08,
+          "mean_raw": 0.0773,
+          "t": 4.74,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0026,
+            "t": 1.19,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0351,
+          "t": 2.48,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0012,
+            "t": -0.47,
+            "months": 28
+          }
+        },
+        "full": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0701,
+          "t": 8.02,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0055,
+            "t": 2.51,
+            "months": 161
+          }
+        }
+      }
+    },
+    "switcher_analysis": {
+      "miner_gp_qop_real": {
+        "discovery": {
+          "mean_rank_corr": 0.9287,
+          "mean_top20_overlap_pct": 82.53,
+          "mean_switches_per_month": 7.55,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 9.76,
+            "mean_raw": 0.0081,
+            "t": 1.0,
+            "months": 93
+          }
+        },
+        "holdout": {
+          "mean_rank_corr": 0.9479,
+          "mean_top20_overlap_pct": 84.55,
+          "mean_switches_per_month": 9.15,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -1.01,
+            "mean_raw": -0.0008,
+            "t": -0.12,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9445,
+          "mean_top20_overlap_pct": 84.5,
+          "mean_switches_per_month": 10.61,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -17.59,
+            "mean_raw": -0.0147,
+            "t": -1.63,
+            "months": 28
+          }
+        },
+        "full": {
+          "mean_rank_corr": 0.9368,
+          "mean_top20_overlap_pct": 83.38,
+          "mean_switches_per_month": 8.22,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 5.21,
+            "mean_raw": 0.0043,
+            "t": 0.81,
+            "months": 161
+          }
+        }
+      }
+    },
+    "dsr": {
+      "R0": {
+        "T": 161,
+        "sr_monthly": 0.2976,
+        "skew": 0.2992,
+        "kurtosis": 4.5799,
+        "sr0": 0.3856,
+        "n_trials": 98,
+        "dsr": 0.1317,
+        "var_sr_cross_variant": 0.02335
+      },
+      "miner_gp_qop_real": {
+        "T": 161,
+        "sr_monthly": 0.3117,
+        "skew": 0.6709,
+        "kurtosis": 5.1691,
+        "sr0": 0.3856,
+        "n_trials": 98,
+        "dsr": 0.1611,
+        "var_sr_cross_variant": 0.02335
+      }
+    },
+    "verdicts": {
+      "miner_gp_qop_real": {
+        "disc_D_ann_pct": 1.6,
+        "disc_t": 1.18,
+        "disc_D_pos": true,
+        "disc_t_ge_1": true,
+        "hold_D_ann_pct": -0.94,
+        "hold_t": -0.76,
+        "hold_D_pos": false,
+        "hold_t_ge_2": false,
+        "hold_max_dd_usd_pct": -36.7,
+        "r0_hold_max_dd_usd_pct": -35.5,
+        "hold_dd_usd_diff_vs_R0_pp": -1.2,
+        "hold_dd_usd_ok": true,
+        "verdict": "FAIL"
+      }
+    }
+  }
+}

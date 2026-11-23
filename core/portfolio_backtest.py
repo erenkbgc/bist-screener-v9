@@ -69,8 +69,13 @@ def liq_percentile(adv: float, universe_liq: np.ndarray) -> float:
 def simulate(targets: dict[pd.Timestamp, list[str] | None], months: list[pd.Timestamp],
              d0_of: dict[pd.Timestamp, pd.Timestamp], mkt: Market,
              universe_liq: dict[pd.Timestamp, np.ndarray], capital_tl: dict[pd.Timestamp, float],
-             costs: Costs = Costs(), fill: str = "close", haircut: float = 0.0) -> pd.DataFrame:
+             costs: Costs = Costs(), fill: str = "close", haircut: float = 0.0,
+             limit_pct: float | None = None) -> pd.DataFrame:
     """Doner: ay t satirlari (d0_t -> d0_{t+1} NAV getirisi ve t dengelemesinin maliyeti).
+
+    limit_pct (quant_review_followups_preregistration.md, C): islem gunu kapanisi onceki
+    kapanisa gore >= limit_pct yukari/asagi olan hisse o gun islem gormez; eldeki pozisyon
+    oldugu gibi kalir, yeni hedef alinmaz (payi nakitte). None = kapali.
 
     targets[t] None ise t'de islem yapilmaz (karar uretilemeyen ay, ileriye donuk
     kayit): pozisyonlar tasinir, satir maliyetsiz ve devir 0 olarak yazilir."""
@@ -124,13 +129,23 @@ def simulate(targets: dict[pd.Timestamp, list[str] | None], months: list[pd.Time
         ref = i - 1  # d0: islem oncesi bilinen ADV/sigma
         target_list = list(dict.fromkeys(targets.get(t, [])))
         stuck = {tk for tk in values if not np.isfinite(px[i, col[tk]])}
+        locked = set()
+        if limit_pct is not None and i > 0:
+            for tk in set(values) | set(targets.get(t, [])):
+                j = col.get(tk)
+                if j is None:
+                    continue
+                c0, c1 = close[i - 1, j], close[i, j]
+                if np.isfinite(c0) and np.isfinite(c1) and c0 > 0 and abs(c1 / c0 - 1) >= limit_pct:
+                    locked.add(tk)
+            stuck |= locked & set(values)
         tradable = nav - sum(values[tk] for tk in stuck)
         # Mevcut pozisyonu satilamayan (stuck) hisseler ayrildiktan sonra, kalan hedef
         # dilimler (n_slots) esit pay alir; islem gunu fiyati olmayan hedef hisse alinmaz
         # ve payi diger hisselere dagitilmayip bir sonraki dengelemeye kadar nakitte kalir.
         target_slots = [tk for tk in target_list if tk not in stuck]
         n_slots = len(target_slots)
-        wanted = [tk for tk in target_slots if tk in col and np.isfinite(px[i, col[tk]])]
+        wanted = [tk for tk in target_slots if tk in col and np.isfinite(px[i, col[tk]]) and tk not in locked]
         tgt = {tk: tradable / n_slots for tk in wanted} if (wanted and n_slots > 0) else {}
         log = {"commission": 0.0, "spread": 0.0, "impact": 0.0, "buy": 0.0, "fills": 0, "fills_over_10pct_adv": 0}
         for tk in set(values) - stuck | set(tgt):

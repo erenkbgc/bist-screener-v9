@@ -241,12 +241,20 @@ def fetch_fin_raw(ticker: str, sector: str, refresh: bool = False) -> dict:
     return raw
 
 
-def build_financials_panel(sectors: dict[str, str], refresh: bool = False) -> pd.DataFrame:
-    """53 finansal hisse icin nokta-zamanli C1 aylik faktor panelini kurar/yukler."""
+def build_financials_panel(sectors: dict[str, str], refresh: bool = False,
+                           rebuild_panel: bool = False) -> pd.DataFrame:
+    """53 finansal hisse icin nokta-zamanli C1 aylik faktor panelini kurar/yukler.
+
+    data/research/market_cap_monthly.parquet mevcutsa Is Yatirim HisseTekil PD
+    kullanilir (P2-5, docs/research/market_cap_source.md); aksi halde fiyat x pay
+    yedegine duser. refresh=True ham verileri yeniden ceker; rebuild_panel=True
+    yalnizca yerel raw_fin/*.pkl + market_cap_monthly.parquet'ten paneli yeniden kurar."""
     cache_pq = RESEARCH / "financials_factors_monthly.parquet"
-    if cache_pq.exists() and not refresh:
+    mc_path = RESEARCH / "market_cap_monthly.parquet"
+    if cache_pq.exists() and not refresh and not rebuild_panel:
         df = pd.read_parquet(cache_pq)
-        if {"AKBNK", "ALBRK", "GARAN", "ISCTR"}.issubset(set(df["ticker"])):
+        has_isy = ("mcap_source" in df.columns and (df["mcap_source"] == "isyatirim_pd").any()) or not mc_path.exists()
+        if {"AKBNK", "ALBRK", "GARAN", "ISCTR"}.issubset(set(df["ticker"])) and has_isy:
             df["date"] = month_end(df["date"])
             return df
 
@@ -270,7 +278,8 @@ def build_financials_panel(sectors: dict[str, str], refresh: bool = False) -> pd
         q = pit_panel.apply_report_dates(q, pit_panel.kap_report_dates(pd.read_parquet(archive)))
     px = pd.concat([x for x in pxs if not x.empty], ignore_index=True)
     ev = pd.concat([x for x in evs if not x.empty], ignore_index=True) if any(not x.empty for x in evs) else pd.DataFrame()
-    factors = pit_panel.build_monthly_factors(q, px, ev, sectors)
+    mcaps = pd.read_parquet(mc_path)[["ticker", "date", "mcap"]] if mc_path.exists() else None
+    factors = pit_panel.build_monthly_factors(q, px, ev, sectors, market_caps=mcaps)
     factors["date"] = month_end(factors["date"])
     market_m = pit_panel.monthly_market(pd.read_parquet(RESEARCH / "fx.parquet"))
     factors = pit_panel.add_usd_returns(factors, market_m)

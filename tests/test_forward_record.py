@@ -207,3 +207,17 @@ def test_ew_net_and_gross_benchmarks_and_calendar_hac():
     assert s["active_univ_ann_pct"] == s["active_univ_net_ann_pct"]
     assert "active_univ_gross_ann_pct" in s and "active_univ_gross_t" in s
 
+
+
+def test_expectation_check_band():
+    frr = rep
+    exp = {"metric": "active_univ_gross", "ann_pct": 12.0, "nw_t": 2.0, "months": 64, "band_z": 2.0}
+    # mu = 1%/ay, sigma_eff = 1% x 8 / 2 = 4%/ay; 16 ayda bant 2 x 4% x 4 = 32 puan
+    on_track = frr.expectation_check(pd.Series([0.01] * 16), exp)
+    assert on_track["z"] == 0.0 and not on_track["inconsistent_with_backtest"]
+    assert on_track["expected_sum_pct"] == 16.0 and on_track["band_pct"] == 32.0
+    bad = frr.expectation_check(pd.Series([-0.01] * 16), exp)
+    assert bad["z"] == -2.0 and not bad["inconsistent_with_backtest"]  # sinirda
+    worse = frr.expectation_check(pd.Series([-0.0125] * 16), exp)
+    assert worse["inconsistent_with_backtest"]
+    assert frr.expectation_check(pd.Series([], dtype=float), exp) is None

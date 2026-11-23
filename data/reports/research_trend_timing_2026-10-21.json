@@ -1,0 +1,309 @@
+{
+  "as_of": "2026-10-21",
+  "months": [
+    "2013-04-30",
+    "2026-08-31"
+  ],
+  "summary": {
+    "B0": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": 10.64,
+        "t": 2.66,
+        "active_usd_ann_pct": 10.6,
+        "t_usd": 2.73,
+        "turnover_pct": 16.7,
+        "stops_per_year": 0.0,
+        "avg_names": 42.7,
+        "usd_max_dd_pct": -57.9,
+        "usd_vol_ann_pct": 38.5,
+        "invested_pct": 100.0
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": 6.0,
+        "t": 2.25,
+        "active_usd_ann_pct": 5.88,
+        "t_usd": 2.24,
+        "turnover_pct": 16.6,
+        "stops_per_year": 0.0,
+        "avg_names": 59.0,
+        "usd_max_dd_pct": -43.5,
+        "usd_vol_ann_pct": 35.1,
+        "invested_pct": 100.0
+      }
+    },
+    "T1": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": -4.24,
+        "t": -0.72,
+        "active_usd_ann_pct": -5.22,
+        "t_usd": -0.92,
+        "turnover_pct": 16.7,
+        "stops_per_year": 7.4,
+        "avg_names": 42.7,
+        "usd_max_dd_pct": -49.4,
+        "usd_vol_ann_pct": 22.3,
+        "invested_pct": 27.7
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": -4.76,
+        "t": -0.51,
+        "active_usd_ann_pct": -4.01,
+        "t_usd": -0.45,
+        "turnover_pct": 16.6,
+        "stops_per_year": 8.7,
+        "avg_names": 59.0,
+        "usd_max_dd_pct": -45.9,
+        "usd_vol_ann_pct": 20.9,
+        "invested_pct": 28.6
+      }
+    },
+    "T1_xu100": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": -5.14,
+        "t": -1.49,
+        "active_usd_ann_pct": -4.92,
+        "t_usd": -1.48,
+        "turnover_pct": 16.7,
+        "stops_per_year": 7.4,
+        "avg_names": 42.7,
+        "usd_max_dd_pct": -59.4,
+        "usd_vol_ann_pct": 35.3,
+        "invested_pct": 27.7
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": 2.92,
+        "t": 0.63,
+        "active_usd_ann_pct": 2.78,
+        "t_usd": 0.61,
+        "turnover_pct": 16.6,
+        "stops_per_year": 8.7,
+        "avg_names": 59.0,
+        "usd_max_dd_pct": -39.3,
+        "usd_vol_ann_pct": 32.4,
+        "invested_pct": 28.6
+      }
+    },
+    "T2": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": 4.08,
+        "t": 0.97,
+        "active_usd_ann_pct": 3.31,
+        "t_usd": 0.82,
+        "turnover_pct": 16.7,
+        "stops_per_year": 6.0,
+        "avg_names": 42.7,
+        "usd_max_dd_pct": -47.6,
+        "usd_vol_ann_pct": 27.2,
+        "invested_pct": 50.8
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": 1.25,
+        "t": 0.24,
+        "active_usd_ann_pct": 1.68,
+        "t_usd": 0.33,
+        "turnover_pct": 16.6,
+        "stops_per_year": 6.9,
+        "avg_names": 59.0,
+        "usd_max_dd_pct": -44.7,
+        "usd_vol_ann_pct": 27.6,
+        "invested_pct": 49.1
+      }
+    },
+    "T2_xu100": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": 2.49,
+        "t": 0.86,
+        "active_usd_ann_pct": 2.58,
+        "t_usd": 0.9,
+        "turnover_pct": 16.7,
+        "stops_per_year": 6.0,
+        "avg_names": 42.7,
+        "usd_max_dd_pct": -56.8,
+        "usd_vol_ann_pct": 36.3,
+        "invested_pct": 50.8
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": 6.51,
+        "t": 1.81,
+        "active_usd_ann_pct": 6.33,
+        "t_usd": 1.78,
+        "turnover_pct": 16.6,
+        "stops_per_year": 6.9,
+        "avg_names": 59.0,
+        "usd_max_dd_pct": -40.1,
+        "usd_vol_ann_pct": 34.0,
+        "invested_pct": 49.1
+      }
+    },
+    "T3": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": -2.71,
+        "t": -0.44,
+        "active_usd_ann_pct": -3.52,
+        "t_usd": -0.59,
+        "turnover_pct": 16.7,
+        "stops_per_year": 5.2,
+        "avg_names": 42.7,
+        "usd_max_dd_pct": -44.4,
+        "usd_vol_ann_pct": 25.5,
+        "invested_pct": 39.1
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": -5.89,
+        "t": -1.04,
+        "active_usd_ann_pct": -5.11,
+        "t_usd": -0.95,
+        "turnover_pct": 16.6,
+        "stops_per_year": 6.3,
+        "avg_names": 59.0,
+        "usd_max_dd_pct": -42.8,
+        "usd_vol_ann_pct": 27.2,
+        "invested_pct": 41.8
+      }
+    },
+    "T3_xu100": {
+      "discovery": {
+        "months": 93,
+        "active_ann_pct": -1.86,
+        "t": -0.45,
+        "active_usd_ann_pct": -1.76,
+        "t_usd": -0.43,
+        "turnover_pct": 16.7,
+        "stops_per_year": 5.2,
+        "avg_names": 42.7,
+        "usd_max_dd_pct": -55.6,
+        "usd_vol_ann_pct": 35.7,
+        "invested_pct": 39.1
+      },
+      "holdout": {
+        "months": 67,
+        "active_ann_pct": 4.85,
+        "t": 1.1,
+        "active_usd_ann_pct": 4.49,
+        "t_usd": 1.07,
+        "turnover_pct": 16.6,
+        "stops_per_year": 6.3,
+        "avg_names": 59.0,
+        "usd_max_dd_pct": -36.6,
+        "usd_vol_ann_pct": 34.2,
+        "invested_pct": 41.8
+      }
+    }
+  },
+  "tests": {
+    "T1": {
+      "discovery": {
+        "diff": {
+          "months": 93,
+          "diff_ann_pct": -14.88,
+          "t": -1.99
+        }
+      },
+      "holdout": {
+        "diff": {
+          "months": 67,
+          "diff_ann_pct": -10.76,
+          "t": -1.09
+        }
+      },
+      "verdict": "FAIL"
+    },
+    "T2": {
+      "discovery": {
+        "diff": {
+          "months": 93,
+          "diff_ann_pct": -6.56,
+          "t": -1.43
+        }
+      },
+      "holdout": {
+        "diff": {
+          "months": 67,
+          "diff_ann_pct": -4.75,
+          "t": -0.88
+        }
+      },
+      "verdict": "FAIL"
+    },
+    "T3": {
+      "discovery": {
+        "diff": {
+          "months": 93,
+          "diff_ann_pct": -13.35,
+          "t": -1.74
+        }
+      },
+      "holdout": {
+        "diff": {
+          "months": 67,
+          "diff_ann_pct": -11.89,
+          "t": -1.83
+        }
+      },
+      "verdict": "FAIL"
+    },
+    "T1_xu100": {
+      "discovery": {
+        "diff": {
+          "months": 93,
+          "diff_ann_pct": -15.79,
+          "t": -2.99
+        }
+      },
+      "holdout": {
+        "diff": {
+          "months": 67,
+          "diff_ann_pct": -3.08,
+          "t": -0.69
+        }
+      },
+      "verdict": "INFO_ONLY"
+    },
+    "T2_xu100": {
+      "discovery": {
+        "diff": {
+          "months": 93,
+          "diff_ann_pct": -8.16,
+          "t": -2.58
+        }
+      },
+      "holdout": {
+        "diff": {
+          "months": 67,
+          "diff_ann_pct": 0.52,
+          "t": 0.19
+        }
+      },
+      "verdict": "INFO_ONLY"
+    },
+    "T3_xu100": {
+      "discovery": {
+        "diff": {
+          "months": 93,
+          "diff_ann_pct": -12.5,
+          "t": -2.35
+        }
+      },
+      "holdout": {
+        "diff": {
+          "months": 67,
+          "diff_ann_pct": -1.15,
+          "t": -0.26
+        }
+      },
+      "verdict": "INFO_ONLY"
+    }
+  }
+}

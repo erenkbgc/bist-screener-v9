@@ -1,0 +1,593 @@
+{
+  "as_of": "2026-10-21",
+  "months": [
+    "2013-04-30",
+    "2026-09-30"
+  ],
+  "baseline": {
+    "holdout_vs_ew_net": {
+      "months": 68,
+      "ann_pct": 6.89,
+      "t": 2.55
+    },
+    "holdout_vs_xu100_tr": {
+      "months": 68,
+      "ann_pct": -1.71,
+      "t": -0.28
+    }
+  },
+  "A": {
+    "A1_capm_xu100_tr": {
+      "n": 68,
+      "alpha_ann_pct": -1.65,
+      "t_alpha": -0.29,
+      "r2": 0.852,
+      "betas": {
+        "mkt": 0.997
+      },
+      "t_betas": {
+        "mkt": 12.74
+      },
+      "label": "NO_ALPHA"
+    },
+    "A2_factor_model": {
+      "A2a": {
+        "full": {
+          "n": 161,
+          "alpha_ann_pct": 5.05,
+          "t_alpha": 2.24,
+          "r2": 0.953,
+          "betas": {
+            "MKT": 1.054,
+            "SMB": 0.16,
+            "WML": 0.036,
+            "LV": 0.235
+          },
+          "t_betas": {
+            "MKT": 49.34,
+            "SMB": 2.7,
+            "WML": 0.59,
+            "LV": 3.09
+          }
+        },
+        "discovery": {
+          "n": 93,
+          "alpha_ann_pct": 5.95,
+          "t_alpha": 2.18,
+          "r2": 0.948,
+          "betas": {
+            "MKT": 1.066,
+            "SMB": 0.156,
+            "WML": 0.051,
+            "LV": 0.071
+          },
+          "t_betas": {
+            "MKT": 36.37,
+            "SMB": 1.51,
+            "WML": 0.55,
+            "LV": 0.75
+          }
+        },
+        "holdout": {
+          "n": 68,
+          "alpha_ann_pct": 0.89,
+          "t_alpha": 0.37,
+          "r2": 0.98,
+          "betas": {
+            "MKT": 1.037,
+            "SMB": 0.082,
+            "WML": -0.019,
+            "LV": 0.367
+          },
+          "t_betas": {
+            "MKT": 54.12,
+            "SMB": 1.49,
+            "WML": -0.27,
+            "LV": 7.77
+          }
+        }
+      },
+      "A2b": {
+        "full": {
+          "n": 161,
+          "alpha_ann_pct": 0.25,
+          "t_alpha": 0.2,
+          "r2": 0.981,
+          "betas": {
+            "MKT": 1.018,
+            "SMB": 0.151,
+            "WML": 0.093,
+            "LV": 0.033,
+            "HML_sn": 0.517
+          },
+          "t_betas": {
+            "MKT": 67.83,
+            "SMB": 5.3,
+            "WML": 2.8,
+            "LV": 0.75,
+            "HML_sn": 11.69
+          }
+        },
+        "discovery": {
+          "n": 93,
+          "alpha_ann_pct": -0.12,
+          "t_alpha": -0.07,
+          "r2": 0.978,
+          "betas": {
+            "MKT": 1.047,
+            "SMB": 0.172,
+            "WML": 0.105,
+            "LV": 0.02,
+            "HML_sn": 0.535
+          },
+          "t_betas": {
+            "MKT": 47.51,
+            "SMB": 3.75,
+            "WML": 2.31,
+            "LV": 0.36,
+            "HML_sn": 9.03
+          }
+        },
+        "holdout": {
+          "n": 68,
+          "alpha_ann_pct": -0.48,
+          "t_alpha": -0.29,
+          "r2": 0.99,
+          "betas": {
+            "MKT": 1.005,
+            "SMB": 0.093,
+            "WML": 0.05,
+            "LV": 0.128,
+            "HML_sn": 0.388
+          },
+          "t_betas": {
+            "MKT": 100.24,
+            "SMB": 2.13,
+            "WML": 1.0,
+            "LV": 3.3,
+            "HML_sn": 9.73
+          }
+        }
+      },
+      "label_A2a_holdout": "EDGE_WEAK_AFTER_CONTROLS"
+    },
+    "A3_brinson_vs_ew": {
+      "full": {
+        "allocation": {
+          "months": 161,
+          "ann_pct": 1.53,
+          "t": 1.63
+        },
+        "selection": {
+          "months": 161,
+          "ann_pct": 8.58,
+          "t": 4.02
+        },
+        "total_ann_pct": 10.11
+      },
+      "discovery": {
+        "allocation": {
+          "months": 93,
+          "ann_pct": 2.85,
+          "t": 2.19
+        },
+        "selection": {
+          "months": 93,
+          "ann_pct": 8.64,
+          "t": 2.79
+        },
+        "total_ann_pct": 11.49
+      },
+      "holdout": {
+        "allocation": {
+          "months": 68,
+          "ann_pct": -0.29,
+          "t": -0.29
+        },
+        "selection": {
+          "months": 68,
+          "ann_pct": 8.5,
+          "t": 2.91
+        },
+        "total_ann_pct": 8.21
+      },
+      "label_holdout": "SELECTION_DRIVEN"
+    },
+    "A4_bank_gap": {
+      "raw_gap": {
+        "months": 68,
+        "ann_pct": -1.71,
+        "t": -0.28
+      },
+      "n": 68,
+      "alpha_ann_pct": -0.85,
+      "t_alpha": -0.13,
+      "r2": 0.029,
+      "betas": {
+        "bank_minus_xu100": -0.084
+      },
+      "t_betas": {
+        "bank_minus_xu100": -1.92
+      },
+      "label": "GAP_PERSISTS"
+    },
+    "A5_bootstrap_holdout_95": {
+      "vs_ew_net": {
+        "months": 68,
+        "ann_pct": 6.89,
+        "t": 2.55,
+        "ci_ann_pct": [
+          1.659937002404359,
+          11.915189747538774
+        ]
+      },
+      "vs_xu100_tr": {
+        "months": 68,
+        "ann_pct": -1.71,
+        "t": -0.28,
+        "ci_ann_pct": [
+          -13.766252561133403,
+          10.010283007466102
+        ]
+      }
+    }
+  },
+  "B": {
+    "ledger": {
+      "families": {
+        "stock_selection": 75,
+        "market_timing": 14,
+        "events_calendar": 6
+      },
+      "n_studies": 28,
+      "N_sel": 75
+    },
+    "variants": {
+      "n": 48,
+      "months_total": 162,
+      "months_complete": 141,
+      "var_sr_monthly": 0.0291,
+      "r0_variant_rank_full": 1,
+      "top5_sr_full": {
+        "value_sn|0.2": 0.398,
+        "value_sn|0.3": 0.344,
+        "value_raw|0.2": 0.342,
+        "sue|0.3": 0.326,
+        "value_raw|0.1": 0.326
+      }
+    },
+    "B2_dsr": {
+      "10": {
+        "T": 161,
+        "sr_monthly": 0.327,
+        "skew": 0.7088,
+        "kurtosis": 4.1964,
+        "sr0": 0.2686,
+        "n_trials": 10,
+        "dsr": 0.788
+      },
+      "26": {
+        "T": 161,
+        "sr_monthly": 0.327,
+        "skew": 0.7088,
+        "kurtosis": 4.1964,
+        "sr0": 0.3435,
+        "n_trials": 26,
+        "dsr": 0.4105
+      },
+      "50": {
+        "T": 161,
+        "sr_monthly": 0.327,
+        "skew": 0.7088,
+        "kurtosis": 4.1964,
+        "sr0": 0.3883,
+        "n_trials": 50,
+        "dsr": 0.2006
+      },
+      "75": {
+        "T": 161,
+        "sr_monthly": 0.327,
+        "skew": 0.7088,
+        "kurtosis": 4.1964,
+        "sr0": 0.4141,
+        "n_trials": 75,
+        "dsr": 0.1165
+      },
+      "100": {
+        "T": 161,
+        "sr_monthly": 0.327,
+        "skew": 0.7088,
+        "kurtosis": 4.1964,
+        "sr0": 0.4317,
+        "n_trials": 100,
+        "dsr": 0.0759
+      },
+      "200": {
+        "T": 161,
+        "sr_monthly": 0.327,
+        "skew": 0.7088,
+        "kurtosis": 4.1964,
+        "sr0": 0.4718,
+        "n_trials": 200,
+        "dsr": 0.0237
+      }
+    },
+    "B2_label": "NOT_SIGNIFICANT_AFTER_TRIALS",
+    "B3_pbo": {
+      "pbo": 0.0563,
+      "n_splits": 12870,
+      "n_variants": 48,
+      "months_used": 128,
+      "logit_median": 1.2397
+    },
+    "B3_label": "LOW_OVERFIT_RISK"
+  },
+  "C": {
+    "grid": {
+      "x1|1M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 10.58,
+          "t": 2.68
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 6.89,
+          "t": 2.55
+        },
+        "r0_cost_ann_pct": 1.5,
+        "ew_cost_ann_pct": 0.75
+      },
+      "x1|1M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 10.21,
+          "t": 2.73
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 6.03,
+          "t": 2.11
+        },
+        "r0_cost_ann_pct": 1.45,
+        "ew_cost_ann_pct": 0.72
+      },
+      "x1|10M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 9.74,
+          "t": 2.47
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 6.6,
+          "t": 2.44
+        },
+        "r0_cost_ann_pct": 1.86,
+        "ew_cost_ann_pct": 0.83
+      },
+      "x1|10M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 9.4,
+          "t": 2.51
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 5.75,
+          "t": 2.01
+        },
+        "r0_cost_ann_pct": 1.79,
+        "ew_cost_ann_pct": 0.8
+      },
+      "x1|50M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 8.23,
+          "t": 2.09
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 6.07,
+          "t": 2.25
+        },
+        "r0_cost_ann_pct": 2.52,
+        "ew_cost_ann_pct": 0.98
+      },
+      "x1|50M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 7.93,
+          "t": 2.11
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 5.25,
+          "t": 1.84
+        },
+        "r0_cost_ann_pct": 2.42,
+        "ew_cost_ann_pct": 0.94
+      },
+      "x2|1M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 9.38,
+          "t": 2.39
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 6.1,
+          "t": 2.26
+        },
+        "r0_cost_ann_pct": 3.0,
+        "ew_cost_ann_pct": 1.49
+      },
+      "x2|1M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 9.03,
+          "t": 2.43
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 5.27,
+          "t": 1.84
+        },
+        "r0_cost_ann_pct": 2.9,
+        "ew_cost_ann_pct": 1.43
+      },
+      "x2|10M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 7.71,
+          "t": 1.96
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 5.52,
+          "t": 2.04
+        },
+        "r0_cost_ann_pct": 3.73,
+        "ew_cost_ann_pct": 1.66
+      },
+      "x2|10M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 7.41,
+          "t": 1.98
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 4.72,
+          "t": 1.65
+        },
+        "r0_cost_ann_pct": 3.59,
+        "ew_cost_ann_pct": 1.59
+      },
+      "x2|50M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 4.68,
+          "t": 1.19
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 4.46,
+          "t": 1.65
+        },
+        "r0_cost_ann_pct": 5.04,
+        "ew_cost_ann_pct": 1.96
+      },
+      "x2|50M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 4.47,
+          "t": 1.18
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 3.72,
+          "t": 1.31
+        },
+        "r0_cost_ann_pct": 4.84,
+        "ew_cost_ann_pct": 1.89
+      },
+      "x3|1M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 8.18,
+          "t": 2.09
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 5.31,
+          "t": 1.96
+        },
+        "r0_cost_ann_pct": 4.5,
+        "ew_cost_ann_pct": 2.24
+      },
+      "x3|1M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 7.86,
+          "t": 2.11
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 4.51,
+          "t": 1.58
+        },
+        "r0_cost_ann_pct": 4.34,
+        "ew_cost_ann_pct": 2.15
+      },
+      "x3|10M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 5.67,
+          "t": 1.45
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 4.44,
+          "t": 1.64
+        },
+        "r0_cost_ann_pct": 5.59,
+        "ew_cost_ann_pct": 2.49
+      },
+      "x3|10M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 5.42,
+          "t": 1.45
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 3.68,
+          "t": 1.29
+        },
+        "r0_cost_ann_pct": 5.38,
+        "ew_cost_ann_pct": 2.39
+      },
+      "x3|50M|nolimit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 1.14,
+          "t": 0.29
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 2.86,
+          "t": 1.06
+        },
+        "r0_cost_ann_pct": 7.56,
+        "ew_cost_ann_pct": 2.94
+      },
+      "x3|50M|limit": {
+        "discovery": {
+          "months": 93,
+          "ann_pct": 1.0,
+          "t": 0.26
+        },
+        "holdout": {
+          "months": 68,
+          "ann_pct": 2.18,
+          "t": 0.77
+        },
+        "r0_cost_ann_pct": 7.27,
+        "ew_cost_ann_pct": 2.83
+      }
+    },
+    "primary": "x3|10M|limit",
+    "label": "COST_ROBUST_NOT_SIGNIFICANT",
+    "breakeven_mult_1M_limit": "> 8"
+  },
+  "labels": {
+    "A1": "NO_ALPHA",
+    "A2a": "EDGE_WEAK_AFTER_CONTROLS",
+    "A3": "SELECTION_DRIVEN",
+    "A4": "GAP_PERSISTS",
+    "B2": "NOT_SIGNIFICANT_AFTER_TRIALS",
+    "B3": "LOW_OVERFIT_RISK",
+    "C": "COST_ROBUST_NOT_SIGNIFICANT"
+  }
+}

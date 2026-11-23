@@ -658,11 +658,26 @@
   </div>
   {% endif %}
 
-  <!-- ============================== 1. UZUN VADELI FIRSATLAR ============================== -->
+  <!-- ============================== AYLIK ROTASYON (test edilen tek karar kurali) ============================== -->
+  {% if rotation and rotation.n_holdings %}
   <div class="card">
     <div class="section-header">
-      <h2 class="section-title">1. Uzun Vadeli Firsatlar (60 – 180 Gun)</h2>
-      <div class="section-desc">Sektorel goreli degerleme, Piotroski kalite filtresi ve Degerleme Ucgeni modellerine dayali stratejik pozisyonlar.</div>
+      <h2 class="section-title">Aylik Rotasyon (test edilen tek karar kurali)</h2>
+      <div class="section-desc">Finansal olmayan, likidite kesimini gecen hisseler arasinda sektor-notr degerleme (value_sn) siralamasinda ust %{{ rotation.top_pct | fmt }} esit agirlikla tutulur, ust dilimden cikan satilir; ayda bir guncellenir (config/live_rule.json). Dengeleme {{ rotation.rebalance_date }}. Raporun geri kalani bilgi amaclidir.</div>
+    </div>
+    <div style="font-size:13px; line-height:1.7; color:#334155;">
+      <div><b style="color:#047857;">AL:</b> {% if rotation.buy %}{% for h in rotation.buy %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
+      <div><b style="color:#1d4ed8;">TUT:</b> {% if rotation.hold %}{% for h in rotation.hold %}{{ h.ticker }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}yok{% endif %}</div>
+      <div><b style="color:#b91c1c;">SAT:</b> {% if rotation.sell %}{{ rotation.sell | join(", ") }}{% else %}yok{% endif %}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ============================== 1. UZUN VADE ADAYLARI (bilgi amacli) ============================== -->
+  <div class="card">
+    <div class="section-header">
+      <h2 class="section-title">1. Uzun Vade Adaylari (bilgi amacli)</h2>
+      <div class="section-desc">Alim listesi asagidaki "Aylik Rotasyon" bolumudur. Buradaki durum etiketleri (STRONG_OPPORTUNITY / OPPORTUNITY / WATCHLIST), Degerleme Ucgeni adil degeri, Piotroski ve deger tuzagi isareti test edilmedi; gecmis performans kaniti yalnizca rotasyon kurali icin var.</div>
     </div>
     {% set rr = realized_returns.holdout if realized_returns else none %}
     {% if rr %}
@@ -671,7 +686,7 @@
       bu kurala giren hisselerde medyan %{{ rr.stock_tl_6m.median_pct | fmt }} TL; en kotu onda bir %{{ rr.stock_tl_6m.p10_pct | fmt }}, en iyi onda bir %{{ rr.stock_tl_6m.p90_pct | fmt }}.
       Tek hisse XU100'u %{{ rr.stock_vs_xu100_6m.positive_share_pct | fmt }} oraninda gecti; esit agirlikli sepet XU100'u ortalama %{{ rr.basket_vs_xu100_6m.mean_pct | fmt }} puan gecti (donemlerin %{{ rr.basket_vs_xu100_6m.positive_share_pct | fmt }}'inde).
       {% if rr.basket_usd_6m and rr.basket_vs_deposit_6m %}Sepet 6 ayda dolar bazinda medyan %{{ rr.basket_usd_6m.median_pct | fmt }} (ortalama %{{ rr.basket_usd_6m.mean_pct | fmt }}; donemlerin %{{ rr.basket_usd_6m.positive_share_pct | fmt }}'inde arti). Ayni 6 aylarda TL mevduat (politika faizi, brut) medyan %{{ rr.deposit_tl_6m.median_pct | fmt }} getirdi; sepet mevduati donemlerin %{{ rr.basket_vs_deposit_6m.positive_share_pct | fmt }}'inde gecti (medyan fark %{{ rr.basket_vs_deposit_6m.median_pct | fmt }} puan).{% endif %}
-      Hisse bazli hedef fiyat, alis bandi ve stop gosterilmiyor: model hedefleri gecmiste gerceklesenin cok ustundeydi; alis ve satis kurallari on-kayitli testleri gecmedi. Delist olanlar veride yok, sayilar iyimser. Bilancolarin gercek KAP yayin tarihleriyle yeniden test edilince son donemdeki avantaj zayifladi ve tesaduften ayirt edilemez hale geldi: sonuc, yayin gecikmesi varsayimina duyarli.
+      Hisse bazli hedef fiyat, alis bandi ve stop gosterilmiyor: model hedefleri gecmiste gerceklesenin cok ustundeydi; alis ve satis kurallari on-kayitli testleri gecmedi. Delist olan hisseler eklenince eski donemdeki avantaj azaldi; siralama korundu. Bilancolarin gercek KAP yayin tarihleriyle yeniden test edilince son donemdeki avantaj zayifladi ve tesaduften ayirt edilemez hale geldi: sonuc, yayin gecikmesi varsayimina duyarli.
     </div>
     {% endif %}
 
@@ -728,7 +743,7 @@
   <div class="card">
     <div class="section-header">
       <h2 class="section-title">2. Kisa Vade Izleme Listesi (Deneysel)</h2>
-      <div class="section-desc"><b>Firsat degildir.</b> Hacim teyitli kisa vade kurali gecmis veride piyasa ortalamasinin gerisinde kaldi; onceden kayitli alternatif kurallarin hicbiri testi gecmedi (docs/research/short_term_preregistration.md). Yalnizca izleme amacli gosterilir.</div>
+      <div class="section-desc"><b>Firsat degildir.</b> Hacim teyitli kisa vade kurali gecmis veride piyasa ortalamasinin gerisinde kaldi; onceden kayitli alternatif kurallarin hicbiri testi gecmedi (docs/research/short_term_preregistration.md). Yalnizca izleme amacli gosterilir. ATR hedefi, alis bandi, stop ve pozisyon gosterilmez: ATR carpani ve diger esikler kalibre edilmedi.</div>
     </div>
 
     {% if short_term_candidates %}
@@ -737,12 +752,8 @@
         <thead>
           <tr>
             <th>Hisse</th>
-            <th class="col-num">Giris (Pullback)</th>
-            <th class="col-num">ATR Hedefi</th>
-            <th class="col-roi">Beklenen Getiri</th>
-            <th class="col-stop">Stop-Loss</th>
+            <th class="col-num">Fiyat</th>
             <th class="col-num">Hacim Teyidi</th>
-            <th class="col-num">Onerilen Poz.</th>
           </tr>
         </thead>
         <tbody>
@@ -754,27 +765,10 @@
                 <span class="badge badge-{{ c.candidate_state }}">{{ c.candidate_state }}</span>
               </div>
             </td>
-            <td class="col-num">
-              {{ c.entry_price | fmt }}
-              {% if c.entry_low is not none and c.entry_high is not none %}
-                <span class="col-sub">Bant: {{ c.entry_low | fmt }} – {{ c.entry_high | fmt }}</span>
-              {% else %}
-                <span class="col-sub">Guncel: {{ c.current_price | fmt }}</span>
-              {% endif %}
-            </td>
-            <td class="col-num" style="font-weight:700; color:#0f172a;">{{ c.target_price | fmt }}</td>
-            <td class="col-roi">+%{{ c.expected_roi_pct | fmt }}</td>
-            <td class="col-stop">{{ c.stop_loss | fmt }}</td>
+            <td class="col-num">{{ c.current_price | fmt }}</td>
             <td class="col-num">
               {% if c.volume_ratio_20d is not none %}
                 {{ c.volume_ratio_20d | fmt }}x
-              {% else %}
-                —
-              {% endif %}
-            </td>
-            <td class="col-num" style="font-weight:700;">
-              {% if c.position_size_pct is not none %}
-                %{{ c.position_size_pct | fmt }}
               {% else %}
                 —
               {% endif %}
@@ -790,7 +784,7 @@
       <div class="quick-copy-header">
         <span class="quick-copy-title">Yonetici Hizli Kopyala (WhatsApp / Notlar)</span>
       </div>
-      <div class="quick-copy-box">{% for c in short_term_candidates %}* {{ c.ticker }} | Giris: {{ c.entry_price | fmt }}{% if c.entry_low is not none and c.entry_high is not none %} (Bant: {{ c.entry_low | fmt }} - {{ c.entry_high | fmt }}){% endif %} -> Hedef: {{ c.target_price | fmt }} (%{{ c.expected_roi_pct | fmt }}){% if c.stop_loss is not none %} | Stop: {{ c.stop_loss | fmt }}{% endif %}{% if c.position_size_pct is not none %} | Poz: %{{ c.position_size_pct | fmt }}{% endif %}{% if c.volume_ratio_20d is not none %} | Hacim: {{ c.volume_ratio_20d | fmt }}x{% endif %}{{ '\n' }}{% endfor %}</div>
+      <div class="quick-copy-box">{% for c in short_term_candidates %}* {{ c.ticker }} | Fiyat: {{ c.current_price | fmt }}{% if c.volume_ratio_20d is not none %} | Hacim: {{ c.volume_ratio_20d | fmt }}x{% endif %}{{ '\n' }}{% endfor %}</div>
     </div>
     {% else %}
     <div class="empty-state">Bugun icin kisa vadeli taktiksel aday bulunmamaktadir.</div>
@@ -1053,8 +1047,8 @@
   {% if portfolio_result and portfolio_result.recommended_portfolio_weights %}
   <div class="card">
     <div class="section-header">
-      <h2 class="section-title">Hiyerarsik Risk Paritesi (HRP) Model Portfoy Agirliklari</h2>
-      <div class="section-desc">Kovaryans matrisinin agac kumelemesi (López de Prado) ve sektor tavan kisiti (%30) ile optimize edilmis dengeli risk dagilimi. Model Portfoy Beklenen Getirisi: +%{{ portfolio_result.portfolio_expected_return_pct | fmt }}, Yillik Volatilite: %{{ portfolio_result.portfolio_volatility_pct | fmt }}, Beklenen Kuyruk Riski (%95 CVaR): %{{ portfolio_result.cvar_95_pct | fmt }}.</div>
+      <h2 class="section-title">Hiyerarsik Risk Paritesi (HRP) Model Portfoy Agirliklari (bilgi amacli, test edilmedi)</h2>
+      <div class="section-desc">Karar kurali esit agirliktir; HRP agirliklari test edilmedi ve rotasyonu degistirmez. Kovaryans matrisinin agac kumelemesi (López de Prado) ve sektor tavan kisiti (%30) ile optimize edilmis dengeli risk dagilimi. Model Portfoy Beklenen Getirisi: +%{{ portfolio_result.portfolio_expected_return_pct | fmt }}, Yillik Volatilite: %{{ portfolio_result.portfolio_volatility_pct | fmt }}, Beklenen Kuyruk Riski (%95 CVaR): %{{ portfolio_result.cvar_95_pct | fmt }}.</div>
     </div>
 
     <div class="table-responsive">
@@ -1143,7 +1137,7 @@
 
   <!-- ============================== FOOTER & DISCLAIMERS ============================== -->
   <div class="footer">
-    <p><b>final_score</b> = {{ weights.valuation_z | fmt }} &times; valuation_z + {{ weights.catalyst_score | fmt }} &times; catalyst_score + {{ weights.ownership_quality_z | fmt }} &times; ownership_quality_z + {{ weights.low_vol_z | fmt }} &times; low_vol_z + {{ weights.momentum_z | fmt }} &times; momentum_z (rejime gore normalize edilir). Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP: %{{ weights.equity_risk_premium_pct | fmt }}. Bu agirliklar ve esikler DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
+    <p><b>final_score</b> = {{ weights.valuation_z | fmt }} &times; valuation_z + {{ weights.catalyst_score | fmt }} &times; catalyst_score + {{ weights.ownership_quality_z | fmt }} &times; ownership_quality_z + {{ weights.low_vol_z | fmt }} &times; low_vol_z + {{ weights.momentum_z | fmt }} &times; momentum_z (rejimden bagimsiz, sabit). Faktor agirliklari on-kayitli testle secildi (yalnizca degerleme; docs/research/long_term_preregistration.md). Piotroski esigi: {{ weights.piotroski_normalized_score_threshold | fmt }}, ERP: %{{ weights.equity_risk_premium_pct | fmt }}. Bu esikler ve durum etiketleri DENENMEMIS BASLANGIC VARSAYIMLARIDIR; hicbir gecmis veriyle kalibre edilmemistir.</p>
     {% if weights.dcf_growth_low_pct is defined and weights.dcf_growth_low_pct is not none %}
     <p>DCF Referansi (deneysel, ana karara girmez) buyume senaryolari: dusuk %{{ weights.dcf_growth_low_pct | fmt }} / baz %{{ weights.dcf_growth_base_pct | fmt }} / yuksek %{{ weights.dcf_growth_high_pct | fmt }}, kurumlar vergisi orani %{{ weights.dcf_corporate_tax_rate_pct | fmt }}. Buyume senaryolari DENENMEMIS VARSAYIMDIR; kurumlar vergisi orani resmi/yasal orandir.</p>
     {% endif %}

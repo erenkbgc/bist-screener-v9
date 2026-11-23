@@ -202,3 +202,93 @@ def test_live_value_inputs_use_constant_unit_ttm(monkeypatch):
     monkeypatch.setattr(ld, "_cpi_index_cached", lambda: None)
     fb_ = ld.live_value_inputs("X", 400.0)
     assert fb_["ttm_unit"] == "C0_fallback_no_cpi" and fb_["sp"] == pytest.approx(c0["sp"])
+
+
+def test_live_ttm_handles_vendor_reexpressed_prior_year():
+    """Is Yatirim, ertesi yil raporu gelen donemi bir yil sonraki birimle yeniden ifade ediyor.
+    Reel ceyrek akisi sabit R: dogru TTM = 4 R x CPI(P). Ardisik YTD farki (quarterly_table)
+    bunu bozuyor; vendor_consistent_ttm bozmuyor (docs/research/vendor_vs_kap_audit.md)."""
+    from core import pit_panel
+    months = pd.period_range("2023-01", "2026-12", freq="M")
+    cpi = pd.Series(1.03 ** np.arange(len(months)), index=months)
+    c = lambda p: cpi[pit_panel.period_end(p).to_period("M")]  # noqa: E731
+    R, latest = 10.0, "2026Q2"
+    periods = ["2025Q1", "2025Q2", "2025Q3", "2025Q4", "2026Q1", "2026Q2"]
+    inc_vals = {}
+    for p in periods:
+        v = int(p[-1]) * R * c(p)  # ilk yayin: kendi donem sonu biriminde
+        nxt = f"{int(p[:4]) + 1}{p[4:]}"
+        if nxt in periods:  # ertesi yil raporu var: saglayici o kolonla degistirir
+            v *= c(nxt) / c(p)
+        inc_vals[p] = v
+    inc = pd.DataFrame({p: [v, v / 2, v / 4] for p, v in inc_vals.items()},
+                       index=["Satış Gelirleri", "FAALİYET KARI (ZARARI)", "Ana Ortaklık Payları"])
+    bs = pd.DataFrame({p: [1000.0, 500.0, 100.0, 50.0, 80.0] for p in periods},
+                      index=["TOPLAM VARLIKLAR", "Ana Ortaklığa Ait Özkaynaklar", "Ödenmiş Sermaye",
+                             "Nakit ve Nakit Benzerleri", "Finansal Borçlar"])
+    vi = pit_panel.latest_value_ratios("X", bs, inc, 400.0, cpi=cpi)
+    assert vi["stmt_period"] == latest and vi["ttm_method"] == "vendor_consistent_ytd"
+    assert vi["inputs"]["ttm_revenue"] == pytest.approx(4 * R * c(latest))
+    q = pit_panel.quarterly_table(pit_panel.statements_long("X", bs, inc), cpi=cpi).set_index("period")
+    assert q.loc[latest, "ttm_revenue"] < 0.8 * 4 * R * c(latest)  # eski yol: birim karisimi
+
+
+def _ytd_statements_with_periods(seed: int, periods: list[str]):
+    rng = random.Random(seed)
+    q = {p: (rng.uniform(50, 150), rng.uniform(5, 25), rng.uniform(2, 18)) for p in periods}
+    inc = {}
+    for item, k in (("Satış Gelirleri", 0), ("FAALİYET KARI (ZARARI)", 1), ("Ana Ortaklık Payları", 2)):
+        inc[item] = {p: sum(q[x][k] for x in periods if x[:4] == p[:4] and x[-1] <= p[-1]) for p in periods}
+    bs = {"Ana Ortaklığa Ait Özkaynaklar": {p: rng.uniform(100, 300) for p in periods},
+          "Ödenmiş Sermaye": {p: 10.0 for p in periods},
+          "Nakit ve Nakit Benzerleri": {p: rng.uniform(10, 50) for p in periods},
+          "Finansal Borçlar": {p: rng.uniform(20, 80) for p in periods}}
+    return pd.DataFrame(bs).T[periods], pd.DataFrame(inc).T[periods]
+
+
+def test_live_value_inputs_q3_in_november_respects_kap_availability_and_fallback(monkeypatch):
+    """Kasim 2026'da Q3 cekilir ama KAP yayin kurali (18:00 kapanis + eslesmezse 75 gun)
+    korunur; Q3 bildirmeyen hisse 2026Q2 TTM'sine duzgun duser."""
+    from datetime import datetime
+
+    from core import live_data as ld
+
+    p_q3 = ["2026Q3", "2026Q2", "2026Q1", "2025Q4", "2025Q3", "2025Q2", "2025Q1", "2024Q4"]
+    bs_q3, inc_q3 = _ytd_statements_with_periods(11, p_q3)
+    bs_no_q3, inc_no_q3 = bs_q3.drop(columns=["2026Q3"]), inc_q3.drop(columns=["2026Q3"])
+
+    def fake_stmts(tk):
+        return (bs_no_q3, inc_no_q3) if tk == "NOQ3" else (bs_q3, inc_q3)
+
+    pubs = {
+        "HASQ3": {
+            "2026-09-30": datetime(2026, 11, 5, 18, 20),  # 18:00 sonrasi -> 2026-11-06 kullanilabilir
+            "2026-06-30": datetime(2026, 8, 12, 14, 0),
+        },
+        "NOQ3": {
+            "2026-06-30": datetime(2026, 8, 12, 14, 0),
+        },
+    }
+    monkeypatch.setattr(ld, "_quarterly_statements_cached", fake_stmts)
+    monkeypatch.setattr(ld, "_cpi_index_cached", lambda: None)
+    monkeypatch.setattr(ld, "live_financial_report_published_dt",
+                        lambda tk, pe: pubs.get(tk, {}).get(pe))
+
+    # Yayin gunu 18:20 -> o gun henuz kullanilamaz, 2026Q2 kullanilir
+    same_day = ld.live_value_inputs("HASQ3", 400.0, "2026-11-05")
+    assert same_day["stmt_period"] == "2026Q2" and same_day["available_source"] == "kap"
+
+    # Ertesi gun ve Kasim sonu -> 2026Q3 kullanilir
+    next_day = ld.live_value_inputs("HASQ3", 400.0, "2026-11-06")
+    assert next_day["stmt_period"] == "2026Q3" and next_day["kap_available_at"] == "2026-11-06"
+    assert next_day["ep"] is not None and next_day["sp"] is not None
+
+    # KAP eslesmesi yoksa (CI outage): Q3 varsayilan gecikme 2026-12-14 -> Kasim'da 2026Q2'ye duser
+    no_kap = ld.live_value_inputs("NOKAP", 400.0, "2026-11-22")
+    assert no_kap["stmt_period"] == "2026Q2" and no_kap["available_source"] == "assumed"
+    assert ld.live_value_inputs("NOKAP", 400.0, "2026-12-14")["stmt_period"] == "2026Q3"
+
+    # Q3 bildirmeyen hisse: 2026Q2'ye duser ve tum TTM oranlari hesaplanir
+    no_q3 = ld.live_value_inputs("NOQ3", 400.0, "2026-11-22")
+    assert no_q3["stmt_period"] == "2026Q2"
+    assert all(no_q3[k] is not None for k in ("bm", "ep", "sp", "ey"))

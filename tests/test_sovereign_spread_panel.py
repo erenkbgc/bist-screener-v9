@@ -26,7 +26,7 @@ def test_build_panel_unavailable_on_error(monkeypatch):
         return real_import(name, *a, **k)
 
     monkeypatch.setattr(builtins, "__import__", fail)
-    assert ss.build_panel("2026-10-12") == {"status": "unavailable"}
+    assert ss.build_panel("2026-10-12") == {"status": "unavailable", "reason": "ImportError: no network"}
 
 
 def test_panel_renders_and_passes_validation(temp_db):

@@ -16,6 +16,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
+SMC_ZONE_TR = {"premium": "Premium", "premium_half": "Üst yarı", "equilibrium": "Denge",
+               "discount_half": "Alt yarı", "discount": "İskonto"}
 STATE_TR = {"STRONG_OPPORTUNITY": "Güçlü fırsat", "OPPORTUNITY": "Fırsat", "WATCHLIST": "İzleme"}
 STATE_ORDER = {"STRONG_OPPORTUNITY": 0, "OPPORTUNITY": 1, "WATCHLIST": 2}
 STATE_FILL = {"STRONG_OPPORTUNITY": "C6EFCE", "OPPORTUNITY": "E2EFDA", "WATCHLIST": "FFF2CC"}
@@ -64,7 +66,8 @@ def _realized_note(rr: dict) -> str:
                f"%{h['basket_vs_deposit_6m']['positive_share_pct']:g}'inde geçti. "
                if "basket_usd_6m" in h and "basket_vs_deposit_6m" in h else "")
             + "Hisse bazlı hedef "
-            "gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi. Delist olanlar veride yok, sayılar iyimser.")
+            "gösterilmiyor: model hedefleri geçmişte gerçekleşenin çok üstündeydi. 39 delist hisse eklenince 2013–2020 "
+            "avantajı yılda yaklaşık 2,4 puan düştü; sıralama korundu.")
 
 
 def _bool_tr(v):
@@ -105,6 +108,8 @@ LONG_COLS = [
     ("Beta", lambda c: c.get("beta_60_120d"), "0.00", 7),
     ("En güçlü faktör", lambda c: (c.get("factor_attribution") or {}).get("top_positive_factor"), None, 22),
     ("En zayıf faktör", lambda c: (c.get("factor_attribution") or {}).get("top_negative_factor"), None, 22),
+    # Verisi olmayan kapilar (core.scoring.UNKNOWN_GATES): aday en fazla izleme olur
+    ("Eksik veri", lambda c: ", ".join(c.get("unknown_checks") or []) or None, None, 24),
 ]
 # Uzun vadede model hedefi, alis bandi, stop ve pozisyon gosterilmez: hedef
 # dogrulugu testi tahmini abartili buldu, alis ve satis kurallari on-kayitli
@@ -112,12 +117,13 @@ LONG_COLS = [
 LONG_HIDDEN = ("Alış bandı alt", "Alış bandı üst", "Stop", "Hedef (180g)", "Beklenen getiri %",
                "Hurdle üstü %", "Hedefe ulaşma olasılığı %", "Pozisyon %", "Destek", "Direnç",
                "Direnç hedeften önce")
-SHORT_COLS = [col for col in LONG_COLS if col[0] not in (
-    "Hedef (180g)", "Adil değer (baz)", "Adil değer farkı %", "Adil değer düşük", "Adil değer yüksek",
+# Kisa vadede de hedef (2.5 x ATR), alis bandi, stop ve pozisyon gosterilmez:
+# carpanlar kalibre edilmedi ve kova on-kayitli testte kanit bulmadi (plan_2026-10-21 P2-1).
+SHORT_COLS = [col for col in LONG_COLS if col[0] not in LONG_HIDDEN + (
+    "Adil değer (baz)", "Adil değer farkı %", "Adil değer düşük", "Adil değer yüksek",
     "Değer tuzağı riski", "5 yıllık zirveden %", "52 haftalık zirveden %", "Risk bayrakları",
     "F/K", "PD/DD", "Piotroski (0-1)")]
-SHORT_COLS.insert(8, ("Hedef (20g)", lambda c: c.get("target_price"), PRICE, 11))
-SHORT_COLS.insert(9, ("Hacim oranı (20g)", lambda c: c.get("volume_ratio_20d"), "0.00", 10))
+SHORT_COLS.insert(5, ("Hacim oranı (20g)", lambda c: c.get("volume_ratio_20d"), "0.00", 10))
 LONG_COLS = [col for col in LONG_COLS if col[0] not in LONG_HIDDEN]
 
 
@@ -128,6 +134,16 @@ def _header(ws, row: int, cols) -> None:
         cell.alignment = Alignment(wrap_text=True, vertical="center", horizontal="center")
         ws.column_dimensions[get_column_letter(j)].width = width
     ws.row_dimensions[row].height = 32
+
+
+def _banner(ws, text: str, color: str) -> None:
+    """Sayfanin ustune tek satirlik uyari ekler; baslik ve filtre bir satir asagi kayar."""
+    ws.insert_rows(1)
+    ws["A1"] = text
+    ws["A1"].font = Font(bold=True, color=color)
+    ws.freeze_panes = "B3"
+    if ws.auto_filter.ref:
+        ws.auto_filter.ref = ws.auto_filter.ref.replace("A1:", "A2:")
 
 
 def _candidate_sheet(wb: Workbook, title: str, cands: list[dict], cols) -> None:
@@ -169,6 +185,9 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
     ws.title = "Özet"
     ws["A1"] = f"BIST Günlük Fırsatlar — {as_of_date}"
     ws["A1"].font = Font(bold=True, size=14)
+    ws["A2"] = ("Alım listesi: Rotasyon sayfası (geçmiş veride test edilen tek karar kuralı). "
+                "Diğer sayfalar bilgi amaçlıdır; durum etiketleri test edilmedi.")
+    ws["A2"].font = Font(bold=True, color="1F4E78")
     rows = [("Veri sağlığı", HEALTH_TR.get(health.get("status"), "Ölçülmedi"))]
     for issue in health.get("issues") or []:
         rows.append(("  Sorun", ISSUE_TR.get(issue, issue)))
@@ -192,7 +211,8 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
     r += 1
     ws.cell(row=r, column=1, value="Durumlar").font = Font(bold=True)
     for state, text in (
-        ("STRONG_OPPORTUNITY", "Yüksek güven, kovasında ilk %25, Piotroski güçlü, değer tuzağı işareti yok"),
+        ("STRONG_OPPORTUNITY", "Yüksek güven, kovasında ilk %25, Piotroski güçlü, değer tuzağı işareti yok, eksik veri yok. "
+                                "Test edilmedi; alım sinyali değildir"),
         ("OPPORTUNITY", "Kapılardan geçti, hurdle üstü"),
         ("WATCHLIST", "Kapılardan geçti ama öne çıkmıyor; izle"),
     ):
@@ -204,19 +224,15 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
 
     _candidate_sheet(wb, "Uzun Vade", long_c, LONG_COLS)
     _candidate_sheet(wb, "Kısa Vade", short_c, SHORT_COLS)
+    _banner(wb["Uzun Vade"], "BİLGİ AMAÇLI: durum etiketleri, adil değer, Piotroski ve değer tuzağı işareti test edilmedi. "
+            "Alım listesi Rotasyon sayfasıdır.", "9C5700")
     if any(c.get("experimental") for c in short_c):
-        wk = wb["Kısa Vade"]
-        wk.insert_rows(1)
-        wk["A1"] = ("DENEYSEL, FIRSAT DEĞİLDİR: kısa vade kuralı geçmiş veride piyasa ortalamasının gerisinde kaldı; "
-                    "önceden kayıtlı alternatiflerin hiçbiri testi geçmedi. Yalnızca izleme.")
-        wk["A1"].font = Font(bold=True, color="9C5700")
-        wk.freeze_panes = "B3"
-        if wk.auto_filter.ref:
-            wk.auto_filter.ref = wk.auto_filter.ref.replace("A1:", "A2:")
+        _banner(wb["Kısa Vade"], "DENEYSEL, FIRSAT DEĞİLDİR: kısa vade kuralı geçmiş veride piyasa ortalamasının gerisinde "
+                "kaldı; önceden kayıtlı alternatiflerin hiçbiri testi geçmedi. Yalnızca izleme.", "9C5700")
 
     rot = payload.get("rotation") or {}
     if rot.get("n_holdings"):
-        wr = wb.create_sheet("Rotasyon")
+        wr = wb.create_sheet("Rotasyon", 1)
         _header(wr, 1, [("İşlem", None, None, 10), ("Hisse", None, None, 10),
                         ("Değerleme z", None, None, 12), ("Sıra yüzdeliği", None, None, 14)])
         r = 2
@@ -236,13 +252,61 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
             r += 1
         wr.cell(row=r + 1, column=1, value=f"Dengeleme: {rot.get('rebalance_date')}; önceki: {rot.get('previous_rebalance_date') or '-'}. "
                                          "Kural: değerleme sıralamasında üst %20 eşit ağırlık, üst dilimden çıkan satılır.")
-        wr.freeze_panes = "A2"
+        _banner(wr, "TEST EDİLEN TEK KARAR KURALI (config/live_rule.json): finansal olmayan, likidite kesimini geçen "
+                "hisselerde value_sn üst %20, eşit ağırlık, aylık.", "006100")
+        wr.freeze_panes = "A3"
+
+    checks = rot.get("checks") or []
+    if checks:
+        wc = wb.create_sheet("Tek Hisse Kontrol", 2)
+        check_cols = [
+            ("Hisse", lambda r: r["ticker"], None, 9),
+            ("Sektör", lambda r: r.get("sector"), None, 20),
+            ("Bilanço dönemi", lambda r: r.get("statement_period"), None, 11),
+            ("KAP yayını", lambda r: r.get("kap_published_at"), None, 17),
+            ("Fiyat tarihi", lambda r: r.get("price_date"), None, 11),
+            ("Geçerli oran sayısı", lambda r: r.get("valid_metric_count"), None, 9),
+            ("Zarar", lambda r: _bool_tr(r.get("loss_flag")), None, 8),
+            ("Tahakkuk (Sloan) uyarısı", lambda r: _bool_tr(r.get("sloan_flag")), None, 11),
+            ("FCF getirisi", lambda r: r.get("fcf_yield"), "0.000", 9),
+            ("Net borç / FAVÖK", lambda r: r.get("net_debt_ebitda"), "0.00", 9),
+            ("Sıkıntı", lambda r: _bool_tr(r.get("distress_flag")), None, 8),
+            ("Piotroski (0-1)", lambda r: r.get("piotroski_normalized_score"), "0.00", 9),
+            ("Değer tuzağı riski", lambda r: _bool_tr(r.get("value_trap_risk")), None, 10),
+            ("5 yıllık zirveden %", lambda r: r.get("drawdown_from_5y_peak_pct"), PCT, 10),
+            ("5 yıllık en büyük düşüş %", lambda r: r.get("max_drawdown_5y_pct"), PCT, 10),
+            ("60g volatilite", lambda r: r.get("volatility_60d"), "0.000", 9),
+            ("Risk bayrakları", lambda r: ", ".join(r.get("risk_flags") or []) or None, None, 28),
+            ("Eksik veri", lambda r: ", ".join(r.get("unknown_checks") or []) or None, None, 20),
+            # Smart Money Concepts (core/smc.py): bilgi, test edilmedi
+            ("SMC swing trend", lambda r: r.get("smc_swing_trend"), None, 10),
+            ("SMC iç trend", lambda r: r.get("smc_internal_trend"), None, 10),
+            ("SMC son kırılım", lambda r: " ".join(x for x in (r.get("smc_last_structure"),
+                                                               r.get("smc_last_structure_date")) if x) or None, None, 26),
+            ("SMC bölge", lambda r: SMC_ZONE_TR.get(r.get("smc_zone"), r.get("smc_zone")), None, 13),
+            ("Alttaki boğa OB", lambda r: "–".join(f"{v:g}" for v in r["smc_bull_ob"]) if r.get("smc_bull_ob") else None,
+             None, 14),
+            ("Üstteki ayı OB", lambda r: "–".join(f"{v:g}" for v in r["smc_bear_ob"]) if r.get("smc_bear_ob") else None,
+             None, 14),
+        ]
+        _header(wc, 1, check_cols)
+        for i, row in enumerate(checks, 2):
+            for j, (_, fn, fmt, _) in enumerate(check_cols, 1):
+                v = fn(row)
+                cell = wc.cell(row=i, column=j, value=v)
+                cell.border = BORDER
+                if fmt and isinstance(v, (int, float)) and not isinstance(v, bool):
+                    cell.number_format = fmt
+        _banner(wc, "BİLGİ AMAÇLI, TEK HİSSE KONTROLÜ: rotasyondaki her hisse için veri yaşı, kâr kalitesi, borç ve "
+                "düşüş riski; SMC kolonları piyasa yapısı (BOS/CHoCH, order block, bölge). Kanıt sepet düzeyindedir; "
+                "tek hisse eşikleri ve SMC test edilmedi, karar değişmez.", "9C5700")
 
     from core import diagnostics as dg
     w = payload.get("weights") or {}
     wm = wb.create_sheet("Açıklamalar")
     notes = [
-        "Yatırım tavsiyesi değildir. Model çıktısıdır; gerçekleşen performans henüz ölçülmedi (ilk sonuçlar 2026-10-01'den itibaren).",
+        ("Yatırım tavsiyesi değildir. Model çıktısıdır. Rotasyon kuralının ileriye dönük kaydı 2026-11 dengelemesinden "
+         "başlar (data/forward_record/decisions.jsonl); o tarihe kadar yalnızca geçmiş test sonuçları vardır."),
         (f"Skor = {w.get('valuation_z', 0):g} değerleme + {w.get('catalyst_score', 0):g} katalizör + "
          f"{w.get('ownership_quality_z', 0):g} ortaklık + {w.get('low_vol_z', 0):g} düşük volatilite + "
          f"{w.get('momentum_z', 0):g} momentum. KAP verisi alınamayan hissede katalizör ağırlığı diğerlerine dağıtılır."),
@@ -253,14 +317,18 @@ def build_opportunities_workbook(as_of_date: str, payload: dict) -> Workbook:
          "getiriyi artırmadı ve düşüşü azaltmadı; satış kuralı, hissenin değer sıralamasında üst %20'den çıkmasıdır. "
          "On-kayıtlı alış testi (docs/research/entry_timing_preregistration.md) "
          "geri çekilme/limit, RSI, trend onayı ve kademeli alım kurallarının hemen almaktan iyi olmadığını gösterdi."),
-        "Değer tuzağı riski: fiyat trendi aşağı; ucuzluk düşüşün sonucu olabilir.",
+("Değer tuzağı riski: fiyat trendi aşağı; ucuzluk düşüşün sonucu olabilir. Benzer filtreler (momentum alt dilimi, "
+         "5 yıllık çöküş, CHS/Altman sıkıntı, düşük F-skor) on-kayıtlı testte değer portföyünü iyileştirmedi "
+         "(long_term_preregistration.md); bayrak yalnızca bilgidir."),
         (f"Zirveden % ve risk bayrakları yalnızca bilgidir, skoru değiştirmez: 5 yıllık zirveden "
          f"%{-dg.CRASH_FROM_PEAK_PCT:g}+ düşüş, 52 haftalık zirveden %{-dg.FAR_FROM_52W_HIGH_PCT:g}+ uzaklık, "
          f"zarar (TTM HBK < 0), borç/sıkıntı (negatif özsermaye, negatif FAVÖK + net borç, "
          f"net borç/FAVÖK > {dg.NET_DEBT_EBITDA_MAX:g} veya FAVÖK/finansman gideri < {dg.INTEREST_COVERAGE_MIN:g}). "
          "Eşikler henüz test edilmedi."),
         "Sektör RRG: sektörün BIST 100'e göre göreli gücü; skora dahil değil, tek başına alım sinyali değil.",
-        "Backtest kanıtı (2013–2026): değer ve düşük volatilite faktörleri kesitsel olarak çalışıyor; hayatta kalma yanlılığı ve nominal TL uyarıları geçerli.",
+("Backtest kanıtı (2013–2026, maliyetli): değer rotasyonu kendi eşit ağırlıklı evrenini 2021+ yılda yaklaşık "
+         "6,9 puan geçti (t 2,6), BIST 100 toplam getirinin yaklaşık 1,7 puan gerisinde kaldı. Düşük volatilite ve diğer "
+         "filtreler on-kayıtlı testi geçmedi. Delist hisseler dahil."),
     ]
     wm["A1"] = "Kolonlar ve sınırlar"
     wm["A1"].font = Font(bold=True, size=12)

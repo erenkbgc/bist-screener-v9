@@ -19,7 +19,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import sys
+import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -42,6 +44,7 @@ except ImportError:
     pass  # python-dotenv kurulu degilse ortam degiskenleri zaten disaridan export edilmis olmali
 
 from core import db
+from core import run_date as run_date_mod
 from core import regime as regime_mod
 from core import regime_taxonomy
 from core import universe as universe_mod
@@ -73,6 +76,7 @@ from core import thesis as thesis_mod
 from core import invalidation as invalidation_mod
 from core import evaluate as evaluate_mod
 from core import momentum as momentum_mod
+from core import smc as smc_mod
 from core import trend_forecaster
 from core import portfolio as portfolio_mod
 from core import sovereign_spread as sovereign_spread_mod
@@ -165,7 +169,17 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
     }
 
 
-def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False) -> dict:
+def _timing(t0: float, stage: str) -> None:
+    """Kosu ~4.5 saat suruyor ve log'da asama sureleri yoktu; nerede gectigini gosterir."""
+    print(f"[timing] {stage} {time.monotonic() - t0:.0f}s", flush=True)
+
+
+def run(as_of_date: str | None = None, min_volume_tl: float = 10_000_000, force: bool = False) -> dict:
+    t0 = time.monotonic()
+    as_of_date = run_date_mod.resolve_run_date(
+        schedule=os.environ.get("GITHUB_EVENT_SCHEDULE"),
+        explicit_date=as_of_date,
+    )
     db.init_db()
     run_id = str(uuid.uuid4())
     started_at = datetime.now(timezone.utc).isoformat()
@@ -198,13 +212,16 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     # ihtiyac duyacagi ag cagrilarini PARALEL olarak onceden cache'ler (bkz.
     # core/live_data.py::prefetch_all). Bu adim olmadan ~800 tickerlik tam evren
     # tamamen sirali agsal I/O nedeniyle saatler surebilir.
+    _timing(t0, "universe")
     bist_mcp.prefetch(eligible)
+    _timing(t0, "prefetch")
 
     # --- 4. basis_guard uygulanmis fundamentals ---
     from core import fundamentals as fundamentals_mod
     fundamentals_rows = fundamentals_mod.fetch_and_store_fundamentals(as_of_date, eligible)
     fundamentals_by_ticker = {r["ticker"]: r for r in fundamentals_rows}
 
+    _timing(t0, "fundamentals")
     ur = basis_guard.unknown_ratio(fundamentals_rows)
     if ur > basis_guard.UNKNOWN_RATIO_HALT_THRESHOLD:
         _persist_run(run_id, as_of_date, "halted", "HALTED", started_at,
@@ -217,6 +234,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     sloan_rows = sloan_mod.calculate_earnings_quality(as_of_date, eligible, fundamentals_by_ticker)
     sloan_by_ticker = {r["ticker"]: r for r in sloan_rows}
 
+    _timing(t0, "piotroski_sloan")
     # --- 6. catalysts + event_calendar_engine ---
     tickers = [u["ticker"] for u in eligible]
     catalyst_by_ticker = catalysts_mod.fetch_kap_catalysts(as_of_date, tickers, lookback_days=14)
@@ -250,6 +268,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         print(f"[sector_rotation] atlandi: {exc}")
         sector_rotation = {}
 
+    _timing(t0, "catalysts_prices_regime_sector")
     # --- 7. ownership_quality ---
     ownership_rows = [ownership_mod.fetch_ownership(as_of_date, t, prices_by_ticker[t]) for t in tickers]
     ownership_by_ticker = {r["ticker"]: r for r in ownership_rows}
@@ -320,7 +339,6 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["terminal_fair_value"] = targets_mod.bist_tick_round(lt_target.get("terminal_fair_value"))
         lt["valuation_excess_pct"] = lt_target.get("valuation_excess_pct")
         lt["volatility_cone_ceiling"] = lt_target.get("volatility_cone_ceiling")
-        lt["scenario_probabilities"] = lt_target.get("scenario_probabilities")
         lt["fair_value_low"] = lt_target.get("fair_value_low")
         lt["fair_value_base"] = lt_target.get("fair_value_base")
         lt["fair_value_high"] = lt_target.get("fair_value_high")
@@ -329,21 +347,40 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["valuation_dcf_leg"] = lt_target.get("dcf_leg")
         lt["valuation_peers_leg"] = lt_target.get("peers_leg")
         lt["valuation_quality_leg"] = lt_target.get("quality_leg")
-        if lt["target_price"] is None:
-            continue
-        lt["target_price"] = targets_mod.bist_tick_round(lt["target_price"])
-        if lt.get("fair_value_low") is not None:
-            lt["fair_value_low"] = targets_mod.bist_tick_round(lt["fair_value_low"])
-        if lt.get("fair_value_high") is not None:
-            lt["fair_value_high"] = targets_mod.bist_tick_round(lt["fair_value_high"])
-        if lt.get("fair_value_base") is not None:
-            lt["fair_value_base"] = targets_mod.bist_tick_round(lt["fair_value_base"])
-        lt["expected_dividend_horizon"] = lt_target.get("expected_dividend_horizon") or 0.0
-        hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro,
-                                           bid=bid_ask["bid"], ask=bid_ask["ask"],
-                                           volume_ratio_20d=last.get("volume_ratio_20d"),
-                                           amihud_illiq=illiq,
-                                           dividend_per_share=lt["expected_dividend_horizon"])
+        if lt["target_price"] is not None:
+            lt["target_price"] = targets_mod.bist_tick_round(lt["target_price"])
+            if lt.get("fair_value_low") is not None:
+                lt["fair_value_low"] = targets_mod.bist_tick_round(lt["fair_value_low"])
+            if lt.get("fair_value_high") is not None:
+                lt["fair_value_high"] = targets_mod.bist_tick_round(lt["fair_value_high"])
+            if lt.get("fair_value_base") is not None:
+                lt["fair_value_base"] = targets_mod.bist_tick_round(lt["fair_value_base"])
+            lt["expected_dividend_horizon"] = lt_target.get("expected_dividend_horizon") or 0.0
+            hurdle_lt = hurdle_mod.compute_all(current_price, lt["target_price"], 180, macro,
+                                               bid=bid_ask["bid"], ask=bid_ask["ask"],
+                                               volume_ratio_20d=last.get("volume_ratio_20d"),
+                                               amihud_illiq=illiq,
+                                               dividend_per_share=lt["expected_dividend_horizon"])
+        else:
+            # Hedef fiyat yalnizca bilgi katmanidir; None oldugunda aday valuation_z ve
+            # aylik rotasyon havuzundan dusurulmez (orn. Holding sektor medyan NAV
+            # iskontosu > %60 iken 2.5x siniri tum sektoru None yapiyordu, ya da cok
+            # ucuz sanayi/GYO hisseleri 2.5x/3.5x hedef korumasina takiliyordu).
+            # excess_over_hurdle_pct=None -> hard_filters_passed yalnizca bilgi
+            # kartlarindan (NO_ACTION / filtered_by='hurdle') eler; R0 rotasyonu
+            # test edilen panelle birebir ayni evreni siralar.
+            lt["expected_dividend_horizon"] = 0.0
+            hurdle_lt = {
+                "hurdle_rate_pct": hurdle_mod.hurdle_rate_pct(macro["bond_2y_pct"], 180),
+                "expected_roi_pct": None,
+                "excess_over_hurdle_pct": None,
+                "real_return_pct": None,
+                "usd_return_pct": None,
+                "passes_gate": False,
+                "net_expected_roi_pct": None,
+                "net_excess_over_hurdle_pct": None,
+                "transaction_cost_pct": None,
+            }
         lt.update(hurdle_lt)
         lt["horizon_days"] = 180
         # Dinamik Risk Yonetimi (v12 roadmap P0-1: entry_low, entry_high, stop_loss, position_size_pct)
@@ -382,8 +419,10 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         lt["dcf"] = dcf_row
         lt["bucket"] = "long_term"
         lt["events"] = events_by_ticker.get(t, [])
-        lt.update(diagnostics_mod.diagnose(
-            lt, bist_mcp.get_prices(t, as_of_date, days=DIAGNOSTIC_HISTORY_DAYS)))
+        diag_rows = bist_mcp.get_prices(t, as_of_date, days=DIAGNOSTIC_HISTORY_DAYS)
+        lt.update(diagnostics_mod.diagnose(lt, diag_rows))
+        # Smart Money Concepts ozeti: yalnizca bilgi (test edilmedi; plan_2026-10-21 P3-2)
+        lt.update(smc_mod.snapshot(diag_rows))
         long_term_candidates.append(lt)
 
         # --- kisa vade: yalnizca ownership.short_term_rejected degilse ---
@@ -433,6 +472,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     all_candidates = long_term_candidates + short_term_candidates
     sector_rotation_mod.annotate_candidates(all_candidates, sector_rotation)
 
+    _timing(t0, "candidates")
     # --- ownership_z + low_vol_z (kesitsel, bucket ici) ---
     for bucket_list in (long_term_candidates, short_term_candidates):
         for c in bucket_list:
@@ -451,9 +491,39 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     scored = scoring_mod.score_candidates(as_of_date, all_candidates, as_of_date_cutoff, regime=predicted_regime)
 
     # --- veri saglik kapisi (roadmap Adim 6; rotasyondan once: ileriye donuk kayda yazilir; bkz. core/run_health.py) ---
+    # P3-1 (saglayici TMS 29 tutarlilik alarmi) ve P3-2 (piyasa degeri capraz kontrolu):
+    # YALNIZCA izleme, skora/siralamaya/rotasyona GIRMEZ.
+    vendor_check, mcap_check = None, None
+    try:
+        if bist_mcp._live_enabled():
+            from core import live_data as ld
+            eligible_set = {u["ticker"] for u in eligible}
+            sample_tickers = [t for t in run_health_mod.VENDOR_SAMPLE_TICKERS if t in eligible_set]
+            if sample_tickers:
+                sample_stmts = {t: ld._quarterly_statements_cached(t)[1] for t in sample_tickers}
+                vendor_check = run_health_mod.vendor_consistency_check(sample_stmts, cpi=ld._cpi_index_cached())
+                print(f"[vendor_consistency] n={vendor_check['n_checked']} "
+                      f"median={vendor_check['median_ratio']} ok={vendor_check['ok']} "
+                      f"out_of_range={vendor_check['n_out_of_range']}", flush=True)
+            isy_mcaps = ld.live_isyatirim_market_caps()
+            if isy_mcaps:
+                tv_mcaps = {u["ticker"]: u.get("market_cap") for u in eligible}
+                mcap_check = run_health_mod.market_cap_cross_check(tv_mcaps, isy_mcaps)
+                if mcap_check["flagged"]:
+                    flagged_by_tk = {f["ticker"]: f["diff_pct"] for f in mcap_check["flagged"]}
+                    for c in scored:
+                        diff_pct = flagged_by_tk.get(c["ticker"])
+                        if diff_pct is not None:
+                            c["mcap_mismatch_flag"] = True
+                            c["mcap_isy_diff_pct"] = diff_pct
+                    print(f"[mcap_cross_check] >%{run_health_mod.MCAP_MAX_DIFF_SHARE*100:.0f} sapma: "
+                          f"{mcap_check['flagged'][:10]}", flush=True)
+    except Exception as exc:  # noqa: BLE001 - izleme kontrolu canli kosuyu durdurmamali
+        print(f"[monitoring] P3 kontrolleri atlandi: {exc!r}", flush=True)
+        vendor_check, mcap_check = None, None
     health = run_health_mod.assess(
         as_of_date, prices=run_health_mod.price_stats(as_of_date, prices_by_ticker, xu100_prices),
-        catalyst_available=kap_available)
+        catalyst_available=kap_available, vendor_check=vendor_check, mcap_check=mcap_check)
     run_health_mod.persist(health)
     print(f"[run_health] {health['status']} issues={health['issues']} config={health['config_hash']} "
           f"metrics={health['metrics']}", flush=True)
@@ -482,6 +552,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     correlation_mod.compute_correlation_flags(as_of_date, held)
     portfolio_correlation = correlation_mod.effective_bets(held)
 
+    _timing(t0, "scoring_rotation")
     # --- KAP kirmizi bayrak paneli (bilgi amacli; on-kayitli test gecmedi,
     # karari DEGISTIRMEZ). Canli modda eksik gunler KAP'tan cekilir. ---
     refresh_error = None
@@ -509,6 +580,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
     if sovereign:
         print(f"[sovereign_spread] {sovereign}", flush=True)
 
+    _timing(t0, "kap_panels")
     # --- Quant Level-Up Faz 4 & 5: HRP Portfoy & Faktor Katki Disclosures ---
     if passing:
         factor_disclosure.compute_and_save_factor_contributions(
@@ -647,6 +719,7 @@ def run(as_of_date: str, min_volume_tl: float = 10_000_000, force: bool = False)
         except Exception as debug_exc:  # noqa: BLE001 - debug yazimi ASLA ana kosuyu dusurmemeli
             print(f"[validation_gate] debug dump basarisiz (yok sayildi): {debug_exc}")
 
+    _timing(t0, "report_dispatch")
     # --- evaluate_past_predictions + thesis_invalidation_monitor (kosunun sonunda) ---
     # Bu, BIR SONRAKI kosunun payload'unun okuyacagi outcomes/invalidation_checks
     # tablolarini gunceller (bkz. core/evaluate.py dosya-basi notu).
@@ -843,20 +916,28 @@ def _persist_run(run_id: str, as_of_date: str, status: str, run_level_state: str
 
 def main():
     parser = argparse.ArgumentParser(description="BIST AI Investment Screener - gunluk kosu")
-    parser.add_argument("--as-of-date", default=date.today().isoformat())
+    parser.add_argument(
+        "--as-of-date",
+        default=None,
+        help="Hedef islem tarihi (YYYY-MM-DD; verilmezse GITHUB_EVENT_SCHEDULE / 06:00 Istanbul kuraliyla cozulur)",
+    )
     parser.add_argument("--min-volume-tl", type=float, default=10_000_000)
     parser.add_argument("--force", action="store_true", help="Idempotency kontrolunu atla, kosuyu zorla calistir")
     args = parser.parse_args()
+    resolved_date = run_date_mod.resolve_run_date(
+        schedule=os.environ.get("GITHUB_EVENT_SCHEDULE"),
+        explicit_date=args.as_of_date or os.environ.get("INPUT_AS_OF_DATE"),
+    )
 
     try:
-        result = run(args.as_of_date, min_volume_tl=args.min_volume_tl, force=args.force)
+        result = run(resolved_date, min_volume_tl=args.min_volume_tl, force=args.force)
     except Exception as exc:
         # Karar uretilemeyen ay da ileriye donuk kayda girer (yalnizca basarili ay sayilmasin)
-        forward_record.append_no_decision(args.as_of_date, f"run_error: {exc!r}"[:500])
+        forward_record.append_no_decision(resolved_date, f"run_error: {exc!r}"[:500])
         raise
     print(result)
     if result.get("status") == "halted":
-        forward_record.append_no_decision(args.as_of_date, f"halted: {result.get('reason')}"[:500])
+        forward_record.append_no_decision(resolved_date, f"halted: {result.get('reason')}"[:500])
         sys.exit(1)
 
 

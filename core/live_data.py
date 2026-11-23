@@ -34,6 +34,8 @@ import json
 import math
 import re
 import socket
+import threading
+import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
@@ -132,8 +134,78 @@ def _classify_sector(sector_text: str | None) -> tuple[str, str]:
     return "industrial", "SPK_TFRS"
 
 
+class _KapBreaker:
+    """borsapy KAP saglayicisinin HTTP istemcisini saran devre kesici.
+
+    GitHub runner'larindan KAP istekleri cogu gun dusuyor (2026-10-24: 467/476
+    hissede rapor tarihi yok). borsapy KAP sirket listesini yalnizca BASARILI
+    cekimde cache'liyor; bu yuzden KAP'a dokunan her hisse cagrisi (info
+    sirket detayi, news, rapor tarihi) listeyi 20sn zaman asimiyla bastan
+    istiyor. Art arda KAP_BREAKER_THRESHOLD hatadan sonra kosunun geri kalaninda
+    KAP'a istek atilmaz; cagri aninda hata firlatir. borsapy bu hatayi zaten
+    yakalayip None/bos tablo donduruyor, yani sonuc KAP'in cevap vermemesiyle
+    ayni, yalnizca beklemeden."""
+
+    def __init__(self, client, threshold: int):
+        self._client, self.threshold = client, threshold
+        self._lock = threading.Lock()
+        self.consecutive_failures = 0
+        self.calls = self.failures = self.skipped = 0
+        self.seconds = 0.0
+        self.open = False
+
+    def _request(self, method: str, *args, **kwargs):
+        with self._lock:
+            if self.open:
+                self.skipped += 1
+                raise ConnectionError("KAP devre kesici acik (art arda hata)")
+            self.calls += 1
+        t0 = time.monotonic()
+        ok = False
+        try:
+            response = getattr(self._client, method)(*args, **kwargs)
+            ok = response.status_code < 400
+            return response
+        finally:
+            with self._lock:
+                self.seconds += time.monotonic() - t0
+                if ok:
+                    self.consecutive_failures = 0
+                else:
+                    self.failures += 1
+                    self.consecutive_failures += 1
+                    if self.consecutive_failures >= self.threshold:
+                        self.open = True
+
+    def get(self, *args, **kwargs):
+        return self._request("get", *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        return self._request("post", *args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self._client, name)
+
+    def stats(self) -> dict:
+        return {"calls": self.calls, "failures": self.failures, "skipped": self.skipped,
+                "seconds": round(self.seconds), "open": self.open}
+
+
+KAP_BREAKER_THRESHOLD = 10
+
+
+def kap_breaker() -> _KapBreaker:
+    """KAP saglayicisinin (borsapy singleton) istemcisine devre kesiciyi bir kez takar."""
+    from borsapy._providers.kap import get_kap_provider
+    provider = get_kap_provider()
+    if not isinstance(provider._client, _KapBreaker):
+        provider._client = _KapBreaker(provider._client, KAP_BREAKER_THRESHOLD)
+    return provider._client
+
+
 @lru_cache(maxsize=2048)
 def _ticker_obj(ticker: str):
+    kap_breaker()
     return bp.Ticker(ticker)
 
 
@@ -154,6 +226,37 @@ def _fast_info_cached(ticker: str) -> dict | None:
         return {f: getattr(fi, f, None) for f in _FAST_INFO_FIELDS}
     except Exception:
         return None
+
+
+def live_isyatirim_market_caps() -> dict[str, float]:
+    """Tek bp.Screener() cagrisiyla Is Yatirim piyasa degerleri (TL).
+
+    P3-2 piyasa degeri capraz kontrolu (TradingView fast_info vs Is Yatirim)
+    icin kullanilir. borsapy criteria_8 degeri milyon TL'dir; burada TL'ye
+    cevrilir. Hata durumunda bos dict doner (izleme kosuyu durdurmaz).
+    """
+    try:
+        s = bp.Screener()
+        s.add_filter("market_cap", min=0)
+        df = s.run()
+        if df is None or df.empty or "symbol" not in df.columns:
+            return {}
+        criteria_map = getattr(getattr(s, "_provider", None), "CRITERIA_MAP", None) or {}
+        col = "market_cap" if "market_cap" in df.columns else f"criteria_{criteria_map.get('market_cap', '8')}"
+        if col not in df.columns:
+            return {}
+        out: dict[str, float] = {}
+        for _, r in df.iterrows():
+            tk = str(r["symbol"]).strip().upper()
+            try:
+                fv = float(r.get(col))
+            except (TypeError, ValueError):
+                continue
+            if tk and math.isfinite(fv) and fv > 0:
+                out[tk] = fv * 1_000_000.0
+        return out
+    except Exception:  # noqa: BLE001 - izleme kontrolu canli kosuyu durdurmamali
+        return {}
 
 
 @lru_cache(maxsize=2048)
@@ -308,7 +411,16 @@ def live_value_inputs(ticker: str, market_cap: float | None, as_of_date: str | N
     return out
 
 
-@lru_cache(maxsize=2048)
+# _statements_cached icin elle tutulan cache: lru_cache basarisiz cekimi de
+# (None, None, None) olarak saklar ve o kosu boyunca tekrar denemez. 2026-10-23
+# kosusu saglayici throttle'i yuzunden unknown oranini %30'un uzerine cikardi
+# ve basis_guard taramayi durdurdu; ertesi gun ayni hisseler sorunsuz cekildi.
+# retry_failed_statements bu cache'teki bos girdileri yeniden dener.
+_STATEMENTS_CACHE: dict[tuple[str, str | None], tuple] = {}
+STATEMENT_RETRY_ROUNDS = 2
+STATEMENT_RETRY_PAUSE_S = 30.0
+
+
 def _statements_cached(ticker: str, financial_group: str | None = None):
     """(balance_sheet, income_stmt, cashflow) DataFrame'lerini dondurur.
 
@@ -329,6 +441,43 @@ def _statements_cached(ticker: str, financial_group: str | None = None):
     UFRS'nin UCU (bs VE inc) tamamen bos donerse XI_29 ile bir kez daha
     denenir -- boylece sektor siniflandirmasi banka/aracı kurum ayrimini tam
     yapamasa bile veri kaybi olmaz."""
+    key = (ticker, financial_group)
+    hit = _STATEMENTS_CACHE.get(key)
+    if hit is None:
+        hit = _STATEMENTS_CACHE[key] = _fetch_statements(ticker, financial_group)
+    return hit
+
+
+def _statements_missing(stmts: tuple) -> bool:
+    """live_fundamentals'in reporting_basis='unknown' kurali ile ayni: bs VE inc yok."""
+    return stmts[0] is None and stmts[1] is None
+
+
+def retry_failed_statements(universe_rows: list[dict], rounds: int = STATEMENT_RETRY_ROUNDS,
+                            pause_s: float = STATEMENT_RETRY_PAUSE_S) -> dict:
+    """Prefetch'te tablosu hic cekilemeyen hisseleri, saglayici throttle'i
+    gecsin diye bekleyip SIRALI olarak yeniden dener. Gercekten verisi olmayan
+    hisseler (yeni halka arz vb.) en fazla `rounds` ek cagri maliyeti getirir."""
+    keys = [(u["ticker"], _financial_group_for_profile(u.get("ratio_profile"))) for u in universe_rows]
+    missing = [k for k in keys if _statements_missing(_statements_cached(*k))]
+    failed_before = len(missing)
+    for attempt in range(1, rounds + 1):
+        if not missing:
+            break
+        time.sleep(pause_s * attempt)
+        still = []
+        for key in missing:
+            stmts = _fetch_statements(*key)
+            if _statements_missing(stmts):
+                still.append(key)
+            else:
+                _STATEMENTS_CACHE[key] = stmts
+        missing = still
+    return {"failed_before": failed_before, "recovered": failed_before - len(missing),
+            "still_failed": len(missing)}
+
+
+def _fetch_statements(ticker: str, financial_group: str | None):
     t = _ticker_obj(ticker)
 
     def fetch(fg):
@@ -383,32 +532,231 @@ def _val(series, col_pos: int = 0):
 # universe
 # ---------------------------------------------------------------------------
 
-def live_universe(limit: int | None = None, tickers: list[str] | None = None) -> list[dict]:
+COMPANIES_MAX_ATTEMPTS = 3
+COMPANIES_RETRY_BACKOFF_S = 2.0
+COMPANIES_CACHE_MAX_STALE_DAYS = 14
+COMPANIES_CACHE_PATH = Path(__file__).resolve().parent.parent / "data" / "companies_cache.json"
+
+_COMPANIES_STATUS: dict = {
+    "source": "live",
+    "fallback_used": False,
+    "cached_date": None,
+    "age_days": 0,
+    "attempts": 0,
+    "error": None,
+}
+
+
+def get_companies_status() -> dict:
+    """Son bp.companies() / live_universe() cagrisinin kaynak ve fallback durumu (run_health icin)."""
+    return dict(_COMPANIES_STATUS)
+
+
+def reset_companies_status() -> None:
+    _COMPANIES_STATUS.update({
+        "source": "live",
+        "fallback_used": False,
+        "cached_date": None,
+        "age_days": 0,
+        "attempts": 0,
+        "error": None,
+    })
+
+
+def _resolve_reference_date(as_of_date: str | None = None) -> date:
+    if as_of_date:
+        try:
+            return date.fromisoformat(str(as_of_date)[:10])
+        except ValueError:
+            pass
+    from core.run_date import resolve_run_date
+    return date.fromisoformat(resolve_run_date())
+
+
+def _save_companies_cache(companies_df, as_of_date_str: str, cache_path: Path | None = None) -> None:
+    target = cache_path or COMPANIES_CACHE_PATH
+    try:
+        records = [
+            {"ticker": str(r["ticker"]).strip(), "name": str(r.get("name") or r["ticker"]).strip()}
+            for _, r in companies_df.iterrows()
+            if str(r.get("ticker") or "").strip()
+        ]
+        if not records:
+            return
+        target.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "as_of_date": as_of_date_str,
+            "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "companies": records,
+        }
+        target.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _load_cached_companies(ref_date: date, cache_path: Path | None = None):
+    """Disk JSON onbellegi ve DB universe_snapshot tablosundan en guncel (<= ref_date) sirket listesini bulur."""
+    import pandas as pd
+    from core import db
+
+    candidates: list[tuple[date, list[dict]]] = []
+    target = cache_path or COMPANIES_CACHE_PATH
+    if target.exists():
+        try:
+            raw = json.loads(target.read_text(encoding="utf-8"))
+            c_date = date.fromisoformat(str(raw.get("as_of_date", ""))[:10])
+            rows = [
+                {"ticker": str(r["ticker"]).strip(), "name": str(r.get("name") or r["ticker"]).strip()}
+                for r in (raw.get("companies") or [])
+                if str(r.get("ticker") or "").strip()
+            ]
+            if rows:
+                candidates.append((c_date, rows))
+        except Exception:  # noqa: BLE001
+            pass
+
+    try:
+        if Path(db.DB_PATH).exists():
+            latest = db.query(
+                "SELECT MAX(as_of_date) AS d FROM universe_snapshot WHERE as_of_date <= ?",
+                (ref_date.isoformat(),),
+            )
+            snap_date_str = latest[0]["d"] if latest and latest[0]["d"] else None
+            if not snap_date_str:
+                latest_any = db.query("SELECT MAX(as_of_date) AS d FROM universe_snapshot")
+                snap_date_str = latest_any[0]["d"] if latest_any and latest_any[0]["d"] else None
+            if snap_date_str:
+                snap_date = date.fromisoformat(str(snap_date_str)[:10])
+                snap_rows = db.query(
+                    "SELECT ticker, name FROM universe_snapshot WHERE as_of_date = ? ORDER BY ticker",
+                    (snap_date_str,),
+                )
+                rows = [
+                    {"ticker": str(r["ticker"]).strip(), "name": str(r["name"] or r["ticker"]).strip()}
+                    for r in snap_rows
+                    if r["ticker"]
+                ]
+                if rows:
+                    candidates.append((snap_date, rows))
+    except Exception:  # noqa: BLE001
+        pass
+
+    if not candidates:
+        return None, None, None
+
+    # ref_date'ten gelecekte olmayanlari tercih et; en yakin tarihli olani sec.
+    valid_past = [c for c in candidates if c[0] <= ref_date]
+    pool = valid_past if valid_past else candidates
+    best_date, best_rows = max(pool, key=lambda x: x[0])
+    age_days = (ref_date - best_date).days
+    return pd.DataFrame(best_rows), best_date.isoformat(), age_days
+
+
+def _fetch_companies_with_fallback(
+    as_of_date: str | None = None,
+    max_attempts: int | None = None,
+    backoff_s: float | None = None,
+    max_stale_days: int | None = None,
+    cache_path: Path | None = None,
+):
+    """bp.companies() cagrisini ustel backoff ile yeniden dener; basarisiz olursa
+    tazelik siniri (max_stale_days) icindeki son basarili sirket listesine duser
+    ve run_health icin _COMPANIES_STATUS bayragini isaretler."""
+    attempts = max_attempts if max_attempts is not None else COMPANIES_MAX_ATTEMPTS
+    base_backoff = backoff_s if backoff_s is not None else COMPANIES_RETRY_BACKOFF_S
+    stale_limit = max_stale_days if max_stale_days is not None else COMPANIES_CACHE_MAX_STALE_DAYS
+    ref_date = _resolve_reference_date(as_of_date)
+
+    last_exc: Exception | None = None
+    for attempt in range(1, max(1, attempts) + 1):
+        try:
+            df = bp.companies()
+            if df is None or df.empty or "ticker" not in df.columns:
+                raise RuntimeError("bp.companies() bos veya gecersiz tablo dondurdu")
+            _save_companies_cache(df, ref_date.isoformat(), cache_path=cache_path)
+            _COMPANIES_STATUS.update({
+                "source": "live",
+                "fallback_used": False,
+                "cached_date": ref_date.isoformat(),
+                "age_days": 0,
+                "attempts": attempt,
+                "error": None,
+            })
+            return df
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            if attempt < attempts:
+                delay = base_backoff * (2 ** (attempt - 1))
+                if delay > 0:
+                    time.sleep(delay)
+
+    cached_df, cached_date_str, age_days = _load_cached_companies(ref_date, cache_path=cache_path)
+    if cached_df is not None and age_days is not None and 0 <= age_days <= stale_limit:
+        _COMPANIES_STATUS.update({
+            "source": "cache_fallback",
+            "fallback_used": True,
+            "cached_date": cached_date_str,
+            "age_days": age_days,
+            "attempts": attempts,
+            "error": str(last_exc),
+        })
+        print(
+            f"[universe] UYARI: bp.companies() {attempts} denemede basarisiz ({last_exc}); "
+            f"onbellekteki sirket listesi kullaniliyor (tarih={cached_date_str}, yas={age_days}g, n={len(cached_df)})",
+            flush=True,
+        )
+        return cached_df
+
+    _COMPANIES_STATUS.update({
+        "source": "failed_stale_cache" if cached_df is not None else "failed_no_cache",
+        "fallback_used": False,
+        "cached_date": cached_date_str,
+        "age_days": age_days,
+        "attempts": attempts,
+        "error": str(last_exc),
+    })
+    assert last_exc is not None
+    raise last_exc
+
+
+def live_universe(
+    limit: int | None = None,
+    tickers: list[str] | None = None,
+    as_of_date: str | None = None,
+    max_workers: int = PREFETCH_MAX_WORKERS,
+) -> list[dict]:
     """companies() ile TUM BIST evrenini ceker (807 sirket, hardcoded liste DEGIL).
 
-    Sektor/regulator siniflandirmasi icin her ticker'a bir 'info' cagrisi gerekir;
-    bu maliyetlidir (~800 istek) ama gunluk bir toplu is (cron 18:30) icin kabul
-    edilebilir (~0.05-0.2sn/istek). `limit` veya `tickers` yalnizca gelistirme/hizli-test icin:
+    Sektor/regulator siniflandirmasi icin fintables haritasinda olmayan ticker'lara
+    bir 'info' cagrisi gerekir; yalnizca eksik olanlar PREFETCH_MAX_WORKERS kadar
+    paralel cekilir. `limit` veya `tickers` yalnizca gelistirme/hizli-test icin:
     verilirse per-ticker siniflandirma dongusune GIRMEDEN ONCE listeyi kirpar
     (yoksa limit'in hicbir performans faydasi olmazdi).
     """
-    companies_df = bp.companies()
+    companies_df = _fetch_companies_with_fallback(as_of_date=as_of_date)
     if tickers:
         companies_df = companies_df[companies_df["ticker"].isin([t.strip().upper() for t in tickers])]
     elif limit:
         companies_df = companies_df.head(int(limit))
-    tickers = companies_df["ticker"].tolist()
+    tickers_list = companies_df["ticker"].tolist()
 
-    # `info` cekimi (807 ag cagrisina kadar) buradaki tek maliyetli adim;
-    # sirali degil PREFETCH_MAX_WORKERS kadar paralel yapilir.
-    with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
-        list(pool.map(_info_cached, tickers))
+    sector_map = _fintables_sector_map()
+    need_info = [t for t in tickers_list if not sector_map.get(t)]
+    info_by_ticker: dict[str, dict] = {}
+    if need_info:
+        if max_workers and max_workers > 1 and len(need_info) > 1:
+            with ThreadPoolExecutor(max_workers=max_workers) as pool:
+                info_by_ticker = dict(zip(need_info, pool.map(_info_cached, need_info)))
+        else:
+            info_by_ticker = {t: _info_cached(t) for t in need_info}
 
     seed: list[dict] = []
     for _, r in companies_df.iterrows():
         ticker = r["ticker"]
-        info = _info_cached(ticker)  # yukarida zaten cache'lendi, ag cagrisi yok
-        sector = _fintables_sector_map().get(ticker) or info.get("sector") or info.get("industry")
+        sector = sector_map.get(ticker)
+        if not sector:
+            info = info_by_ticker.get(ticker) or {}
+            sector = info.get("sector") or info.get("industry")
         ratio_profile, regulator = _classify_sector(sector)
         seed.append({
             "ticker": ticker, "name": r.get("name") or ticker,
@@ -445,6 +793,19 @@ def prefetch_all(universe_rows: list[dict]) -> None:
         futures.extend(pool.submit(_history_adj_cached, t, HISTORY_PERIOD) for t in tickers)
         for f in futures:
             f.result()  # istisnalar zaten fonksiyon icinde yutuluyor, sadece bekle
+
+    # KAP rapor tarihi (core/fundamentals.py) ve value_sn icin ceyreklik tablolar
+    # (live_value_inputs) eskiden sonraki SIRALI dongude ilk kez cekiliyordu.
+    with ThreadPoolExecutor(max_workers=PREFETCH_MAX_WORKERS) as pool:
+        list(pool.map(_financial_report_disclosures_cached, tickers))
+        list(pool.map(_quarterly_statements_cached,
+                      [u["ticker"] for u in universe_rows
+                       if u.get("ratio_profile") not in _UFRS_RATIO_PROFILES]))
+    print(f"[prefetch] KAP istemcisi: {kap_breaker().stats()}", flush=True)
+
+    retry = retry_failed_statements(universe_rows)
+    if retry["failed_before"]:
+        print(f"[prefetch] mali tablo yeniden deneme: {retry}", flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -1053,7 +1414,7 @@ def live_financial_report_published_dt(ticker: str, period_end: str) -> datetime
     if df is None or df.empty:
         return None
 
-    best: tuple[int, date] | None = None
+    best: tuple[int, datetime] | None = None
     for _, row in df.iterrows():
         title = str(row.get("Title") or "")
         if not _FINANCIAL_REPORT_TITLE_RE.search(title):
@@ -1065,7 +1426,8 @@ def live_financial_report_published_dt(ticker: str, period_end: str) -> datetime
         lag_days = (pub_dt.date() - period_end_date).days
         # Finansal rapor HER ZAMAN donem sonundan SONRA yayinlanir; pencere
         # disinda kalanlar (negatif veya > MAX_LAG) baska bir doneme aittir.
-        if 0 < lag_days <= _FINANCIAL_REPORT_MAX_LAG_DAYS and (best is None or lag_days < best[0]):
+        # Ayni gun birden fazla bildirim varsa en erken yayin zamani secilir.
+        if 0 < lag_days <= _FINANCIAL_REPORT_MAX_LAG_DAYS and (best is None or pub_dt < best[1]):
             best = (lag_days, pub_dt)
 
     return best[1] if best else None

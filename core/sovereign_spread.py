@@ -75,14 +75,21 @@ def build_panel(as_of_date: str) -> dict:
                           end=(today + timedelta(days=1)).isoformat(), auto_adjust=False, progress=False)["Close"]
         ust.index = pd.to_datetime(ust.index).tz_localize(None).normalize()
         ust = ust.sort_index().ffill().dropna()
+        if ust.empty:
+            return {"status": "unavailable", "reason": "ust_yields_empty"}
         provider = get_eurobond_provider()
         now = _spread_near(provider, ust, today)
         prev = _spread_near(provider, ust, today - timedelta(days=LOOKBACK_DAYS))
         if now is None or prev is None:
-            return {"status": "unavailable"}
+            # 2026-10-21..24 CI kosularinda hep unavailable, lokalde ok: hangi
+            # kaynagin bos dondugu log'da gorunsun (Ziraat GitHub IP'lerini engelliyor olabilir).
+            days = [today - timedelta(days=k) for k in range(MAX_BACK_DAYS)]
+            n_bonds = sum(len(_usd_bonds(provider, d)) for d in days if d.weekday() < 5)
+            return {"status": "unavailable",
+                    "reason": "eurobond_empty" if n_bonds == 0 else "no_spread_in_window"}
         return {"status": "ok", "date": now[0].isoformat(), "spread_pp": round(now[1], 2),
                 "prev_date": prev[0].isoformat(), "change_bp": int(round(100 * (now[1] - prev[1]))),
                 "sensitivity_pct": SENSITIVITY_PCT_PER_100BP, "per_bp": 100}
     except Exception as exc:  # noqa: BLE001 - bilgi paneli taramayi durdurmaz
         logger.warning("ulke riski spread'i alinamadi: %s", exc)
-        return {"status": "unavailable"}
+        return {"status": "unavailable", "reason": f"{type(exc).__name__}: {exc}"[:200]}

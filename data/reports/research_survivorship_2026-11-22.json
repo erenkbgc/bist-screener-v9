@@ -1,0 +1,1201 @@
+{
+  "as_of": "2026-11-22",
+  "split": "2021-01-01",
+  "primary": "kapdates",
+  "variants": {
+    "kapdates": {
+      "baseline_file": "factors_monthly_kapdates.parquet",
+      "delisted_mcap_source": {
+        "isyatirim_pd": 3275
+      },
+      "delisted": {
+        "ADANA": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "ADBGR": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "ADNAC": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "ANACM": {
+          "last_trade": "2020-09-29",
+          "exit_class": "corporate",
+          "sector": "Cam, Seramik, Porselen"
+        },
+        "ANELT": {
+          "last_trade": "2018-11-29",
+          "exit_class": "corporate",
+          "sector": "İnşaat"
+        },
+        "ARTI": {
+          "last_trade": "2021-02-26",
+          "exit_class": "other",
+          "sector": "Holding"
+        },
+        "ASCEL": {
+          "last_trade": "2018-02-08",
+          "exit_class": "corporate",
+          "sector": "BILINMIYOR_ASCEL"
+        },
+        "ASLAN": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "ATPET": {
+          "last_trade": "2018-09-14",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_ATPET"
+        },
+        "BAKAN": {
+          "last_trade": "2017-03-06",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_BAKAN"
+        },
+        "BMEKS": {
+          "last_trade": "2019-03-11",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_BMEKS"
+        },
+        "BOLUC": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "BOYP": {
+          "last_trade": "2019-12-05",
+          "exit_class": "other",
+          "sector": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+        },
+        "DENCM": {
+          "last_trade": "2020-09-29",
+          "exit_class": "corporate",
+          "sector": "Cam, Seramik, Porselen"
+        },
+        "DGZTE": {
+          "last_trade": "2019-02-07",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_DGZTE"
+        },
+        "DMISH": {
+          "last_trade": "2018-04-30",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_DMISH"
+        },
+        "ECYAP": {
+          "last_trade": "2015-04-16",
+          "exit_class": "corporate",
+          "sector": "Cam, Seramik, Porselen"
+        },
+        "EGCEY": {
+          "last_trade": "2020-10-30",
+          "exit_class": "other",
+          "sector": "Enerji Üretim ve Dağıtım"
+        },
+        "EGCYH": {
+          "last_trade": "2020-10-30",
+          "exit_class": "other",
+          "sector": "Holding"
+        },
+        "EGCYO": {
+          "last_trade": "2020-10-30",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_EGCYO"
+        },
+        "ERICO": {
+          "last_trade": "2014-08-19",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_ERICO"
+        },
+        "ESEMS": {
+          "last_trade": "2018-04-17",
+          "exit_class": "other",
+          "sector": "Tekstil, Giyim ve Deri"
+        },
+        "IZOCM": {
+          "last_trade": "2019-10-01",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_IZOCM"
+        },
+        "KILER": {
+          "last_trade": "2015-12-30",
+          "exit_class": "corporate",
+          "sector": "Gıda Perakendeciliği"
+        },
+        "KIPA": {
+          "last_trade": "2018-08-31",
+          "exit_class": "corporate",
+          "sector": "Gıda Perakendeciliği"
+        },
+        "KPHOL": {
+          "last_trade": "2020-07-24",
+          "exit_class": "other",
+          "sector": "Holding"
+        },
+        "KRATL": {
+          "last_trade": "2017-02-06",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_KRATL"
+        },
+        "MENBA": {
+          "last_trade": "2017-03-27",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_MENBA"
+        },
+        "METAL": {
+          "last_trade": "2020-07-02",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_METAL"
+        },
+        "NTTUR": {
+          "last_trade": "2017-10-19",
+          "exit_class": "corporate",
+          "sector": "Turizm"
+        },
+        "OLMK": {
+          "last_trade": "2022-10-20",
+          "exit_class": "corporate",
+          "sector": "Ambalaj"
+        },
+        "PIMAS": {
+          "last_trade": "2017-12-28",
+          "exit_class": "corporate",
+          "sector": "Kimya ve Plastik"
+        },
+        "SAFGY": {
+          "last_trade": "2017-01-18",
+          "exit_class": "corporate",
+          "sector": "Gayrimenkul"
+        },
+        "SALIX": {
+          "last_trade": "2020-07-09",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_SALIX"
+        },
+        "SODA": {
+          "last_trade": "2020-09-29",
+          "exit_class": "corporate",
+          "sector": "Kimya ve Plastik"
+        },
+        "TRKCM": {
+          "last_trade": "2020-09-29",
+          "exit_class": "corporate",
+          "sector": "Cam, Seramik, Porselen"
+        },
+        "TRNSK": {
+          "last_trade": "2018-04-17",
+          "exit_class": "other",
+          "sector": "Holding"
+        },
+        "UNYEC": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "USAS": {
+          "last_trade": "2017-10-04",
+          "exit_class": "corporate",
+          "sector": "BILINMIYOR_USAS"
+        }
+      },
+      "baseline": {
+        "discovery": {
+          "tl": {
+            "months": 93,
+            "active_ann_pct": 7.14,
+            "t": 2.71,
+            "max_dd_pct": -15.9,
+            "avg_names": 43.2,
+            "turnover_pct": 17.4,
+            "trap_rate_pct": 3.3
+          },
+          "usd": {
+            "months": 93,
+            "active_ann_pct": 7.18,
+            "t": 2.76,
+            "max_dd_pct": -15.5,
+            "avg_names": 43.2,
+            "turnover_pct": 17.4,
+            "trap_rate_pct": 3.3
+          },
+          "ic": {
+            "mean": 0.0571,
+            "t": 5.96,
+            "months": 93
+          }
+        },
+        "holdout": {
+          "tl": {
+            "months": 68,
+            "active_ann_pct": 8.62,
+            "t": 2.99,
+            "max_dd_pct": -7.8,
+            "avg_names": 59.8,
+            "turnover_pct": 17.8,
+            "trap_rate_pct": 15.4
+          },
+          "usd": {
+            "months": 68,
+            "active_ann_pct": 8.23,
+            "t": 3.04,
+            "max_dd_pct": -7.7,
+            "avg_names": 59.8,
+            "turnover_pct": 17.8,
+            "trap_rate_pct": 15.4
+          },
+          "ic": {
+            "mean": 0.0748,
+            "t": 4.64,
+            "months": 68
+          }
+        },
+        "coverage": {
+          "delisted_stocks_in_panel": 0,
+          "delisted_stock_months": 0,
+          "pick_share_delisted_pct": 0.0,
+          "picks_exiting_next_month": {
+            "corporate": 0,
+            "other": 0
+          },
+          "exiting_pick_tickers": []
+        },
+        "meets_rules_1_3": true
+      },
+      "specs": {
+        "S1": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 4.8,
+              "t": 1.84,
+              "max_dd_pct": -15.9,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.0
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 4.87,
+              "t": 1.89,
+              "max_dd_pct": -15.4,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.0
+            },
+            "ic": {
+              "mean": 0.0555,
+              "t": 6.3,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 8.62,
+              "t": 2.99,
+              "max_dd_pct": -7.8,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 8.21,
+              "t": 3.04,
+              "max_dd_pct": -7.7,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "ic": {
+              "mean": 0.0743,
+              "t": 4.66,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1370,
+            "pick_share_delisted_pct": 3.19,
+            "picks_exiting_next_month": {
+              "corporate": 2,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "SODA",
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        },
+        "S2": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 4.79,
+              "t": 1.84,
+              "max_dd_pct": -15.9,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.0
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 4.85,
+              "t": 1.88,
+              "max_dd_pct": -15.4,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.0
+            },
+            "ic": {
+              "mean": 0.0555,
+              "t": 6.29,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 8.62,
+              "t": 2.99,
+              "max_dd_pct": -7.8,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 8.21,
+              "t": 3.04,
+              "max_dd_pct": -7.7,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "ic": {
+              "mean": 0.0743,
+              "t": 4.66,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1370,
+            "pick_share_delisted_pct": 3.19,
+            "picks_exiting_next_month": {
+              "corporate": 2,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "SODA",
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        },
+        "S3": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 4.84,
+              "t": 1.85,
+              "max_dd_pct": -15.9,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.0
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 4.91,
+              "t": 1.9,
+              "max_dd_pct": -15.4,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.0
+            },
+            "ic": {
+              "mean": 0.0555,
+              "t": 6.3,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 8.62,
+              "t": 2.99,
+              "max_dd_pct": -7.8,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 8.21,
+              "t": 3.04,
+              "max_dd_pct": -7.7,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "ic": {
+              "mean": 0.0743,
+              "t": 4.66,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1370,
+            "pick_share_delisted_pct": 3.19,
+            "picks_exiting_next_month": {
+              "corporate": 2,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "SODA",
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        },
+        "S4": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 4.8,
+              "t": 1.84,
+              "max_dd_pct": -15.9,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.0
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 4.87,
+              "t": 1.89,
+              "max_dd_pct": -15.4,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.0
+            },
+            "ic": {
+              "mean": 0.0555,
+              "t": 6.3,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 8.62,
+              "t": 2.99,
+              "max_dd_pct": -7.8,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 8.21,
+              "t": 3.04,
+              "max_dd_pct": -7.7,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "ic": {
+              "mean": 0.0743,
+              "t": 4.66,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1370,
+            "pick_share_delisted_pct": 3.19,
+            "picks_exiting_next_month": {
+              "corporate": 2,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "SODA",
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        },
+        "S5": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 4.98,
+              "t": 1.82,
+              "max_dd_pct": -17.3,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.2
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 5.07,
+              "t": 1.9,
+              "max_dd_pct": -16.6,
+              "avg_names": 46.4,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.2
+            },
+            "ic": {
+              "mean": 0.0554,
+              "t": 6.28,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 8.7,
+              "t": 3.0,
+              "max_dd_pct": -7.8,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 8.29,
+              "t": 3.05,
+              "max_dd_pct": -7.7,
+              "avg_names": 59.8,
+              "turnover_pct": 17.5,
+              "trap_rate_pct": 15.5
+            },
+            "ic": {
+              "mean": 0.0743,
+              "t": 4.66,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1370,
+            "pick_share_delisted_pct": 3.19,
+            "picks_exiting_next_month": {
+              "corporate": 2,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "SODA",
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        }
+      },
+      "verdict": "SURVIVORSHIP_FRAGILE"
+    },
+    "lag75": {
+      "baseline_file": "factors_monthly.parquet",
+      "delisted_mcap_source": {
+        "isyatirim_pd": 3275
+      },
+      "delisted": {
+        "ADANA": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "ADBGR": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "ADNAC": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "ANACM": {
+          "last_trade": "2020-09-29",
+          "exit_class": "corporate",
+          "sector": "Cam, Seramik, Porselen"
+        },
+        "ANELT": {
+          "last_trade": "2018-11-29",
+          "exit_class": "corporate",
+          "sector": "İnşaat"
+        },
+        "ARTI": {
+          "last_trade": "2021-02-26",
+          "exit_class": "other",
+          "sector": "Holding"
+        },
+        "ASCEL": {
+          "last_trade": "2018-02-08",
+          "exit_class": "corporate",
+          "sector": "BILINMIYOR_ASCEL"
+        },
+        "ASLAN": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "ATPET": {
+          "last_trade": "2018-09-14",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_ATPET"
+        },
+        "BAKAN": {
+          "last_trade": "2017-03-06",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_BAKAN"
+        },
+        "BMEKS": {
+          "last_trade": "2019-03-11",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_BMEKS"
+        },
+        "BOLUC": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "BOYP": {
+          "last_trade": "2019-12-05",
+          "exit_class": "other",
+          "sector": "Giyim, Tekstil ve Deri Ürünleri Perakendeciliği"
+        },
+        "DENCM": {
+          "last_trade": "2020-09-29",
+          "exit_class": "corporate",
+          "sector": "Cam, Seramik, Porselen"
+        },
+        "DGZTE": {
+          "last_trade": "2019-02-07",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_DGZTE"
+        },
+        "DMISH": {
+          "last_trade": "2018-04-30",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_DMISH"
+        },
+        "ECYAP": {
+          "last_trade": "2015-04-16",
+          "exit_class": "corporate",
+          "sector": "Cam, Seramik, Porselen"
+        },
+        "EGCEY": {
+          "last_trade": "2020-10-30",
+          "exit_class": "other",
+          "sector": "Enerji Üretim ve Dağıtım"
+        },
+        "EGCYH": {
+          "last_trade": "2020-10-30",
+          "exit_class": "other",
+          "sector": "Holding"
+        },
+        "EGCYO": {
+          "last_trade": "2020-10-30",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_EGCYO"
+        },
+        "ERICO": {
+          "last_trade": "2014-08-19",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_ERICO"
+        },
+        "ESEMS": {
+          "last_trade": "2018-04-17",
+          "exit_class": "other",
+          "sector": "Tekstil, Giyim ve Deri"
+        },
+        "IZOCM": {
+          "last_trade": "2019-10-01",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_IZOCM"
+        },
+        "KILER": {
+          "last_trade": "2015-12-30",
+          "exit_class": "corporate",
+          "sector": "Gıda Perakendeciliği"
+        },
+        "KIPA": {
+          "last_trade": "2018-08-31",
+          "exit_class": "corporate",
+          "sector": "Gıda Perakendeciliği"
+        },
+        "KPHOL": {
+          "last_trade": "2020-07-24",
+          "exit_class": "other",
+          "sector": "Holding"
+        },
+        "KRATL": {
+          "last_trade": "2017-02-06",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_KRATL"
+        },
+        "MENBA": {
+          "last_trade": "2017-03-27",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_MENBA"
+        },
+        "METAL": {
+          "last_trade": "2020-07-02",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_METAL"
+        },
+        "NTTUR": {
+          "last_trade": "2017-10-19",
+          "exit_class": "corporate",
+          "sector": "Turizm"
+        },
+        "OLMK": {
+          "last_trade": "2022-10-20",
+          "exit_class": "corporate",
+          "sector": "Ambalaj"
+        },
+        "PIMAS": {
+          "last_trade": "2017-12-28",
+          "exit_class": "corporate",
+          "sector": "Kimya ve Plastik"
+        },
+        "SAFGY": {
+          "last_trade": "2017-01-18",
+          "exit_class": "corporate",
+          "sector": "Gayrimenkul"
+        },
+        "SALIX": {
+          "last_trade": "2020-07-09",
+          "exit_class": "other",
+          "sector": "BILINMIYOR_SALIX"
+        },
+        "SODA": {
+          "last_trade": "2020-09-29",
+          "exit_class": "corporate",
+          "sector": "Kimya ve Plastik"
+        },
+        "TRKCM": {
+          "last_trade": "2020-09-29",
+          "exit_class": "corporate",
+          "sector": "Cam, Seramik, Porselen"
+        },
+        "TRNSK": {
+          "last_trade": "2018-04-17",
+          "exit_class": "other",
+          "sector": "Holding"
+        },
+        "UNYEC": {
+          "last_trade": "2020-05-18",
+          "exit_class": "corporate",
+          "sector": "Taş, Toprak, Çimento"
+        },
+        "USAS": {
+          "last_trade": "2017-10-04",
+          "exit_class": "corporate",
+          "sector": "BILINMIYOR_USAS"
+        }
+      },
+      "baseline": {
+        "discovery": {
+          "tl": {
+            "months": 93,
+            "active_ann_pct": 5.28,
+            "t": 2.14,
+            "max_dd_pct": -16.3,
+            "avg_names": 43.1,
+            "turnover_pct": 18.1,
+            "trap_rate_pct": 3.4
+          },
+          "usd": {
+            "months": 93,
+            "active_ann_pct": 5.33,
+            "t": 2.2,
+            "max_dd_pct": -15.8,
+            "avg_names": 43.1,
+            "turnover_pct": 18.1,
+            "trap_rate_pct": 3.4
+          },
+          "ic": {
+            "mean": 0.0558,
+            "t": 5.52,
+            "months": 93
+          }
+        },
+        "holdout": {
+          "tl": {
+            "months": 68,
+            "active_ann_pct": 10.75,
+            "t": 3.21,
+            "max_dd_pct": -8.3,
+            "avg_names": 59.7,
+            "turnover_pct": 17.0,
+            "trap_rate_pct": 15.7
+          },
+          "usd": {
+            "months": 68,
+            "active_ann_pct": 10.29,
+            "t": 3.23,
+            "max_dd_pct": -8.2,
+            "avg_names": 59.7,
+            "turnover_pct": 17.0,
+            "trap_rate_pct": 15.7
+          },
+          "ic": {
+            "mean": 0.0734,
+            "t": 4.85,
+            "months": 68
+          }
+        },
+        "coverage": {
+          "delisted_stocks_in_panel": 0,
+          "delisted_stock_months": 0,
+          "pick_share_delisted_pct": 0.0,
+          "picks_exiting_next_month": {
+            "corporate": 0,
+            "other": 0
+          },
+          "exiting_pick_tickers": []
+        },
+        "meets_rules_1_3": true
+      },
+      "specs": {
+        "S1": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 3.51,
+              "t": 1.4,
+              "max_dd_pct": -15.7,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.3
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 3.61,
+              "t": 1.45,
+              "max_dd_pct": -15.2,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.3
+            },
+            "ic": {
+              "mean": 0.0539,
+              "t": 5.84,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 10.78,
+              "t": 3.2,
+              "max_dd_pct": -8.3,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 10.31,
+              "t": 3.22,
+              "max_dd_pct": -8.2,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "ic": {
+              "mean": 0.0734,
+              "t": 4.87,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1365,
+            "pick_share_delisted_pct": 3.32,
+            "picks_exiting_next_month": {
+              "corporate": 1,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        },
+        "S2": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 3.5,
+              "t": 1.39,
+              "max_dd_pct": -15.7,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.3
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 3.59,
+              "t": 1.45,
+              "max_dd_pct": -15.2,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.3
+            },
+            "ic": {
+              "mean": 0.0538,
+              "t": 5.84,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 10.78,
+              "t": 3.2,
+              "max_dd_pct": -8.3,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 10.31,
+              "t": 3.22,
+              "max_dd_pct": -8.2,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "ic": {
+              "mean": 0.0734,
+              "t": 4.87,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1365,
+            "pick_share_delisted_pct": 3.32,
+            "picks_exiting_next_month": {
+              "corporate": 1,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        },
+        "S3": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 3.55,
+              "t": 1.41,
+              "max_dd_pct": -15.7,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.3
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 3.65,
+              "t": 1.46,
+              "max_dd_pct": -15.2,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.3
+            },
+            "ic": {
+              "mean": 0.0539,
+              "t": 5.84,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 10.78,
+              "t": 3.2,
+              "max_dd_pct": -8.3,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 10.31,
+              "t": 3.22,
+              "max_dd_pct": -8.2,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "ic": {
+              "mean": 0.0734,
+              "t": 4.87,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1365,
+            "pick_share_delisted_pct": 3.32,
+            "picks_exiting_next_month": {
+              "corporate": 1,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        },
+        "S4": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 3.51,
+              "t": 1.4,
+              "max_dd_pct": -15.7,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.3
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 3.61,
+              "t": 1.45,
+              "max_dd_pct": -15.2,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.3
+            },
+            "ic": {
+              "mean": 0.0539,
+              "t": 5.84,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 10.78,
+              "t": 3.2,
+              "max_dd_pct": -8.3,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 10.31,
+              "t": 3.22,
+              "max_dd_pct": -8.2,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "ic": {
+              "mean": 0.0734,
+              "t": 4.87,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1365,
+            "pick_share_delisted_pct": 3.32,
+            "picks_exiting_next_month": {
+              "corporate": 1,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        },
+        "S5": {
+          "discovery": {
+            "tl": {
+              "months": 95,
+              "active_ann_pct": 3.96,
+              "t": 1.58,
+              "max_dd_pct": -15.1,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.5
+            },
+            "usd": {
+              "months": 95,
+              "active_ann_pct": 4.07,
+              "t": 1.64,
+              "max_dd_pct": -14.5,
+              "avg_names": 46.3,
+              "turnover_pct": 18.8,
+              "trap_rate_pct": 4.5
+            },
+            "ic": {
+              "mean": 0.0537,
+              "t": 5.85,
+              "months": 95
+            }
+          },
+          "holdout": {
+            "tl": {
+              "months": 68,
+              "active_ann_pct": 10.86,
+              "t": 3.21,
+              "max_dd_pct": -8.3,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "usd": {
+              "months": 68,
+              "active_ann_pct": 10.39,
+              "t": 3.22,
+              "max_dd_pct": -8.2,
+              "avg_names": 59.7,
+              "turnover_pct": 16.9,
+              "trap_rate_pct": 15.7
+            },
+            "ic": {
+              "mean": 0.0733,
+              "t": 4.87,
+              "months": 68
+            }
+          },
+          "coverage": {
+            "delisted_stocks_in_panel": 32,
+            "delisted_stock_months": 1365,
+            "pick_share_delisted_pct": 3.32,
+            "picks_exiting_next_month": {
+              "corporate": 1,
+              "other": 0
+            },
+            "exiting_pick_tickers": [
+              "TRKCM"
+            ]
+          },
+          "survives": false
+        }
+      },
+      "verdict": "SURVIVORSHIP_FRAGILE"
+    }
+  },
+  "verdict": "SURVIVORSHIP_FRAGILE"
+}

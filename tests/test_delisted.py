@@ -72,3 +72,15 @@ def test_apply_exits_on_month_end_and_other_tickers_untouched():
     assert x.loc[me[0]] == pytest.approx(0.2)
     assert x.loc[me[1]] == pytest.approx(-1.0)
     assert out.loc[out["ticker"] == "Y", "fwd_ret_1m"].iloc[0] == 0.3
+
+
+def test_monthly_market_caps_extracts_month_end_pd():
+    rows = [
+        {"HGDG_TARIH": "02-01-2020", "HGDG_KAPANIS": 1.0, "HG_KAPANIS": 1.0, "HGDG_HACIM": 10.0, "SERMAYE": 100.0, "PD": 100.0},
+        {"HGDG_TARIH": "31-01-2020", "HGDG_KAPANIS": 1.2, "HG_KAPANIS": 1.2, "HGDG_HACIM": 10.0, "SERMAYE": 100.0, "PD": 120.0},
+        {"HGDG_TARIH": "28-02-2020", "HGDG_KAPANIS": 1.5, "HG_KAPANIS": 1.5, "HGDG_HACIM": 10.0, "SERMAYE": 100.0, "PD": 150.0},
+    ]
+    mc = delisted.monthly_market_caps("X", delisted.daily_frame(rows))
+    assert list(mc["ticker"]) == ["X", "X"]
+    assert list(mc["date"]) == [pd.Timestamp("2020-01-31"), pd.Timestamp("2020-02-29")]
+    assert list(mc["mcap"]) == pytest.approx([120.0, 150.0])

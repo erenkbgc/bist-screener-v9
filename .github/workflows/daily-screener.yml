@@ -21,6 +21,10 @@ on:
         description: "Idempotency kontrolunu atla (true = zorla yeniden calistir)"
         required: false
         default: "false"
+      as_of_date:
+        description: "Hedef islem tarihi (YYYY-MM-DD; bos = zamanlanan/Istanbul islem gunu otomatik)"
+        required: false
+        default: ""
 
 # Ayni anda iki kosunun ayni SQLite dosyasina yazip cakismasini engeller.
 concurrency:
@@ -51,9 +55,12 @@ jobs:
       - name: Bagimliliklari kur
         run: pip install -r requirements.txt
 
-      - name: Istanbul tarihini hesapla
+      - name: Istanbul islem tarihini hesapla
         id: today
-        run: echo "date=$(TZ=Europe/Istanbul date +%F)" >> "$GITHUB_OUTPUT"
+        env:
+          INPUT_AS_OF_DATE: ${{ inputs.as_of_date }}
+          GITHUB_EVENT_SCHEDULE: ${{ github.event.schedule }}
+        run: echo "date=$(python -m core.run_date)" >> "$GITHUB_OUTPUT"
 
       - name: Tarama calistir (BIST_DATA_MODE=live)
         env:
@@ -126,7 +133,13 @@ jobs:
             fi
             echo "push reddedildi (deneme $attempt/5), origin/master ile rebase deneniyor"
             git fetch origin master
-            if ! git rebase origin/master; then
+            # 2026-10-21: elle tetiklenen kosu ile zamanlanmis kosu ayni gunun
+            # data/bist_history.db'sini commit'ledi; ikinci kosu checkout'u
+            # tetiklendigi andaki (eski) SHA'dan aldigi icin ikili DB rebase'de
+            # cakisti ve gunun sonuclari kayboldu. Cakisan hunk'larda bu
+            # kosunun dosyasi (rebase'de "theirs") kazanir: DB/rapor bu kosunun
+            # tam ciktisidir, kaybedilecek olan yalnizca ayni gunun onceki kopyasi.
+            if ! git rebase -X theirs origin/master; then
               git rebase --abort
               echo "rebase basarisiz, cakisma var -- manuel mudahale gerekiyor"
               exit 1

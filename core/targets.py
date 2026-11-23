@@ -146,7 +146,6 @@ def compute_long_term_target(
     candidate: dict,
     all_candidates: list[dict],
     macro_snapshot: dict | None = None,
-    prob_up: float | None = None,
 ) -> dict:
     """Coklu Degerleme Metodolojisi / Degerleme Ucgeni (v13 roadmap P0-3).
     DCF (%40) + Emsal Carpanlar (%35) + Kalite Primi (%25).
@@ -158,10 +157,7 @@ def compute_long_term_target(
     - Sinirlanmamis deger 'terminal_fair_value' olarak muhafaza edilir.
     """
     peers, peer_level, confidence = build_peer_group(candidate, all_candidates)
-    effective_prob_up = prob_up if prob_up is not None else candidate.get("prob_up")
-    triangle = compute_valuation_triangle(
-        candidate, peers, macro_snapshot=macro_snapshot, prob_up=effective_prob_up
-    )
+    triangle = compute_valuation_triangle(candidate, peers, macro_snapshot=macro_snapshot)
 
     raw_target = triangle["target_price"]
     current_price = candidate.get("entry_price") or candidate.get("current_price") or 0.0
@@ -226,7 +222,6 @@ def compute_long_term_target(
         "fair_value_high": triangle["fair_value_high"],
         "valuation_method": triangle["valuation_method"],
         "weights_used": triangle["weights_used"],
-        "scenario_probabilities": triangle.get("scenario_probabilities"),
         "dcf_leg": triangle["dcf_leg"],
         "peers_leg": triangle["peers_leg"],
         "quality_leg": triangle["quality_leg"],

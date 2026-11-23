@@ -21,7 +21,7 @@ Kurallar:
 from __future__ import annotations
 
 import math
-from datetime import timedelta
+from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
@@ -255,13 +255,55 @@ def monthly_prices(ticker: str, raw: pd.DataFrame | None, adj: pd.DataFrame | No
     return m.dropna(subset=["raw"]).reset_index(names="date")
 
 
-def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: pd.DataFrame) -> float:
-    """Bilanco tarihindeki pay sayisini t'ye kadarki bedelli/bedelsiz islemlerle ileri tasi."""
+# Bir sermaye artirimi bilancodaki odenmis sermayeye her zaman donem sonu/islem
+# tarihi sirasina gore yansimiyor (docs/research/share_count_fix.md):
+#  - tescil gecikmesi: islem tarihi donem sonundan once, ama o (ve sonraki) bilanco
+#    hala eski sermayeyi gosteriyor (AZTEK 2025Q4, KATMR 2025Q2, DERIM 2019Q3) ->
+#    eski kural islemi uygulamiyor, piyasa degeri 2-10 kat dusuk, hisse ucuz gorunuyor;
+#  - erken tescil: bilanco donem sonu islem tarihinden once, ama sermaye zaten artmis
+#    (LINK 2025Q4) -> eski kural islemi ikinci kez uyguluyor.
+#  - gerceklesmeyen islem: olay listesinde var ama sermaye hic artmiyor (TSPOR 2025-06,
+#    BJKAS 2025-04) -> her iki kural da piyasa degerini 5-7 kat yuksek buluyordu.
+# Islem, mevcut sermaye islemden onceki bir yildaki en dusuk sermayeye gore artisin en az
+# yarisini gosteriyorsa "yansimis" sayilir (bedelli kismen satilabilir: BJKAS 2024, x5
+# yerine x3.64). Donem sonu islem tarihinden 180 gunden fazla sonra olan bir bilanco
+# islemi hala gostermiyorsa islem gerceklesmemis sayilir.
+SHARE_EVENT_LOOKBACK_DAYS = 365
+SHARE_EVENT_REFLECTED_SHARE = 0.5
+SHARE_EVENT_EXPIRY_DAYS = 180
+
+
+def shares_at(t: pd.Timestamp, paid_in: float, stmt_end: pd.Timestamp, events: pd.DataFrame,
+              history: pd.DataFrame | None = None) -> float:
+    """Bilanco tarihindeki pay sayisini t'ye kadarki bedelli/bedelsiz islemlerle ileri tasi.
+
+    history: t gunu kullanilabilir bilancolar (period_end, paid_in). Verilirse bir islem,
+    mevcut sermayeye yansimamissa uygulanir (donem sonundan once olsa bile) ve
+    yansimissa uygulanmaz (donem sonundan sonra olsa bile). Islemden onceki bir yilda
+    bilanco yoksa veya history None ise eski kural: yalnizca donem sonundan sonraki islemler.
+    Donem sonu islemden 180 gunden fazla sonra olup sermayesi artmamis bilanco: islem
+    gerceklesmemis sayilir."""
     f = 1.0
-    if not events.empty:
-        ev = events[(events["date"] > stmt_end) & (events["date"] <= t)]
-        for _, e in ev.iterrows():
-            f *= 1.0 + (e["rights_pct"] + e["bonus_pct"]) / 100.0
+    if events.empty:
+        return paid_in
+    lookback = pd.Timedelta(days=SHARE_EVENT_LOOKBACK_DAYS)
+    ev = events[(events["date"] <= t) & (events["date"] > stmt_end - lookback)]
+    for _, e in ev.iterrows():
+        factor = 1.0 + (e["rights_pct"] + e["bonus_pct"]) / 100.0
+        before = None
+        if history is not None and not history.empty:
+            h = history[(history["period_end"] < e["date"]) & (history["period_end"] >= e["date"] - lookback)
+                        & (history["period_end"] <= stmt_end)]["paid_in"]
+            h = h[h > 0]
+            before = float(h.min()) if len(h) else None
+        if before is None:
+            apply = e["date"] > stmt_end
+        else:
+            reflected = paid_in >= before * (1.0 + SHARE_EVENT_REFLECTED_SHARE * (factor - 1.0))
+            expired = stmt_end > e["date"] + pd.Timedelta(days=SHARE_EVENT_EXPIRY_DAYS)
+            apply = not reflected and not expired
+        if apply:
+            f *= factor
     return paid_in * f
 
 
@@ -298,6 +340,100 @@ def value_ratios(last, mcap: float) -> dict[str, float]:
     }
 
 
+def vendor_consistent_ttm(long: pd.DataFrame, period: str, cpi: pd.Series | None) -> dict[str, float]:
+    """TMS 29 donemi canli TTM: YTD_P + YTD_FY(y-1) x CPI(P)/CPI(FY sonu) - YTD_(P-4).
+
+    Is Yatirim bir donemin ertesi yil raporu yayinlaninca o donemin rakamlarini o raporun
+    onceki-donem kolonuyla (bir yil sonraki satin alma gucu) degistiriyor
+    (docs/research/vendor_vs_kap_audit.md: 2024Q4 / ilk KAP = 1.309 = TUFE 2024-12 -> 2025-12).
+    Ardisik YTD'lerin farkiyla kurulan ceyrekler (quarterly_table) bu yuzden birimleri
+    karistiriyor: 2026Q2'de ayrik 2025Q3 hasilati 2024Q3'un 0.4-0.6 kati cikiyordu.
+    Bu formulde YTD_P ve YTD_(P-4) ayni (P donem sonu) birimde, yillik YTD TUFE ile P'ye
+    tasiniyor. Q4'te TTM = yillik YTD. Eksik kalem NaN (uydurulmaz)."""
+    y, q = int(period[:4]), int(period[-1])
+    w = long.pivot_table(index="item", columns="period", values="value", aggfunc="first") if not long.empty else None
+    out = {}
+    for item in INC_ITEMS:
+        def ytd(p):
+            if w is None or item not in w.index or p not in w.columns:
+                return np.nan
+            return float(w.loc[item, p])
+        if q == 4:
+            out[item] = ytd(period)
+            continue
+        fy = ytd(f"{y - 1}Q4")
+        k = 1.0
+        if cpi is not None:
+            c_p = cpi.get(period_end(period).to_period("M"), np.nan)
+            c_fy = cpi.get(period_end(f"{y - 1}Q4").to_period("M"), np.nan)
+            k = c_p / c_fy if np.isfinite(c_p) and np.isfinite(c_fy) and c_fy > 0 else np.nan
+        out[item] = ytd(period) + fy * k - ytd(f"{y - 1}Q{q}")
+    return out
+
+
+def _shift_period(period: str, quarters: int) -> str:
+    """Takvim ceyregini `quarters` ceyrek ileri tasir (ozel hesap donemi: +1 = Mart, +2 = Haziran)."""
+    if not quarters:
+        return period
+    y, q = int(period[:4]), int(period[-1])
+    tot = y * 4 + (q - 1) + int(quarters)
+    return f"{tot // 4}Q{tot % 4 + 1}"
+
+
+def undo_reexpression(long: pd.DataFrame, classes: pd.DataFrame, cpi: pd.Series) -> tuple[pd.DataFrame, dict]:
+    """TMS 29 donemi (>= 2023Q4) Is Yatirim yeniden ifadesini geri alir.
+
+    cls == 'reexpressed':
+      - Q4: tum kalemler / CPI(L)/CPI(P), L = min(P + 4 ceyrek, sirketin son donemi).
+      - Q1-Q3: gelir tablosu kalemleri / CPI(P+4)/CPI(P) (P+4 varsa); bilanco degismez.
+    cls == 'reexpressed_q4_only' (orn. ozel hesap donemli MARTI, MRGYO):
+      - Yalnizca Q4 tum kalemler geri alinir; Q1-Q3 degismez.
+    fy_shift_q (opsiyonel sutun, varsayilan 0): TUFE ayini ozel hesap donemi sonuna kaydirir.
+    docs/research/first_published_panel.md, modelin dogrulamasi orada."""
+    full_tl = set(classes.loc[classes["cls"] == "reexpressed", "ticker"])
+    q4_only = set(classes.loc[classes["cls"] == "reexpressed_q4_only", "ticker"])
+    target_tks = full_tl | q4_only
+    shifts = (dict(zip(classes["ticker"], classes["fy_shift_q"].fillna(0).astype(int)))
+              if "fy_shift_q" in classes.columns else {})
+    c = lambda p: cpi.get(period_end(p).to_period("M"), float("nan"))  # noqa: E731
+    latest = long.groupby("ticker")["period"].max()
+    inc = set(INC_ITEMS)
+    out = long.copy()
+    factor = pd.Series(1.0, index=out.index)
+    m = out["ticker"].isin(target_tks) & (out["period"] >= IAS29_FIRST_PERIOD)
+    for i in out.index[m]:
+        tk, per, item = out.at[i, "ticker"], out.at[i, "period"], out.at[i, "item"]
+        sh = shifts.get(tk, 0)
+        nxt = f"{int(per[:4]) + 1}{per[4:]}"
+        if per.endswith("Q4"):
+            last = min(nxt, latest[tk])
+            if last > per:
+                factor[i] = c(_shift_period(last, sh)) / c(_shift_period(per, sh))
+        elif tk in full_tl and item in inc and nxt <= latest[tk]:
+            factor[i] = c(_shift_period(nxt, sh)) / c(_shift_period(per, sh))
+    out["value"] = out["value"] / factor
+    stats = {"reexpressed_tickers": len(full_tl), "reexpressed_q4_only_tickers": len(q4_only),
+             "values_divided": int((factor != 1.0).sum()),
+             "classes": classes["cls"].value_counts().to_dict()}
+    return out, stats
+
+
+def bridge_ttm(q: pd.DataFrame, long: pd.DataFrame, cpi: pd.Series) -> pd.DataFrame:
+    """P = 2023Q4-2024Q3: TTM 2023Q1-Q3 YTD'lerine dayaniyor; Is Yatirim onlari P raporunun
+    onceki-donem kolonuyla (P birimi) veriyor. O satirlarda canli ile ayni formul:
+    TTM = YTD(P) + YTD(FY 2023) x CPI(P)/CPI(Dec 2023) - YTD(P - 4)."""
+    q = q.copy()
+    for tk, g in long.groupby("ticker"):
+        for per in ("2023Q4", "2024Q1", "2024Q2", "2024Q3"):
+            sel = (q["ticker"] == tk) & (q["period"] == per)
+            if not sel.any():
+                continue
+            for item, v in vendor_consistent_ttm(g, per, cpi).items():
+                if f"ttm_{item}" in q:
+                    q.loc[sel, f"ttm_{item}"] = v
+    return q
+
+
 def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame | None,
                         mcap: float | None, cpi: pd.Series | None = None,
                         as_of: pd.Timestamp | None = None, kap_dates: pd.DataFrame | None = None) -> dict:
@@ -307,7 +443,7 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
     kap_available_at) eslesirse KAP ilk yayini (18:00 sonrasi ertesi gun), eslesmezse
     varsayilan gecikme (Q1-Q3 + 75, Q4 + 100 gun); available_at <= as_of olan ceyrekler
     icinden en son kullanilabilir olan secilir. as_of None ise filtre yok."""
-    out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None,
+    out = {"bm": np.nan, "ep": np.nan, "sp": np.nan, "ey": np.nan, "stmt_period": None, "ttm_method": None,
            "stmt_period_end": None, "available_at": None, "available_source": None, "inputs": {}}
     long = statements_long(ticker, bs, inc)
     if long.empty or not mcap or mcap <= 0:
@@ -321,7 +457,12 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
         q = q[q["available_at"] <= as_of]
         if q.empty:
             return out
-    last = q.sort_values(["available_at", "period_end"], kind="stable").iloc[-1]
+    last = q.sort_values(["available_at", "period_end"], kind="stable").iloc[-1].copy()
+    ttm_method = "quarterly_table"
+    if last["period"] >= IAS29_FIRST_PERIOD:
+        for item, v in vendor_consistent_ttm(long, last["period"], cpi).items():
+            last[f"ttm_{item}"] = v
+        ttm_method = "vendor_consistent_ytd"
     # Oranlari yeniden uretmeye yeten temel kalemler (ileriye donuk kayit)
     inputs = {"market_cap": float(mcap), "equity": _equity(last), "ttm_net_income": _ttm_net_income(last),
               "ttm_revenue": last.get("ttm_revenue"), "ttm_op_profit": last.get("ttm_op_profit"),
@@ -329,21 +470,54 @@ def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame 
     return {**value_ratios(last, mcap), "stmt_period": last["period"],
             "stmt_period_end": last["period_end"].date().isoformat(),
             "available_at": pd.Timestamp(last["available_at"]).date().isoformat(),
-            "available_source": last["available_source"],
+            "available_source": last["available_source"], "ttm_method": ttm_method,
             "inputs": {k: (float(v) if v is not None else None) for k, v in inputs.items()}}
 
 
-def fetch_statement(ticker: str, statement_type: str, last_n: int) -> pd.DataFrame | None:
+def last_ended_quarter(as_of: date | None = None) -> tuple[int, int]:
+    """as_of itibariyla takvim olarak bitmis en son ceyrek (yil, ay).
+
+    borsapy._providers.isyatirim._get_periods() current_month <= 11 icin Q2'den
+    basladigi icin Kasim ayinda Q3 yayinlarini hic istemez; burada takvim olarak
+    bitmis en son ceyrekten baslanir. Kullanilabilirlik karari fetch asamasinda
+    degil, latest_value_ratios / apply_report_dates icinde KAP yayin tarihiyle
+    (veya 75/100 gun gecikmesiyle) verilir.
+    """
+    d = as_of or date.today()
+    for m, day in ((12, 31), (9, 30), (6, 30), (3, 31)):
+        if (d.month, d.day) >= (m, day):
+            return d.year, m
+    return d.year - 1, 12
+
+
+def quarter_periods(count: int, as_of: date | None = None) -> list[tuple[int, int]]:
+    """Takvim olarak bitmis en son ceyrekten geriye dogru `count` adet (yil, ay) cifti."""
+    year, period = last_ended_quarter(as_of)
+    out: list[tuple[int, int]] = []
+    for _ in range(count):
+        out.append((year, period))
+        period -= 3
+        if period <= 0:
+            period = 12
+            year -= 1
+    return out
+
+
+def fetch_statement(ticker: str, statement_type: str, last_n: int,
+                    as_of: date | None = None) -> pd.DataFrame | None:
     """Is Yatirim sanayi sablonu, ceyreklik (YTD) son last_n donem. borsapy
     ``get_financial_statements`` esdegeri, kartezyen join hatasi olmadan
-    (merge_statement_batches). Panel (build_pit_panel) ve canli skor ayni cekimi kullanir."""
-    from datetime import datetime
-
+    (merge_statement_batches) ve takvim olarak bitmis en son ceyrege kadar
+    (borsapy._get_periods'in Kasim Q3 kor noktasina takilmadan). Panel
+    (build_pit_panel) ve canli skor ayni cekimi kullanir."""
+    if last_n <= 0:
+        return None
     from borsapy._providers.isyatirim import get_isyatirim_provider
 
     prov = get_isyatirim_provider()
-    periods = prov._get_periods(datetime.now().year, True, count=last_n)
     step = prov._MAX_PERIODS_PER_CALL
+    n = max(step, ((last_n + step - 1) // step) * step)
+    periods = quarter_periods(n, as_of=as_of)
     batches = []
     for i in range(0, len(periods), step):
         try:
@@ -360,9 +534,17 @@ def fetch_statement(ticker: str, statement_type: str, last_n: int) -> pd.DataFra
 
 
 def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFrame,
-                          sectors: dict[str, str]) -> pd.DataFrame:
-    """Her (ticker, ay sonu) icin nokta-zamanli faktor satiri + ileri 1 aylik getiri."""
+                          sectors: dict[str, str], market_caps: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Her (ticker, ay sonu) icin nokta-zamanli faktor satiri + ileri 1 aylik getiri.
+
+    market_caps (ticker, date = ay sonu, mcap): Is Yatirim HisseTekil ay sonu piyasa
+    degeri (docs/research/market_cap_source.md). Verilirse ve o ay icin degeri varsa
+    piyasa degeri odur; yoksa duzeltilmemis fiyat x pay sayisi (shares_at). borsapy'nin
+    "duzeltilmemis" fiyati bedelli artirimlarda geriye donuk duzeltildigi icin fiyat x pay
+    bedelli oncesi donemde dusuk kaliyor. Satir kumesi ayni kalir (odenmis sermaye kosulu)."""
     rows = []
+    mc_by = ({t: g.set_index("date")["mcap"] for t, g in market_caps.groupby("ticker")}
+             if market_caps is not None and not market_caps.empty else {})
     q = q.sort_values(["ticker", "available_at"])
     ev_by = {t: g for t, g in events.groupby("ticker")} if not events.empty else {}
     q_by = {t: g for t, g in q.groupby("ticker")}
@@ -372,6 +554,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
         if qt is None:
             continue
         ev = ev_by.get(tk, pd.DataFrame(columns=["date", "rights_pct", "bonus_pct"]))
+        mc = mc_by.get(tk)
         adj = p["adj"].values
         for i in range(len(p)):
             t = p.at[i, "date"]
@@ -382,8 +565,12 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
             paid_in = last.get("paid_in")
             if not paid_in or paid_in <= 0 or not np.isfinite(paid_in):
                 continue
-            shares = shares_at(t, paid_in, last["period_end"], ev)
-            mcap = p.at[i, "raw"] * shares
+            shares = shares_at(t, paid_in, last["period_end"], ev, avail[["period_end", "paid_in"]])
+            mcap, mcap_source = p.at[i, "raw"] * shares, "price_x_shares"
+            if mc is not None:
+                m_isy = mc.get(t)
+                if m_isy is not None and np.isfinite(m_isy) and m_isy > 0:
+                    mcap, mcap_source = float(m_isy), "isyatirim_pd"
             if not mcap or mcap <= 0:
                 continue
             eq, ni = _equity(last), _ttm_net_income(last)
@@ -412,7 +599,7 @@ def build_monthly_factors(q: pd.DataFrame, px: pd.DataFrame, events: pd.DataFram
                 "sue": sue,
                 "fwd_ret_1m": adj[i + 1] / adj[i] - 1 if i + 1 < len(p) and adj[i] > 0 else np.nan,
                 "fwd_ret_6m": adj[i + 6] / adj[i] - 1 if i + 6 < len(p) and adj[i] > 0 else np.nan,
-                "stmt_period": last["period"],
+                "stmt_period": last["period"], "mcap_source": mcap_source,
             })
     return pd.DataFrame(rows)
 
