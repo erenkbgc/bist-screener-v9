@@ -41,8 +41,8 @@ for name, k, desc in SPECS:
 
 if __name__ == "__main__":
     out = h.run_batch(BATCH, [n for n, _, _ in SPECS],
-                      prereg_dir=ROOT / "docs" / "research" / "prereg_board",
-                      results_dir=ROOT / "docs" / "research" / "prereg_board")
+                      prereg_dir=ROOT / "docs" / "research" / "metric_count",
+                      results_dir=ROOT / "docs" / "research" / "metric_count" / "results")
     print(out["md_path"])
     for n, v in out["payload"]["verdicts"].items():
         b = v["blocks_D_ann_pct"]
