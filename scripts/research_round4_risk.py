@@ -787,7 +787,7 @@ def format_results_markdown(
 
     lines.extend([
         "",
-        "## DSR Details (`R0` vs Batch 1)",
+        f"## DSR Details (`R0` vs Batch {batch_num})",
         "",
         "| Strategy | T | Monthly SR | SR0 | Skew | Kurtosis | DSR |",
         "|---|---:|---:|---:|---:|---:|---:|",
