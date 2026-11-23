@@ -417,7 +417,7 @@ def evaluate_panel(
             base_stats = stats(sub)
             vs_ew_net = nw_stat(p.loc[mask, "active_ew_net"])
             vs_ew_gross = nw_stat(p.loc[mask, "active"])
-            sub_panel = df[wfn(df["date"])]
+            sub_panel = df[np.asarray(wfn(pd.DatetimeIndex(df["date"])))]
             cov_pct = round(100.0 * float(sub_panel[m].notna().mean()), 2) if len(sub_panel) else 0.0
 
             entry = {
