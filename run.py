@@ -494,29 +494,33 @@ def run(as_of_date: str | None = None, min_volume_tl: float = 10_000_000, force:
     # P3-1 (saglayici TMS 29 tutarlilik alarmi) ve P3-2 (piyasa degeri capraz kontrolu):
     # YALNIZCA izleme, skora/siralamaya/rotasyona GIRMEZ.
     vendor_check, mcap_check = None, None
-    if bist_mcp._live_enabled():
-        from core import live_data as ld
-        eligible_set = {u["ticker"] for u in eligible}
-        sample_tickers = [t for t in run_health_mod.VENDOR_SAMPLE_TICKERS if t in eligible_set]
-        if sample_tickers:
-            sample_stmts = {t: ld._quarterly_statements_cached(t)[1] for t in sample_tickers}
-            vendor_check = run_health_mod.vendor_consistency_check(sample_stmts, cpi=ld._cpi_index_cached())
-            print(f"[vendor_consistency] n={vendor_check['n_checked']} "
-                  f"median={vendor_check['median_ratio']} ok={vendor_check['ok']} "
-                  f"out_of_range={vendor_check['n_out_of_range']}", flush=True)
-        isy_mcaps = ld.live_isyatirim_market_caps()
-        if isy_mcaps:
-            tv_mcaps = {u["ticker"]: u.get("market_cap") for u in eligible}
-            mcap_check = run_health_mod.market_cap_cross_check(tv_mcaps, isy_mcaps)
-            if mcap_check["flagged"]:
-                flagged_by_tk = {f["ticker"]: f["diff_pct"] for f in mcap_check["flagged"]}
-                for c in scored:
-                    diff_pct = flagged_by_tk.get(c["ticker"])
-                    if diff_pct is not None:
-                        c["mcap_mismatch_flag"] = True
-                        c["mcap_isy_diff_pct"] = diff_pct
-                print(f"[mcap_cross_check] >%{run_health_mod.MCAP_MAX_DIFF_SHARE*100:.0f} sapma: "
-                      f"{mcap_check['flagged'][:10]}", flush=True)
+    try:
+        if bist_mcp._live_enabled():
+            from core import live_data as ld
+            eligible_set = {u["ticker"] for u in eligible}
+            sample_tickers = [t for t in run_health_mod.VENDOR_SAMPLE_TICKERS if t in eligible_set]
+            if sample_tickers:
+                sample_stmts = {t: ld._quarterly_statements_cached(t)[1] for t in sample_tickers}
+                vendor_check = run_health_mod.vendor_consistency_check(sample_stmts, cpi=ld._cpi_index_cached())
+                print(f"[vendor_consistency] n={vendor_check['n_checked']} "
+                      f"median={vendor_check['median_ratio']} ok={vendor_check['ok']} "
+                      f"out_of_range={vendor_check['n_out_of_range']}", flush=True)
+            isy_mcaps = ld.live_isyatirim_market_caps()
+            if isy_mcaps:
+                tv_mcaps = {u["ticker"]: u.get("market_cap") for u in eligible}
+                mcap_check = run_health_mod.market_cap_cross_check(tv_mcaps, isy_mcaps)
+                if mcap_check["flagged"]:
+                    flagged_by_tk = {f["ticker"]: f["diff_pct"] for f in mcap_check["flagged"]}
+                    for c in scored:
+                        diff_pct = flagged_by_tk.get(c["ticker"])
+                        if diff_pct is not None:
+                            c["mcap_mismatch_flag"] = True
+                            c["mcap_isy_diff_pct"] = diff_pct
+                    print(f"[mcap_cross_check] >%{run_health_mod.MCAP_MAX_DIFF_SHARE*100:.0f} sapma: "
+                          f"{mcap_check['flagged'][:10]}", flush=True)
+    except Exception as exc:  # noqa: BLE001 - izleme kontrolu canli kosuyu durdurmamali
+        print(f"[monitoring] P3 kontrolleri atlandi: {exc!r}", flush=True)
+        vendor_check, mcap_check = None, None
     health = run_health_mod.assess(
         as_of_date, prices=run_health_mod.price_stats(as_of_date, prices_by_ticker, xu100_prices),
         catalyst_available=kap_available, vendor_check=vendor_check, mcap_check=mcap_check)
