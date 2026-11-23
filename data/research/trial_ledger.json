@@ -337,6 +337,24 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "vlab_val_mom15 (batch batch1): 0.85*value_sn_z + 0.15*sector-neutral mom_12_1_z (NaN->0)"
+    },
+    {
+      "study": "round4_vlab_mc_v1_min2",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "mc_v1_min2 (batch metric_count): R0 score, only stocks with >= 2 valid value legs"
+    },
+    {
+      "study": "round4_vlab_mc_v2_min3",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "mc_v2_min3 (batch metric_count): R0 score, only stocks with >= 3 valid value legs"
+    },
+    {
+      "study": "round4_vlab_mc_v3_all4",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "mc_v3_all4 (batch metric_count): R0 score, only stocks with all 4 valid value legs"
     }
   ]
 }
