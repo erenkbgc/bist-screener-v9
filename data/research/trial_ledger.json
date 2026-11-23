@@ -247,6 +247,36 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "miner_gp_qop_real: Gross Profit Yield + Real Operating Profit Surprise Yield tilt on value_sn (70/15/15 fixed)"
+    },
+    {
+      "study": "round4_vlab_vlab_rev_ev",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_rev_ev (batch batch1): R0 4-leg value with S/P replaced by Rev/EV (EV as in ey leg)"
+    },
+    {
+      "study": "round4_vlab_vlab_gp_ev",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_gp_ev (batch batch1): R0 4-leg value with S/P replaced by GrossProfit/EV"
+    },
+    {
+      "study": "round4_vlab_vlab_op_mcap",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_op_mcap (batch batch1): R0 4-leg value with E/P replaced by TTM operating profit / mcap"
+    },
+    {
+      "study": "round4_vlab_vlab_ep_floor0",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_ep_floor0 (batch batch1): R0 4-leg value with E/P floored at 0 before winsorize_z"
+    },
+    {
+      "study": "round4_vlab_vlab_val_mom15",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_val_mom15 (batch batch1): 0.85*value_sn_z + 0.15*sector-neutral mom_12_1_z (NaN->0)"
     }
   ]
 }
