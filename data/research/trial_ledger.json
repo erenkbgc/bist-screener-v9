@@ -223,6 +223,12 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "scholar_sue_usd: USD-deflated Standardized Unexpected Earnings tilt on value_sn (80/20 fixed)"
+    },
+    {
+      "study": "round3_scholar_real_cbop_sue",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "scholar_real_cbop_sue: Inflation-consistent CbOP + USD SUE 3-pillar tilt on value_sn (75/15/10 fixed)"
     }
   ]
 }
