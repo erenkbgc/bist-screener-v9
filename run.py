@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
 import sys
 import time
@@ -169,13 +170,60 @@ def _build_base_candidate(u: dict, fnd: dict, piotroski_by_ticker: dict, sloan_b
     }
 
 
+_STAGE_SECONDS: dict[str, float] = {}
+
+
 def _timing(t0: float, stage: str) -> None:
-    """Kosu ~4.5 saat suruyor ve log'da asama sureleri yoktu; nerede gectigini gosterir."""
-    print(f"[timing] {stage} {time.monotonic() - t0:.0f}s", flush=True)
+    """Kosu ~4.5 saat suruyor ve log'da asama sureleri yoktu; nerede gectigini gosterir.
+    Asama suresi (bir onceki asamadan bu yana) run_metrics dosyasina da yazilir."""
+    elapsed = time.monotonic() - t0
+    _STAGE_SECONDS[stage] = round(elapsed - sum(_STAGE_SECONDS.values()), 1)
+    print(f"[timing] {stage} {elapsed:.0f}s", flush=True)
+
+
+def _write_run_metrics(as_of_date: str, t0: float, eligible: list, scored: list) -> None:
+    """Tam evren kosusunun operasyon metrikleri (yalnizca izleme; karari etkilemez):
+    asama sureleri, 350 dk GitHub Actions sinirina pay, saglayici cagri/bos/cache
+    oranlari ve value_sn oran kapsamasi -> data/reports/run_metrics_<tarih>.json."""
+    try:
+        counts: dict[str, int] = {}
+        for c in scored:
+            k = str(c.get("valid_metric_count"))
+            counts[k] = counts.get(k, 0) + 1
+        n = len(scored)
+        total_s = time.monotonic() - t0
+        metrics = {
+            "as_of_date": as_of_date,
+            "n_eligible": len(eligible),
+            "n_scored": n,
+            "total_minutes": round(total_s / 60, 1),
+            "actions_limit_minutes": 350,
+            "limit_used_share": round(total_s / 60 / 350, 3),
+            "seconds_per_eligible_ticker": round(total_s / len(eligible), 2) if eligible else None,
+            "stage_seconds": dict(_STAGE_SECONDS),
+            "valid_metric_count": counts,
+            "value_coverage": {
+                "all_4_share": round(counts.get("4", 0) / n, 4) if n else None,
+                "ge_2_share": round(sum(v for k, v in counts.items() if k.isdigit() and int(k) >= 2) / n, 4) if n else None,
+                "none_share": round((counts.get("0", 0) + counts.get("None", 0)) / n, 4) if n else None,
+            },
+            "provider": {},
+        }
+        if bist_mcp._live_enabled():
+            from core import live_data as ld
+            metrics["provider"] = ld.provider_stats()
+        out = Path(__file__).resolve().parent / "data" / "reports" / f"run_metrics_{as_of_date}.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(metrics, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"[run_metrics] {metrics['total_minutes']} dk (%{metrics['limit_used_share']*100:.0f} of 350), "
+              f"stages={metrics['stage_seconds']} coverage={metrics['value_coverage']}", flush=True)
+    except Exception as exc:  # noqa: BLE001 - izleme kosuyu durdurmamali
+        print(f"[run_metrics] yazilamadi: {exc!r}", flush=True)
 
 
 def run(as_of_date: str | None = None, min_volume_tl: float = 10_000_000, force: bool = False) -> dict:
     t0 = time.monotonic()
+    _STAGE_SECONDS.clear()
     as_of_date = run_date_mod.resolve_run_date(
         schedule=os.environ.get("GITHUB_EVENT_SCHEDULE"),
         explicit_date=as_of_date,
@@ -720,6 +768,7 @@ def run(as_of_date: str | None = None, min_volume_tl: float = 10_000_000, force:
             print(f"[validation_gate] debug dump basarisiz (yok sayildi): {debug_exc}")
 
     _timing(t0, "report_dispatch")
+    _write_run_metrics(as_of_date, t0, eligible, scored)
     # --- evaluate_past_predictions + thesis_invalidation_monitor (kosunun sonunda) ---
     # Bu, BIR SONRAKI kosunun payload'unun okuyacagi outcomes/invalidation_checks
     # tablolarini gunceller (bkz. core/evaluate.py dosya-basi notu).

@@ -81,6 +81,13 @@ jobs:
           fi
           python run.py --as-of-date ${{ steps.today.outputs.date }} $EXTRA_ARGS
 
+      # Golge ileriye donuk kayit (yalnizca kagit; canli skor/rotasyonu degistirmez).
+      # On kayit: docs/research/shadow_record_preregistration.md. Hata kosuyu DURDURMAZ.
+      - name: Golge ileriye donuk kayit (paper only)
+        continue-on-error: true
+        timeout-minutes: 15
+        run: python scripts/shadow_record.py
+
       # KAP FinBERT (bilgi amacli, final_score'a bagli degil): o gun raporlanan
       # adaylarin son 3 gunluk (hafta sonu dahil) KAP bildirim govdeleri
       # opus-mt-tr-en + ProsusAI/finbert ile puanlanir -> data/reports/
@@ -121,7 +128,7 @@ jobs:
         run: |
           git config user.name "bist-screener-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/bist_history.db data/reports/ data/forward_record/ config/weights_optimized.json
+          git add data/bist_history.db data/reports/ data/forward_record/ data/forward/ config/weights_optimized.json
           if git diff --cached --quiet; then
             echo "commit edilecek degisiklik yok"
             exit 0

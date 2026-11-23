@@ -56,6 +56,75 @@ import borsapy as bp
 # yakalayip None/varsayilana duser (durustluk kurali ile tutarli).
 socket.setdefaulttimeout(25)
 
+
+# --- Saglayici cagri metrikleri (izleme; davranisi degistirmez) -------------
+# lru_cache'in ALTINA yerlestirilir: ic fonksiyon yalnizca cache iskasinda
+# calisir, yani sayac = gercek saglayici cagrisi. Bos donus (None, tumu None
+# tuple, bos DataFrame/dict) "bos" sayilir; fonksiyonlar istisnayi zaten
+# yakalayip None dondurdugu icin bu hata oraninin vekilidir.
+import threading as _threading
+import time as _time
+
+_PROVIDER_LOCK = _threading.Lock()
+_PROVIDER_STATS: dict[str, dict] = {}
+_TRACKED_CACHES: dict[str, object] = {}
+
+
+def _is_empty_result(r) -> bool:
+    if r is None:
+        return True
+    if isinstance(r, tuple):
+        return all(_is_empty_result(x) for x in r)
+    empty = getattr(r, "empty", None)
+    if isinstance(empty, bool):
+        return empty
+    if isinstance(r, (dict, list)):
+        return len(r) == 0
+    return False
+
+
+def _tracked(name: str):
+    def deco(fn):
+        def wrapper(*args, **kwargs):
+            t = _time.monotonic()
+            empty = True
+            try:
+                r = fn(*args, **kwargs)
+                empty = _is_empty_result(r)
+                return r
+            finally:
+                dt = _time.monotonic() - t
+                with _PROVIDER_LOCK:
+                    st = _PROVIDER_STATS.setdefault(name, {"calls": 0, "empty": 0, "total_s": 0.0, "max_s": 0.0})
+                    st["calls"] += 1
+                    st["empty"] += int(empty)
+                    st["total_s"] += dt
+                    st["max_s"] = max(st["max_s"], dt)
+        wrapper.__name__ = fn.__name__
+        wrapper.__doc__ = fn.__doc__
+        return wrapper
+    return deco
+
+
+def provider_stats() -> dict[str, dict]:
+    """Fetcher basina: saglayici cagrisi, bos/hata orani, ortalama/maks sure, cache isabet orani."""
+    out = {}
+    with _PROVIDER_LOCK:
+        snap = {k: dict(v) for k, v in _PROVIDER_STATS.items()}
+    for name, cached in _TRACKED_CACHES.items():
+        st = snap.get(name, {"calls": 0, "empty": 0, "total_s": 0.0, "max_s": 0.0})
+        info = cached.cache_info()
+        lookups = info.hits + info.misses
+        out[name] = {
+            "provider_calls": st["calls"],
+            "empty_share": round(st["empty"] / st["calls"], 4) if st["calls"] else None,
+            "mean_s": round(st["total_s"] / st["calls"], 3) if st["calls"] else None,
+            "max_s": round(st["max_s"], 2),
+            "total_s": round(st["total_s"], 1),
+            "cache_hit_share": round(info.hits / lookups, 4) if lookups else None,
+        }
+    return out
+
 # Butun canli fonksiyonlar tek tek, sirali (I/O-bound) ag cagrilari yapar.
 # ~800 tickerlik tam evrende bu, ticker basina saniyeler suren gecikmeyi
 # CARPARAK biriktirir (olcum: sirali ~9sn/ticker sadece ag katmani -> tam
@@ -214,6 +283,7 @@ _FAST_INFO_FIELDS = ["last_price", "market_cap", "shares", "pe_ratio", "pb_ratio
 
 
 @lru_cache(maxsize=2048)
+@_tracked("fast_info")
 def _fast_info_cached(ticker: str) -> dict | None:
     """FastInfo, ilk ozellik erisiminde (lazy __getattr__) agsal cagri yapan bir
     proxy'dir -- tek bir alana erismek TUM veriyi tetikler ve hata da o anda
@@ -260,6 +330,7 @@ def live_isyatirim_market_caps() -> dict[str, float]:
 
 
 @lru_cache(maxsize=2048)
+@_tracked("info")
 def _info_cached(ticker: str):
     try:
         return dict(_ticker_obj(ticker).info)
@@ -268,6 +339,7 @@ def _info_cached(ticker: str):
 
 
 @lru_cache(maxsize=2048)
+@_tracked("dividends")
 def _dividends_cached(ticker: str):
     try:
         return _ticker_obj(ticker).dividends
@@ -276,6 +348,7 @@ def _dividends_cached(ticker: str):
 
 
 @lru_cache(maxsize=2048)
+@_tracked("history")
 def _history_cached(ticker: str, period: str = "2y"):
     """live_listing_and_size VE live_prices AYNI 2 yillik fiyat gecmisini
     kullanir -- tek bir cache anahtari altinda paylasilarak ticker basina
@@ -306,6 +379,7 @@ def _history_cached(ticker: str, period: str = "2y"):
 
 
 @lru_cache(maxsize=2048)
+@_tracked("history_adj")
 def _history_adj_cached(ticker: str, period: str = "2y"):
     """Bolunme/bedelsiz DUZELTMELI gecmis. Getiri tabanli hesaplar (momentum,
     volatilite, beta, kovaryans, ATR/SMA) bunu kullanir: BIST'te sik bedelsiz
@@ -320,6 +394,7 @@ def _history_adj_cached(ticker: str, period: str = "2y"):
 
 
 @lru_cache(maxsize=2048)
+@_tracked("news")
 def _news_cached(ticker: str):
     try:
         return _ticker_obj(ticker).news
@@ -334,6 +409,7 @@ def kap_news_available(ticker: str) -> bool:
 
 
 @lru_cache(maxsize=2048)
+@_tracked("earnings_dates")
 def _earnings_dates_cached(ticker: str):
     try:
         return _ticker_obj(ticker).earnings_dates
@@ -347,6 +423,7 @@ VALUE_QUARTERS = 8
 
 
 @lru_cache(maxsize=2048)
+@_tracked("quarterly_statements")
 def _quarterly_statements_cached(ticker: str):
     """(balance_sheet, income_stmt) ceyreklik YTD, arastirma paneliyle ayni cekim
     (core/pit_panel.fetch_statement, sanayi sablonu)."""
@@ -1581,3 +1658,6 @@ def live_macro_snapshot(as_of_date: str) -> dict:
     # Durustce None/varsayilan birakilir; core/hurdle.py ve core/regime.py bu
     # alanlar icin None-guard icerir.
     return result
+
+for _f in (_fast_info_cached, _info_cached, _dividends_cached, _history_cached, _history_adj_cached, _news_cached, _earnings_dates_cached, _quarterly_statements_cached):
+    _TRACKED_CACHES[_f.__wrapped__.__name__.strip("_").replace("_cached", "")] = _f
