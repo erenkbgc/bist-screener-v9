@@ -971,6 +971,105 @@ def sue_usd_feature(
     return pd.Series(res["_sue_ni_usd"].to_numpy(dtype=float), index=panel.index, name="sue_ni_usd")
 
 
+def ocf_ev_real_feature(
+    panel: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    cpi: pd.Series,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Real Enterprise Cash-Based Operating Yield: ``(ttm_op_profit - (NOA_p - k*NOA_{p-4q})) / EV``.
+
+    Where ``EV = mcap + (fin_debt - cash)`` (matching ``pit_panel.value_ratios``)
+    and ``k = CPI(period_end_p) / CPI(period_end_{p-4q})``.
+    Requires finite ``mcap > 0`` and ``EV > 0``; else ``NaN``.
+    Units: dimensionless yield (TL / TL).
+    """
+    req = ("total_assets", "cash", "current_liab", "noncurrent_liab", "fin_debt", "ttm_op_profit")
+    q = prepare_quarterly_pit(quarterly, kap_dates=kap_dates)
+    if q.empty or "mcap" not in panel.columns or any(c not in q.columns for c in req):
+        return pd.Series(np.nan, index=panel.index, dtype=float, name="ocf_ev_real")
+
+    fd = pd.to_numeric(q["fin_debt"], errors="coerce")
+    cash = pd.to_numeric(q["cash"], errors="coerce")
+    q["_noa"] = (
+        pd.to_numeric(q["total_assets"], errors="coerce")
+        - cash
+        - (pd.to_numeric(q["current_liab"], errors="coerce") + pd.to_numeric(q["noncurrent_liab"], errors="coerce") - fd)
+    )
+    q["_net_debt"] = fd - cash
+
+    qw = _attach_yoy_lag(q, ["_noa"])
+    k = _cpi_ratio_yoy(qw, cpi)
+    op = pd.to_numeric(qw["ttm_op_profit"], errors="coerce").to_numpy(dtype=float)
+    noa_now = qw["_noa"].to_numpy(dtype=float)
+    noa_ya = qw["_noa_ya"].to_numpy(dtype=float)
+    valid_q = np.isfinite(op) & np.isfinite(noa_now) & np.isfinite(noa_ya) & np.isfinite(k) & (k > 0.0)
+    qw["_ocf_real_num"] = np.where(valid_q, op - (noa_now - k * noa_ya), np.nan)
+
+    res = _attach_pit_quarterly_values(panel, qw, ["_ocf_real_num", "_net_debt"], kap_dates=kap_dates)
+    num = res["_ocf_real_num"].to_numpy(dtype=float)
+    nd = res["_net_debt"].to_numpy(dtype=float)
+    mcap = pd.to_numeric(panel["mcap"], errors="coerce").to_numpy(dtype=float)
+    ev = mcap + nd
+    valid = np.isfinite(num) & np.isfinite(mcap) & (mcap > 0.0) & np.isfinite(ev) & (ev > 0.0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        vals = np.where(valid, num / ev, np.nan)
+    return pd.Series(vals, index=panel.index, name="ocf_ev_real")
+
+
+def gross_profit_yield_feature(
+    panel: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Gross Profit Yield: ``ttm_gross_profit / mcap`` (units: TL / TL, requires ``mcap > 0``)."""
+    q = prepare_quarterly_pit(quarterly, kap_dates=kap_dates)
+    if q.empty or "mcap" not in panel.columns or "ttm_gross_profit" not in q.columns:
+        return pd.Series(np.nan, index=panel.index, dtype=float, name="gp_mcap")
+    res = _attach_pit_quarterly_values(panel, q, ["ttm_gross_profit"], kap_dates=kap_dates)
+    gp = res["ttm_gross_profit"].to_numpy(dtype=float)
+    mcap = pd.to_numeric(panel["mcap"], errors="coerce").to_numpy(dtype=float)
+    valid = np.isfinite(gp) & np.isfinite(mcap) & (mcap > 0.0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        vals = np.where(valid, gp / mcap, np.nan)
+    return pd.Series(vals, index=panel.index, name="gp_mcap")
+
+
+def real_quarterly_surprise_yield(
+    panel: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    col: str,
+    cpi: pd.Series,
+    name: str | None = None,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Inflation-adjusted YoY discrete quarterly surprise scaled by market cap:
+    ``(col_p - col_{p-4q} * CPI(p) / CPI(p-4q)) / mcap``.
+
+    Units: dimensionless yield (TL / TL). Requires finite ``mcap > 0`` and ``CPI > 0``.
+    """
+    out_name = name or f"{col}_surp_real_mcap"
+    q = prepare_quarterly_pit(quarterly, kap_dates=kap_dates)
+    if q.empty or "mcap" not in panel.columns or col not in q.columns:
+        return pd.Series(np.nan, index=panel.index, dtype=float, name=out_name)
+
+    q["_qval"] = pd.to_numeric(q[col], errors="coerce")
+    qw = _attach_yoy_lag(q, ["_qval"])
+    k = _cpi_ratio_yoy(qw, cpi)
+    v_now = qw["_qval"].to_numpy(dtype=float)
+    v_ya = qw["_qval_ya"].to_numpy(dtype=float)
+    valid_q = np.isfinite(v_now) & np.isfinite(v_ya) & np.isfinite(k) & (k > 0.0)
+    qw["_surp_real"] = np.where(valid_q, v_now - k * v_ya, np.nan)
+
+    res = _attach_pit_quarterly_values(panel, qw, ["_surp_real"], kap_dates=kap_dates)
+    surp = res["_surp_real"].to_numpy(dtype=float)
+    mcap = pd.to_numeric(panel["mcap"], errors="coerce").to_numpy(dtype=float)
+    valid = np.isfinite(surp) & np.isfinite(mcap) & (mcap > 0.0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        vals = np.where(valid, surp / mcap, np.nan)
+    return pd.Series(vals, index=panel.index, name=out_name)
+
+
 # ---------------------------------------------------------------------------
 # Candidate Signal Builders (Pure Functions)
 # ---------------------------------------------------------------------------
@@ -1019,6 +1118,59 @@ def signal_scholar_real_cbop_sue(
     v = pd.to_numeric(prepared_df["value_sn_z"], errors="coerce")
     score = 0.75 * v + 0.15 * cbop_z_sn.fillna(0.0) + 0.10 * sue_z_sn.fillna(0.0)
     return score.where(v.notna()).rename("scholar_real_cbop_sue")
+
+
+def signal_miner_ocf_ev_real(
+    prepared_df: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    macro: pd.DataFrame | pd.Series,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Candidate ``miner_ocf_ev_real``: ``0.80 * value_sn_z + 0.20 * fillna(ocf_ev_real_z_sn, 0.0)``."""
+    cpi = cpi_index_from_macro(macro)
+    raw = ocf_ev_real_feature(prepared_df, quarterly, cpi=cpi, kap_dates=kap_dates)
+    z_sn = cross_sectional_z(prepared_df, raw, sign=1, lo=0.01, hi=0.99, sector_neutral=True, min_sector_n=5)
+    v = pd.to_numeric(prepared_df["value_sn_z"], errors="coerce")
+    score = 0.80 * v + 0.20 * z_sn.fillna(0.0)
+    return score.where(v.notna()).rename("miner_ocf_ev_real")
+
+
+def signal_miner_qgp_surp_real(
+    prepared_df: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    macro: pd.DataFrame | pd.Series,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Candidate ``miner_qgp_surp_real``: ``0.75 * value_sn_z + 0.25 * fillna(qgp_surp_real_z_sn, 0.0)``."""
+    cpi = cpi_index_from_macro(macro)
+    raw = real_quarterly_surprise_yield(
+        prepared_df, quarterly, col="q_gross_profit", cpi=cpi, name="qgp_surp_real_mcap", kap_dates=kap_dates
+    )
+    z_sn = cross_sectional_z(prepared_df, raw, sign=1, lo=0.01, hi=0.99, sector_neutral=True, min_sector_n=5)
+    v = pd.to_numeric(prepared_df["value_sn_z"], errors="coerce")
+    score = 0.75 * v + 0.25 * z_sn.fillna(0.0)
+    return score.where(v.notna()).rename("miner_qgp_surp_real")
+
+
+def signal_miner_gp_qop_real(
+    prepared_df: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    macro: pd.DataFrame | pd.Series,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Candidate ``miner_gp_qop_real``:
+    ``0.70 * value_sn_z + 0.15 * fillna(gp_mcap_z_sn, 0.0) + 0.15 * fillna(qop_surp_real_mcap_z_sn, 0.0)``.
+    """
+    cpi = cpi_index_from_macro(macro)
+    gp_y = gross_profit_yield_feature(prepared_df, quarterly, kap_dates=kap_dates)
+    qop_s = real_quarterly_surprise_yield(
+        prepared_df, quarterly, col="q_op_profit", cpi=cpi, name="qop_surp_real_mcap", kap_dates=kap_dates
+    )
+    gp_z_sn = cross_sectional_z(prepared_df, gp_y, sign=1, lo=0.01, hi=0.99, sector_neutral=True, min_sector_n=5)
+    qop_z_sn = cross_sectional_z(prepared_df, qop_s, sign=1, lo=0.01, hi=0.99, sector_neutral=True, min_sector_n=5)
+    v = pd.to_numeric(prepared_df["value_sn_z"], errors="coerce")
+    score = 0.70 * v + 0.15 * gp_z_sn.fillna(0.0) + 0.15 * qop_z_sn.fillna(0.0)
+    return score.where(v.notna()).rename("miner_gp_qop_real")
 
 
 # ---------------------------------------------------------------------------
@@ -1095,6 +1247,43 @@ def _build_scholar_real_cbop_sue(raw_panel: pd.DataFrame, prepared_df: pd.DataFr
     return signal_scholar_real_cbop_sue(
         prepared_df, ctx["quarterly"], ctx["macro"], ctx["fx"], kap_dates=ctx.get("kap_dates")
     )
+
+
+@register_candidate(
+    "miner_ocf_ev_real",
+    description="Real Enterprise Cash-Based Operating Yield tilt on value_sn (80/20 fixed)",
+    frozen_params={"w_value_sn": 0.80, "w_ocf_ev_real_sn": 0.20, "winsor_lo": 0.01, "winsor_hi": 0.99, "min_sector_n": 5},
+    is_combination=False,
+)
+def _build_miner_ocf_ev_real(raw_panel: pd.DataFrame, prepared_df: pd.DataFrame, ctx: dict) -> pd.Series:
+    return signal_miner_ocf_ev_real(prepared_df, ctx["quarterly"], ctx["macro"], kap_dates=ctx.get("kap_dates"))
+
+
+@register_candidate(
+    "miner_qgp_surp_real",
+    description="Real Quarterly Gross Profit Surprise Yield tilt on value_sn (75/25 fixed)",
+    frozen_params={"w_value_sn": 0.75, "w_qgp_surp_real_sn": 0.25, "winsor_lo": 0.01, "winsor_hi": 0.99, "min_sector_n": 5},
+    is_combination=False,
+)
+def _build_miner_qgp_surp_real(raw_panel: pd.DataFrame, prepared_df: pd.DataFrame, ctx: dict) -> pd.Series:
+    return signal_miner_qgp_surp_real(prepared_df, ctx["quarterly"], ctx["macro"], kap_dates=ctx.get("kap_dates"))
+
+
+@register_candidate(
+    "miner_gp_qop_real",
+    description="Gross Profit Yield + Real Operating Profit Surprise Yield tilt on value_sn (70/15/15 fixed)",
+    frozen_params={
+        "w_value_sn": 0.70,
+        "w_gp_mcap_sn": 0.15,
+        "w_qop_surp_real_sn": 0.15,
+        "winsor_lo": 0.01,
+        "winsor_hi": 0.99,
+        "min_sector_n": 5,
+    },
+    is_combination=True,
+)
+def _build_miner_gp_qop_real(raw_panel: pd.DataFrame, prepared_df: pd.DataFrame, ctx: dict) -> pd.Series:
+    return signal_miner_gp_qop_real(prepared_df, ctx["quarterly"], ctx["macro"], kap_dates=ctx.get("kap_dates"))
 
 
 def compute_coverage_stats(
