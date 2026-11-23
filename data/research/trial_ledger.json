@@ -217,6 +217,12 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "scholar_cbop: Cash-Based Operating Profitability tilt on value_sn (80/20 fixed)"
+    },
+    {
+      "study": "round3_scholar_sue_usd",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "scholar_sue_usd: USD-deflated Standardized Unexpected Earnings tilt on value_sn (80/20 fixed)"
     }
   ]
 }
