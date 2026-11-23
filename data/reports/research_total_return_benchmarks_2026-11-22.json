@@ -1,0 +1,202 @@
+{
+  "as_of": "2026-11-22",
+  "months": [
+    "2013-04-30",
+    "2026-09-30"
+  ],
+  "tr_first_date": {
+    "xu100_tr": "2018-07-16",
+    "xutum_tr": "2018-07-16"
+  },
+  "windows": {
+    "discovery": {
+      "B1_ew_universe_zero_cost": {
+        "months": 93,
+        "active_ann_pct": 4.37,
+        "t": 1.67,
+        "tracking_error_pct": 6.6,
+        "ir": 0.66,
+        "cagr_strategy_pct": 34.6,
+        "cagr_benchmark_pct": 29.23
+      },
+      "B2_ew_universe_costed": {
+        "months": 93,
+        "active_ann_pct": 5.14,
+        "t": 1.97,
+        "tracking_error_pct": 6.59,
+        "ir": 0.78,
+        "cagr_strategy_pct": 34.6,
+        "cagr_benchmark_pct": 28.3
+      },
+      "B3_bist100_total_return": {
+        "months": 30,
+        "active_ann_pct": 45.25,
+        "t": 2.72,
+        "tracking_error_pct": 20.75,
+        "ir": 2.18,
+        "cagr_strategy_pct": 82.43,
+        "cagr_benchmark_pct": 20.8
+      },
+      "B4_bist_all_total_return": {
+        "months": 30,
+        "active_ann_pct": 40.21,
+        "t": 2.77,
+        "tracking_error_pct": 18.39,
+        "ir": 2.19,
+        "cagr_strategy_pct": 82.43,
+        "cagr_benchmark_pct": 27.06
+      },
+      "xu100_price": {
+        "months": 93,
+        "active_ann_pct": 24.33,
+        "t": 3.39,
+        "tracking_error_pct": 16.48,
+        "ir": 1.48,
+        "cagr_strategy_pct": 34.6,
+        "cagr_benchmark_pct": 7.19
+      },
+      "B4_minus_B3": {
+        "months": 30,
+        "active_ann_pct": 5.05,
+        "t": 2.09,
+        "tracking_error_pct": 3.11,
+        "ir": 1.62,
+        "cagr_strategy_pct": 27.06,
+        "cagr_benchmark_pct": 20.8
+      }
+    },
+    "early_2018_08_2020": {
+      "B1_ew_universe_zero_cost": {
+        "months": 29,
+        "active_ann_pct": 0.56,
+        "t": 0.09,
+        "tracking_error_pct": 8.79,
+        "ir": 0.06,
+        "cagr_strategy_pct": 93.41,
+        "cagr_benchmark_pct": 92.78
+      },
+      "B2_ew_universe_costed": {
+        "months": 29,
+        "active_ann_pct": 1.64,
+        "t": 0.25,
+        "tracking_error_pct": 8.89,
+        "ir": 0.18,
+        "cagr_strategy_pct": 93.41,
+        "cagr_benchmark_pct": 90.93
+      },
+      "B3_bist100_total_return": {
+        "months": 29,
+        "active_ann_pct": 48.63,
+        "t": 3.12,
+        "tracking_error_pct": 20.4,
+        "ir": 2.38,
+        "cagr_strategy_pct": 93.41,
+        "cagr_benchmark_pct": 23.83
+      },
+      "B4_bist_all_total_return": {
+        "months": 29,
+        "active_ann_pct": 43.38,
+        "t": 3.21,
+        "tracking_error_pct": 18.01,
+        "ir": 2.41,
+        "cagr_strategy_pct": 93.41,
+        "cagr_benchmark_pct": 30.51
+      },
+      "xu100_price": {
+        "months": 29,
+        "active_ann_pct": 50.8,
+        "t": 3.34,
+        "tracking_error_pct": 20.3,
+        "ir": 2.5,
+        "cagr_strategy_pct": 93.41,
+        "cagr_benchmark_pct": 21.12
+      },
+      "B4_minus_B3": {
+        "months": 29,
+        "active_ann_pct": 5.25,
+        "t": 2.18,
+        "tracking_error_pct": 3.15,
+        "ir": 1.67,
+        "cagr_strategy_pct": 30.51,
+        "cagr_benchmark_pct": 23.83
+      }
+    },
+    "holdout": {
+      "B1_ew_universe_zero_cost": {
+        "months": 68,
+        "active_ann_pct": 9.36,
+        "t": 2.74,
+        "tracking_error_pct": 8.33,
+        "ir": 1.12,
+        "cagr_strategy_pct": 49.69,
+        "cagr_benchmark_pct": 36.91
+      },
+      "B2_ew_universe_costed": {
+        "months": 68,
+        "active_ann_pct": 10.14,
+        "t": 2.97,
+        "tracking_error_pct": 8.35,
+        "ir": 1.21,
+        "cagr_strategy_pct": 49.69,
+        "cagr_benchmark_pct": 35.89
+      },
+      "B3_bist100_total_return": {
+        "months": 68,
+        "active_ann_pct": 1.54,
+        "t": 0.3,
+        "tracking_error_pct": 12.67,
+        "ir": 0.12,
+        "cagr_strategy_pct": 49.69,
+        "cagr_benchmark_pct": 48.59
+      },
+      "B4_bist_all_total_return": {
+        "months": 68,
+        "active_ann_pct": 1.14,
+        "t": 0.28,
+        "tracking_error_pct": 10.0,
+        "ir": 0.11,
+        "cagr_strategy_pct": 49.69,
+        "cagr_benchmark_pct": 49.23
+      },
+      "xu100_price": {
+        "months": 68,
+        "active_ann_pct": 4.29,
+        "t": 0.86,
+        "tracking_error_pct": 12.65,
+        "ir": 0.34,
+        "cagr_strategy_pct": 49.69,
+        "cagr_benchmark_pct": 44.68
+      },
+      "B4_minus_B3": {
+        "months": 68,
+        "active_ann_pct": 0.4,
+        "t": 0.2,
+        "tracking_error_pct": 5.25,
+        "ir": 0.08,
+        "cagr_strategy_pct": 49.23,
+        "cagr_benchmark_pct": 48.59
+      }
+    }
+  },
+  "B2_costs": {
+    "cost_ann_pct": 0.75,
+    "turnover_pct": 9.3,
+    "avg_names": 298.1
+  },
+  "labels_holdout": {
+    "B1_ew_universe_zero_cost": "BEATS",
+    "B2_ew_universe_costed": "BEATS",
+    "B3_bist100_total_return": "AHEAD_NOT_SIGNIFICANT",
+    "B4_bist_all_total_return": "AHEAD_NOT_SIGNIFICANT",
+    "xu100_price": "AHEAD_NOT_SIGNIFICANT"
+  },
+  "strategy_holdout_vs_b1": {
+    "months": 68,
+    "active_ann_pct": 9.36,
+    "t": 2.74,
+    "tracking_error_pct": 8.33,
+    "ir": 1.12,
+    "cagr_strategy_pct": 49.69,
+    "cagr_benchmark_pct": 36.91
+  }
+}

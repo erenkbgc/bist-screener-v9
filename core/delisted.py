@@ -89,6 +89,18 @@ def share_events(code: str, daily: pd.DataFrame) -> pd.DataFrame:
                          "bonus_pct": 100.0 * (chg.values - 1.0)})
 
 
+def monthly_market_caps(code: str, daily: pd.DataFrame) -> pd.DataFrame:
+    """HisseTekil PD (TL) -> ay sonu piyasa degeri (pit_panel.build_monthly_factors bicimi)."""
+    if daily.empty or "PD" not in daily.columns:
+        return pd.DataFrame(columns=["ticker", "date", "mcap"])
+    pd_s = pd.to_numeric(daily["PD"], errors="coerce")
+    pd_s = pd_s[pd_s > 0].dropna()
+    if pd_s.empty:
+        return pd.DataFrame(columns=["ticker", "date", "mcap"])
+    m = pd_s.resample("ME").last().dropna()
+    return pd.DataFrame({"ticker": code, "date": m.index, "mcap": m.astype(float).values})
+
+
 def classify_exit(kap: pd.DataFrame, code: str, last: pd.Timestamp) -> str:
     """kap: stock_code (tek kod), published_at, subject, summary."""
     w = kap[(kap["stock_code"] == code)

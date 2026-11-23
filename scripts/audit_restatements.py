@@ -45,7 +45,7 @@ ITEMS = {"total_assets": ("TOPLAM VARLIKLAR", "bs"), "net_income": ("DÖNEM KARI
 KAP_LABELS = {"total_assets": ("TOPLAM VARLIKLAR", "TOPLAM AKTİFLER", "Toplam Varlıklar"),
               "net_income": ("DÖNEM KARI (ZARARI)", "DÖNEM KARI/ZARARI", "Dönem Karı (Zararı)",
                              "DÖNEM NET KARI (ZARARI)", "DÖNEM NET KARI/ZARARI")}
-_NUM = re.compile(r"^\(?-?[\d.]+(,\d+)?\)?$")
+_NUM = re.compile(r"^\(?-?(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?\)?$")
 
 
 def period_of(ts: pd.Timestamp) -> str | None:
@@ -99,7 +99,7 @@ def first_value(txt: str, labels: tuple[str, ...]) -> float | None:
     for label in labels:
         for m in re.finditer(r"\|" + re.escape(label) + r"\|", txt):
             nums = [v for v in (parse_number(t) for t in txt[m.end(): m.end() + 500].split("|")[:8]) if v is not None]
-            if len(nums) >= 2 and float(nums[0]).is_integer() and 0 <= nums[0] < 100:
+            if len(nums) >= 2 and 0 <= nums[0] < 100 and (float(nums[0]).is_integer() or abs(nums[1]) >= 1000):
                 nums = nums[1:]
             if nums:
                 return nums[0]

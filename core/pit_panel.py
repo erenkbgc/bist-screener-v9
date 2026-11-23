@@ -371,6 +371,69 @@ def vendor_consistent_ttm(long: pd.DataFrame, period: str, cpi: pd.Series | None
     return out
 
 
+def _shift_period(period: str, quarters: int) -> str:
+    """Takvim ceyregini `quarters` ceyrek ileri tasir (ozel hesap donemi: +1 = Mart, +2 = Haziran)."""
+    if not quarters:
+        return period
+    y, q = int(period[:4]), int(period[-1])
+    tot = y * 4 + (q - 1) + int(quarters)
+    return f"{tot // 4}Q{tot % 4 + 1}"
+
+
+def undo_reexpression(long: pd.DataFrame, classes: pd.DataFrame, cpi: pd.Series) -> tuple[pd.DataFrame, dict]:
+    """TMS 29 donemi (>= 2023Q4) Is Yatirim yeniden ifadesini geri alir.
+
+    cls == 'reexpressed':
+      - Q4: tum kalemler / CPI(L)/CPI(P), L = min(P + 4 ceyrek, sirketin son donemi).
+      - Q1-Q3: gelir tablosu kalemleri / CPI(P+4)/CPI(P) (P+4 varsa); bilanco degismez.
+    cls == 'reexpressed_q4_only' (orn. ozel hesap donemli MARTI, MRGYO):
+      - Yalnizca Q4 tum kalemler geri alinir; Q1-Q3 degismez.
+    fy_shift_q (opsiyonel sutun, varsayilan 0): TUFE ayini ozel hesap donemi sonuna kaydirir.
+    docs/research/first_published_panel.md, modelin dogrulamasi orada."""
+    full_tl = set(classes.loc[classes["cls"] == "reexpressed", "ticker"])
+    q4_only = set(classes.loc[classes["cls"] == "reexpressed_q4_only", "ticker"])
+    target_tks = full_tl | q4_only
+    shifts = (dict(zip(classes["ticker"], classes["fy_shift_q"].fillna(0).astype(int)))
+              if "fy_shift_q" in classes.columns else {})
+    c = lambda p: cpi.get(period_end(p).to_period("M"), float("nan"))  # noqa: E731
+    latest = long.groupby("ticker")["period"].max()
+    inc = set(INC_ITEMS)
+    out = long.copy()
+    factor = pd.Series(1.0, index=out.index)
+    m = out["ticker"].isin(target_tks) & (out["period"] >= IAS29_FIRST_PERIOD)
+    for i in out.index[m]:
+        tk, per, item = out.at[i, "ticker"], out.at[i, "period"], out.at[i, "item"]
+        sh = shifts.get(tk, 0)
+        nxt = f"{int(per[:4]) + 1}{per[4:]}"
+        if per.endswith("Q4"):
+            last = min(nxt, latest[tk])
+            if last > per:
+                factor[i] = c(_shift_period(last, sh)) / c(_shift_period(per, sh))
+        elif tk in full_tl and item in inc and nxt <= latest[tk]:
+            factor[i] = c(_shift_period(nxt, sh)) / c(_shift_period(per, sh))
+    out["value"] = out["value"] / factor
+    stats = {"reexpressed_tickers": len(full_tl), "reexpressed_q4_only_tickers": len(q4_only),
+             "values_divided": int((factor != 1.0).sum()),
+             "classes": classes["cls"].value_counts().to_dict()}
+    return out, stats
+
+
+def bridge_ttm(q: pd.DataFrame, long: pd.DataFrame, cpi: pd.Series) -> pd.DataFrame:
+    """P = 2023Q4-2024Q3: TTM 2023Q1-Q3 YTD'lerine dayaniyor; Is Yatirim onlari P raporunun
+    onceki-donem kolonuyla (P birimi) veriyor. O satirlarda canli ile ayni formul:
+    TTM = YTD(P) + YTD(FY 2023) x CPI(P)/CPI(Dec 2023) - YTD(P - 4)."""
+    q = q.copy()
+    for tk, g in long.groupby("ticker"):
+        for per in ("2023Q4", "2024Q1", "2024Q2", "2024Q3"):
+            sel = (q["ticker"] == tk) & (q["period"] == per)
+            if not sel.any():
+                continue
+            for item, v in vendor_consistent_ttm(g, per, cpi).items():
+                if f"ttm_{item}" in q:
+                    q.loc[sel, f"ttm_{item}"] = v
+    return q
+
+
 def latest_value_ratios(ticker: str, bs: pd.DataFrame | None, inc: pd.DataFrame | None,
                         mcap: float | None, cpi: pd.Series | None = None,
                         as_of: pd.Timestamp | None = None, kap_dates: pd.DataFrame | None = None) -> dict:

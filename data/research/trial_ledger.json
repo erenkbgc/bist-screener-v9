@@ -1,6 +1,6 @@
 {
   "description": "Pre-registered studies and the number of candidate rules each tested (docs/research/quant_review_followups_preregistration.md, B1). Counts come from the rule IDs in each study file or the result row in the README scorecard. 'stock_selection' trials were evaluated on the same monthly stock panel; their sum is N_sel.",
-  "as_of": "2026-10-25",
+  "as_of": "2026-11-24",
   "studies": [
     {
       "study": "backtest_factor_model (pre-2026-10, not pre-registered)",
@@ -193,6 +193,150 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "D1 exclude worst decile of (cash + ST investments) / ST financial debt"
+    },
+    {
+      "study": "free_float_preregistration",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "FF1 exclude bottom decile of point-in-time free-float market value (HAO_PD)"
+    },
+    {
+      "study": "valuation_round1_preregistration",
+      "family": "stock_selection",
+      "trials": 3,
+      "source": "S1 (value_eb_ns), M2 (value_real_spread_sn), FV1 (reoi_ev_sn)"
+    },
+    {
+      "study": "valuation_round2_preregistration",
+      "family": "stock_selection",
+      "trials": 2,
+      "source": "V2B ep_xdt (E/P without deferred tax), V2A bm_tan (tangible B/M)"
+    },
+    {
+      "study": "round3_scholar_cbop",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "scholar_cbop: Cash-Based Operating Profitability tilt on value_sn (80/20 fixed)"
+    },
+    {
+      "study": "round3_scholar_sue_usd",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "scholar_sue_usd: USD-deflated Standardized Unexpected Earnings tilt on value_sn (80/20 fixed)"
+    },
+    {
+      "study": "round3_scholar_real_cbop_sue",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "scholar_real_cbop_sue: Inflation-consistent CbOP + USD SUE 3-pillar tilt on value_sn (75/15/10 fixed)"
+    },
+    {
+      "study": "round3_miner_ocf_ev_real",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "miner_ocf_ev_real: Real Enterprise Cash-Based Operating Yield tilt on value_sn (80/20 fixed)"
+    },
+    {
+      "study": "round3_miner_qgp_surp_real",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "miner_qgp_surp_real: Real Quarterly Gross Profit Surprise Yield tilt on value_sn (75/25 fixed)"
+    },
+    {
+      "study": "round3_miner_gp_qop_real",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "miner_gp_qop_real: Gross Profit Yield + Real Operating Profit Surprise Yield tilt on value_sn (70/15/15 fixed)"
+    },
+    {
+      "study": "round4_risk_score_rank",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_score_rank: Rank-linear score weighting within value_sn top-20%"
+    },
+    {
+      "study": "round4_risk_score_exp_cap",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_score_exp_cap: Exponential score weighting within value_sn top-20% with 5% name cap & 20% sector cap"
+    },
+    {
+      "study": "round4_risk_invvol",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_invvol: PIT 6m trailing inverse-volatility weighting within value_sn top-20%"
+    },
+    {
+      "study": "round4_risk_smooth_k3",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_smooth_k3: 3-month staggered cohort smoothing of R0 equal-weight top-20%"
+    },
+    {
+      "study": "round4_risk_invvol_smooth_k3",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_invvol_smooth_k3: 3-month staggered cohort smoothing of PIT 6m inverse-vol top-20%"
+    },
+    {
+      "study": "round4_risk_sector_ew",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_sector_ew: Sector-equalized weighting within value_sn top-20% with 5% name & 20% sector caps"
+    },
+    {
+      "study": "round4_risk_sn_invvol",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_sn_invvol: Sector-neutral PIT 6m inverse-volatility weighting within value_sn top-20%"
+    },
+    {
+      "study": "round4_risk_max_div",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_max_div: PIT 6m Ledoit-Wolf Maximum Diversification weighting within value_sn top-20% (5% name & 20% sector caps)"
+    },
+    {
+      "study": "round4_ml_hgb",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "ml_hgb: expanding-window walk-forward HistGradientBoosting rank-return predictor (2016-01+, PIT value/size/liq/mom/vol/sector features)"
+    },
+    {
+      "study": "round4_ml_hgb_blend50",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "ml_hgb_blend50: 50/50 cross-sectional percentile-rank average of walk-forward ml_hgb and value_sn_z (2016-01+)"
+    },
+    {
+      "study": "round4_vlab_vlab_rev_ev",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_rev_ev (batch batch1): R0 4-leg value with S/P replaced by Rev/EV (EV as in ey leg)"
+    },
+    {
+      "study": "round4_vlab_vlab_gp_ev",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_gp_ev (batch batch1): R0 4-leg value with S/P replaced by GrossProfit/EV"
+    },
+    {
+      "study": "round4_vlab_vlab_op_mcap",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_op_mcap (batch batch1): R0 4-leg value with E/P replaced by TTM operating profit / mcap"
+    },
+    {
+      "study": "round4_vlab_vlab_ep_floor0",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_ep_floor0 (batch batch1): R0 4-leg value with E/P floored at 0 before winsorize_z"
+    },
+    {
+      "study": "round4_vlab_vlab_val_mom15",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "vlab_val_mom15 (batch batch1): 0.85*value_sn_z + 0.15*sector-neutral mom_12_1_z (NaN->0)"
     }
   ]
 }

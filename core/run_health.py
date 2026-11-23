@@ -18,8 +18,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from statistics import median
 
 from core import db
 
@@ -36,6 +38,26 @@ MAX_DATA_FILTER_SHARE = 0.20
 # (KAP disinda kalan: katalizor bildirimleri de muhtemelen eksik).
 MAX_KAP_MISSING_SHARE = 0.50
 PRICE_FRESH_DAYS = 5
+
+# P3-1: Is Yatirim TMS 29 sozlesmesi izleme (docs/plan_2026-10-26.md).
+# Dogrulanmis TL raporlayan (reexpression_class.parquet: cls == 'reexpressed')
+# buyuk/likit sanayi-perakende-telekom sirketleri orneklemi (yabanci para
+# fonksiyonel para birimli THYAO/TAVHL/EREGL/ENKAI/PGSUS haric).
+# Mevcut sozlesmede P ve P-4 ayni satin alma gucunde oldugundan ayrik son
+# ceyrek / gecen yil ayni ceyrek medyan orani ~1.0 (reel buyume) cikar.
+# Birim karismasi (0.4-0.6x) veya yeniden ifade degisikligi (>1.25x) DEGRADED uretir.
+VENDOR_SAMPLE_TICKERS = (
+    "BIMAS", "MGROS", "ARCLK", "ASELS", "FROTO", "TOASO", "TUPRS", "KCHOL",
+    "SAHOL", "SISE", "TCELL", "TTKOM", "DOAS", "CCOLA", "AEFES", "ULKER",
+    "SOKM", "AKSA", "PETKM", "OTKAR",
+)
+VENDOR_RATIO_MIN = 0.75
+VENDOR_RATIO_MAX = 1.25
+VENDOR_SAMPLE_MIN_N = 5
+
+# P3-2: Piyasa degeri capraz kontrolu (TradingView fast_info vs Is Yatirim Screener).
+# %10 ustu fark veren adaylar bayraklanir ve kosu DEGRADED isaretlenir (skoru degistirmez).
+MCAP_MAX_DIFF_SHARE = 0.10
 
 
 def _matured_without_outcome(as_of_date: str) -> int:
@@ -64,11 +86,125 @@ def price_stats(as_of_date: str, prices_by_ticker: dict[str, list[dict]], index_
     return {"n_tickers": len(prices_by_ticker), "n_fresh": fresh, "index_rows": len(index_rows or [])}
 
 
+def vendor_consistency_check(
+    income_stmts: dict[str, object],
+    cpi=None,
+    min_ratio: float = VENDOR_RATIO_MIN,
+    max_ratio: float = VENDOR_RATIO_MAX,
+    min_sample: int = VENDOR_SAMPLE_MIN_N,
+) -> dict:
+    """P3-1: Is Yatirim TMS 29 sozlesmesinin bozulmadigini izler.
+
+    TL raporlayan orneklem icin son ceyregin ayrik hasilatini (`q_revenue`) bir
+    yil onceki ayni ceyregin ayrik hasilatina boler (`pit_panel.quarterly_table`).
+    Mevcut sozlesmede P ve P-4 ayni satin alma gucundedir (medyan ~1.0).
+    Birim karismasi (0.4-0.6x) veya yeniden ifade degisikligi (>1.25x) medyani
+    [min_ratio, max_ratio] disina tasir ve ok=False doner.
+    """
+    from core import pit_panel
+
+    ratios: list[tuple[str, str, float]] = []
+    for ticker, inc in income_stmts.items():
+        if inc is None or getattr(inc, "empty", True):
+            continue
+        long = pit_panel.statements_long(ticker, None, inc)
+        if long.empty:
+            continue
+        qt = pit_panel.quarterly_table(long, cpi=cpi)
+        if qt.empty or "q_revenue" not in qt.columns:
+            continue
+        qt = qt.sort_values("period_end")
+        last = qt.iloc[-1]
+        period = str(last["period"])
+        if period < pit_panel.IAS29_FIRST_PERIOD:
+            continue
+        try:
+            y, q = int(period[:4]), int(period[-1])
+        except (TypeError, ValueError):
+            continue
+        prev = qt[qt["period"] == f"{y - 1}Q{q}"]
+        if prev.empty:
+            continue
+        now_v = float(last["q_revenue"])
+        prev_v = float(prev.iloc[0]["q_revenue"])
+        if math.isfinite(now_v) and math.isfinite(prev_v) and prev_v > 0:
+            ratios.append((ticker, period, now_v / prev_v))
+
+    n_checked = len(ratios)
+    if not n_checked:
+        return {
+            "n_checked": 0, "median_ratio": None, "min_ratio": None, "max_ratio": None,
+            "n_out_of_range": 0, "ok": None, "ratios": {},
+        }
+    vals = [r for _, _, r in ratios]
+    med = round(float(median(vals)), 3)
+    out_of_range = sum(1 for v in vals if v < min_ratio or v > max_ratio)
+    ok = None if n_checked < min_sample else (min_ratio <= med <= max_ratio)
+    return {
+        "n_checked": n_checked,
+        "median_ratio": med,
+        "min_ratio": round(float(min(vals)), 3),
+        "max_ratio": round(float(max(vals)), 3),
+        "n_out_of_range": out_of_range,
+        "ok": ok,
+        "ratios": {tk: round(r, 3) for tk, _, r in ratios},
+    }
+
+
+def market_cap_cross_check(
+    tv_mcaps: dict[str, float | None],
+    isy_mcaps: dict[str, float | None],
+    max_diff: float = MCAP_MAX_DIFF_SHARE,
+) -> dict:
+    """P3-2: TradingView (fast_info) piyasa degerini Is Yatirim Screener ile karsilastirir.
+
+    Ikisinde de pozitif/sonlu degeri olan hisselerde |TV - ISY| / ISY > max_diff
+    (%10) olanlari bayraklar. Yalnizca izleme, skoru degistirmez.
+    """
+    n_checked = 0
+    max_rel = 0.0
+    flagged: list[dict] = []
+    for ticker, tv_raw in tv_mcaps.items():
+        isy_raw = isy_mcaps.get(ticker)
+        if tv_raw is None or isy_raw is None:
+            continue
+        try:
+            tv, isy = float(tv_raw), float(isy_raw)
+        except (TypeError, ValueError):
+            continue
+        if not (math.isfinite(tv) and math.isfinite(isy) and tv > 0 and isy > 0):
+            continue
+        n_checked += 1
+        rel = abs(tv - isy) / isy
+        if rel > max_rel:
+            max_rel = rel
+        if rel > max_diff:
+            flagged.append({
+                "ticker": ticker,
+                "tv_mcap": round(tv),
+                "isy_mcap": round(isy),
+                "diff_pct": round(100.0 * rel, 1),
+            })
+    flagged.sort(key=lambda r: (-r["diff_pct"], r["ticker"]))
+    return {
+        "n_checked": n_checked,
+        "n_flagged": len(flagged),
+        "flagged_share": _share(len(flagged), n_checked),
+        "max_diff_share": round(max_rel, 4) if n_checked else None,
+        "max_diff_pct": round(100.0 * max_rel, 1) if n_checked else None,
+        "flagged": flagged,
+    }
+
+
 def assess(as_of_date: str, prices: dict | None = None,
            catalyst_available: dict[str, bool] | None = None,
+           vendor_check: dict | None = None,
+           mcap_check: dict | None = None,
            companies_status: dict | None = None) -> dict:
     """prices: price_stats() ciktisi; verilmezse prices tablosundan okunur.
     catalyst_available: ticker -> KAP bildirim listesi cekilebildi mi.
+    vendor_check: vendor_consistency_check() ciktisi (P3-1).
+    mcap_check: market_cap_cross_check() ciktisi (P3-2).
     companies_status: live_data.get_companies_status() ciktisi (bp.companies() cache fallback bilgisi)."""
     if companies_status is None:
         try:
@@ -118,6 +254,15 @@ def assess(as_of_date: str, prices: dict | None = None,
         "matured_without_outcome": _matured_without_outcome(as_of_date),
         "catalyst_missing_share": (_share(sum(1 for v in catalyst_available.values() if not v),
                                           len(catalyst_available)) if catalyst_available else None),
+        "vendor_checked_n": vendor_check["n_checked"] if vendor_check is not None else None,
+        "vendor_q_yoy_median": vendor_check["median_ratio"] if vendor_check is not None else None,
+        "vendor_out_of_range_n": vendor_check["n_out_of_range"] if vendor_check is not None else None,
+        "mcap_checked_n": mcap_check["n_checked"] if mcap_check is not None else None,
+        "mcap_flagged_n": mcap_check["n_flagged"] if mcap_check is not None else None,
+        "mcap_flagged_share": mcap_check["flagged_share"] if mcap_check is not None else None,
+        "mcap_max_diff_share": mcap_check["max_diff_share"] if mcap_check is not None else None,
+        "mcap_flagged_tickers": ([f["ticker"] for f in mcap_check["flagged"]]
+                                 if mcap_check is not None else None),
         "companies_cache_fallback": companies_fallback,
         "companies_cache_age_days": companies_cache_age,
     }
@@ -126,6 +271,9 @@ def assess(as_of_date: str, prices: dict | None = None,
         "min_price_fresh_coverage": MIN_PRICE_FRESH_COVERAGE,
         "max_data_filter_share": MAX_DATA_FILTER_SHARE,
         "max_kap_missing_share": MAX_KAP_MISSING_SHARE,
+        "vendor_ratio_min": VENDOR_RATIO_MIN,
+        "vendor_ratio_max": VENDOR_RATIO_MAX,
+        "mcap_max_diff": MCAP_MAX_DIFF_SHARE,
     }
 
     failed, degraded = [], []
@@ -154,6 +302,10 @@ def assess(as_of_date: str, prices: dict | None = None,
         degraded.append("catalyst_redistributed")
     if metrics["matured_without_outcome"]:
         degraded.append("outcomes_stalled")
+    if vendor_check is not None and vendor_check.get("ok") is False:
+        degraded.append("vendor_inconsistent")
+    if mcap_check is not None and mcap_check.get("n_flagged", 0) > 0:
+        degraded.append("mcap_mismatch")
     if companies_fallback:
         degraded.append("companies_cache_fallback")
 
@@ -162,7 +314,9 @@ def assess(as_of_date: str, prices: dict | None = None,
     pct = {k: round(100 * v, 1) for k, v in {**metrics, **thresholds}.items()
            if isinstance(v, float) and not isinstance(v, bool)}
     return {"as_of_date": as_of_date, "status": status, "issues": failed + degraded,
-            "metrics": metrics, "thresholds": thresholds, "pct": pct, "config_hash": config_hash()}
+            "metrics": metrics, "thresholds": thresholds, "pct": pct,
+            "mcap_flagged": list(mcap_check["flagged"]) if mcap_check is not None else [],
+            "config_hash": config_hash()}
 
 
 def persist(health: dict) -> None:
@@ -175,7 +329,8 @@ def persist(health: dict) -> None:
                  issues_json=excluded.issues_json, metrics_json=excluded.metrics_json,
                  created_at=excluded.created_at""",
             (health["as_of_date"], health["status"], health["config_hash"], json.dumps(health["issues"]),
-             json.dumps({"metrics": health["metrics"], "thresholds": health["thresholds"]}),
+             json.dumps({"metrics": health["metrics"], "thresholds": health["thresholds"],
+                         "mcap_flagged": health.get("mcap_flagged", [])}),
              datetime.now(timezone.utc).isoformat()),
         )
         conn.commit()

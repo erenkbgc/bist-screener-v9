@@ -55,7 +55,7 @@ def values(txt: str, label: str) -> tuple[float | None, float | None]:
     """Etiketten sonraki (cari, onceki) donem sayilari; dipnot referansi atlanir."""
     for m in re.finditer(r"\|" + re.escape(label) + r"\|", txt):
         nums = [v for v in (parse_number(t) for t in txt[m.end(): m.end() + 500].split("|")[:9]) if v is not None]
-        if len(nums) >= 3 and float(nums[0]).is_integer() and 0 <= nums[0] < 100:
+        if len(nums) >= 3 and 0 <= nums[0] < 100 and (float(nums[0]).is_integer() or abs(nums[1]) >= 1000):
             nums = nums[1:]
         if nums:
             return nums[0], (nums[1] if len(nums) > 1 else None)
