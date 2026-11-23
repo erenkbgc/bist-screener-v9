@@ -295,6 +295,18 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "risk_max_div: PIT 6m Ledoit-Wolf Maximum Diversification weighting within value_sn top-20% (5% name & 20% sector caps)"
+    },
+    {
+      "study": "round4_ml_hgb",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "ml_hgb: expanding-window walk-forward HistGradientBoosting rank-return predictor (2016-01+, PIT value/size/liq/mom/vol/sector features)"
+    },
+    {
+      "study": "round4_ml_hgb_blend50",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "ml_hgb_blend50: 50/50 cross-sectional percentile-rank average of walk-forward ml_hgb and value_sn_z (2016-01+)"
     }
   ]
 }
