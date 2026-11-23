@@ -88,6 +88,30 @@ def register_candidate(spec: CandidateSpec) -> CandidateSpec:
     return spec
 
 
+def sync_feature_registry() -> dict[str, CandidateSpec]:
+    """Import candidate signal builders from scripts/research_round3_features.py."""
+    try:
+        import research_round3_features as r3f
+    except ImportError:
+        return CANDIDATE_REGISTRY
+
+    for name, fn in getattr(r3f, "CANDIDATE_BUILDERS", {}).items():
+        meta = getattr(r3f, "CANDIDATE_META", {}).get(name, {})
+        register_candidate(
+            CandidateSpec(
+                name=name,
+                description=meta.get("description", name),
+                fn=fn,
+                frozen_params=dict(meta.get("frozen_params", {})),
+                is_combination=bool(meta.get("is_combination", False)),
+            )
+        )
+    return CANDIDATE_REGISTRY
+
+
+sync_feature_registry()
+
+
 # ---------------------------------------------------------------------------
 # 1. Data Resolution & PIT Safeguards
 # ---------------------------------------------------------------------------

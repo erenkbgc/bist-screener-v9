@@ -239,3 +239,13 @@ def test_write_prereg_and_append_trial_ledger(tmp_path: Path):
     with pytest.raises(FileExistsError):
         r3.write_prereg_file("C1_test", formula="x", frozen_params={}, rationale="r", prereg_dir=prereg_dir)
 
+
+def test_feature_registry_synced():
+    r3.sync_feature_registry()
+    for name in ("scholar_cbop", "scholar_sue_usd", "scholar_real_cbop_sue"):
+        assert name in r3.CANDIDATE_REGISTRY
+        spec = r3.CANDIDATE_REGISTRY[name]
+        assert callable(spec.fn)
+        assert spec.frozen_params
+
+
