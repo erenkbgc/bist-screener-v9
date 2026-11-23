@@ -229,6 +229,12 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "scholar_real_cbop_sue: Inflation-consistent CbOP + USD SUE 3-pillar tilt on value_sn (75/15/10 fixed)"
+    },
+    {
+      "study": "round3_miner_ocf_ev_real",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "miner_ocf_ev_real: Real Enterprise Cash-Based Operating Yield tilt on value_sn (80/20 fixed)"
     }
   ]
 }
