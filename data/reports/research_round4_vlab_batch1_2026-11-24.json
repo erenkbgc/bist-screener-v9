@@ -1,0 +1,4701 @@
+{
+  "as_of": "2026-11-24",
+  "batch": "batch1",
+  "variants": [
+    "vlab_rev_ev",
+    "vlab_gp_ev",
+    "vlab_op_mcap",
+    "vlab_ep_floor0",
+    "vlab_val_mom15"
+  ],
+  "gauntlet_rule": "GAUNTLET PASS iff ALL: (1) full 2013-04..latest paired D vs R0 > 0 with NW t >= 2.0; (2) D > 0 in EACH of 4 blocks 2013-16, 2017-20, 2021-23, 2024+; (3) USD maxDD not worse than R0 by > 2pp in full and 2021+; (4) also holds on kapdates panel (D>0, t>=1.0); (5) Holm-adjusted p < 0.05 within your prereg batch; (6) one-way turnover <= 1.5x R0. Report DSR at updated N_sel. Same universe, liquidity cut, 1M TL costs, next-close fills as R0.",
+  "trial_ledger_N_sel": 103,
+  "var_sr_monthly": 0.02335,
+  "prereg_path": "/home/eren/bist_wt/r4-board/prereg/vlab_batch1.md",
+  "primary_lag75": {
+    "months_span": [
+      "2013-04-30",
+      "2026-08-31"
+    ],
+    "n_full": 161,
+    "window_counts": {
+      "full": 161,
+      "b1_2013_16": 45,
+      "b2_2017_20": 48,
+      "b3_2021_23": 36,
+      "b4_2024_plus": 32,
+      "holdout_2021_plus": 68,
+      "ias29_2024_05_plus": 28
+    },
+    "trial_ledger_N_sel": 103,
+    "portfolio_simulation": {
+      "R0": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.25,
+            "mean_raw": 0.006,
+            "t": 3.38,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.48,
+            "mean_raw": 0.0054,
+            "t": 3.01,
+            "months": 161
+          },
+          "cagr_tl_pct": 40.78,
+          "cagr_usd_pct": 10.02,
+          "cagr_real_pct": 12.66,
+          "max_dd_tl_pct": -26.0,
+          "max_dd_usd_pct": -56.6,
+          "turnover_pct": 20.5,
+          "cost_ann_pct": 1.71,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 0.0,
+          "turnover_ratio_vs_R0": 1.0
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.9,
+            "mean_raw": 0.0058,
+            "t": 3.39,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.27,
+            "mean_raw": 0.0052,
+            "t": 2.88,
+            "months": 45
+          },
+          "cagr_tl_pct": 13.83,
+          "cagr_usd_pct": -6.64,
+          "cagr_real_pct": 4.79,
+          "max_dd_tl_pct": -20.8,
+          "max_dd_usd_pct": -34.2,
+          "turnover_pct": 22.0,
+          "cost_ann_pct": 2.08,
+          "avg_names": 40.3,
+          "coverage_pct": 100.0
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 3.48,
+            "mean_raw": 0.0029,
+            "t": 0.76,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.6,
+            "mean_raw": 0.0022,
+            "t": 0.58,
+            "months": 48
+          },
+          "cagr_tl_pct": 57.5,
+          "cagr_usd_pct": 33.44,
+          "cagr_real_pct": 37.69,
+          "max_dd_tl_pct": -26.0,
+          "max_dd_usd_pct": -56.6,
+          "turnover_pct": 20.8,
+          "cost_ann_pct": 1.78,
+          "avg_names": 45.0,
+          "coverage_pct": 100.0
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 14.21,
+            "mean_raw": 0.0118,
+            "t": 3.83,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 13.51,
+            "mean_raw": 0.0113,
+            "t": 3.68,
+            "months": 36
+          },
+          "cagr_tl_pct": 86.71,
+          "cagr_usd_pct": 16.23,
+          "cagr_real_pct": 18.98,
+          "max_dd_tl_pct": -25.3,
+          "max_dd_usd_pct": -35.4,
+          "turnover_pct": 19.6,
+          "cost_ann_pct": 1.37,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 5.56,
+            "mean_raw": 0.0046,
+            "t": 1.15,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 4.69,
+            "mean_raw": 0.0039,
+            "t": 0.97,
+            "months": 32
+          },
+          "cagr_tl_pct": 16.74,
+          "cagr_usd_pct": -2.47,
+          "cagr_real_pct": -13.16,
+          "max_dd_tl_pct": -18.6,
+          "max_dd_usd_pct": -25.1,
+          "turnover_pct": 19.0,
+          "cost_ann_pct": 1.48,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 10.14,
+            "mean_raw": 0.0084,
+            "t": 2.97,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 9.36,
+            "mean_raw": 0.0078,
+            "t": 2.74,
+            "months": 68
+          },
+          "cagr_tl_pct": 49.69,
+          "cagr_usd_pct": 7.02,
+          "cagr_real_pct": 2.59,
+          "max_dd_tl_pct": -25.3,
+          "max_dd_usd_pct": -35.4,
+          "turnover_pct": 19.3,
+          "cost_ann_pct": 1.42,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 0.0
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 2.19,
+            "mean_raw": 0.0018,
+            "t": 0.56,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 1.33,
+            "mean_raw": 0.0011,
+            "t": 0.34,
+            "months": 28
+          },
+          "cagr_tl_pct": 8.75,
+          "cagr_usd_pct": -9.15,
+          "cagr_real_pct": -17.66,
+          "max_dd_tl_pct": -18.6,
+          "max_dd_usd_pct": -25.1,
+          "turnover_pct": 18.4,
+          "cost_ann_pct": 1.43,
+          "avg_names": 68.7,
+          "coverage_pct": 100.0
+        }
+      },
+      "vlab_rev_ev": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 5.4,
+            "mean_raw": 0.0045,
+            "t": 2.38,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 4.64,
+            "mean_raw": 0.0039,
+            "t": 2.04,
+            "months": 161
+          },
+          "cagr_tl_pct": 38.35,
+          "cagr_usd_pct": 8.12,
+          "cagr_real_pct": 10.72,
+          "max_dd_tl_pct": -27.0,
+          "max_dd_usd_pct": -57.3,
+          "turnover_pct": 20.6,
+          "cost_ann_pct": 1.72,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -0.7,
+          "turnover_ratio_vs_R0": 1.005,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.84,
+            "mean_raw": -0.0015,
+            "t": -2.35,
+            "months": 161,
+            "t_exact": -2.3471826027461065
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 5.44,
+            "mean_raw": 0.0045,
+            "t": 2.14,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 4.8,
+            "mean_raw": 0.004,
+            "t": 1.83,
+            "months": 45
+          },
+          "cagr_tl_pct": 12.27,
+          "cagr_usd_pct": -7.92,
+          "cagr_real_pct": 3.35,
+          "max_dd_tl_pct": -21.0,
+          "max_dd_usd_pct": -34.3,
+          "turnover_pct": 23.3,
+          "cost_ann_pct": 2.16,
+          "avg_names": 40.3,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.46,
+            "mean_raw": -0.0012,
+            "t": -0.95,
+            "months": 45,
+            "t_exact": -0.9484388185618378
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 0.55,
+            "mean_raw": 0.0005,
+            "t": 0.12,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -0.34,
+            "mean_raw": -0.0003,
+            "t": -0.07,
+            "months": 48
+          },
+          "cagr_tl_pct": 53.42,
+          "cagr_usd_pct": 29.99,
+          "cagr_real_pct": 34.12,
+          "max_dd_tl_pct": -27.0,
+          "max_dd_usd_pct": -57.3,
+          "turnover_pct": 20.4,
+          "cost_ann_pct": 1.75,
+          "avg_names": 45.0,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.94,
+            "mean_raw": -0.0024,
+            "t": -1.92,
+            "months": 48,
+            "t_exact": -1.915385731333417
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 12.46,
+            "mean_raw": 0.0104,
+            "t": 2.91,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 11.76,
+            "mean_raw": 0.0098,
+            "t": 2.78,
+            "months": 36
+          },
+          "cagr_tl_pct": 83.47,
+          "cagr_usd_pct": 14.21,
+          "cagr_real_pct": 16.91,
+          "max_dd_tl_pct": -26.7,
+          "max_dd_usd_pct": -36.5,
+          "turnover_pct": 18.7,
+          "cost_ann_pct": 1.32,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.75,
+            "mean_raw": -0.0015,
+            "t": -1.05,
+            "months": 36,
+            "t_exact": -1.0460266854188625
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 4.71,
+            "mean_raw": 0.0039,
+            "t": 1.0,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 3.85,
+            "mean_raw": 0.0032,
+            "t": 0.82,
+            "months": 32
+          },
+          "cagr_tl_pct": 15.7,
+          "cagr_usd_pct": -3.34,
+          "cagr_real_pct": -13.94,
+          "max_dd_tl_pct": -17.2,
+          "max_dd_usd_pct": -24.2,
+          "turnover_pct": 19.4,
+          "cost_ann_pct": 1.5,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.85,
+            "mean_raw": -0.0007,
+            "t": -0.7,
+            "months": 32,
+            "t_exact": -0.6966864217378462
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.81,
+            "mean_raw": 0.0073,
+            "t": 2.51,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.03,
+            "mean_raw": 0.0067,
+            "t": 2.3,
+            "months": 68
+          },
+          "cagr_tl_pct": 47.69,
+          "cagr_usd_pct": 5.58,
+          "cagr_real_pct": 1.21,
+          "max_dd_tl_pct": -26.7,
+          "max_dd_usd_pct": -36.5,
+          "turnover_pct": 19.0,
+          "cost_ann_pct": 1.4,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -1.1,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.33,
+            "mean_raw": -0.0011,
+            "t": -1.24,
+            "months": 68,
+            "t_exact": -1.2357007773135547
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 2.19,
+            "mean_raw": 0.0018,
+            "t": 0.51,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 1.33,
+            "mean_raw": 0.0011,
+            "t": 0.31,
+            "months": 28
+          },
+          "cagr_tl_pct": 8.66,
+          "cagr_usd_pct": -9.23,
+          "cagr_real_pct": -17.73,
+          "max_dd_tl_pct": -17.2,
+          "max_dd_usd_pct": -24.2,
+          "turnover_pct": 19.2,
+          "cost_ann_pct": 1.49,
+          "avg_names": 68.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0,
+            "t": 0.0,
+            "months": 28,
+            "t_exact": 0.0014687802876686131
+          }
+        }
+      },
+      "vlab_gp_ev": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 5.65,
+            "mean_raw": 0.0047,
+            "t": 2.45,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 4.88,
+            "mean_raw": 0.0041,
+            "t": 2.11,
+            "months": 161
+          },
+          "cagr_tl_pct": 38.79,
+          "cagr_usd_pct": 8.47,
+          "cagr_real_pct": 11.07,
+          "max_dd_tl_pct": -26.2,
+          "max_dd_usd_pct": -56.6,
+          "turnover_pct": 21.0,
+          "cost_ann_pct": 1.72,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 0.0,
+          "turnover_ratio_vs_R0": 1.024,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.6,
+            "mean_raw": -0.0013,
+            "t": -1.49,
+            "months": 161,
+            "t_exact": -1.4937282943054162
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.31,
+            "mean_raw": 0.0061,
+            "t": 3.21,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.68,
+            "mean_raw": 0.0056,
+            "t": 2.82,
+            "months": 45
+          },
+          "cagr_tl_pct": 14.38,
+          "cagr_usd_pct": -6.19,
+          "cagr_real_pct": 5.29,
+          "max_dd_tl_pct": -21.0,
+          "max_dd_usd_pct": -34.4,
+          "turnover_pct": 22.7,
+          "cost_ann_pct": 2.1,
+          "avg_names": 40.3,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.41,
+            "mean_raw": 0.0003,
+            "t": 0.31,
+            "months": 45,
+            "t_exact": 0.3053048589123051
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 1.21,
+            "mean_raw": 0.001,
+            "t": 0.24,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 0.33,
+            "mean_raw": 0.0003,
+            "t": 0.07,
+            "months": 48
+          },
+          "cagr_tl_pct": 55.03,
+          "cagr_usd_pct": 31.35,
+          "cagr_real_pct": 35.53,
+          "max_dd_tl_pct": -25.4,
+          "max_dd_usd_pct": -56.6,
+          "turnover_pct": 21.1,
+          "cost_ann_pct": 1.76,
+          "avg_names": 45.0,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.27,
+            "mean_raw": -0.0019,
+            "t": -1.23,
+            "months": 48,
+            "t_exact": -1.230136375180799
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 11.46,
+            "mean_raw": 0.0096,
+            "t": 2.84,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 10.77,
+            "mean_raw": 0.009,
+            "t": 2.68,
+            "months": 36
+          },
+          "cagr_tl_pct": 81.14,
+          "cagr_usd_pct": 12.76,
+          "cagr_real_pct": 15.42,
+          "max_dd_tl_pct": -26.2,
+          "max_dd_usd_pct": -36.8,
+          "turnover_pct": 19.8,
+          "cost_ann_pct": 1.37,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.75,
+            "mean_raw": -0.0023,
+            "t": -0.8,
+            "months": 36,
+            "t_exact": -0.802825998507208
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 3.42,
+            "mean_raw": 0.0028,
+            "t": 0.71,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.56,
+            "mean_raw": 0.0021,
+            "t": 0.53,
+            "months": 32
+          },
+          "cagr_tl_pct": 14.39,
+          "cagr_usd_pct": -4.44,
+          "cagr_real_pct": -14.91,
+          "max_dd_tl_pct": -18.4,
+          "max_dd_usd_pct": -24.8,
+          "turnover_pct": 19.8,
+          "cost_ann_pct": 1.53,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.14,
+            "mean_raw": -0.0018,
+            "t": -1.18,
+            "months": 32,
+            "t_exact": -1.1791359134536152
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.68,
+            "mean_raw": 0.0064,
+            "t": 2.21,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.9,
+            "mean_raw": 0.0058,
+            "t": 1.99,
+            "months": 68
+          },
+          "cagr_tl_pct": 45.91,
+          "cagr_usd_pct": 4.31,
+          "cagr_real_pct": -0.0,
+          "max_dd_tl_pct": -26.2,
+          "max_dd_usd_pct": -36.8,
+          "turnover_pct": 19.8,
+          "cost_ann_pct": 1.44,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -1.4,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.46,
+            "mean_raw": -0.002,
+            "t": -1.22,
+            "months": 68,
+            "t_exact": -1.2225516180525984
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": -0.24,
+            "mean_raw": -0.0002,
+            "t": -0.06,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -1.11,
+            "mean_raw": -0.0009,
+            "t": -0.28,
+            "months": 28
+          },
+          "cagr_tl_pct": 6.31,
+          "cagr_usd_pct": -11.19,
+          "cagr_real_pct": -19.51,
+          "max_dd_tl_pct": -18.4,
+          "max_dd_usd_pct": -24.8,
+          "turnover_pct": 19.4,
+          "cost_ann_pct": 1.51,
+          "avg_names": 68.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.43,
+            "mean_raw": -0.002,
+            "t": -1.21,
+            "months": 28,
+            "t_exact": -1.2127930063787427
+          }
+        }
+      },
+      "vlab_op_mcap": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.19,
+            "mean_raw": 0.006,
+            "t": 3.25,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.43,
+            "mean_raw": 0.0054,
+            "t": 2.9,
+            "months": 161
+          },
+          "cagr_tl_pct": 40.59,
+          "cagr_usd_pct": 9.87,
+          "cagr_real_pct": 12.51,
+          "max_dd_tl_pct": -25.0,
+          "max_dd_usd_pct": -54.4,
+          "turnover_pct": 19.6,
+          "cost_ann_pct": 1.63,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 2.2,
+          "turnover_ratio_vs_R0": 0.956,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.05,
+            "mean_raw": -0.0,
+            "t": -0.05,
+            "months": 161,
+            "t_exact": -0.048064774585676935
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.39,
+            "mean_raw": 0.0053,
+            "t": 2.96,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 5.75,
+            "mean_raw": 0.0048,
+            "t": 2.49,
+            "months": 45
+          },
+          "cagr_tl_pct": 13.26,
+          "cagr_usd_pct": -7.11,
+          "cagr_real_pct": 4.26,
+          "max_dd_tl_pct": -21.9,
+          "max_dd_usd_pct": -35.1,
+          "turnover_pct": 20.5,
+          "cost_ann_pct": 1.96,
+          "avg_names": 40.3,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.51,
+            "mean_raw": -0.0004,
+            "t": -0.46,
+            "months": 45,
+            "t_exact": -0.4583527805301195
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.79,
+            "mean_raw": 0.0057,
+            "t": 1.39,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 5.9,
+            "mean_raw": 0.0049,
+            "t": 1.22,
+            "months": 48
+          },
+          "cagr_tl_pct": 62.47,
+          "cagr_usd_pct": 37.66,
+          "cagr_real_pct": 42.04,
+          "max_dd_tl_pct": -25.0,
+          "max_dd_usd_pct": -54.4,
+          "turnover_pct": 19.5,
+          "cost_ann_pct": 1.64,
+          "avg_names": 45.0,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 3.3,
+            "mean_raw": 0.0028,
+            "t": 1.54,
+            "months": 48,
+            "t_exact": 1.540749898826104
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 14.38,
+            "mean_raw": 0.012,
+            "t": 5.04,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 13.68,
+            "mean_raw": 0.0114,
+            "t": 4.87,
+            "months": 36
+          },
+          "cagr_tl_pct": 86.72,
+          "cagr_usd_pct": 16.23,
+          "cagr_real_pct": 18.98,
+          "max_dd_tl_pct": -22.4,
+          "max_dd_usd_pct": -36.6,
+          "turnover_pct": 19.0,
+          "cost_ann_pct": 1.35,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.17,
+            "mean_raw": 0.0001,
+            "t": 0.09,
+            "months": 36,
+            "t_exact": 0.08900488817899112
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 0.85,
+            "mean_raw": 0.0007,
+            "t": 0.17,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0,
+            "t": -0.0,
+            "months": 32
+          },
+          "cagr_tl_pct": 11.46,
+          "cagr_usd_pct": -6.89,
+          "cagr_real_pct": -17.09,
+          "max_dd_tl_pct": -19.4,
+          "max_dd_usd_pct": -27.2,
+          "turnover_pct": 19.0,
+          "cost_ann_pct": 1.49,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -4.71,
+            "mean_raw": -0.0039,
+            "t": -2.09,
+            "months": 32,
+            "t_exact": -2.093670811617232
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.01,
+            "mean_raw": 0.0067,
+            "t": 2.19,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.24,
+            "mean_raw": 0.006,
+            "t": 1.98,
+            "months": 68
+          },
+          "cagr_tl_pct": 46.47,
+          "cagr_usd_pct": 4.71,
+          "cagr_real_pct": 0.38,
+          "max_dd_tl_pct": -22.4,
+          "max_dd_usd_pct": -36.6,
+          "turnover_pct": 19.0,
+          "cost_ann_pct": 1.42,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -1.2,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.12,
+            "mean_raw": -0.0018,
+            "t": -1.3,
+            "months": 68,
+            "t_exact": -1.3006892961101455
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": -1.89,
+            "mean_raw": -0.0016,
+            "t": -0.48,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -2.75,
+            "mean_raw": -0.0023,
+            "t": -0.71,
+            "months": 28
+          },
+          "cagr_tl_pct": 4.45,
+          "cagr_usd_pct": -12.74,
+          "cagr_real_pct": -20.92,
+          "max_dd_tl_pct": -19.4,
+          "max_dd_usd_pct": -26.6,
+          "turnover_pct": 18.3,
+          "cost_ann_pct": 1.45,
+          "avg_names": 68.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -4.08,
+            "mean_raw": -0.0034,
+            "t": -1.57,
+            "months": 28,
+            "t_exact": -1.5694745759736124
+          }
+        }
+      },
+      "vlab_ep_floor0": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.65,
+            "mean_raw": 0.0064,
+            "t": 3.38,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.88,
+            "mean_raw": 0.0057,
+            "t": 3.03,
+            "months": 161
+          },
+          "cagr_tl_pct": 41.29,
+          "cagr_usd_pct": 10.41,
+          "cagr_real_pct": 13.07,
+          "max_dd_tl_pct": -25.6,
+          "max_dd_usd_pct": -53.8,
+          "turnover_pct": 21.0,
+          "cost_ann_pct": 1.75,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 2.8,
+          "turnover_ratio_vs_R0": 1.024,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.4,
+            "mean_raw": 0.0003,
+            "t": 0.52,
+            "months": 161,
+            "t_exact": 0.524826038844687
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.74,
+            "mean_raw": 0.0073,
+            "t": 3.27,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.11,
+            "mean_raw": 0.0068,
+            "t": 2.86,
+            "months": 45
+          },
+          "cagr_tl_pct": 15.93,
+          "cagr_usd_pct": -4.92,
+          "cagr_real_pct": 6.72,
+          "max_dd_tl_pct": -20.6,
+          "max_dd_usd_pct": -34.0,
+          "turnover_pct": 22.2,
+          "cost_ann_pct": 2.04,
+          "avg_names": 40.3,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 1.84,
+            "mean_raw": 0.0015,
+            "t": 1.44,
+            "months": 45,
+            "t_exact": 1.438320593014057
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 3.61,
+            "mean_raw": 0.003,
+            "t": 0.74,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.73,
+            "mean_raw": 0.0023,
+            "t": 0.57,
+            "months": 48
+          },
+          "cagr_tl_pct": 57.74,
+          "cagr_usd_pct": 33.65,
+          "cagr_real_pct": 37.9,
+          "max_dd_tl_pct": -25.6,
+          "max_dd_usd_pct": -53.8,
+          "turnover_pct": 22.0,
+          "cost_ann_pct": 1.87,
+          "avg_names": 45.0,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.13,
+            "mean_raw": 0.0001,
+            "t": 0.07,
+            "months": 48,
+            "t_exact": 0.07261928088614875
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 13.06,
+            "mean_raw": 0.0109,
+            "t": 3.38,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 12.36,
+            "mean_raw": 0.0103,
+            "t": 3.22,
+            "months": 36
+          },
+          "cagr_tl_pct": 84.47,
+          "cagr_usd_pct": 14.83,
+          "cagr_real_pct": 17.55,
+          "max_dd_tl_pct": -25.2,
+          "max_dd_usd_pct": -35.4,
+          "turnover_pct": 19.1,
+          "cost_ann_pct": 1.35,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.15,
+            "mean_raw": -0.001,
+            "t": -1.41,
+            "months": 36,
+            "t_exact": -1.4082831085778762
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.09,
+            "mean_raw": 0.0051,
+            "t": 1.24,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 5.23,
+            "mean_raw": 0.0044,
+            "t": 1.07,
+            "months": 32
+          },
+          "cagr_tl_pct": 17.18,
+          "cagr_usd_pct": -2.11,
+          "cagr_real_pct": -12.84,
+          "max_dd_tl_pct": -18.0,
+          "max_dd_usd_pct": -24.2,
+          "turnover_pct": 20.0,
+          "cost_ann_pct": 1.58,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.53,
+            "mean_raw": 0.0004,
+            "t": 0.44,
+            "months": 32,
+            "t_exact": 0.437615495204197
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 9.78,
+            "mean_raw": 0.0081,
+            "t": 2.89,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 9.0,
+            "mean_raw": 0.0075,
+            "t": 2.66,
+            "months": 68
+          },
+          "cagr_tl_pct": 49.0,
+          "cagr_usd_pct": 6.52,
+          "cagr_real_pct": 2.12,
+          "max_dd_tl_pct": -25.2,
+          "max_dd_usd_pct": -35.4,
+          "turnover_pct": 19.5,
+          "cost_ann_pct": 1.46,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 0.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.36,
+            "mean_raw": -0.0003,
+            "t": -0.48,
+            "months": 68,
+            "t_exact": -0.47626423787061123
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 2.45,
+            "mean_raw": 0.002,
+            "t": 0.65,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 1.59,
+            "mean_raw": 0.0013,
+            "t": 0.43,
+            "months": 28
+          },
+          "cagr_tl_pct": 8.91,
+          "cagr_usd_pct": -9.02,
+          "cagr_real_pct": -17.55,
+          "max_dd_tl_pct": -18.0,
+          "max_dd_usd_pct": -24.2,
+          "turnover_pct": 19.5,
+          "cost_ann_pct": 1.54,
+          "avg_names": 68.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.26,
+            "mean_raw": 0.0002,
+            "t": 0.19,
+            "months": 28,
+            "t_exact": 0.19325727260755504
+          }
+        }
+      },
+      "vlab_val_mom15": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.78,
+            "mean_raw": 0.0056,
+            "t": 3.24,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.01,
+            "mean_raw": 0.005,
+            "t": 2.85,
+            "months": 161
+          },
+          "cagr_tl_pct": 40.06,
+          "cagr_usd_pct": 9.45,
+          "cagr_real_pct": 12.09,
+          "max_dd_tl_pct": -29.8,
+          "max_dd_usd_pct": -56.8,
+          "turnover_pct": 23.0,
+          "cost_ann_pct": 1.87,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -0.2,
+          "turnover_ratio_vs_R0": 1.122,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.47,
+            "mean_raw": -0.0004,
+            "t": -0.39,
+            "months": 161,
+            "t_exact": -0.39062654076825715
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.71,
+            "mean_raw": 0.0064,
+            "t": 3.09,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.08,
+            "mean_raw": 0.0059,
+            "t": 2.7,
+            "months": 45
+          },
+          "cagr_tl_pct": 14.83,
+          "cagr_usd_pct": -5.82,
+          "cagr_real_pct": 5.71,
+          "max_dd_tl_pct": -20.8,
+          "max_dd_usd_pct": -34.2,
+          "turnover_pct": 24.5,
+          "cost_ann_pct": 2.21,
+          "avg_names": 40.3,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.81,
+            "mean_raw": 0.0007,
+            "t": 0.48,
+            "months": 45,
+            "t_exact": 0.48358358673746493
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 4.51,
+            "mean_raw": 0.0038,
+            "t": 0.93,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 3.62,
+            "mean_raw": 0.003,
+            "t": 0.75,
+            "months": 48
+          },
+          "cagr_tl_pct": 59.05,
+          "cagr_usd_pct": 34.75,
+          "cagr_real_pct": 39.04,
+          "max_dd_tl_pct": -29.8,
+          "max_dd_usd_pct": -56.8,
+          "turnover_pct": 23.8,
+          "cost_ann_pct": 2.05,
+          "avg_names": 45.0,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 1.03,
+            "mean_raw": 0.0009,
+            "t": 0.36,
+            "months": 48,
+            "t_exact": 0.36031212178034705
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 11.0,
+            "mean_raw": 0.0092,
+            "t": 2.98,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 10.3,
+            "mean_raw": 0.0086,
+            "t": 2.85,
+            "months": 36
+          },
+          "cagr_tl_pct": 81.03,
+          "cagr_usd_pct": 12.69,
+          "cagr_real_pct": 15.36,
+          "max_dd_tl_pct": -26.7,
+          "max_dd_usd_pct": -36.7,
+          "turnover_pct": 21.4,
+          "cost_ann_pct": 1.47,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -3.21,
+            "mean_raw": -0.0027,
+            "t": -1.65,
+            "months": 36,
+            "t_exact": -1.6497409548359636
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 4.12,
+            "mean_raw": 0.0034,
+            "t": 0.94,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 3.26,
+            "mean_raw": 0.0027,
+            "t": 0.74,
+            "months": 32
+          },
+          "cagr_tl_pct": 14.65,
+          "cagr_usd_pct": -4.22,
+          "cagr_real_pct": -14.72,
+          "max_dd_tl_pct": -19.2,
+          "max_dd_usd_pct": -24.1,
+          "turnover_pct": 21.3,
+          "cost_ann_pct": 1.59,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.44,
+            "mean_raw": -0.0012,
+            "t": -0.63,
+            "months": 32,
+            "t_exact": -0.6319519984546732
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.76,
+            "mean_raw": 0.0065,
+            "t": 2.51,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.99,
+            "mean_raw": 0.0058,
+            "t": 2.27,
+            "months": 68
+          },
+          "cagr_tl_pct": 46.02,
+          "cagr_usd_pct": 4.39,
+          "cagr_real_pct": 0.07,
+          "max_dd_tl_pct": -26.7,
+          "max_dd_usd_pct": -36.7,
+          "turnover_pct": 21.3,
+          "cost_ann_pct": 1.53,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -1.3,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.38,
+            "mean_raw": -0.002,
+            "t": -1.56,
+            "months": 68,
+            "t_exact": -1.5593262462320985
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 0.63,
+            "mean_raw": 0.0005,
+            "t": 0.17,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -0.24,
+            "mean_raw": -0.0002,
+            "t": -0.06,
+            "months": 28
+          },
+          "cagr_tl_pct": 6.64,
+          "cagr_usd_pct": -10.91,
+          "cagr_real_pct": -19.26,
+          "max_dd_tl_pct": -19.2,
+          "max_dd_usd_pct": -24.1,
+          "turnover_pct": 21.0,
+          "cost_ann_pct": 1.56,
+          "avg_names": 68.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.56,
+            "mean_raw": -0.0013,
+            "t": -0.61,
+            "months": 28,
+            "t_exact": -0.6087133432201604
+          }
+        }
+      }
+    },
+    "rank_ic": {
+      "R0": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0632,
+          "t": 7.02,
+          "months": 161
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0606,
+          "t": 4.91,
+          "months": 45
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0513,
+          "t": 3.41,
+          "months": 48
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.09,
+          "mean_raw": 0.0943,
+          "t": 5.12,
+          "months": 36
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0499,
+          "t": 2.77,
+          "months": 32
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0734,
+          "t": 4.85,
+          "months": 68
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.03,
+          "mean_raw": 0.0344,
+          "t": 2.3,
+          "months": 28
+        }
+      },
+      "vlab_rev_ev": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0614,
+          "t": 6.67,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0019,
+            "t": -1.47,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0597,
+          "t": 4.94,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0009,
+            "t": -0.32,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0469,
+          "t": 2.97,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0044,
+            "t": -1.75,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.09,
+          "mean_raw": 0.0924,
+          "t": 4.65,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0019,
+            "t": -0.75,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0506,
+          "t": 2.88,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0007,
+            "t": 0.7,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0727,
+          "t": 4.75,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0007,
+            "t": -0.46,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0355,
+          "t": 2.37,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0011,
+            "t": 1.19,
+            "months": 28
+          }
+        }
+      },
+      "vlab_gp_ev": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0639,
+          "t": 6.8,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0007,
+            "t": 0.32,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0636,
+          "t": 5.2,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.003,
+            "t": 0.62,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.052,
+          "t": 3.27,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0007,
+            "t": 0.18,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.09,
+          "mean_raw": 0.093,
+          "t": 4.47,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0013,
+            "t": -0.29,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0495,
+          "t": 2.63,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0004,
+            "t": -0.18,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0725,
+          "t": 4.49,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0009,
+            "t": -0.33,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.03,
+          "mean_raw": 0.0339,
+          "t": 2.2,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0005,
+            "t": -0.22,
+            "months": 28
+          }
+        }
+      },
+      "vlab_op_mcap": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.061,
+          "t": 7.16,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0022,
+            "t": -0.83,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0564,
+          "t": 4.58,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0041,
+            "t": -1.38,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.055,
+          "t": 4.01,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0037,
+            "t": 0.59,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.09,
+          "mean_raw": 0.0912,
+          "t": 5.05,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0031,
+            "t": -0.66,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0426,
+          "t": 2.69,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0073,
+            "t": -1.64,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0683,
+          "t": 4.62,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0051,
+            "t": -1.55,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.03,
+          "mean_raw": 0.0304,
+          "t": 2.27,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.004,
+            "t": -0.84,
+            "months": 28
+          }
+        }
+      },
+      "vlab_ep_floor0": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0632,
+          "t": 7.07,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0,
+            "t": 0.01,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0589,
+          "t": 5.1,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0017,
+            "t": -0.81,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0533,
+          "t": 3.66,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.002,
+            "t": 0.88,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.1,
+          "mean_raw": 0.0972,
+          "t": 5.42,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0029,
+            "t": 2.36,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0461,
+          "t": 2.59,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0038,
+            "t": -1.17,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0731,
+          "t": 4.72,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0003,
+            "t": -0.13,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.03,
+          "mean_raw": 0.0301,
+          "t": 2.2,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0043,
+            "t": -1.21,
+            "months": 28
+          }
+        }
+      },
+      "vlab_val_mom15": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0579,
+          "t": 6.9,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0053,
+            "t": -1.53,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0571,
+          "t": 5.15,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0035,
+            "t": -0.67,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0389,
+          "t": 2.53,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0124,
+            "t": -2.58,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.09,
+          "mean_raw": 0.0852,
+          "t": 4.76,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0091,
+            "t": -1.47,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.057,
+          "t": 3.72,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0071,
+            "t": 0.81,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0719,
+          "t": 5.5,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0015,
+            "t": -0.25,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0458,
+          "t": 2.82,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0114,
+            "t": 1.46,
+            "months": 28
+          }
+        }
+      }
+    },
+    "switcher_analysis": {
+      "vlab_rev_ev": {
+        "full": {
+          "mean_rank_corr": 0.9776,
+          "mean_overlap_pct": 89.44,
+          "mean_switches_per_month": 5.07,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -23.42,
+            "mean_raw": -0.0195,
+            "t": -2.48,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9738,
+          "mean_overlap_pct": 85.27,
+          "mean_switches_per_month": 5.96,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -6.68,
+            "mean_raw": -0.0056,
+            "t": -0.62,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9725,
+          "mean_overlap_pct": 89.58,
+          "mean_switches_per_month": 4.69,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -43.51,
+            "mean_raw": -0.0363,
+            "t": -2.14,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9823,
+          "mean_overlap_pct": 92.65,
+          "mean_switches_per_month": 3.78,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -26.23,
+            "mean_raw": -0.0219,
+            "t": -1.2,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.9856,
+          "mean_overlap_pct": 91.46,
+          "mean_switches_per_month": 5.84,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -13.63,
+            "mean_raw": -0.0114,
+            "t": -0.93,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9838,
+          "mean_overlap_pct": 92.09,
+          "mean_switches_per_month": 4.75,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -20.3,
+            "mean_raw": -0.0169,
+            "t": -1.49,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9852,
+          "mean_overlap_pct": 91.01,
+          "mean_switches_per_month": 6.21,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -2.16,
+            "mean_raw": -0.0018,
+            "t": -0.16,
+            "months": 28
+          }
+        }
+      },
+      "vlab_gp_ev": {
+        "full": {
+          "mean_rank_corr": 0.9326,
+          "mean_overlap_pct": 79.56,
+          "mean_switches_per_month": 9.93,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -9.96,
+            "mean_raw": -0.0083,
+            "t": -1.44,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9193,
+          "mean_overlap_pct": 75.98,
+          "mean_switches_per_month": 9.69,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 4.72,
+            "mean_raw": 0.0039,
+            "t": 0.73,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9235,
+          "mean_overlap_pct": 78.33,
+          "mean_switches_per_month": 9.75,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -12.15,
+            "mean_raw": -0.0101,
+            "t": -1.4,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9509,
+          "mean_overlap_pct": 83.39,
+          "mean_switches_per_month": 8.58,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -25.95,
+            "mean_raw": -0.0216,
+            "t": -1.03,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.9441,
+          "mean_overlap_pct": 82.13,
+          "mean_switches_per_month": 12.06,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -9.31,
+            "mean_raw": -0.0078,
+            "t": -0.98,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9477,
+          "mean_overlap_pct": 82.8,
+          "mean_switches_per_month": 10.22,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -18.12,
+            "mean_raw": -0.0151,
+            "t": -1.26,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9463,
+          "mean_overlap_pct": 82.52,
+          "mean_switches_per_month": 12.0,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -8.82,
+            "mean_raw": -0.0074,
+            "t": -0.85,
+            "months": 28
+          }
+        }
+      },
+      "vlab_op_mcap": {
+        "full": {
+          "mean_rank_corr": 0.9203,
+          "mean_overlap_pct": 83.53,
+          "mean_switches_per_month": 8.27,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -0.42,
+            "mean_raw": -0.0004,
+            "t": -0.06,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9228,
+          "mean_overlap_pct": 84.42,
+          "mean_switches_per_month": 6.33,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -4.87,
+            "mean_raw": -0.0041,
+            "t": -0.68,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9181,
+          "mean_overlap_pct": 83.41,
+          "mean_switches_per_month": 7.46,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 20.56,
+            "mean_raw": 0.0171,
+            "t": 1.34,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9271,
+          "mean_overlap_pct": 83.68,
+          "mean_switches_per_month": 8.5,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -7.32,
+            "mean_raw": -0.0061,
+            "t": -0.66,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.9124,
+          "mean_overlap_pct": 82.28,
+          "mean_switches_per_month": 11.94,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -17.88,
+            "mean_raw": -0.0149,
+            "t": -1.41,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9202,
+          "mean_overlap_pct": 83.02,
+          "mean_switches_per_month": 10.12,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -12.29,
+            "mean_raw": -0.0102,
+            "t": -1.47,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9141,
+          "mean_overlap_pct": 82.27,
+          "mean_switches_per_month": 12.11,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -13.67,
+            "mean_raw": -0.0114,
+            "t": -0.95,
+            "months": 28
+          }
+        }
+      },
+      "vlab_ep_floor0": {
+        "full": {
+          "mean_rank_corr": 0.9691,
+          "mean_overlap_pct": 92.24,
+          "mean_switches_per_month": 3.86,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 1.46,
+            "mean_raw": 0.0012,
+            "t": 0.1,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9693,
+          "mean_overlap_pct": 90.98,
+          "mean_switches_per_month": 3.6,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 22.64,
+            "mean_raw": 0.0189,
+            "t": 1.12,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9669,
+          "mean_overlap_pct": 91.45,
+          "mean_switches_per_month": 3.85,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -7.45,
+            "mean_raw": -0.0062,
+            "t": -0.23,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9798,
+          "mean_overlap_pct": 95.58,
+          "mean_switches_per_month": 2.33,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -18.71,
+            "mean_raw": -0.0156,
+            "t": -0.58,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.96,
+          "mean_overlap_pct": 91.42,
+          "mean_switches_per_month": 5.94,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 7.71,
+            "mean_raw": 0.0064,
+            "t": 0.56,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9705,
+          "mean_overlap_pct": 93.63,
+          "mean_switches_per_month": 4.03,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -6.28,
+            "mean_raw": -0.0052,
+            "t": -0.33,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9592,
+          "mean_overlap_pct": 91.2,
+          "mean_switches_per_month": 6.18,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 0.03,
+            "mean_raw": 0.0,
+            "t": 0.0,
+            "months": 28
+          }
+        }
+      },
+      "vlab_val_mom15": {
+        "full": {
+          "mean_rank_corr": 0.9252,
+          "mean_overlap_pct": 87.3,
+          "mean_switches_per_month": 6.11,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -6.7,
+            "mean_raw": -0.0056,
+            "t": -0.6,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9325,
+          "mean_overlap_pct": 84.52,
+          "mean_switches_per_month": 6.27,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 7.55,
+            "mean_raw": 0.0063,
+            "t": 0.6,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9274,
+          "mean_overlap_pct": 86.58,
+          "mean_switches_per_month": 6.02,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 12.09,
+            "mean_raw": 0.0101,
+            "t": 0.58,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9232,
+          "mean_overlap_pct": 88.74,
+          "mean_switches_per_month": 5.86,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -39.55,
+            "mean_raw": -0.033,
+            "t": -1.7,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.914,
+          "mean_overlap_pct": 90.68,
+          "mean_switches_per_month": 6.28,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -18.01,
+            "mean_raw": -0.015,
+            "t": -0.63,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9189,
+          "mean_overlap_pct": 89.65,
+          "mean_switches_per_month": 6.06,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -29.41,
+            "mean_raw": -0.0245,
+            "t": -1.58,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9171,
+          "mean_overlap_pct": 90.89,
+          "mean_switches_per_month": 6.25,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -19.32,
+            "mean_raw": -0.0161,
+            "t": -0.59,
+            "months": 28
+          }
+        }
+      }
+    },
+    "dsr": {
+      "R0": {
+        "T": 161,
+        "sr_monthly": 0.283,
+        "skew": 0.5091,
+        "kurtosis": 3.9113,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.0817,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_rev_ev": {
+        "T": 161,
+        "sr_monthly": 0.2105,
+        "skew": 0.5352,
+        "kurtosis": 4.1634,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.0096,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_gp_ev": {
+        "T": 161,
+        "sr_monthly": 0.2099,
+        "skew": 0.2331,
+        "kurtosis": 5.1203,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.0119,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_op_mcap": {
+        "T": 161,
+        "sr_monthly": 0.282,
+        "skew": 0.2452,
+        "kurtosis": 3.4437,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.087,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_ep_floor0": {
+        "T": 161,
+        "sr_monthly": 0.2969,
+        "skew": 0.1969,
+        "kurtosis": 3.9091,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.1245,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_val_mom15": {
+        "T": 161,
+        "sr_monthly": 0.2709,
+        "skew": 0.1962,
+        "kurtosis": 3.284,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.0676,
+        "var_sr_cross_variant": 0.02335
+      }
+    }
+  },
+  "sensitivity_kapdates": {
+    "months_span": [
+      "2013-04-30",
+      "2026-08-31"
+    ],
+    "n_full": 161,
+    "window_counts": {
+      "full": 161,
+      "b1_2013_16": 45,
+      "b2_2017_20": 48,
+      "b3_2021_23": 36,
+      "b4_2024_plus": 32,
+      "holdout_2021_plus": 68,
+      "ias29_2024_05_plus": 28
+    },
+    "trial_ledger_N_sel": 103,
+    "portfolio_simulation": {
+      "R0": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.73,
+            "mean_raw": 0.0064,
+            "t": 3.86,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.95,
+            "mean_raw": 0.0058,
+            "t": 3.45,
+            "months": 161
+          },
+          "cagr_tl_pct": 41.36,
+          "cagr_usd_pct": 10.47,
+          "cagr_real_pct": 13.13,
+          "max_dd_tl_pct": -25.9,
+          "max_dd_usd_pct": -56.0,
+          "turnover_pct": 20.3,
+          "cost_ann_pct": 1.67,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 0.0,
+          "turnover_ratio_vs_R0": 1.0
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 9.19,
+            "mean_raw": 0.0077,
+            "t": 3.94,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.57,
+            "mean_raw": 0.0071,
+            "t": 3.46,
+            "months": 45
+          },
+          "cagr_tl_pct": 16.31,
+          "cagr_usd_pct": -4.6,
+          "cagr_real_pct": 7.07,
+          "max_dd_tl_pct": -20.5,
+          "max_dd_usd_pct": -33.9,
+          "turnover_pct": 21.3,
+          "cost_ann_pct": 1.98,
+          "avg_names": 40.4,
+          "coverage_pct": 100.0
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 5.42,
+            "mean_raw": 0.0045,
+            "t": 1.17,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 4.51,
+            "mean_raw": 0.0038,
+            "t": 0.98,
+            "months": 48
+          },
+          "cagr_tl_pct": 60.71,
+          "cagr_usd_pct": 36.16,
+          "cagr_real_pct": 40.49,
+          "max_dd_tl_pct": -25.9,
+          "max_dd_usd_pct": -56.0,
+          "turnover_pct": 20.0,
+          "cost_ann_pct": 1.71,
+          "avg_names": 45.1,
+          "coverage_pct": 100.0
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 12.21,
+            "mean_raw": 0.0102,
+            "t": 3.44,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 11.49,
+            "mean_raw": 0.0096,
+            "t": 3.27,
+            "months": 36
+          },
+          "cagr_tl_pct": 82.53,
+          "cagr_usd_pct": 13.62,
+          "cagr_real_pct": 16.31,
+          "max_dd_tl_pct": -25.2,
+          "max_dd_usd_pct": -35.5,
+          "turnover_pct": 20.3,
+          "cost_ann_pct": 1.4,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 4.08,
+            "mean_raw": 0.0034,
+            "t": 1.08,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 3.24,
+            "mean_raw": 0.0027,
+            "t": 0.86,
+            "months": 32
+          },
+          "cagr_tl_pct": 15.08,
+          "cagr_usd_pct": -3.86,
+          "cagr_real_pct": -14.4,
+          "max_dd_tl_pct": -17.9,
+          "max_dd_usd_pct": -24.3,
+          "turnover_pct": 19.5,
+          "cost_ann_pct": 1.5,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.38,
+            "mean_raw": 0.007,
+            "t": 2.79,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.61,
+            "mean_raw": 0.0063,
+            "t": 2.53,
+            "months": 68
+          },
+          "cagr_tl_pct": 46.91,
+          "cagr_usd_pct": 5.03,
+          "cagr_real_pct": 0.69,
+          "max_dd_tl_pct": -25.2,
+          "max_dd_usd_pct": -35.5,
+          "turnover_pct": 19.9,
+          "cost_ann_pct": 1.45,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 0.0
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 2.85,
+            "mean_raw": 0.0024,
+            "t": 0.72,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.02,
+            "mean_raw": 0.0017,
+            "t": 0.51,
+            "months": 28
+          },
+          "cagr_tl_pct": 9.53,
+          "cagr_usd_pct": -8.5,
+          "cagr_real_pct": -17.07,
+          "max_dd_tl_pct": -17.9,
+          "max_dd_usd_pct": -24.3,
+          "turnover_pct": 19.6,
+          "cost_ann_pct": 1.51,
+          "avg_names": 68.6,
+          "coverage_pct": 100.0
+        }
+      },
+      "vlab_rev_ev": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.51,
+            "mean_raw": 0.0054,
+            "t": 3.0,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 5.74,
+            "mean_raw": 0.0048,
+            "t": 2.63,
+            "months": 161
+          },
+          "cagr_tl_pct": 39.88,
+          "cagr_usd_pct": 9.31,
+          "cagr_real_pct": 11.94,
+          "max_dd_tl_pct": -25.9,
+          "max_dd_usd_pct": -56.0,
+          "turnover_pct": 20.6,
+          "cost_ann_pct": 1.69,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 0.0,
+          "turnover_ratio_vs_R0": 1.015,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.22,
+            "mean_raw": -0.001,
+            "t": -1.3,
+            "months": 161,
+            "t_exact": -1.3024659246678583
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.23,
+            "mean_raw": 0.0069,
+            "t": 3.25,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.61,
+            "mean_raw": 0.0063,
+            "t": 2.86,
+            "months": 45
+          },
+          "cagr_tl_pct": 15.21,
+          "cagr_usd_pct": -5.51,
+          "cagr_real_pct": 6.06,
+          "max_dd_tl_pct": -19.9,
+          "max_dd_usd_pct": -33.4,
+          "turnover_pct": 22.4,
+          "cost_ann_pct": 2.06,
+          "avg_names": 40.4,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.96,
+            "mean_raw": -0.0008,
+            "t": -0.49,
+            "months": 45,
+            "t_exact": -0.4889543789729176
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 1.5,
+            "mean_raw": 0.0013,
+            "t": 0.33,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 0.59,
+            "mean_raw": 0.0005,
+            "t": 0.13,
+            "months": 48
+          },
+          "cagr_tl_pct": 55.22,
+          "cagr_usd_pct": 31.51,
+          "cagr_real_pct": 35.69,
+          "max_dd_tl_pct": -25.9,
+          "max_dd_usd_pct": -56.0,
+          "turnover_pct": 20.1,
+          "cost_ann_pct": 1.72,
+          "avg_names": 45.1,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -3.92,
+            "mean_raw": -0.0033,
+            "t": -1.97,
+            "months": 48,
+            "t_exact": -1.9719408842166959
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 12.43,
+            "mean_raw": 0.0104,
+            "t": 3.14,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 11.71,
+            "mean_raw": 0.0098,
+            "t": 2.98,
+            "months": 36
+          },
+          "cagr_tl_pct": 83.12,
+          "cagr_usd_pct": 13.99,
+          "cagr_real_pct": 16.69,
+          "max_dd_tl_pct": -25.6,
+          "max_dd_usd_pct": -35.6,
+          "turnover_pct": 20.3,
+          "cost_ann_pct": 1.38,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.22,
+            "mean_raw": 0.0002,
+            "t": 0.24,
+            "months": 36,
+            "t_exact": 0.23953739185615552
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 4.94,
+            "mean_raw": 0.0041,
+            "t": 1.21,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 4.1,
+            "mean_raw": 0.0034,
+            "t": 1.01,
+            "months": 32
+          },
+          "cagr_tl_pct": 16.09,
+          "cagr_usd_pct": -3.02,
+          "cagr_real_pct": -13.65,
+          "max_dd_tl_pct": -15.6,
+          "max_dd_usd_pct": -21.7,
+          "turnover_pct": 19.0,
+          "cost_ann_pct": 1.47,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.86,
+            "mean_raw": 0.0007,
+            "t": 0.64,
+            "months": 32,
+            "t_exact": 0.6391257964799097
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.91,
+            "mean_raw": 0.0074,
+            "t": 2.76,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.13,
+            "mean_raw": 0.0068,
+            "t": 2.52,
+            "months": 68
+          },
+          "cagr_tl_pct": 47.77,
+          "cagr_usd_pct": 5.64,
+          "cagr_real_pct": 1.27,
+          "max_dd_tl_pct": -25.6,
+          "max_dd_usd_pct": -35.6,
+          "turnover_pct": 19.7,
+          "cost_ann_pct": 1.43,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -0.1,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.52,
+            "mean_raw": 0.0004,
+            "t": 0.63,
+            "months": 68,
+            "t_exact": 0.6311752715146677
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 4.15,
+            "mean_raw": 0.0035,
+            "t": 0.93,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 3.31,
+            "mean_raw": 0.0028,
+            "t": 0.74,
+            "months": 28
+          },
+          "cagr_tl_pct": 10.93,
+          "cagr_usd_pct": -7.33,
+          "cagr_real_pct": -16.01,
+          "max_dd_tl_pct": -15.6,
+          "max_dd_usd_pct": -21.7,
+          "turnover_pct": 19.1,
+          "cost_ann_pct": 1.49,
+          "avg_names": 68.6,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 1.29,
+            "mean_raw": 0.0011,
+            "t": 0.89,
+            "months": 28,
+            "t_exact": 0.8870835651721394
+          }
+        }
+      },
+      "vlab_gp_ev": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.63,
+            "mean_raw": 0.0055,
+            "t": 2.86,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 5.85,
+            "mean_raw": 0.0049,
+            "t": 2.51,
+            "months": 161
+          },
+          "cagr_tl_pct": 40.01,
+          "cagr_usd_pct": 9.41,
+          "cagr_real_pct": 12.05,
+          "max_dd_tl_pct": -26.9,
+          "max_dd_usd_pct": -56.2,
+          "turnover_pct": 21.0,
+          "cost_ann_pct": 1.71,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -0.2,
+          "turnover_ratio_vs_R0": 1.034,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.1,
+            "mean_raw": -0.0009,
+            "t": -1.02,
+            "months": 161,
+            "t_exact": -1.0198501325032976
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.98,
+            "mean_raw": 0.0075,
+            "t": 3.76,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.36,
+            "mean_raw": 0.007,
+            "t": 3.34,
+            "months": 45
+          },
+          "cagr_tl_pct": 15.93,
+          "cagr_usd_pct": -4.92,
+          "cagr_real_pct": 6.72,
+          "max_dd_tl_pct": -20.1,
+          "max_dd_usd_pct": -33.6,
+          "turnover_pct": 22.3,
+          "cost_ann_pct": 2.07,
+          "avg_names": 40.4,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.21,
+            "mean_raw": -0.0002,
+            "t": -0.11,
+            "months": 45,
+            "t_exact": -0.10613921957504086
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 1.02,
+            "mean_raw": 0.0008,
+            "t": 0.22,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 0.1,
+            "mean_raw": 0.0001,
+            "t": 0.02,
+            "months": 48
+          },
+          "cagr_tl_pct": 54.87,
+          "cagr_usd_pct": 31.21,
+          "cagr_real_pct": 35.39,
+          "max_dd_tl_pct": -26.2,
+          "max_dd_usd_pct": -56.2,
+          "turnover_pct": 20.4,
+          "cost_ann_pct": 1.72,
+          "avg_names": 45.1,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -4.41,
+            "mean_raw": -0.0037,
+            "t": -2.15,
+            "months": 48,
+            "t_exact": -2.1452645732718474
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 14.44,
+            "mean_raw": 0.012,
+            "t": 4.09,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 13.72,
+            "mean_raw": 0.0114,
+            "t": 3.92,
+            "months": 36
+          },
+          "cagr_tl_pct": 86.22,
+          "cagr_usd_pct": 15.92,
+          "cagr_real_pct": 18.66,
+          "max_dd_tl_pct": -26.9,
+          "max_dd_usd_pct": -37.7,
+          "turnover_pct": 21.6,
+          "cost_ann_pct": 1.44,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 2.23,
+            "mean_raw": 0.0019,
+            "t": 1.2,
+            "months": 36,
+            "t_exact": 1.2002604233370608
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 2.95,
+            "mean_raw": 0.0025,
+            "t": 0.6,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.11,
+            "mean_raw": 0.0018,
+            "t": 0.43,
+            "months": 32
+          },
+          "cagr_tl_pct": 13.85,
+          "cagr_usd_pct": -4.89,
+          "cagr_real_pct": -15.31,
+          "max_dd_tl_pct": -17.2,
+          "max_dd_usd_pct": -24.2,
+          "turnover_pct": 19.1,
+          "cost_ann_pct": 1.48,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.13,
+            "mean_raw": -0.0009,
+            "t": -0.51,
+            "months": 32,
+            "t_exact": -0.5086162634931645
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 9.03,
+            "mean_raw": 0.0075,
+            "t": 2.48,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.26,
+            "mean_raw": 0.0069,
+            "t": 2.27,
+            "months": 68
+          },
+          "cagr_tl_pct": 47.73,
+          "cagr_usd_pct": 5.61,
+          "cagr_real_pct": 1.25,
+          "max_dd_tl_pct": -26.9,
+          "max_dd_usd_pct": -37.7,
+          "turnover_pct": 20.5,
+          "cost_ann_pct": 1.46,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -2.2,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.65,
+            "mean_raw": 0.0005,
+            "t": 0.41,
+            "months": 68,
+            "t_exact": 0.4091632346456571
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 0.32,
+            "mean_raw": 0.0003,
+            "t": 0.07,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -0.52,
+            "mean_raw": -0.0004,
+            "t": -0.11,
+            "months": 28
+          },
+          "cagr_tl_pct": 6.95,
+          "cagr_usd_pct": -10.65,
+          "cagr_real_pct": -19.03,
+          "max_dd_tl_pct": -17.2,
+          "max_dd_usd_pct": -24.2,
+          "turnover_pct": 18.9,
+          "cost_ann_pct": 1.47,
+          "avg_names": 68.6,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.54,
+            "mean_raw": -0.0021,
+            "t": -1.22,
+            "months": 28,
+            "t_exact": -1.2203124125076465
+          }
+        }
+      },
+      "vlab_op_mcap": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.47,
+            "mean_raw": 0.0062,
+            "t": 3.56,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.7,
+            "mean_raw": 0.0056,
+            "t": 3.17,
+            "months": 161
+          },
+          "cagr_tl_pct": 40.96,
+          "cagr_usd_pct": 10.16,
+          "cagr_real_pct": 12.81,
+          "max_dd_tl_pct": -25.2,
+          "max_dd_usd_pct": -54.1,
+          "turnover_pct": 19.4,
+          "cost_ann_pct": 1.6,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 1.9,
+          "turnover_ratio_vs_R0": 0.956,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.26,
+            "mean_raw": -0.0002,
+            "t": -0.29,
+            "months": 161,
+            "t_exact": -0.28597278837751094
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.32,
+            "mean_raw": 0.0069,
+            "t": 3.76,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.7,
+            "mean_raw": 0.0064,
+            "t": 3.27,
+            "months": 45
+          },
+          "cagr_tl_pct": 15.23,
+          "cagr_usd_pct": -5.49,
+          "cagr_real_pct": 6.07,
+          "max_dd_tl_pct": -20.7,
+          "max_dd_usd_pct": -34.1,
+          "turnover_pct": 19.9,
+          "cost_ann_pct": 1.9,
+          "avg_names": 40.4,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.87,
+            "mean_raw": -0.0007,
+            "t": -0.68,
+            "months": 45,
+            "t_exact": -0.6792207910407966
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.68,
+            "mean_raw": 0.0064,
+            "t": 1.59,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.77,
+            "mean_raw": 0.0056,
+            "t": 1.41,
+            "months": 48
+          },
+          "cagr_tl_pct": 64.18,
+          "cagr_usd_pct": 39.1,
+          "cagr_real_pct": 43.53,
+          "max_dd_tl_pct": -25.2,
+          "max_dd_usd_pct": -54.1,
+          "turnover_pct": 18.5,
+          "cost_ann_pct": 1.55,
+          "avg_names": 45.1,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 2.26,
+            "mean_raw": 0.0019,
+            "t": 1.29,
+            "months": 48,
+            "t_exact": 1.2924086184272081
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 12.01,
+            "mean_raw": 0.01,
+            "t": 3.78,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 11.29,
+            "mean_raw": 0.0094,
+            "t": 3.6,
+            "months": 36
+          },
+          "cagr_tl_pct": 82.27,
+          "cagr_usd_pct": 13.47,
+          "cagr_real_pct": 16.15,
+          "max_dd_tl_pct": -25.1,
+          "max_dd_usd_pct": -36.7,
+          "turnover_pct": 19.6,
+          "cost_ann_pct": 1.37,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.2,
+            "mean_raw": -0.0002,
+            "t": -0.17,
+            "months": 36,
+            "t_exact": -0.16970827773704208
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 0.85,
+            "mean_raw": 0.0007,
+            "t": 0.2,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0,
+            "t": 0.0,
+            "months": 32
+          },
+          "cagr_tl_pct": 11.52,
+          "cagr_usd_pct": -6.84,
+          "cagr_real_pct": -17.05,
+          "max_dd_tl_pct": -18.3,
+          "max_dd_usd_pct": -25.2,
+          "turnover_pct": 19.6,
+          "cost_ann_pct": 1.52,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -3.23,
+            "mean_raw": -0.0027,
+            "t": -1.66,
+            "months": 32,
+            "t_exact": -1.660262960120953
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.76,
+            "mean_raw": 0.0056,
+            "t": 2.05,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 5.98,
+            "mean_raw": 0.005,
+            "t": 1.81,
+            "months": 68
+          },
+          "cagr_tl_pct": 44.65,
+          "cagr_usd_pct": 3.41,
+          "cagr_real_pct": -0.87,
+          "max_dd_tl_pct": -25.1,
+          "max_dd_usd_pct": -36.7,
+          "turnover_pct": 19.6,
+          "cost_ann_pct": 1.44,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -1.2,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.63,
+            "mean_raw": -0.0014,
+            "t": -1.37,
+            "months": 68,
+            "t_exact": -1.371265964925386
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": -0.34,
+            "mean_raw": -0.0003,
+            "t": -0.08,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": -1.18,
+            "mean_raw": -0.001,
+            "t": -0.29,
+            "months": 28
+          },
+          "cagr_tl_pct": 6.13,
+          "cagr_usd_pct": -11.34,
+          "cagr_real_pct": -19.65,
+          "max_dd_tl_pct": -18.3,
+          "max_dd_usd_pct": -24.9,
+          "turnover_pct": 18.9,
+          "cost_ann_pct": 1.48,
+          "avg_names": 68.6,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -3.2,
+            "mean_raw": -0.0027,
+            "t": -1.46,
+            "months": 28,
+            "t_exact": -1.4582419804907765
+          }
+        }
+      },
+      "vlab_ep_floor0": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 7.9,
+            "mean_raw": 0.0066,
+            "t": 3.71,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.13,
+            "mean_raw": 0.0059,
+            "t": 3.31,
+            "months": 161
+          },
+          "cagr_tl_pct": 41.64,
+          "cagr_usd_pct": 10.69,
+          "cagr_real_pct": 13.35,
+          "max_dd_tl_pct": -25.1,
+          "max_dd_usd_pct": -55.0,
+          "turnover_pct": 20.8,
+          "cost_ann_pct": 1.72,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": 1.0,
+          "turnover_ratio_vs_R0": 1.025,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.18,
+            "mean_raw": 0.0001,
+            "t": 0.27,
+            "months": 161,
+            "t_exact": 0.27083609850974766
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 10.32,
+            "mean_raw": 0.0086,
+            "t": 4.29,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 9.69,
+            "mean_raw": 0.0081,
+            "t": 3.76,
+            "months": 45
+          },
+          "cagr_tl_pct": 17.65,
+          "cagr_usd_pct": -3.5,
+          "cagr_real_pct": 8.31,
+          "max_dd_tl_pct": -19.9,
+          "max_dd_usd_pct": -33.1,
+          "turnover_pct": 21.4,
+          "cost_ann_pct": 1.97,
+          "avg_names": 40.4,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 1.12,
+            "mean_raw": 0.0009,
+            "t": 1.15,
+            "months": 45,
+            "t_exact": 1.1454723007339889
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 3.69,
+            "mean_raw": 0.0031,
+            "t": 0.88,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.78,
+            "mean_raw": 0.0023,
+            "t": 0.66,
+            "months": 48
+          },
+          "cagr_tl_pct": 58.14,
+          "cagr_usd_pct": 33.98,
+          "cagr_real_pct": 38.25,
+          "max_dd_tl_pct": -25.1,
+          "max_dd_usd_pct": -55.0,
+          "turnover_pct": 21.2,
+          "cost_ann_pct": 1.81,
+          "avg_names": 45.1,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.73,
+            "mean_raw": -0.0014,
+            "t": -1.38,
+            "months": 48,
+            "t_exact": -1.3751301421928526
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 12.75,
+            "mean_raw": 0.0106,
+            "t": 3.2,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 12.03,
+            "mean_raw": 0.01,
+            "t": 3.03,
+            "months": 36
+          },
+          "cagr_tl_pct": 83.46,
+          "cagr_usd_pct": 14.2,
+          "cagr_real_pct": 16.9,
+          "max_dd_tl_pct": -25.1,
+          "max_dd_usd_pct": -35.6,
+          "turnover_pct": 20.1,
+          "cost_ann_pct": 1.39,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.54,
+            "mean_raw": 0.0005,
+            "t": 0.65,
+            "months": 36,
+            "t_exact": 0.6455783052975426
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 5.37,
+            "mean_raw": 0.0045,
+            "t": 1.1,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 4.53,
+            "mean_raw": 0.0038,
+            "t": 0.93,
+            "months": 32
+          },
+          "cagr_tl_pct": 16.51,
+          "cagr_usd_pct": -2.67,
+          "cagr_real_pct": -13.34,
+          "max_dd_tl_pct": -15.0,
+          "max_dd_usd_pct": -23.4,
+          "turnover_pct": 20.3,
+          "cost_ann_pct": 1.58,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 1.29,
+            "mean_raw": 0.0011,
+            "t": 0.72,
+            "months": 32,
+            "t_exact": 0.7238985709582646
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 9.28,
+            "mean_raw": 0.0077,
+            "t": 2.68,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.5,
+            "mean_raw": 0.0071,
+            "t": 2.46,
+            "months": 68
+          },
+          "cagr_tl_pct": 48.17,
+          "cagr_usd_pct": 5.93,
+          "cagr_real_pct": 1.54,
+          "max_dd_tl_pct": -25.1,
+          "max_dd_usd_pct": -35.6,
+          "turnover_pct": 20.2,
+          "cost_ann_pct": 1.48,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -0.1,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.89,
+            "mean_raw": 0.0007,
+            "t": 0.94,
+            "months": 68,
+            "t_exact": 0.9420223939863915
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 3.48,
+            "mean_raw": 0.0029,
+            "t": 0.68,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.64,
+            "mean_raw": 0.0022,
+            "t": 0.52,
+            "months": 28
+          },
+          "cagr_tl_pct": 10.22,
+          "cagr_usd_pct": -7.92,
+          "cagr_real_pct": -16.55,
+          "max_dd_tl_pct": -15.0,
+          "max_dd_usd_pct": -23.4,
+          "turnover_pct": 20.3,
+          "cost_ann_pct": 1.59,
+          "avg_names": 68.6,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.63,
+            "mean_raw": 0.0005,
+            "t": 0.33,
+            "months": 28,
+            "t_exact": 0.3255892630810766
+          }
+        }
+      },
+      "vlab_val_mom15": {
+        "full": {
+          "months": 161,
+          "vs_ew_net": {
+            "mean_ann_pct": 6.83,
+            "mean_raw": 0.0057,
+            "t": 2.87,
+            "months": 161
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 6.06,
+            "mean_raw": 0.005,
+            "t": 2.52,
+            "months": 161
+          },
+          "cagr_tl_pct": 40.12,
+          "cagr_usd_pct": 9.5,
+          "cagr_real_pct": 12.13,
+          "max_dd_tl_pct": -30.0,
+          "max_dd_usd_pct": -56.5,
+          "turnover_pct": 22.6,
+          "cost_ann_pct": 1.83,
+          "avg_names": 49.7,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -0.5,
+          "turnover_ratio_vs_R0": 1.113,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.9,
+            "mean_raw": -0.0007,
+            "t": -0.86,
+            "months": 161,
+            "t_exact": -0.8626564744012432
+          }
+        },
+        "b1_2013_16": {
+          "months": 45,
+          "vs_ew_net": {
+            "mean_ann_pct": 9.16,
+            "mean_raw": 0.0076,
+            "t": 3.45,
+            "months": 45
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 8.54,
+            "mean_raw": 0.0071,
+            "t": 3.04,
+            "months": 45
+          },
+          "cagr_tl_pct": 16.25,
+          "cagr_usd_pct": -4.65,
+          "cagr_real_pct": 7.01,
+          "max_dd_tl_pct": -20.6,
+          "max_dd_usd_pct": -33.8,
+          "turnover_pct": 23.4,
+          "cost_ann_pct": 2.09,
+          "avg_names": 40.4,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.03,
+            "mean_raw": -0.0,
+            "t": -0.02,
+            "months": 45,
+            "t_exact": -0.024567018774647134
+          }
+        },
+        "b2_2017_20": {
+          "months": 48,
+          "vs_ew_net": {
+            "mean_ann_pct": 2.73,
+            "mean_raw": 0.0023,
+            "t": 0.47,
+            "months": 48
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 1.82,
+            "mean_raw": 0.0015,
+            "t": 0.31,
+            "months": 48
+          },
+          "cagr_tl_pct": 56.63,
+          "cagr_usd_pct": 32.71,
+          "cagr_real_pct": 36.93,
+          "max_dd_tl_pct": -30.0,
+          "max_dd_usd_pct": -56.5,
+          "turnover_pct": 22.8,
+          "cost_ann_pct": 1.97,
+          "avg_names": 45.1,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -2.69,
+            "mean_raw": -0.0022,
+            "t": -1.14,
+            "months": 48,
+            "t_exact": -1.139536364874115
+          }
+        },
+        "b3_2021_23": {
+          "months": 36,
+          "vs_ew_net": {
+            "mean_ann_pct": 12.32,
+            "mean_raw": 0.0103,
+            "t": 3.26,
+            "months": 36
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 11.6,
+            "mean_raw": 0.0097,
+            "t": 3.13,
+            "months": 36
+          },
+          "cagr_tl_pct": 82.99,
+          "cagr_usd_pct": 13.91,
+          "cagr_real_pct": 16.61,
+          "max_dd_tl_pct": -26.3,
+          "max_dd_usd_pct": -37.6,
+          "turnover_pct": 21.5,
+          "cost_ann_pct": 1.46,
+          "avg_names": 51.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": 0.11,
+            "mean_raw": 0.0001,
+            "t": 0.08,
+            "months": 36,
+            "t_exact": 0.07505997098433209
+          }
+        },
+        "b4_2024_plus": {
+          "months": 32,
+          "vs_ew_net": {
+            "mean_ann_pct": 3.53,
+            "mean_raw": 0.0029,
+            "t": 0.89,
+            "months": 32
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 2.69,
+            "mean_raw": 0.0022,
+            "t": 0.68,
+            "months": 32
+          },
+          "cagr_tl_pct": 14.17,
+          "cagr_usd_pct": -4.63,
+          "cagr_real_pct": -15.08,
+          "max_dd_tl_pct": -17.4,
+          "max_dd_usd_pct": -22.9,
+          "turnover_pct": 22.6,
+          "cost_ann_pct": 1.67,
+          "avg_names": 67.7,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.55,
+            "mean_raw": -0.0005,
+            "t": -0.25,
+            "months": 32,
+            "t_exact": -0.2512509204362445
+          }
+        },
+        "holdout_2021_plus": {
+          "months": 68,
+          "vs_ew_net": {
+            "mean_ann_pct": 8.18,
+            "mean_raw": 0.0068,
+            "t": 2.58,
+            "months": 68
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 7.41,
+            "mean_raw": 0.0062,
+            "t": 2.35,
+            "months": 68
+          },
+          "cagr_tl_pct": 46.56,
+          "cagr_usd_pct": 4.78,
+          "cagr_real_pct": 0.44,
+          "max_dd_tl_pct": -26.3,
+          "max_dd_usd_pct": -37.6,
+          "turnover_pct": 22.0,
+          "cost_ann_pct": 1.56,
+          "avg_names": 59.2,
+          "coverage_pct": 100.0,
+          "dd_usd_diff_vs_R0_pp": -2.1,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -0.2,
+            "mean_raw": -0.0002,
+            "t": -0.15,
+            "months": 68,
+            "t_exact": -0.15019310724294996
+          }
+        },
+        "ias29_2024_05_plus": {
+          "months": 28,
+          "vs_ew_net": {
+            "mean_ann_pct": 1.55,
+            "mean_raw": 0.0013,
+            "t": 0.38,
+            "months": 28
+          },
+          "vs_ew_gross": {
+            "mean_ann_pct": 0.72,
+            "mean_raw": 0.0006,
+            "t": 0.18,
+            "months": 28
+          },
+          "cagr_tl_pct": 7.83,
+          "cagr_usd_pct": -9.92,
+          "cagr_real_pct": -18.37,
+          "max_dd_tl_pct": -17.4,
+          "max_dd_usd_pct": -22.7,
+          "turnover_pct": 22.7,
+          "cost_ann_pct": 1.67,
+          "avg_names": 68.6,
+          "coverage_pct": 100.0,
+          "paired_diff_vs_R0": {
+            "mean_ann_pct": -1.3,
+            "mean_raw": -0.0011,
+            "t": -0.53,
+            "months": 28,
+            "t_exact": -0.5330731491491602
+          }
+        }
+      }
+    },
+    "rank_ic": {
+      "R0": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0646,
+          "t": 7.1,
+          "months": 161
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0638,
+          "t": 5.71,
+          "months": 45
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0509,
+          "t": 3.51,
+          "months": 48
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.1,
+          "mean_raw": 0.0987,
+          "t": 4.7,
+          "months": 36
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0478,
+          "t": 2.94,
+          "months": 32
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0748,
+          "t": 4.64,
+          "months": 68
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0363,
+          "t": 2.45,
+          "months": 28
+        }
+      },
+      "vlab_rev_ev": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0631,
+          "t": 6.89,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0014,
+            "t": -1.13,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0637,
+          "t": 5.78,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0001,
+            "t": -0.06,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0468,
+          "t": 3.07,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.004,
+            "t": -1.49,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.1,
+          "mean_raw": 0.0967,
+          "t": 4.53,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.002,
+            "t": -0.89,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0491,
+          "t": 3.09,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0013,
+            "t": 1.46,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0743,
+          "t": 4.68,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0004,
+            "t": -0.31,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0378,
+          "t": 2.55,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0015,
+            "t": 1.57,
+            "months": 28
+          }
+        }
+      },
+      "vlab_gp_ev": {
+        "full": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0655,
+          "t": 6.9,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0009,
+            "t": 0.45,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0684,
+          "t": 6.23,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0046,
+            "t": 1.03,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0517,
+          "t": 3.27,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0009,
+            "t": 0.24,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.1,
+          "mean_raw": 0.0963,
+          "t": 4.15,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0025,
+            "t": -0.52,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0474,
+          "t": 2.81,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0004,
+            "t": -0.22,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0733,
+          "t": 4.34,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0015,
+            "t": -0.56,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0361,
+          "t": 2.36,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0002,
+            "t": -0.09,
+            "months": 28
+          }
+        }
+      },
+      "vlab_op_mcap": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0617,
+          "t": 7.21,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0029,
+            "t": -1.1,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0575,
+          "t": 5.22,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0063,
+            "t": -1.73,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0561,
+          "t": 4.15,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0053,
+            "t": 0.91,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.09,
+          "mean_raw": 0.0923,
+          "t": 4.48,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0065,
+            "t": -1.37,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0414,
+          "t": 2.87,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0064,
+            "t": -1.58,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.0683,
+          "t": 4.4,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0064,
+            "t": -2.04,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.03,
+          "mean_raw": 0.0318,
+          "t": 2.45,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0044,
+            "t": -0.97,
+            "months": 28
+          }
+        }
+      },
+      "vlab_ep_floor0": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.065,
+          "t": 7.18,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0004,
+            "t": 0.33,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0619,
+          "t": 5.88,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0019,
+            "t": -0.93,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0536,
+          "t": 3.82,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0027,
+            "t": 1.37,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.1,
+          "mean_raw": 0.1015,
+          "t": 4.97,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0028,
+            "t": 2.77,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0452,
+          "t": 2.75,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0026,
+            "t": -0.88,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.08,
+          "mean_raw": 0.075,
+          "t": 4.56,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.0,
+            "mean_raw": 0.0002,
+            "t": 0.14,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.03,
+          "mean_raw": 0.0321,
+          "t": 2.27,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0041,
+            "t": -1.3,
+            "months": 28
+          }
+        }
+      },
+      "vlab_val_mom15": {
+        "full": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0594,
+          "t": 6.8,
+          "months": 161,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0052,
+            "t": -1.46,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_ann_pct": 0.06,
+          "mean_raw": 0.0606,
+          "t": 5.59,
+          "months": 45,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0032,
+            "t": -0.59,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_ann_pct": 0.04,
+          "mean_raw": 0.0388,
+          "t": 2.53,
+          "months": 48,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.012,
+            "t": -2.44,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_ann_pct": 0.09,
+          "mean_raw": 0.0896,
+          "t": 4.39,
+          "months": 36,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.01,
+            "mean_raw": -0.0092,
+            "t": -1.37,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0544,
+          "t": 3.59,
+          "months": 32,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0066,
+            "t": 0.7,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_ann_pct": 0.07,
+          "mean_raw": 0.073,
+          "t": 5.09,
+          "months": 68,
+          "diff_vs_R0": {
+            "mean_ann_pct": -0.0,
+            "mean_raw": -0.0018,
+            "t": -0.29,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_ann_pct": 0.05,
+          "mean_raw": 0.0479,
+          "t": 2.85,
+          "months": 28,
+          "diff_vs_R0": {
+            "mean_ann_pct": 0.01,
+            "mean_raw": 0.0116,
+            "t": 1.47,
+            "months": 28
+          }
+        }
+      }
+    },
+    "switcher_analysis": {
+      "vlab_rev_ev": {
+        "full": {
+          "mean_rank_corr": 0.9772,
+          "mean_overlap_pct": 89.13,
+          "mean_switches_per_month": 5.23,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -9.74,
+            "mean_raw": -0.0081,
+            "t": -1.0,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9732,
+          "mean_overlap_pct": 84.9,
+          "mean_switches_per_month": 6.11,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 0.66,
+            "mean_raw": 0.0006,
+            "t": 0.04,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9725,
+          "mean_overlap_pct": 89.34,
+          "mean_switches_per_month": 4.81,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -45.87,
+            "mean_raw": -0.0382,
+            "t": -2.04,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9813,
+          "mean_overlap_pct": 92.34,
+          "mean_switches_per_month": 3.94,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 8.04,
+            "mean_raw": 0.0067,
+            "t": 0.73,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.9854,
+          "mean_overlap_pct": 91.15,
+          "mean_switches_per_month": 6.06,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 9.84,
+            "mean_raw": 0.0082,
+            "t": 0.8,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9832,
+          "mean_overlap_pct": 91.78,
+          "mean_switches_per_month": 4.94,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 8.89,
+            "mean_raw": 0.0074,
+            "t": 1.01,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9849,
+          "mean_overlap_pct": 90.82,
+          "mean_switches_per_month": 6.36,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 14.73,
+            "mean_raw": 0.0123,
+            "t": 1.23,
+            "months": 28
+          }
+        }
+      },
+      "vlab_gp_ev": {
+        "full": {
+          "mean_rank_corr": 0.9319,
+          "mean_overlap_pct": 79.83,
+          "mean_switches_per_month": 9.84,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -3.22,
+            "mean_raw": -0.0027,
+            "t": -0.58,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9189,
+          "mean_overlap_pct": 76.55,
+          "mean_switches_per_month": 9.47,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 2.31,
+            "mean_raw": 0.0019,
+            "t": 0.23,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9231,
+          "mean_overlap_pct": 79.06,
+          "mean_switches_per_month": 9.44,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -21.79,
+            "mean_raw": -0.0182,
+            "t": -2.2,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9501,
+          "mean_overlap_pct": 83.09,
+          "mean_switches_per_month": 8.75,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 16.29,
+            "mean_raw": 0.0136,
+            "t": 1.52,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.9431,
+          "mean_overlap_pct": 81.93,
+          "mean_switches_per_month": 12.22,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -5.1,
+            "mean_raw": -0.0043,
+            "t": -0.46,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9468,
+          "mean_overlap_pct": 82.54,
+          "mean_switches_per_month": 10.38,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 6.22,
+            "mean_raw": 0.0052,
+            "t": 0.72,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9458,
+          "mean_overlap_pct": 82.11,
+          "mean_switches_per_month": 12.29,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -12.16,
+            "mean_raw": -0.0101,
+            "t": -1.2,
+            "months": 28
+          }
+        }
+      },
+      "vlab_op_mcap": {
+        "full": {
+          "mean_rank_corr": 0.9193,
+          "mean_overlap_pct": 83.94,
+          "mean_switches_per_month": 8.11,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 1.86,
+            "mean_raw": 0.0016,
+            "t": 0.32,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9226,
+          "mean_overlap_pct": 85.45,
+          "mean_switches_per_month": 5.93,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 1.27,
+            "mean_raw": 0.0011,
+            "t": 0.14,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9149,
+          "mean_overlap_pct": 83.85,
+          "mean_switches_per_month": 7.27,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 12.5,
+            "mean_raw": 0.0104,
+            "t": 0.98,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9287,
+          "mean_overlap_pct": 83.69,
+          "mean_switches_per_month": 8.5,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 5.67,
+            "mean_raw": 0.0047,
+            "t": 0.67,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.9106,
+          "mean_overlap_pct": 82.25,
+          "mean_switches_per_month": 11.97,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -17.55,
+            "mean_raw": -0.0146,
+            "t": -1.63,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9202,
+          "mean_overlap_pct": 83.01,
+          "mean_switches_per_month": 10.13,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -5.26,
+            "mean_raw": -0.0044,
+            "t": -0.7,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9114,
+          "mean_overlap_pct": 81.95,
+          "mean_switches_per_month": 12.32,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -18.29,
+            "mean_raw": -0.0152,
+            "t": -1.55,
+            "months": 28
+          }
+        }
+      },
+      "vlab_ep_floor0": {
+        "full": {
+          "mean_rank_corr": 0.9686,
+          "mean_overlap_pct": 92.35,
+          "mean_switches_per_month": 3.83,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 0.77,
+            "mean_raw": 0.0006,
+            "t": 0.07,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9698,
+          "mean_overlap_pct": 91.53,
+          "mean_switches_per_month": 3.38,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 2.82,
+            "mean_raw": 0.0024,
+            "t": 0.14,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9661,
+          "mean_overlap_pct": 91.63,
+          "mean_switches_per_month": 3.77,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -28.62,
+            "mean_raw": -0.0239,
+            "t": -1.34,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9805,
+          "mean_overlap_pct": 95.42,
+          "mean_switches_per_month": 2.42,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 20.12,
+            "mean_raw": 0.0168,
+            "t": 1.06,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.957,
+          "mean_overlap_pct": 91.13,
+          "mean_switches_per_month": 6.12,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 20.18,
+            "mean_raw": 0.0168,
+            "t": 1.13,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9695,
+          "mean_overlap_pct": 93.4,
+          "mean_switches_per_month": 4.16,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 20.15,
+            "mean_raw": 0.0168,
+            "t": 1.55,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9577,
+          "mean_overlap_pct": 91.04,
+          "mean_switches_per_month": 6.29,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 9.91,
+            "mean_raw": 0.0083,
+            "t": 0.55,
+            "months": 28
+          }
+        }
+      },
+      "vlab_val_mom15": {
+        "full": {
+          "mean_rank_corr": 0.9252,
+          "mean_overlap_pct": 87.27,
+          "mean_switches_per_month": 6.16,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -8.9,
+            "mean_raw": -0.0074,
+            "t": -1.01,
+            "months": 161
+          }
+        },
+        "b1_2013_16": {
+          "mean_rank_corr": 0.9326,
+          "mean_overlap_pct": 84.49,
+          "mean_switches_per_month": 6.27,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 0.62,
+            "mean_raw": 0.0005,
+            "t": 0.07,
+            "months": 45
+          }
+        },
+        "b2_2017_20": {
+          "mean_rank_corr": 0.9275,
+          "mean_overlap_pct": 86.65,
+          "mean_switches_per_month": 6.0,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -28.87,
+            "mean_raw": -0.0241,
+            "t": -1.71,
+            "months": 48
+          }
+        },
+        "b3_2021_23": {
+          "mean_rank_corr": 0.9233,
+          "mean_overlap_pct": 89.56,
+          "mean_switches_per_month": 5.47,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": 3.07,
+            "mean_raw": 0.0026,
+            "t": 0.2,
+            "months": 36
+          }
+        },
+        "b4_2024_plus": {
+          "mean_rank_corr": 0.9136,
+          "mean_overlap_pct": 89.54,
+          "mean_switches_per_month": 7.03,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -5.81,
+            "mean_raw": -0.0048,
+            "t": -0.24,
+            "months": 32
+          }
+        },
+        "holdout_2021_plus": {
+          "mean_rank_corr": 0.9187,
+          "mean_overlap_pct": 89.55,
+          "mean_switches_per_month": 6.21,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -1.11,
+            "mean_raw": -0.0009,
+            "t": -0.08,
+            "months": 68
+          }
+        },
+        "ias29_2024_05_plus": {
+          "mean_rank_corr": 0.9174,
+          "mean_overlap_pct": 89.81,
+          "mean_switches_per_month": 6.96,
+          "entrants_minus_dropouts": {
+            "mean_ann_pct": -13.41,
+            "mean_raw": -0.0112,
+            "t": -0.48,
+            "months": 28
+          }
+        }
+      }
+    },
+    "dsr": {
+      "R0": {
+        "T": 161,
+        "sr_monthly": 0.2976,
+        "skew": 0.2992,
+        "kurtosis": 4.5799,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.1245,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_rev_ev": {
+        "T": 161,
+        "sr_monthly": 0.2475,
+        "skew": 0.4198,
+        "kurtosis": 5.4015,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.0348,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_gp_ev": {
+        "T": 161,
+        "sr_monthly": 0.2437,
+        "skew": 0.5262,
+        "kurtosis": 5.8464,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.0299,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_op_mcap": {
+        "T": 161,
+        "sr_monthly": 0.2835,
+        "skew": 0.3038,
+        "kurtosis": 3.8657,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.0892,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_ep_floor0": {
+        "T": 161,
+        "sr_monthly": 0.2945,
+        "skew": 0.2594,
+        "kurtosis": 5.2133,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.1195,
+        "var_sr_cross_variant": 0.02335
+      },
+      "vlab_val_mom15": {
+        "T": 161,
+        "sr_monthly": 0.2532,
+        "skew": 0.1738,
+        "kurtosis": 3.5488,
+        "sr0": 0.3883,
+        "n_trials": 103,
+        "dsr": 0.0435,
+        "var_sr_cross_variant": 0.02335
+      }
+    }
+  },
+  "verdicts": {
+    "vlab_rev_ev": {
+      "verdict": "FAIL",
+      "c1_full_D_t": false,
+      "c2_all_4_blocks_pos": false,
+      "c3_usd_maxdd_ok": true,
+      "c4_kapdates_ok": false,
+      "c5_holm_ok": false,
+      "c6_turnover_ok": true,
+      "full_D_ann_pct": -1.84,
+      "full_t": -2.35,
+      "blocks_D_ann_pct": {
+        "b1_2013_16": -1.46,
+        "b2_2017_20": -2.94,
+        "b3_2021_23": -1.75,
+        "b4_2024_plus": -0.85
+      },
+      "blocks_t": {
+        "b1_2013_16": -0.95,
+        "b2_2017_20": -1.92,
+        "b3_2021_23": -1.05,
+        "b4_2024_plus": -0.7
+      },
+      "blocks_pos": {
+        "b1_2013_16": false,
+        "b2_2017_20": false,
+        "b3_2021_23": false,
+        "b4_2024_plus": false
+      },
+      "dd_full_usd_pct": -57.3,
+      "dd_full_diff_pp": -0.7,
+      "dd_2021p_usd_pct": -36.5,
+      "dd_2021p_diff_pp": -1.1,
+      "kap_full_D_ann_pct": -1.22,
+      "kap_full_t": -1.3,
+      "p_raw_tdist": 0.02014,
+      "p_holm_tdist": 0.100702,
+      "p_raw_norm": 0.018916,
+      "p_holm_norm": 0.09458,
+      "turnover_pct": 20.6,
+      "r0_turnover_pct": 20.5,
+      "turnover_ratio": 1.005
+    },
+    "vlab_gp_ev": {
+      "verdict": "FAIL",
+      "c1_full_D_t": false,
+      "c2_all_4_blocks_pos": false,
+      "c3_usd_maxdd_ok": true,
+      "c4_kapdates_ok": false,
+      "c5_holm_ok": false,
+      "c6_turnover_ok": true,
+      "full_D_ann_pct": -1.6,
+      "full_t": -1.49,
+      "blocks_D_ann_pct": {
+        "b1_2013_16": 0.41,
+        "b2_2017_20": -2.27,
+        "b3_2021_23": -2.75,
+        "b4_2024_plus": -2.14
+      },
+      "blocks_t": {
+        "b1_2013_16": 0.31,
+        "b2_2017_20": -1.23,
+        "b3_2021_23": -0.8,
+        "b4_2024_plus": -1.18
+      },
+      "blocks_pos": {
+        "b1_2013_16": true,
+        "b2_2017_20": false,
+        "b3_2021_23": false,
+        "b4_2024_plus": false
+      },
+      "dd_full_usd_pct": -56.6,
+      "dd_full_diff_pp": 0.0,
+      "dd_2021p_usd_pct": -36.8,
+      "dd_2021p_diff_pp": -1.4,
+      "kap_full_D_ann_pct": -1.1,
+      "kap_full_t": -1.02,
+      "p_raw_tdist": 0.137216,
+      "p_holm_tdist": 0.548864,
+      "p_raw_norm": 0.135247,
+      "p_holm_norm": 0.540987,
+      "turnover_pct": 21.0,
+      "r0_turnover_pct": 20.5,
+      "turnover_ratio": 1.024
+    },
+    "vlab_op_mcap": {
+      "verdict": "FAIL",
+      "c1_full_D_t": false,
+      "c2_all_4_blocks_pos": false,
+      "c3_usd_maxdd_ok": true,
+      "c4_kapdates_ok": false,
+      "c5_holm_ok": false,
+      "c6_turnover_ok": true,
+      "full_D_ann_pct": -0.05,
+      "full_t": -0.05,
+      "blocks_D_ann_pct": {
+        "b1_2013_16": -0.51,
+        "b2_2017_20": 3.3,
+        "b3_2021_23": 0.17,
+        "b4_2024_plus": -4.71
+      },
+      "blocks_t": {
+        "b1_2013_16": -0.46,
+        "b2_2017_20": 1.54,
+        "b3_2021_23": 0.09,
+        "b4_2024_plus": -2.09
+      },
+      "blocks_pos": {
+        "b1_2013_16": false,
+        "b2_2017_20": true,
+        "b3_2021_23": true,
+        "b4_2024_plus": false
+      },
+      "dd_full_usd_pct": -54.4,
+      "dd_full_diff_pp": 2.2,
+      "dd_2021p_usd_pct": -36.6,
+      "dd_2021p_diff_pp": -1.2,
+      "kap_full_D_ann_pct": -0.26,
+      "kap_full_t": -0.29,
+      "p_raw_tdist": 0.961725,
+      "p_holm_tdist": 1.0,
+      "p_raw_norm": 0.961665,
+      "p_holm_norm": 1.0,
+      "turnover_pct": 19.6,
+      "r0_turnover_pct": 20.5,
+      "turnover_ratio": 0.956
+    },
+    "vlab_ep_floor0": {
+      "verdict": "FAIL",
+      "c1_full_D_t": false,
+      "c2_all_4_blocks_pos": false,
+      "c3_usd_maxdd_ok": true,
+      "c4_kapdates_ok": false,
+      "c5_holm_ok": false,
+      "c6_turnover_ok": true,
+      "full_D_ann_pct": 0.4,
+      "full_t": 0.52,
+      "blocks_D_ann_pct": {
+        "b1_2013_16": 1.84,
+        "b2_2017_20": 0.13,
+        "b3_2021_23": -1.15,
+        "b4_2024_plus": 0.53
+      },
+      "blocks_t": {
+        "b1_2013_16": 1.44,
+        "b2_2017_20": 0.07,
+        "b3_2021_23": -1.41,
+        "b4_2024_plus": 0.44
+      },
+      "blocks_pos": {
+        "b1_2013_16": true,
+        "b2_2017_20": true,
+        "b3_2021_23": false,
+        "b4_2024_plus": true
+      },
+      "dd_full_usd_pct": -53.8,
+      "dd_full_diff_pp": 2.8,
+      "dd_2021p_usd_pct": -35.4,
+      "dd_2021p_diff_pp": 0.0,
+      "kap_full_D_ann_pct": 0.18,
+      "kap_full_t": 0.27,
+      "p_raw_tdist": 0.600431,
+      "p_holm_tdist": 1.0,
+      "p_raw_norm": 0.599704,
+      "p_holm_norm": 1.0,
+      "turnover_pct": 21.0,
+      "r0_turnover_pct": 20.5,
+      "turnover_ratio": 1.024
+    },
+    "vlab_val_mom15": {
+      "verdict": "FAIL",
+      "c1_full_D_t": false,
+      "c2_all_4_blocks_pos": false,
+      "c3_usd_maxdd_ok": true,
+      "c4_kapdates_ok": false,
+      "c5_holm_ok": false,
+      "c6_turnover_ok": true,
+      "full_D_ann_pct": -0.47,
+      "full_t": -0.39,
+      "blocks_D_ann_pct": {
+        "b1_2013_16": 0.81,
+        "b2_2017_20": 1.03,
+        "b3_2021_23": -3.21,
+        "b4_2024_plus": -1.44
+      },
+      "blocks_t": {
+        "b1_2013_16": 0.48,
+        "b2_2017_20": 0.36,
+        "b3_2021_23": -1.65,
+        "b4_2024_plus": -0.63
+      },
+      "blocks_pos": {
+        "b1_2013_16": true,
+        "b2_2017_20": true,
+        "b3_2021_23": false,
+        "b4_2024_plus": false
+      },
+      "dd_full_usd_pct": -56.8,
+      "dd_full_diff_pp": -0.2,
+      "dd_2021p_usd_pct": -36.7,
+      "dd_2021p_diff_pp": -1.3,
+      "kap_full_D_ann_pct": -0.9,
+      "kap_full_t": -0.86,
+      "p_raw_tdist": 0.696593,
+      "p_holm_tdist": 1.0,
+      "p_raw_norm": 0.696073,
+      "p_holm_norm": 1.0,
+      "turnover_pct": 23.0,
+      "r0_turnover_pct": 20.5,
+      "turnover_ratio": 1.122
+    }
+  }
+}
