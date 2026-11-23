@@ -241,6 +241,12 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "miner_qgp_surp_real: Real Quarterly Gross Profit Surprise Yield tilt on value_sn (75/25 fixed)"
+    },
+    {
+      "study": "round3_miner_gp_qop_real",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "miner_gp_qop_real: Gross Profit Yield + Real Operating Profit Surprise Yield tilt on value_sn (70/15/15 fixed)"
     }
   ]
 }
