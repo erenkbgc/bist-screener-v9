@@ -760,17 +760,341 @@ def cross_sectional_z(
 
 
 # ---------------------------------------------------------------------------
+# Auxiliary PIT Series Helpers (FX & CPI) + Candidate Feature Builders
+# ---------------------------------------------------------------------------
+def cpi_index_from_macro(macro: pd.DataFrame | pd.Series) -> pd.Series:
+    """Build cumulative CPI index (PeriodIndex 'M') from ``macro['cpi_mom']`` (or Series)."""
+    if isinstance(macro, pd.DataFrame):
+        s = macro["cpi_mom"].copy()
+        if "date" in macro.columns and not isinstance(macro.index, (pd.DatetimeIndex, pd.PeriodIndex)):
+            s.index = pd.to_datetime(macro["date"])
+    else:
+        s = macro.copy()
+    if isinstance(s.index, pd.PeriodIndex):
+        idx = s.index.asfreq("M")
+    else:
+        idx = pd.PeriodIndex(pd.to_datetime(s.index), freq="M")
+    s = pd.Series(pd.to_numeric(s.to_numpy(), errors="coerce"), index=idx).sort_index()
+    s = s[~s.index.duplicated(keep="last")]
+    return (1.0 + s.fillna(0.0) / 100.0).cumprod()
+
+
+def usdtry_month_end(fx: pd.DataFrame | pd.Series) -> pd.Series:
+    """Build month-end USD/TRY series (DatetimeIndex at month-end, tz-naive)."""
+    if isinstance(fx, pd.DataFrame):
+        if "date" in fx.columns:
+            idx = pd.to_datetime(fx["date"])
+            vals = pd.to_numeric(fx["usdtry"], errors="coerce").to_numpy(dtype=float)
+        else:
+            idx = pd.to_datetime(fx.index)
+            vals = pd.to_numeric(fx["usdtry"], errors="coerce").to_numpy(dtype=float)
+    else:
+        idx = pd.to_datetime(fx.index)
+        vals = pd.to_numeric(fx.to_numpy(), errors="coerce")
+    if getattr(idx, "tz", None) is not None:
+        idx = idx.tz_localize(None)
+    s = pd.Series(vals, index=idx).dropna().sort_index()
+    s = s[~s.index.duplicated(keep="last")]
+    return s.resample("ME").last().dropna()
+
+
+def _attach_pit_quarterly_values(
+    panel: pd.DataFrame,
+    q_computed: pd.DataFrame,
+    value_cols: list[str],
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Attach quarterly-computed values strictly PIT onto ``panel``.
+
+    - If ``kap_dates`` is provided OR ``stmt_period`` is absent from ``panel``:
+      uses backward as-of join ``available_at <= date`` via ``attach_latest_pit_quarterly``.
+    - Otherwise (when ``panel`` already carries PIT-selected ``stmt_period``, as in
+      ``factors_monthly.parquet`` and ``factors_monthly_kapdates.parquet``):
+      merges on ``(ticker, stmt_period == period)``, preserving exact lag75 or
+      KAP-date availability already enforced on the panel.
+    """
+    if kap_dates is not None or "stmt_period" not in panel.columns:
+        return attach_latest_pit_quarterly(panel, q_computed, value_cols, kap_dates=kap_dates)
+
+    out = pd.DataFrame(index=panel.index)
+    for c in value_cols:
+        out[c] = np.nan
+    if panel.empty or q_computed.empty:
+        return out
+
+    keep = ["ticker", "period", *[c for c in value_cols if c in q_computed.columns]]
+    q_sub = (
+        q_computed[keep]
+        .copy()
+        .drop_duplicates(subset=["ticker", "period"], keep="last")
+        .rename(columns={"period": "stmt_period"})
+    )
+    q_sub["ticker"] = q_sub["ticker"].astype(str)
+    q_sub["stmt_period"] = q_sub["stmt_period"].astype(str)
+
+    left = pd.DataFrame(
+        {
+            "ticker": panel["ticker"].astype(str).to_numpy(),
+            "stmt_period": panel["stmt_period"].astype(str).to_numpy(),
+        },
+        index=panel.index,
+    )
+    merged = left.merge(q_sub, on=["ticker", "stmt_period"], how="left")
+    for c in value_cols:
+        if c in merged.columns:
+            out[c] = merged[c].to_numpy(dtype=float)
+    return out
+
+
+def cbop_feature(
+    panel: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    cpi: pd.Series | None = None,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Cash-Based Operating Profitability (Ball, Gerakos, Linnainmaa & Nikolaev 2016).
+
+    ``NOA = (total_assets - cash) - (current_liab + noncurrent_liab - fin_debt)``
+    ``cbop = (ttm_op_profit - (NOA_p - k * NOA_{p-4q})) / total_assets_p``
+
+    Where ``k = CPI(period_end_p) / CPI(period_end_{p-4q})`` if ``cpi`` is given
+    (``cbop_real``), else ``1.0`` (nominal ``cbop``).
+    Units: dimensionless ratio (TL / TL). Requires ``total_assets > 0``.
+    """
+    name = "cbop_real" if cpi is not None else "cbop"
+    req = ("total_assets", "cash", "current_liab", "noncurrent_liab", "fin_debt", "ttm_op_profit")
+    q = prepare_quarterly_pit(quarterly, kap_dates=kap_dates)
+    if q.empty or any(c not in q.columns for c in req):
+        return pd.Series(np.nan, index=panel.index, dtype=float, name=name)
+
+    q["_noa"] = (
+        pd.to_numeric(q["total_assets"], errors="coerce")
+        - pd.to_numeric(q["cash"], errors="coerce")
+        - (
+            pd.to_numeric(q["current_liab"], errors="coerce")
+            + pd.to_numeric(q["noncurrent_liab"], errors="coerce")
+            - pd.to_numeric(q["fin_debt"], errors="coerce")
+        )
+    )
+    qw = _attach_yoy_lag(q, ["_noa"])
+    k = _cpi_ratio_yoy(qw, cpi)
+
+    op = pd.to_numeric(qw["ttm_op_profit"], errors="coerce").to_numpy(dtype=float)
+    ta = pd.to_numeric(qw["total_assets"], errors="coerce").to_numpy(dtype=float)
+    noa_now = qw["_noa"].to_numpy(dtype=float)
+    noa_ya = qw["_noa_ya"].to_numpy(dtype=float)
+
+    valid = (
+        np.isfinite(op)
+        & np.isfinite(ta)
+        & (ta > 0.0)
+        & np.isfinite(noa_now)
+        & np.isfinite(noa_ya)
+        & np.isfinite(k)
+        & (k > 0.0)
+    )
+    with np.errstate(divide="ignore", invalid="ignore"):
+        qw["_cbop"] = np.where(valid, (op - (noa_now - k * noa_ya)) / ta, np.nan)
+
+    res = _attach_pit_quarterly_values(panel, qw, ["_cbop"], kap_dates=kap_dates)
+    return pd.Series(res["_cbop"].to_numpy(dtype=float), index=panel.index, name=name)
+
+
+def sue_usd_feature(
+    panel: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    fx: pd.DataFrame | pd.Series,
+    std_window: int = 8,
+    min_obs: int = 6,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """USD-deflated seasonal random-walk Standardized Unexpected Earnings (``sue_ni_usd``).
+
+    For each ``(ticker, period)`` in ``quarterly``:
+      ``q_ni = coalesce(q_ni_parent, q_net_income)``
+      ``q_ni_usd = q_ni / usdtry_month_end[month_end(period_end)]``
+      ``d_q_ni_usd = q_ni_usd_p - q_ni_usd_{p-4q}``
+      ``sue_ni_usd = d_q_ni_usd / rolling(window=8, min_periods=6).std(d_q_ni_usd)``
+
+    Strictly PIT: ``period_end`` precedes ``available_at`` so quarter-end USD/TRY
+    is known prior to filing, and the rolling std uses only causal history with
+    ``period_end <= current period_end`` and ``available_at <= current available_at``.
+    Units: dimensionless z-score (sigma units).
+    """
+    if std_window < 2 or min_obs < 2 or min_obs > std_window:
+        raise ValueError("Require 2 <= min_obs <= std_window")
+    q = prepare_quarterly_pit(quarterly, kap_dates=kap_dates)
+    if q.empty or ("q_ni_parent" not in q.columns and "q_net_income" not in q.columns):
+        return pd.Series(np.nan, index=panel.index, dtype=float, name="sue_ni_usd")
+
+    fx_m = usdtry_month_end(fx)
+    if fx_m.empty:
+        return pd.Series(np.nan, index=panel.index, dtype=float, name="sue_ni_usd")
+
+    q_nip = pd.to_numeric(q["q_ni_parent"], errors="coerce") if "q_ni_parent" in q.columns else pd.Series(np.nan, index=q.index)
+    q_nit = pd.to_numeric(q["q_net_income"], errors="coerce") if "q_net_income" in q.columns else pd.Series(np.nan, index=q.index)
+    q_ni = q_nip.where(q_nip.notna() & np.isfinite(q_nip), q_nit)
+
+    pe_me = normalize_month_end(q["period_end"])
+    fx_q = pe_me.map(fx_m).to_numpy(dtype=float)
+    ni_arr = q_ni.to_numpy(dtype=float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        q["_q_ni_usd"] = np.where(np.isfinite(ni_arr) & np.isfinite(fx_q) & (fx_q > 0.0), ni_arr / fx_q, np.nan)
+
+    qw = _attach_yoy_lag(q, ["_q_ni_usd"])
+    qw["_d_ni_usd"] = qw["_q_ni_usd"] - qw["_q_ni_usd_ya"]
+
+    # Sort each ticker by period_end; enforce causal trailing rolling window of size std_window
+    # over rows available at or before current available_at (handles late/out-of-order KAP filings).
+    qw = qw.sort_values(["ticker", "period_end", "available_at"], kind="mergesort").reset_index(drop=True)
+    sue_vals = np.full(len(qw), np.nan, dtype=float)
+    for _, grp in qw.groupby("ticker", sort=False):
+        idxs = grp.index.to_numpy()
+        diffs = grp["_d_ni_usd"].to_numpy(dtype=float)
+        avails = grp["available_at"].to_numpy()
+        for pos in range(len(idxs)):
+            d_cur = diffs[pos]
+            if not np.isfinite(d_cur):
+                continue
+            lo_idx = max(0, pos - std_window + 1)
+            win_d = diffs[lo_idx : pos + 1]
+            win_a = avails[lo_idx : pos + 1]
+            elig = win_d[(win_a <= avails[pos]) & np.isfinite(win_d)]
+            if len(elig) < min_obs:
+                continue
+            sd = float(np.std(elig, ddof=1))
+            if np.isfinite(sd) and sd > 0.0:
+                sue_vals[idxs[pos]] = d_cur / sd
+
+    qw["_sue_ni_usd"] = sue_vals
+    res = _attach_pit_quarterly_values(panel, qw, ["_sue_ni_usd"], kap_dates=kap_dates)
+    return pd.Series(res["_sue_ni_usd"].to_numpy(dtype=float), index=panel.index, name="sue_ni_usd")
+
+
+# ---------------------------------------------------------------------------
+# Candidate Signal Builders (Pure Functions)
+# ---------------------------------------------------------------------------
+def signal_scholar_cbop(
+    prepared_df: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Candidate ``scholar_cbop``: ``0.80 * value_sn_z + 0.20 * fillna(cbop_z_sn, 0.0)``."""
+    raw = cbop_feature(prepared_df, quarterly, cpi=None, kap_dates=kap_dates)
+    z_sn = cross_sectional_z(prepared_df, raw, sign=1, lo=0.01, hi=0.99, sector_neutral=True, min_sector_n=5)
+    v = pd.to_numeric(prepared_df["value_sn_z"], errors="coerce")
+    score = 0.80 * v + 0.20 * z_sn.fillna(0.0)
+    return score.where(v.notna()).rename("scholar_cbop")
+
+
+def signal_scholar_sue_usd(
+    prepared_df: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    fx: pd.DataFrame | pd.Series,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Candidate ``scholar_sue_usd``: ``0.80 * value_sn_z + 0.20 * fillna(sue_ni_usd_z_sn, 0.0)``."""
+    raw = sue_usd_feature(prepared_df, quarterly, fx=fx, std_window=8, min_obs=6, kap_dates=kap_dates)
+    z_sn = cross_sectional_z(prepared_df, raw, sign=1, lo=0.01, hi=0.99, sector_neutral=True, min_sector_n=5)
+    v = pd.to_numeric(prepared_df["value_sn_z"], errors="coerce")
+    score = 0.80 * v + 0.20 * z_sn.fillna(0.0)
+    return score.where(v.notna()).rename("scholar_sue_usd")
+
+
+def signal_scholar_real_cbop_sue(
+    prepared_df: pd.DataFrame,
+    quarterly: pd.DataFrame,
+    macro: pd.DataFrame | pd.Series,
+    fx: pd.DataFrame | pd.Series,
+    kap_dates: pd.DataFrame | None = None,
+) -> pd.Series:
+    """Candidate ``scholar_real_cbop_sue``:
+    ``0.75 * value_sn_z + 0.15 * fillna(cbop_real_z_sn, 0.0) + 0.10 * fillna(sue_ni_usd_z_sn, 0.0)``.
+    """
+    cpi = cpi_index_from_macro(macro)
+    cbop_real = cbop_feature(prepared_df, quarterly, cpi=cpi, kap_dates=kap_dates)
+    sue_usd = sue_usd_feature(prepared_df, quarterly, fx=fx, std_window=8, min_obs=6, kap_dates=kap_dates)
+    cbop_z_sn = cross_sectional_z(prepared_df, cbop_real, sign=1, lo=0.01, hi=0.99, sector_neutral=True, min_sector_n=5)
+    sue_z_sn = cross_sectional_z(prepared_df, sue_usd, sign=1, lo=0.01, hi=0.99, sector_neutral=True, min_sector_n=5)
+    v = pd.to_numeric(prepared_df["value_sn_z"], errors="coerce")
+    score = 0.75 * v + 0.15 * cbop_z_sn.fillna(0.0) + 0.10 * sue_z_sn.fillna(0.0)
+    return score.where(v.notna()).rename("scholar_real_cbop_sue")
+
+
+# ---------------------------------------------------------------------------
 # Candidate Registry & Discovery-Only Coverage Diagnostics
 # ---------------------------------------------------------------------------
-CANDIDATE_BUILDERS: dict[str, Callable[..., pd.Series]] = {}
+CANDIDATE_BUILDERS: dict[str, Callable[[pd.DataFrame, pd.DataFrame, dict], pd.Series]] = {}
+CANDIDATE_META: dict[str, dict] = {}
 
 
-def register_candidate(name: str):
-    """Decorator registering a candidate signal builder in ``CANDIDATE_BUILDERS``."""
-    def _wrap(fn: Callable[..., pd.Series]) -> Callable[..., pd.Series]:
+def register_candidate(
+    name: str,
+    *,
+    description: str = "",
+    frozen_params: dict | None = None,
+    is_combination: bool = False,
+):
+    """Decorator registering a harness-compatible ``(raw_panel, prepared_df, ctx) -> Series`` builder."""
+    def _wrap(fn: Callable[[pd.DataFrame, pd.DataFrame, dict], pd.Series]):
         CANDIDATE_BUILDERS[name] = fn
+        CANDIDATE_META[name] = {
+            "name": name,
+            "description": description,
+            "frozen_params": frozen_params or {},
+            "is_combination": is_combination,
+        }
         return fn
     return _wrap
+
+
+@register_candidate(
+    "scholar_cbop",
+    description="Cash-Based Operating Profitability tilt on value_sn (80/20 fixed)",
+    frozen_params={"w_value_sn": 0.80, "w_cbop_sn": 0.20, "winsor_lo": 0.01, "winsor_hi": 0.99, "min_sector_n": 5},
+    is_combination=False,
+)
+def _build_scholar_cbop(raw_panel: pd.DataFrame, prepared_df: pd.DataFrame, ctx: dict) -> pd.Series:
+    return signal_scholar_cbop(prepared_df, ctx["quarterly"], kap_dates=ctx.get("kap_dates"))
+
+
+@register_candidate(
+    "scholar_sue_usd",
+    description="USD-deflated Standardized Unexpected Earnings tilt on value_sn (80/20 fixed)",
+    frozen_params={
+        "w_value_sn": 0.80,
+        "w_sue_usd_sn": 0.20,
+        "std_window": 8,
+        "min_obs": 6,
+        "winsor_lo": 0.01,
+        "winsor_hi": 0.99,
+        "min_sector_n": 5,
+    },
+    is_combination=False,
+)
+def _build_scholar_sue_usd(raw_panel: pd.DataFrame, prepared_df: pd.DataFrame, ctx: dict) -> pd.Series:
+    return signal_scholar_sue_usd(prepared_df, ctx["quarterly"], ctx["fx"], kap_dates=ctx.get("kap_dates"))
+
+
+@register_candidate(
+    "scholar_real_cbop_sue",
+    description="Inflation-consistent CbOP + USD SUE 3-pillar tilt on value_sn (75/15/10 fixed)",
+    frozen_params={
+        "w_value_sn": 0.75,
+        "w_cbop_real_sn": 0.15,
+        "w_sue_usd_sn": 0.10,
+        "std_window": 8,
+        "min_obs": 6,
+        "winsor_lo": 0.01,
+        "winsor_hi": 0.99,
+        "min_sector_n": 5,
+    },
+    is_combination=True,
+)
+def _build_scholar_real_cbop_sue(raw_panel: pd.DataFrame, prepared_df: pd.DataFrame, ctx: dict) -> pd.Series:
+    return signal_scholar_real_cbop_sue(
+        prepared_df, ctx["quarterly"], ctx["macro"], ctx["fx"], kap_dates=ctx.get("kap_dates")
+    )
 
 
 def compute_coverage_stats(

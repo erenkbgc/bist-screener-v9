@@ -477,3 +477,214 @@ def test_real_pit_discovery_primitives_coverage_and_gpa_parity():
     assert vol.notna().mean() > 0.95
     for s in (gpa_calc, acc, nsi, mom, sue, vol):
         assert not np.isinf(s.dropna().to_numpy()).any()
+
+
+# ---------------------------------------------------------------------------
+# 4. Scholar Candidate Tests (scholar_cbop, scholar_sue_usd, scholar_real_cbop_sue)
+# ---------------------------------------------------------------------------
+def _make_scholar_universe(
+    n_tickers: int = 12,
+    years: range = range(2016, 2021),
+    scale: float = 1.0,
+):
+    tickers = tuple(f"TK{i:02d}" for i in range(n_tickers))
+    q = _make_synthetic_quarterly(tickers=tickers, years=years, scale=scale)
+    # Vary operating profit & NOA growth across tickers so cross-sectional z-scores are non-degenerate
+    for idx, tk in enumerate(tickers):
+        m = q["ticker"] == tk
+        q.loc[m, "ttm_op_profit"] = q.loc[m, "ttm_op_profit"] * (0.7 + 0.08 * idx)
+        q.loc[m, "cash"] = q.loc[m, "cash"] * (0.5 + 0.1 * (idx % 5))
+
+    dates = ("2019-06-30", "2019-12-31", "2020-06-30", "2020-12-31")
+    panel = _make_synthetic_panel(tickers=tickers, dates=dates, scale=scale)
+    # Attach PIT stmt_period matching lag75 available_at <= date
+    q_sorted = q.sort_values(["ticker", "available_at", "period_end"])
+    stmt_periods = []
+    for _, row in panel.iterrows():
+        avail = q_sorted[(q_sorted["ticker"] == row["ticker"]) & (q_sorted["available_at"] <= row["date"])]
+        stmt_periods.append(avail.iloc[-1]["period"])
+    panel["stmt_period"] = stmt_periods
+    panel["value_sn_z"] = [((i % n_tickers) - n_tickers / 2.0) / 3.0 for i in range(len(panel))]
+
+    fx_dates = pd.bdate_range("2015-12-01", "2020-12-31")
+    fx = pd.DataFrame(
+        {"usdtry": np.linspace(3.0, 7.5, len(fx_dates)), "xu100": np.linspace(700.0, 1400.0, len(fx_dates))},
+        index=fx_dates,
+    )
+    m_dates = pd.date_range("2015-01-31", "2020-12-31", freq="ME")
+    macro = pd.DataFrame({"cpi_mom": 1.2 + 0.2 * np.sin(np.arange(len(m_dates)))}, index=m_dates)
+    return panel, q, macro, fx
+
+
+def test_cbop_and_cbop_real_exact_values():
+    panel = pd.DataFrame({"date": [pd.Timestamp("2020-06-30")], "ticker": ["AAA"], "stmt_period": ["2020Q1"]})
+    q = pd.DataFrame(
+        [
+            {
+                "ticker": "AAA",
+                "period": "2019Q1",
+                "period_end": pd.Timestamp("2019-03-31"),
+                "available_at": pd.Timestamp("2019-06-14"),
+                "year": 2019,
+                "q": 1,
+                "total_assets": 1000.0,
+                "cash": 100.0,
+                "current_liab": 200.0,
+                "noncurrent_liab": 300.0,
+                "fin_debt": 200.0,
+                "ttm_op_profit": 150.0,
+            },
+            {
+                "ticker": "AAA",
+                "period": "2020Q1",
+                "period_end": pd.Timestamp("2020-03-31"),
+                "available_at": pd.Timestamp("2020-06-14"),
+                "year": 2020,
+                "q": 1,
+                "total_assets": 1200.0,
+                "cash": 100.0,
+                "current_liab": 250.0,
+                "noncurrent_liab": 300.0,
+                "fin_debt": 250.0,
+                "ttm_op_profit": 260.0,
+            },
+        ]
+    )
+    # NOA_2019Q1 = 600, NOA_2020Q1 = 800, delta_NOA = 200 -> cbop = (260 - 200) / 1200 = 0.05
+    assert r3f.cbop_feature(panel, q).iloc[0] == pytest.approx(60.0 / 1200.0)
+    # With 20% YoY CPI: NOA_ya_real = 600 * 1.2 = 720 -> delta_real = 80 -> cbop_real = (260 - 80) / 1200 = 0.15
+    cpi = pd.Series([100.0, 120.0], index=pd.PeriodIndex(["2019-03", "2020-03"], freq="M"))
+    assert r3f.cbop_feature(panel, q, cpi=cpi).iloc[0] == pytest.approx(180.0 / 1200.0)
+
+
+def test_scholar_candidates_units_invariance_and_missing_value_mask():
+    p1, q1, macro, fx = _make_scholar_universe(scale=1.0)
+    p2, q2, _, _ = _make_scholar_universe(scale=1e-3)
+
+    # Raw features and final candidate scores are scale-invariant to monetary unit rescaling
+    for name, fn in (
+        ("scholar_cbop", lambda p, q: r3f.signal_scholar_cbop(p, q)),
+        ("scholar_sue_usd", lambda p, q: r3f.signal_scholar_sue_usd(p, q, fx)),
+        ("scholar_real_cbop_sue", lambda p, q: r3f.signal_scholar_real_cbop_sue(p, q, macro, fx)),
+    ):
+        s1 = fn(p1, q1)
+        s2 = fn(p2, q2)
+        assert s1.notna().all(), name
+        np.testing.assert_allclose(s1.to_numpy(), s2.to_numpy(), rtol=1e-9, atol=1e-11, err_msg=name)
+
+    # Masking value_sn_z to NaN must mask candidate score to NaN
+    p_nan = p1.copy()
+    p_nan.loc[0, "value_sn_z"] = np.nan
+    assert np.isnan(r3f.signal_scholar_cbop(p_nan, q1).iloc[0])
+    assert np.isnan(r3f.signal_scholar_sue_usd(p_nan, q1, fx).iloc[0])
+    assert np.isnan(r3f.signal_scholar_real_cbop_sue(p_nan, q1, macro, fx).iloc[0])
+
+
+def test_scholar_candidates_zero_lookahead_and_kap_lag():
+    panel, q_base, macro_base, fx_base = _make_scholar_universe()
+    cutoff = pd.Timestamp("2019-12-31")
+    pre = panel["date"] <= cutoff
+
+    # Corrupt all quarterly rows available after cutoff, FX after cutoff, and macro CPI after cutoff
+    q_fut = q_base.copy()
+    m_q = q_fut["available_at"] > cutoff
+    assert m_q.any()
+    for c in ("total_assets", "cash", "ttm_op_profit", "q_ni_parent", "q_net_income"):
+        q_fut.loc[m_q, c] = q_fut.loc[m_q, c] * 500.0
+
+    fx_fut = fx_base.copy()
+    fx_fut.loc[fx_fut.index > cutoff, "usdtry"] = 999.0
+
+    macro_fut = macro_base.copy()
+    macro_fut.loc[macro_fut.index > cutoff, "cpi_mom"] = 85.0
+
+    # Also corrupt future cross-section value_sn_z
+    p_fut = panel.copy()
+    p_fut.loc[~pre, "value_sn_z"] = 100.0
+
+    for name, s_base, s_fut in (
+        ("scholar_cbop", r3f.signal_scholar_cbop(panel, q_base), r3f.signal_scholar_cbop(p_fut, q_fut)),
+        (
+            "scholar_sue_usd",
+            r3f.signal_scholar_sue_usd(panel, q_base, fx_base),
+            r3f.signal_scholar_sue_usd(p_fut, q_fut, fx_fut),
+        ),
+        (
+            "scholar_real_cbop_sue",
+            r3f.signal_scholar_real_cbop_sue(panel, q_base, macro_base, fx_base),
+            r3f.signal_scholar_real_cbop_sue(p_fut, q_fut, macro_fut, fx_fut),
+        ),
+    ):
+        np.testing.assert_allclose(
+            s_base[pre].to_numpy(), s_fut[pre].to_numpy(), rtol=0.0, atol=0.0, equal_nan=True, err_msg=name
+        )
+
+    # KAP availability lag test: 2020Q1 filed 2020-05-15 must not appear on 2020-04-30, must appear on 2020-05-31
+    p_kap = pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2020-04-30"), pd.Timestamp("2020-05-31"), pd.Timestamp("2020-06-30")],
+            "ticker": ["TK00", "TK00", "TK00"],
+        }
+    )
+    kap_dates = pd.DataFrame(
+        [
+            {"ticker": "TK00", "period": "2019Q4", "kap_available_at": pd.Timestamp("2020-03-05")},
+            {"ticker": "TK00", "period": "2020Q1", "kap_available_at": pd.Timestamp("2020-05-15")},
+        ]
+    )
+    c_lag75 = r3f.cbop_feature(p_kap, q_base, kap_dates=None)
+    c_kap = r3f.cbop_feature(p_kap, q_base, kap_dates=kap_dates)
+    # Under lag75: 2020-04-30 and 2020-05-31 both use 2019Q4; 2020-06-30 switches to 2020Q1
+    assert c_lag75.iloc[0] == pytest.approx(c_lag75.iloc[1])
+    assert c_lag75.iloc[2] != pytest.approx(c_lag75.iloc[1])
+    # Under KAP: 2020-04-30 uses 2019Q4; 2020-05-31 already switches to 2020Q1 (matching 2020-06-30)
+    assert c_kap.iloc[0] == pytest.approx(c_lag75.iloc[0])
+    assert c_kap.iloc[1] == pytest.approx(c_lag75.iloc[2])
+    assert c_kap.iloc[2] == pytest.approx(c_lag75.iloc[2])
+
+
+def test_scholar_registry_harness_interface():
+    panel, q, macro, fx = _make_scholar_universe()
+    ctx = {"quarterly": q, "macro": macro, "fx": fx, "panel_tag": "lag75"}
+    for name in ("scholar_cbop", "scholar_sue_usd", "scholar_real_cbop_sue"):
+        assert name in r3f.CANDIDATE_BUILDERS
+        assert name in r3f.CANDIDATE_META
+        s = r3f.CANDIDATE_BUILDERS[name](panel, panel, ctx)
+        assert isinstance(s, pd.Series)
+        assert s.index.equals(panel.index)
+        assert s.notna().all()
+
+
+def test_real_pit_discovery_scholar_candidates_coverage():
+    """Discovery-only (2013-2020) coverage verification for all 3 Scholar candidates on FP PIT panel."""
+    fp = Path("/home/eren/bist_project/data/research/fp")
+    res_dir = Path("/home/eren/bist_project/data/research")
+    if not (fp / "factors_monthly.parquet").exists():
+        pytest.skip("Read-only FP PIT panel not present")
+
+    from backtest_factor_model import FACTORS, add_composites
+    from core import factor_backtest as fb
+
+    raw = pd.read_parquet(fp / "factors_monthly.parquet")
+    raw["date"] = r3f.normalize_month_end(raw["date"])
+    raw = raw[(raw["date"] >= r3f.DISCOVERY_START) & (raw["date"] <= r3f.DISCOVERY_END)].copy()
+    prep = add_composites(fb.prepare(raw, FACTORS, liq_drop_pct=0.3))
+    prep = prep[prep["value_sn_z"].notna()].copy()
+
+    q = pd.read_parquet(fp / "quarterly.parquet")
+    macro = pd.read_parquet(res_dir / "macro_monthly.parquet")
+    fx = pd.read_parquet(res_dir / "fx.parquet")
+    ctx = {"quarterly": q, "macro": macro, "fx": fx, "panel_tag": "lag75"}
+
+    # Raw leg coverage matches scholar specs (~98% for cbop/cbop_real, ~84% for sue_ni_usd)
+    cbop_raw = r3f.cbop_feature(prep, q)
+    cbop_real_raw = r3f.cbop_feature(prep, q, cpi=r3f.cpi_index_from_macro(macro))
+    sue_usd_raw = r3f.sue_usd_feature(prep, q, fx)
+    assert cbop_raw.notna().mean() > 0.95
+    assert cbop_real_raw.notna().mean() > 0.95
+    assert sue_usd_raw.notna().mean() > 0.80
+
+    for name in ("scholar_cbop", "scholar_sue_usd", "scholar_real_cbop_sue"):
+        s = r3f.CANDIDATE_BUILDERS[name](raw, prep, ctx)
+        assert s.notna().mean() == pytest.approx(1.0)
+        assert not np.isinf(s.to_numpy()).any()
