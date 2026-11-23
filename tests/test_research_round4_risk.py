@@ -13,12 +13,14 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from core import portfolio_backtest as pb  # noqa: E402
 from research_round4_risk import (  # noqa: E402
+    build_batch2_targets,
     build_pit_vol6m,
     cap_weights,
     evaluate_gauntlet,
     holm_adjust,
     simulate_weighted,
     smooth_cohorts,
+    solve_max_diversification,
 )
 
 
@@ -130,3 +132,47 @@ def test_holm_adjust_and_gauntlet_verdict() -> None:
     res = evaluate_gauntlet(primary, kap, ["v_pass", "v_fail_block"])
     assert res["v_pass"]["verdict"] == "PASS"
     assert res["v_fail_block"]["verdict"] == "FAIL"
+
+
+def test_solve_max_diversification_constraints() -> None:
+    days = pd.bdate_range("2020-01-02", periods=100)
+    rng = np.random.default_rng(123)
+    tickers = [f"T{i:02d}" for i in range(30)]
+    sectors = np.array(["S1"] * 6 + ["S2"] * 6 + ["S3"] * 5 + ["S4"] * 5 + ["S5"] * 4 + ["S6"] * 4)
+    rets = pd.DataFrame(rng.normal(0.0, 0.02, size=(100, 30)), index=days, columns=tickers)
+    w = solve_max_diversification(rets, tickers, sectors, max_name=0.05, max_sec=0.20, min_periods=60)
+    assert len(w) == 30
+    assert np.isclose(w.sum(), 1.0, atol=1e-9)
+    assert w.max() <= 0.05 + 1e-8
+    assert w.min() >= -1e-12
+    for s in np.unique(sectors):
+        assert w[sectors == s].sum() <= 0.20 + 1e-8
+
+
+def test_batch2_sn_invvol_preserves_sector_shares() -> None:
+    days = pd.bdate_range("2020-01-02", periods=100)
+    rng = np.random.default_rng(99)
+    n_univ = 150
+    tickers = [f"T{i:03d}" for i in range(n_univ)]
+    sectors = np.array([f"S{(i % 6) + 1}" for i in range(n_univ)])
+    close = pd.DataFrame(
+        100.0 * np.cumprod(1.0 + rng.normal(0.0, 0.02, size=(100, n_univ)), axis=0),
+        index=days,
+        columns=tickers,
+    )
+    dt = days[-1]
+    df = pd.DataFrame({
+        "date": dt,
+        "ticker": tickers,
+        "sector": sectors,
+        "value_sn_z": np.linspace(3.0, -1.0, n_univ),
+    })
+    tmap = build_batch2_targets(df, [dt], {dt: dt}, close)
+    w_r0 = tmap["R0"][dt]
+    w_sn = tmap["risk_sn_invvol"][dt]
+    top_df = df.iloc[:30]
+    for sec, grp in top_df.groupby("sector"):
+        s_r0 = sum(w_r0[tk] for tk in grp["ticker"])
+        s_sn = sum(w_sn[tk] for tk in grp["ticker"])
+        assert np.isclose(s_r0, s_sn, atol=1e-10)
+

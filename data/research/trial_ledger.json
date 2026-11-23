@@ -277,6 +277,24 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "risk_invvol_smooth_k3: 3-month staggered cohort smoothing of PIT 6m inverse-vol top-20%"
+    },
+    {
+      "study": "round4_risk_sector_ew",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_sector_ew: Sector-equalized weighting within value_sn top-20% with 5% name & 20% sector caps"
+    },
+    {
+      "study": "round4_risk_sn_invvol",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_sn_invvol: Sector-neutral PIT 6m inverse-volatility weighting within value_sn top-20%"
+    },
+    {
+      "study": "round4_risk_max_div",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "risk_max_div: PIT 6m Ledoit-Wolf Maximum Diversification weighting within value_sn top-20% (5% name & 20% sector caps)"
     }
   ]
 }

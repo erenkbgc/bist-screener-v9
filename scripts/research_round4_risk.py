@@ -18,7 +18,9 @@ from typing import Callable
 
 import numpy as np
 import pandas as pd
+from scipy import optimize as sp_opt
 from scipy import stats as sp_stats
+from sklearn.covariance import LedoitWolf
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -357,6 +359,132 @@ def build_batch1_targets(
     return targets
 
 
+def solve_max_diversification(
+    ret_window: pd.DataFrame,
+    tickers: list[str],
+    sectors: np.ndarray,
+    max_name: float = 0.05,
+    max_sec: float = 0.20,
+    min_periods: int = 60,
+) -> np.ndarray:
+    """PIT Maximum Diversification Portfolio using Ledoit-Wolf shrinkage covariance."""
+    n = len(tickers)
+    if n == 0:
+        return np.array([], dtype=float)
+    sub = ret_window.reindex(columns=tickers)
+    valid_counts = sub.notna().sum(axis=0)
+    ok_cols = [tk for tk in tickers if valid_counts[tk] >= min_periods]
+
+    if len(ok_cols) >= 3:
+        mat = sub[ok_cols].fillna(0.0).to_numpy(dtype=float)
+        lw = LedoitWolf(assume_centered=False).fit(mat)
+        cov_ok = np.asarray(lw.covariance_, dtype=float)
+        std_ok = np.sqrt(np.maximum(np.diag(cov_ok), 1e-12))
+        med_var = float(np.median(np.diag(cov_ok)))
+    else:
+        cov_ok = np.empty((0, 0), dtype=float)
+        std_ok = np.empty(0, dtype=float)
+        med_var = 0.000625  # (2.5% daily)^2 fallback
+
+    cov = np.eye(n, dtype=float) * med_var
+    ok_idx = {tk: i for i, tk in enumerate(ok_cols)}
+    for i, tki in enumerate(tickers):
+        if tki not in ok_idx:
+            continue
+        ii = ok_idx[tki]
+        for j, tkj in enumerate(tickers):
+            if tkj in ok_idx:
+                cov[i, j] = cov_ok[ii, ok_idx[tkj]]
+    cov = 0.5 * (cov + cov.T) + 1e-10 * np.eye(n)
+    sig = np.sqrt(np.maximum(np.diag(cov), 1e-12))
+
+    # Start from inverse-vol feasible point projected onto caps
+    w0 = cap_weights(1.0 / sig, sectors, max_name=max_name, max_sec=max_sec)
+    uniq_secs = np.unique(sectors)
+
+    def neg_div_ratio(w: np.ndarray) -> float:
+        port_var = float(w @ cov @ w)
+        port_vol = np.sqrt(max(port_var, 1e-16))
+        weighted_vol = float(w @ sig)
+        return -weighted_vol / port_vol
+
+    constraints = [{"type": "eq", "fun": lambda w: float(np.sum(w) - 1.0)}]
+    for sec in uniq_secs:
+        mask = (sectors == sec).astype(float)
+        constraints.append({"type": "ineq", "fun": lambda w, m=mask: float(max_sec - np.dot(m, w))})
+
+    res = sp_opt.minimize(
+        neg_div_ratio,
+        w0,
+        method="SLSQP",
+        bounds=[(0.0, max_name)] * n,
+        constraints=constraints,
+        options={"ftol": 1e-9, "maxiter": 200},
+    )
+    w_opt = np.clip(res.x, 0.0, max_name) if res.success and np.all(np.isfinite(res.x)) else w0
+    return cap_weights(w_opt, sectors, max_name=max_name, max_sec=max_sec)
+
+
+def build_batch2_targets(
+    df: pd.DataFrame,
+    months: list[pd.Timestamp],
+    d0_of: dict[pd.Timestamp, pd.Timestamp],
+    close_df: pd.DataFrame,
+) -> dict[str, dict[pd.Timestamp, dict[str, float]]]:
+    """Build target weight dicts for R0 and the 3 Batch-2 risk variants."""
+    vol6m = build_pit_vol6m(close_df, window=126, min_periods=60)
+    ret_d = close_df.pct_change(fill_method=None)
+    day_pos = {d: i for i, d in enumerate(close_df.index)}
+
+    targets: dict[str, dict[pd.Timestamp, dict[str, float]]] = {
+        "R0": {},
+        "risk_sector_ew": {},
+        "risk_sn_invvol": {},
+        "risk_max_div": {},
+    }
+
+    for t, g in df.groupby("date"):
+        r = g["value_sn_z"].rank(ascending=False, pct=True)
+        top = g[r <= TOP].copy()
+        tickers = top["ticker"].tolist()
+        sectors = top["sector"].to_numpy()
+        n = len(tickers)
+        d0 = d0_of[t]
+
+        # R0 equal weight
+        targets["R0"][t] = {tk: 1.0 / n for tk in tickers}
+
+        # 1. Sector-equalized weighting + 5% name / 20% sector cap
+        sec_counts = top["sector"].value_counts()
+        n_secs = len(sec_counts)
+        w_sew_raw = np.array([1.0 / (n_secs * sec_counts[s]) for s in sectors], dtype=float)
+        w_sew = cap_weights(w_sew_raw, sectors, max_name=0.05, max_sec=0.20)
+        targets["risk_sector_ew"][t] = dict(zip(tickers, map(float, w_sew)))
+
+        # 2. Sector-neutral inverse-volatility (preserves R0 sector weights n_s / N)
+        vols = np.array([vol6m.at[d0, tk] if tk in vol6m.columns else np.nan for tk in tickers], dtype=float)
+        valid_v = vols[np.isfinite(vols) & (vols > 0)]
+        med_v = float(np.median(valid_v)) if len(valid_v) else 0.025
+        vols_clean = np.where(np.isfinite(vols) & (vols > 0), vols, med_v)
+        inv_v = 1.0 / vols_clean
+        w_sn_iv = np.zeros(n, dtype=float)
+        for sec in np.unique(sectors):
+            m = sectors == sec
+            sec_share = float(m.sum()) / n
+            sub_iv = inv_v[m]
+            w_sn_iv[m] = sec_share * (sub_iv / sub_iv.sum())
+        targets["risk_sn_invvol"][t] = dict(zip(tickers, map(float, w_sn_iv)))
+
+        # 3. PIT Maximum Diversification Portfolio (126d Ledoit-Wolf <= d0)
+        i_d0 = day_pos[d0]
+        i_start = max(0, i_d0 - 126 + 1)
+        ret_win = ret_d.iloc[i_start : i_d0 + 1]
+        w_md = solve_max_diversification(ret_win, tickers, sectors, max_name=0.05, max_sec=0.20, min_periods=60)
+        targets["risk_max_div"][t] = dict(zip(tickers, map(float, w_md)))
+
+    return targets
+
+
 # ---------------------------------------------------------------------------
 # 3. Holm Adjustment & Round 4 Gauntlet Evaluation
 # ---------------------------------------------------------------------------
@@ -392,6 +520,7 @@ def evaluate_panel(
     n_sel: int,
     var_sr: float,
     variants: list[str],
+    target_builder: Callable = build_batch1_targets,
 ) -> dict:
     """Run all variants + R0 + EW on one PIT panel and compute full gauntlet metrics."""
     days = fx.index
@@ -441,8 +570,8 @@ def evaluate_panel(
         "universe_liq": universe_liq,
     }
 
-    # Build targets for R0 and Batch 1 variants
-    target_map = build_batch1_targets(df, months, d0_of, mat["close"])
+    # Build targets for R0 and batch variants
+    target_map = target_builder(df, months, d0_of, mat["close"])
     ew_targets = {t: sorted(g["ticker"]) for t, g in df.groupby("date")}
 
     costs = pb.Costs()
@@ -586,15 +715,16 @@ def format_results_markdown(
     n_sel: int,
     var_sr: float,
     json_path: Path,
+    batch_num: int = 1,
 ) -> str:
     p_map = primary["portfolio"]
     r0 = p_map["R0"]["full"]
     lines = [
-        "# Round 4 Portfolio & Risk Engineering Results — Batch 1",
+        f"# Round 4 Portfolio & Risk Engineering Results — Batch {batch_num}",
         "",
         f"- **Date**: {AS_OF}",
         f"- **Role**: Portfolio & Risk Engineer (`r4-risk`, branch `agent/r4-risk`)",
-        f"- **Pre-registration**: `/home/eren/bist_wt/r4-board/prereg/risk_batch1.md`",
+        f"- **Pre-registration**: `/home/eren/bist_wt/r4-board/prereg/risk_batch{batch_num}.md`",
         f"- **JSON report**: `{json_path}`",
         f"- **Trial ledger `N_sel`**: {n_sel} (`V[SR]` monthly = {var_sr:.5f})",
         f"- **Primary panel**: `fp/factors_monthly.parquet` (`lag75`, `{primary['n_full']}` months `{primary['date_range'][0]}..{primary['date_range'][1]}`)",
@@ -674,18 +804,30 @@ def format_results_markdown(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Round 4 Portfolio & Risk Engineering Gauntlet Runner.")
+    ap.add_argument("--batch", type=int, choices=(1, 2), default=1)
     ap.add_argument("--ledger", type=Path, default=LEDGER_PATH)
-    ap.add_argument("--results-path", type=Path, default=BOARD_DIR / "results" / "risk_batch1.md")
+    ap.add_argument("--results-path", type=Path, default=None)
     ap.add_argument("--reports-dir", type=Path, default=ROOT / "data" / "reports")
     args = ap.parse_args()
 
-    variants = [
-        "risk_score_rank",
-        "risk_score_exp_cap",
-        "risk_invvol",
-        "risk_smooth_k3",
-        "risk_invvol_smooth_k3",
-    ]
+    if args.batch == 1:
+        variants = [
+            "risk_score_rank",
+            "risk_score_exp_cap",
+            "risk_invvol",
+            "risk_smooth_k3",
+            "risk_invvol_smooth_k3",
+        ]
+        target_builder = build_batch1_targets
+    else:
+        variants = [
+            "risk_sector_ew",
+            "risk_sn_invvol",
+            "risk_max_div",
+        ]
+        target_builder = build_batch2_targets
+
+    results_path = args.results_path or (BOARD_DIR / "results" / f"risk_batch{args.batch}.md")
     n_sel = ledger_n_sel(args.ledger)
     res_dir, fp_dir = resolve_data_dirs()
     fx_path = res_dir / "fx.parquet"
@@ -705,15 +847,22 @@ def main() -> None:
     _, df_kap = load_prepared_panel(fp_dir / "factors_monthly_kapdates.parquet", fx_path)
 
     frames_cache: dict[str, pd.DataFrame] = {}
-    primary = evaluate_panel(df_lag75, macro, fx, raw_dir, frames_cache, n_sel=n_sel, var_sr=var_sr, variants=variants)
-    kap = evaluate_panel(df_kap, macro, fx, raw_dir, frames_cache, n_sel=n_sel, var_sr=var_sr, variants=variants)
+    primary = evaluate_panel(
+        df_lag75, macro, fx, raw_dir, frames_cache, n_sel=n_sel, var_sr=var_sr,
+        variants=variants, target_builder=target_builder,
+    )
+    kap = evaluate_panel(
+        df_kap, macro, fx, raw_dir, frames_cache, n_sel=n_sel, var_sr=var_sr,
+        variants=variants, target_builder=target_builder,
+    )
     verdicts = evaluate_gauntlet(primary, kap, variants)
 
     args.reports_dir.mkdir(parents=True, exist_ok=True)
-    args.results_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path = args.reports_dir / f"research_round4_risk_batch1_{AS_OF}.json"
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    json_path = args.reports_dir / f"research_round4_risk_batch{args.batch}_{AS_OF}.json"
     payload = {
         "as_of": AS_OF,
+        "batch": args.batch,
         "trial_ledger_N_sel": n_sel,
         "var_sr_monthly": round(var_sr, 5),
         "variants": variants,
@@ -723,10 +872,13 @@ def main() -> None:
     }
     json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
 
-    md_text = format_results_markdown(variants, primary, kap, verdicts, n_sel=n_sel, var_sr=var_sr, json_path=json_path)
-    args.results_path.write_text(md_text, encoding="utf-8")
+    md_text = format_results_markdown(
+        variants, primary, kap, verdicts, n_sel=n_sel, var_sr=var_sr,
+        json_path=json_path, batch_num=args.batch,
+    )
+    results_path.write_text(md_text, encoding="utf-8")
 
-    print(f"\n=== ROUND 4 RISK BATCH 1 GAUNTLET (N_sel={n_sel}, V[SR]={var_sr:.5f}) ===")
+    print(f"\n=== ROUND 4 RISK BATCH {args.batch} GAUNTLET (N_sel={n_sel}, V[SR]={var_sr:.5f}) ===")
     for v in variants:
         vv = verdicts[v]
         print(
@@ -736,7 +888,7 @@ def main() -> None:
             f"| kap D={vv['c4_kap_D_ann_pct']:+6.2f}% (t={vv['c4_kap_nw_t']:+5.2f}) "
             f"| holm_p={vv['c5_holm_p']:.4f} | TO={vv['c6_turnover_ratio']:.2f}x | {vv['verdict']}"
         )
-    print(f"Markdown: {args.results_path}\nJSON: {json_path}")
+    print(f"Markdown: {results_path}\nJSON: {json_path}")
 
 
 if __name__ == "__main__":
