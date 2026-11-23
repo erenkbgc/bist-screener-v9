@@ -235,6 +235,12 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "miner_ocf_ev_real: Real Enterprise Cash-Based Operating Yield tilt on value_sn (80/20 fixed)"
+    },
+    {
+      "study": "round3_miner_qgp_surp_real",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "miner_qgp_surp_real: Real Quarterly Gross Profit Surprise Yield tilt on value_sn (75/25 fixed)"
     }
   ]
 }
