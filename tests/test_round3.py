@@ -242,10 +242,19 @@ def test_write_prereg_and_append_trial_ledger(tmp_path: Path):
 
 def test_feature_registry_synced():
     r3.sync_feature_registry()
-    for name in ("scholar_cbop", "scholar_sue_usd", "scholar_real_cbop_sue"):
+    expected = (
+        "scholar_cbop",
+        "scholar_sue_usd",
+        "scholar_real_cbop_sue",
+        "miner_ocf_ev_real",
+        "miner_qgp_surp_real",
+        "miner_gp_qop_real",
+    )
+    for name in expected:
         assert name in r3.CANDIDATE_REGISTRY
         spec = r3.CANDIDATE_REGISTRY[name]
         assert callable(spec.fn)
         assert spec.frozen_params
+
 
 
