@@ -83,6 +83,8 @@ class VariantSpec:
 
 
 VARIANT_REGISTRY: dict[str, VariantSpec] = {}
+# Monthly simulation frames of the last evaluate_panel calls (for measurement reports).
+LAST_SIMS: list[dict[str, pd.DataFrame]] = []
 
 
 def register_variant(spec: VariantSpec) -> VariantSpec:
@@ -403,6 +405,7 @@ def evaluate_panel(
         p["active_ew_net"] = p["port"] - p["ew_net"]
         sims[m] = p
 
+    LAST_SIMS.append(sims)
     r0_p = sims["R0"]
     r0_dd_full = float(stats(r0_p.reset_index())["max_dd_usd_pct"])
     r0_dd_2021p = float(stats(r0_p[r0_p.index >= SPLIT].reset_index())["max_dd_usd_pct"])

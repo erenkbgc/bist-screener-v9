@@ -355,6 +355,24 @@
       "family": "stock_selection",
       "trials": 1,
       "source": "mc_v3_all4 (batch metric_count): R0 score, only stocks with all 4 valid value legs"
+    },
+    {
+      "study": "round4_vlab_r0_no_issuers",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "r0_no_issuers (batch cei_top10): R0 top 20% among stocks with CEI_5y = 0 (no net rights issue in 5y)"
+    },
+    {
+      "study": "round4_vlab_value_cei_20",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "value_cei_20 (batch cei_top10): 0.8*value_sn_z + 0.2*(-CEI_5y sn z, NaN->0), top 20%"
+    },
+    {
+      "study": "round4_vlab_r0_top10",
+      "family": "stock_selection",
+      "trials": 1,
+      "source": "r0_top10 (batch cei_top10): R0 value_sn_z, top 10% instead of 20%"
     }
   ]
 }
