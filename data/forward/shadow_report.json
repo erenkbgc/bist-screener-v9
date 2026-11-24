@@ -1,0 +1,30 @@
+{
+  "control": "R0_top20",
+  "months": 0,
+  "eval_months": 24,
+  "rule": "after 24 counted months: mean D>0, NW t(lag 1)>=2.0, D>0 in both 12-month halves",
+  "variants": {
+    "R0_top10": {
+      "n": 0,
+      "mean_d_pct": null,
+      "cum_d_pct": 0.0,
+      "nw_t": null,
+      "status": "pending"
+    },
+    "vlab_ep_floor0": {
+      "n": 0,
+      "mean_d_pct": null,
+      "cum_d_pct": 0.0,
+      "nw_t": null,
+      "status": "pending"
+    },
+    "vlab_op_mcap": {
+      "n": 0,
+      "mean_d_pct": null,
+      "cum_d_pct": 0.0,
+      "nw_t": null,
+      "status": "pending"
+    }
+  },
+  "rows": 164
+}
