@@ -1,0 +1,98 @@
+{
+  "as_of_date": "2026-11-25",
+  "n_eligible": 456,
+  "n_scored": 912,
+  "total_minutes": 55.9,
+  "actions_limit_minutes": 350,
+  "limit_used_share": 0.16,
+  "seconds_per_eligible_ticker": 7.36,
+  "stage_seconds": {
+    "universe": 2618.0,
+    "prefetch": 521.0,
+    "fundamentals": 30.9,
+    "piotroski_sloan": 0.4,
+    "catalysts_prices_regime_sector": 66.0,
+    "candidates": 89.9,
+    "scoring_rotation": 6.5,
+    "kap_panels": 10.3,
+    "report_dispatch": 11.8
+  },
+  "valid_metric_count": {
+    "4": 846,
+    "3": 34,
+    "2": 22,
+    "1": 6,
+    "0": 4
+  },
+  "value_coverage": {
+    "all_4_share": 0.9276,
+    "ge_2_share": 0.989,
+    "none_share": 0.0044
+  },
+  "provider": {
+    "fast_info": {
+      "provider_calls": 804,
+      "empty_share": 0.2139,
+      "mean_s": 8.485,
+      "max_s": 29.11,
+      "total_s": 6821.8,
+      "cache_hit_share": 0.7393
+    },
+    "info": {
+      "provider_calls": 631,
+      "empty_share": 1.0,
+      "mean_s": 2.845,
+      "max_s": 11.23,
+      "total_s": 1795.5,
+      "cache_hit_share": 0.42
+    },
+    "dividends": {
+      "provider_calls": 456,
+      "empty_share": 0.3114,
+      "mean_s": 0.0,
+      "max_s": 0.0,
+      "total_s": 0.0,
+      "cache_hit_share": 0.6667
+    },
+    "history": {
+      "provider_calls": 805,
+      "empty_share": 0.2137,
+      "mean_s": 2.251,
+      "max_s": 7.47,
+      "total_s": 1812.1,
+      "cache_hit_share": 0.6299
+    },
+    "history_adj": {
+      "provider_calls": 458,
+      "empty_share": 0.0,
+      "mean_s": 1.385,
+      "max_s": 3.04,
+      "total_s": 634.5,
+      "cache_hit_share": 0.6657
+    },
+    "news": {
+      "provider_calls": 456,
+      "empty_share": 1.0,
+      "mean_s": 0.0,
+      "max_s": 0.01,
+      "total_s": 0.0,
+      "cache_hit_share": 0.6667
+    },
+    "earnings_dates": {
+      "provider_calls": 456,
+      "empty_share": 1.0,
+      "mean_s": 0.0,
+      "max_s": 0.0,
+      "total_s": 0.0,
+      "cache_hit_share": 0.5
+    },
+    "quarterly_statements": {
+      "provider_calls": 422,
+      "empty_share": 0.0047,
+      "mean_s": 0.78,
+      "max_s": 1.69,
+      "total_s": 329.2,
+      "cache_hit_share": 0.5116
+    }
+  }
+}
